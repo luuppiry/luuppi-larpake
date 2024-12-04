@@ -8,6 +8,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+    <PackageReference Include="Scalar.AspNetCore" Version="1.2.47" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Models\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="Middleware\" />
+    <Folder Include="Data\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>
