@@ -1,0 +1,6 @@
+@LarpakeServer_HostAddress = http://localhost:5190
+
+GET {{LarpakeServer_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
