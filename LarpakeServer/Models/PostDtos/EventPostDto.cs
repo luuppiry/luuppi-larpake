@@ -13,14 +13,15 @@ public class EventPostDto
     public string Body { get; set; } = string.Empty;
 
     [Required]
-    public required DateTime StartTime { get; set; }
+    public required DateTime StartTimeUtc { get; set; }
 
-    public DateTime? EndTime { get; set; } = null;
+    public DateTime? EndTimeUtc { get; set; } = null;
 
     [Required]
     [MaxLength(70)]
     public string Location { get; set; } = string.Empty;
 
+    [MaxLength(200)]
     public string? WebsiteUrl { get; set; } = null;
 
     public Image? Image { get; set; } = null;

@@ -1,7 +1,7 @@
 ﻿using LarpakeServer.Helpers;
 using Microsoft.Data.Sqlite;
 
-namespace LarpakeServer.Data;
+namespace LarpakeServer.Data.Sqlite;
 
 public abstract class SqliteDbBase
 {
@@ -14,7 +14,7 @@ public abstract class SqliteDbBase
         _connectionString = connectionString;
     }
 
-    
+
     protected async Task<SqliteConnection> GetConnection()
     {
         SqliteConnection connection = new(_connectionString.Value);
@@ -22,9 +22,9 @@ public abstract class SqliteDbBase
         {
             return connection;
         }
-        
+
         await InitializeAsync(connection);
-        
+
         _isInitialized = true;
 
         return connection;

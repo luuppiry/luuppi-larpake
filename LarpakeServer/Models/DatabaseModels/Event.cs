@@ -1,18 +1,44 @@
-﻿namespace LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models.PostDtos;
+
+namespace LarpakeServer.Models.DatabaseModels;
 
 public class Event
 {
     public required long Id { get; set; }
     public required string Title { get; set; }
     public string Body { get; set; } = string.Empty;
-    public DateTime StartTimeUtc { get; set; }
-    public DateTime? EndTimeUtc { get; set; }
+    public required DateTime StartTimeUtc { get; set; }
+    public DateTime? EndTimeUtc { get; set; } = null;
     public string Location { get; set; } = string.Empty;
-    public string WebsiteUrl { get; set; } = string.Empty;
-    public string ImageUrl { get; set; } = string.Empty;
-    public bool IsDeleted { get; set; } = false;
-    public DateTime? TimeDeleted { get; set; } = null;
-    public Guid CreatedByUserId { get; set; }
+    public long LuuppiRefId { get; set; } = -1;
+    public string? WebsiteUrl { get; set; } = null;
+    public string? ImageUrl { get; set; } = null;
+    public Guid CreatedBy { get; set; }
     public DateTime CreatedUtc { get; set; }
+    public Guid LastModifiedBy { get; set; }
     public DateTime LastModifiedUtc { get; set; }
+    public DateTime? TimeDeletedUtc { get; set; } = null;
+    public bool IsDeleted => TimeDeletedUtc is not null;
+
+
+
+    public static Event MapFrom(EventPostDto dto, Guid requestUserId)
+    {
+        return new Event
+        {
+            Id = -1,
+            Title = dto.Title,
+            Body = dto.Body,
+            StartTimeUtc = dto.StartTimeUtc,
+            EndTimeUtc = dto.EndTimeUtc,
+            Location = dto.Location,
+            WebsiteUrl = dto.WebsiteUrl,
+            // TODO: Image ImageUrl = dto.Image?.Url,
+            CreatedBy = requestUserId,
+            CreatedUtc = DateTime.UtcNow,
+            LastModifiedBy = requestUserId,
+            LastModifiedUtc = DateTime.UtcNow,
+            TimeDeletedUtc = null
+        };
+    }
 }

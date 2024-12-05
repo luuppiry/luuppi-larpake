@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using LarpakeServer.Data;
+using LarpakeServer.Data.Sqlite;
+using System.Text.Json;
 
 namespace LarpakeServer.Extensions;
 
@@ -19,7 +21,7 @@ public static class ServiceExtensions
 
     public static void AddRepositories(this IServiceCollection services, IConfiguration configuration)
     {
-        
+        services.AddSingleton<IEventDatabase, EventDatabase>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
