@@ -3,7 +3,7 @@
 namespace LarpakeServer.Models;
 
 /// <summary>
-/// Information about soft deletion of an entity.
+/// Information about soft deletion of the entity.
 /// If class is not null, the entity is soft deleted.
 /// </summary>
 public class SoftDeletionInfo
@@ -24,5 +24,5 @@ public class SoftDeletionInfo
 
     public readonly bool IsDeleted = true;
     public required DateTime TimeDeletedUtc { get; init; }
-    public string Reason { get; init; } = "This item was deleted by a user.";
+    public string Reason { get; init; } = "This item was deleted.";
 }

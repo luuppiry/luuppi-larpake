@@ -1,11 +1,15 @@
 using LarpakeServer.Extensions;
+using LarpakeServer.Helpers;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-IConfiguration configuration = builder.Configuration;
+ConfigurationManager configuration = builder.Configuration;
 
+
+builder.Services.AddSingleton(
+    new SqliteConnectionString(configuration["ConnectionStrings:Sqlite"]!));
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
