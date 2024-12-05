@@ -32,6 +32,7 @@ public class Event
             StartTimeUtc = dto.StartTimeUtc,
             EndTimeUtc = dto.EndTimeUtc,
             Location = dto.Location,
+            LuuppiRefId = dto.LuuppiRefId,
             WebsiteUrl = dto.WebsiteUrl,
             // TODO: Image ImageUrl = dto.Image?.Url,
             CreatedBy = requestUserId,

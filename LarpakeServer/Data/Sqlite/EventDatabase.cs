@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Helpers;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.Sqlite;
 using System.Text;
 
@@ -83,5 +84,59 @@ public class EventDatabase(SqliteConnectionString connectionString)
         return await connection.QueryFirstOrDefaultAsync<Event>($"""
             SELECT * FROM Events WHERE {nameof(Event.Id)} = @id LIMIT 1;
             """, new { id });
+    }
+
+    public async Task<Result<long>> Insert(Event record)
+    {
+        try
+        {
+            using var connection = await GetConnection();
+            return await connection.ExecuteScalarAsync<long>($"""
+                INSERT INTO Events (
+                    {nameof(Event.Title)}, 
+                    {nameof(Event.Body)}, 
+                    {nameof(Event.StartTimeUtc)},
+                    {nameof(Event.EndTimeUtc)}, 
+                    {nameof(Event.Location)}, 
+                    {nameof(Event.LuuppiRefId)},
+                    {nameof(Event.WebsiteUrl)}, 
+                    {nameof(Event.ImageUrl)}, 
+                    {nameof(Event.CreatedBy)},
+                    {nameof(Event.LastModifiedBy)},
+                    {nameof(Event.TimeDeletedUtc)}
+                ) 
+                Values (
+                    @{nameof(Event.Title)},
+                    @{nameof(Event.Body)},
+                    @{nameof(Event.StartTimeUtc)},
+                    @{nameof(Event.EndTimeUtc)},
+                    @{nameof(Event.Location)},
+                    @{nameof(Event.LuuppiRefId)},
+                    @{nameof(Event.WebsiteUrl)},
+                    @{nameof(Event.ImageUrl)},
+                    @{nameof(Event.CreatedBy)},
+                    @{nameof(Event.LastModifiedBy)},
+                    NULL
+                );
+                last_insert_rowid();
+                """, record);
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode is 19)
+        {
+            return new Error(500, "Cannot create new primary key.");
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode is 1)
+        {
+            return new Error(500, "Server failed to process request.");
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode is 1)
+        {
+            return new Error(404, "User id not found.");
+        }
+        catch (Exception)
+        {
+            throw;
+        }
+
     }
 }

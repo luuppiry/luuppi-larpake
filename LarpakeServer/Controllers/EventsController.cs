@@ -1,9 +1,11 @@
 ﻿using LarpakeServer.Data;
+using LarpakeServer.Helpers;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.Sqlite;
 
 namespace LarpakeServer.Controllers;
@@ -48,18 +50,17 @@ public class EventsController : ControllerBase
 
         var record = Event.MapFrom(dto, Guid.Empty);
         
-        try
-        {
-            long id = await _db.Insert(record);
+        Result<long> result = await _db.Insert(record);
 
+        if (result)
+        {
+            long id = (long)result;
             string? resourceUrl = Request.Path.Value;
             return Created(resourceUrl, new { Id = id });
         }
-        catch 
-        {
-            // TODO: Handle exception
-            throw;
-        }
+
+        var (statusCode, message) = (Error)result;
+        return StatusCode(statusCode, message);
     }
 
 
