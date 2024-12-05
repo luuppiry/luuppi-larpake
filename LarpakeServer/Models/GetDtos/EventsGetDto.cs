@@ -6,6 +6,9 @@ public class EventsGetDto
 {
     public required EventGetDto[] Events { get; set; }
 
+    public int NextPage { get; set; } = -1;
+
+
     internal static EventsGetDto MapFrom(Event[] events)
     {
         var result = new EventsGetDto

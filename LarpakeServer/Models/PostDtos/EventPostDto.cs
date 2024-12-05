@@ -21,7 +21,7 @@ public class EventPostDto
     [MaxLength(70)]
     public string Location { get; set; } = string.Empty;
 
-    public long LuuppiRefId { get; set; } = -1;
+    public long LuuppiRefId { get; set; } = Constants.NullId;
 
     [MaxLength(200)]
     public string? WebsiteUrl { get; set; } = null;

@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Data.Sqlite;
+using LarpakeServer.Helpers;
 using System.Text.Json;
 
 namespace LarpakeServer.Extensions;
@@ -21,6 +22,9 @@ public static class ServiceExtensions
 
     public static void AddRepositories(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton(new SqliteConnectionString(configuration["ConnectionStrings:Sqlite"]!));
+        SqlMapper.AddTypeHandler(new GuidTypeHandler());
+        
         services.AddSingleton<IEventDatabase, EventDatabase>();
     }
 

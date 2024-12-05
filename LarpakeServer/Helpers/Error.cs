@@ -1,6 +1,6 @@
 ﻿namespace LarpakeServer.Helpers;
 
-public class Error(int StatusCode, string Message)
+public record Error(int StatusCode, string Message, Exception? Ex = null)
 {
     public void Deconstruct(out int httpStatusCode, out string message)
     {

@@ -1,7 +1,6 @@
 ﻿using LarpakeServer.Helpers;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.Sqlite;
 using System.Text;
 
@@ -15,17 +14,17 @@ public class EventDatabase(SqliteConnectionString connectionString)
         await connection.ExecuteScalarAsync($"""
             CREATE TABLE IF NOT EXISTS Events (
                 {nameof(Event.Id)} INTEGER,
-                {nameof(Event.Title)} TEXT,
+                {nameof(Event.Title)} TEXT NOT NULL,
                 {nameof(Event.Body)} TEXT,
                 {nameof(Event.StartTimeUtc)} DATETIME NOT NULL,
                 {nameof(Event.EndTimeUtc)} DATETIME DEFAULT NULL,
                 {nameof(Event.Location)} TEXT NOT NULL,
-                {nameof(Event.ImageUrl)} TEXT NOT NULL,
+                {nameof(Event.ImageUrl)} TEXT,
                 {nameof(Event.LuuppiRefId)} INTEGER,
-                {nameof(Event.WebsiteUrl)} TEXT NOT NULL,
-                {nameof(Event.CreatedBy)} TEXT,
+                {nameof(Event.WebsiteUrl)} TEXT,
+                {nameof(Event.CreatedBy)} TEXT NOT NULL,
                 {nameof(Event.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(Event.LastModifiedBy)} TEXT,
+                {nameof(Event.LastModifiedBy)} TEXT NOT NULL,
                 {nameof(Event.LastModifiedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(Event.TimeDeletedUtc)} DATETIME,
                 PRIMARY KEY({nameof(Event.Id)})
@@ -90,8 +89,7 @@ public class EventDatabase(SqliteConnectionString connectionString)
     {
         try
         {
-            using var connection = await GetConnection();
-            return await connection.ExecuteScalarAsync<long>($"""
+            var sql = $"""
                 INSERT INTO Events (
                     {nameof(Event.Title)}, 
                     {nameof(Event.Body)}, 
@@ -118,25 +116,70 @@ public class EventDatabase(SqliteConnectionString connectionString)
                     @{nameof(Event.LastModifiedBy)},
                     NULL
                 );
-                last_insert_rowid();
-                """, record);
+                SELECT last_insert_rowid();
+                """;
+            using var connection = await GetConnection();
+            return await connection.ExecuteScalarAsync<long>(sql, record);
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode is 19)
         {
-            return new Error(500, "Cannot create new primary key.");
+            return new Error(500, "Cannot create new primary key.", ex);
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode is 1)
         {
-            return new Error(500, "Server failed to process request.");
+            return new Error(500, "Server failed to process request.", ex);
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode is 1)
         {
-            return new Error(404, "User id not found.");
+            return new Error(404, "User id not found.", ex);
         }
         catch (Exception)
         {
             throw;
         }
-
     }
+
+    public async Task<Result<int>> Update(Event record)
+    {
+        if (record.Id is Constants.NullId)
+        {
+            return new Error(400, $"Cannot update object with null id '{Constants.NullId}'.");
+        }
+
+        /* Don't really like using dynamic here,
+         * but it's the easiest way to add a property to the object */
+        using var connection = await GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE Events 
+            SET 
+                {nameof(Event.Title)} = @{nameof(record.Title)},
+                {nameof(Event.Body)} = @{nameof(record.Body)},
+                {nameof(Event.StartTimeUtc)} = @{nameof(record.StartTimeUtc)},
+                {nameof(Event.EndTimeUtc)} = @{nameof(record.EndTimeUtc)},
+                {nameof(Event.Location)} = @{nameof(record.Location)},
+                {nameof(Event.LuuppiRefId)} = @{nameof(record.LuuppiRefId)},
+                {nameof(Event.WebsiteUrl)} = @{nameof(record.WebsiteUrl)},
+                {nameof(Event.ImageUrl)} = @{nameof(record.ImageUrl)},
+                {nameof(Event.LastModifiedBy)} = @{nameof(record.LastModifiedBy)},
+                {nameof(Event.LastModifiedUtc)} = DATETIME('now')
+            WHERE 
+                {nameof(Event.Id)} = @{nameof(record.Id)};
+            """, record);
+    }
+
+    public async Task<int> Delete(long eventId, Guid modifyingUser)
+    {
+        using var connection = await GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE Events 
+            SET 
+                {nameof(Event.TimeDeletedUtc)} = DATETIME('now'),
+                {nameof(Event.LastModifiedUtc)} = DATETIME('now'),
+                {nameof(Event.LastModifiedBy)} = @{nameof(modifyingUser)}
+            WHERE 
+                {nameof(Event.Id)} = @{nameof(eventId)};
+            """, new { eventId, modifyingUser });
+    }
+
+ 
 }

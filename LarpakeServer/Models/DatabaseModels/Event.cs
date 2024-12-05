@@ -10,7 +10,7 @@ public class Event
     public required DateTime StartTimeUtc { get; set; }
     public DateTime? EndTimeUtc { get; set; } = null;
     public string Location { get; set; } = string.Empty;
-    public long LuuppiRefId { get; set; } = -1;
+    public long LuuppiRefId { get; set; } = Constants.NullId;
     public string? WebsiteUrl { get; set; } = null;
     public string? ImageUrl { get; set; } = null;
     public Guid CreatedBy { get; set; }
@@ -26,7 +26,7 @@ public class Event
     {
         return new Event
         {
-            Id = -1,
+            Id = Constants.NullId,
             Title = dto.Title,
             Body = dto.Body,
             StartTimeUtc = dto.StartTimeUtc,
