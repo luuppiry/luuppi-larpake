@@ -11,15 +11,10 @@ public class EventsGetDto
 
     internal static EventsGetDto MapFrom(Event[] events)
     {
-        var result = new EventsGetDto
+        return new EventsGetDto
         {
-            Events = new EventGetDto[events.LongLength]
+            Events = events.Select(EventGetDto.From).ToArray(),
+            NextPage = -1
         };
-
-        for (var i = 0; i < events.LongLength; i++)
-        {
-            result.Events[i] = EventGetDto.From(events[i]);
-        }
-        return result;
     }
 }

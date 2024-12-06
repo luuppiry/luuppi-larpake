@@ -9,8 +9,8 @@ public interface IFreshmanGroupDatabase
     Task<FreshmanGroup?> Get(long id);
     Task<Guid[]?> GetMembers(long id);
     Task<Result<long>> Insert(FreshmanGroup record);
-    Task<Result<long>> InsertMembers(long[] memberIds);
+    Task<Result<int>> InsertMembers(long id, Guid[] members);
     Task<Result<int>> Update(FreshmanGroup record);
-    Task<int> Delete(long groupId);
-    Task<int> DeleteMembers(long groupId, Guid[] memberIds);
+    Task<int> Delete(long id);
+    Task<int> DeleteMembers(long id, Guid[] members);
 }

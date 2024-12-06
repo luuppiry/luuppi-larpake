@@ -29,7 +29,6 @@ public class EventsController : ExtendedControllerBase
         {
             result.NextPage = options.GetNextOffset();
         }
-
         return Ok(result);
     }
 

@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models;
+using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
 using System.Reflection.Metadata;
@@ -83,9 +84,26 @@ public class UserDatabase(SqliteConnectionString connectionString)
             SET
                 {nameof(User.Permissions)} = @{nameof(User.Permissions)},
                 {nameof(User.StartYear)} = @{nameof(User.StartYear)},
-                {nameof(User.LastModifiedUtc)} = CURRENT_TIMESTAMP
+                {nameof(User.LastModifiedUtc)} = DATETIME('now')
             WHERE {nameof(User.Id)} = @{nameof(User.Id)};
             """, record);
+    }
+
+    public async Task<Result<int>> UpdatePermissions(Guid id, Permissions permissions)
+    {
+        if (id == Guid.Empty)
+        {
+            return new Error(400, "Id is required.");
+        }
+
+        using var connection = await GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE Users 
+            SET
+                {nameof(User.Permissions)} = @{nameof(permissions)},
+                {nameof(User.LastModifiedUtc)} = DATETIME('now')
+            WHERE {nameof(User.Id)} = @{nameof(id)};
+            """, new { id, permissions });
     }
 
     public async Task<int> Delete(Guid id)

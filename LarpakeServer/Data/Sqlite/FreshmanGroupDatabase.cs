@@ -1,54 +1,202 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
+using System.Linq;
+using System.Text;
 
 namespace LarpakeServer.Data.Sqlite;
 
-public class FreshmanGroupDatabase(SqliteConnectionString connectionString, 
-    UserDatabase userDb) 
+public class FreshmanGroupDatabase(SqliteConnectionString connectionString,
+    UserDatabase userDb)
     : SqliteDbBase(connectionString, userDb), IFreshmanGroupDatabase
 {
- 
 
-    public Task<FreshmanGroup[]> Get(FreshmanGroupQueryOptions options)
+    public async Task<FreshmanGroup[]> Get(FreshmanGroupQueryOptions options)
     {
-        throw new NotImplementedException();
+        StringBuilder query = new();
+
+        bool searchUser = options.ContainsUser is not null;
+        bool doJoins = searchUser || options.DoMinimize is false;
+
+        query.AppendLine($"""
+                SELECT * FROM FreshmanGroups fg
+                """);
+
+        if (doJoins)
+        {
+            query.AppendLine($"""
+                LEFT JOIN FreshmanGroupMembers fgm 
+                    ON fg.{nameof(FreshmanGroup.Id)} = fgm.{FGM_GroupId}
+                LEFT JOIN Users u 
+                    ON fgm.{FGM_UserId} = u.{nameof(User.Id)}
+                """);
+        }
+        if (searchUser)
+        {
+            query.AppendLine($"""
+                WHERE u.{nameof(User.Id)} = @{nameof(options.ContainsUser)}
+                """);
+        }
+        if (options.GroupName is not null)
+        {
+            query.AppendLine($"""
+                WHERE fg.{nameof(FreshmanGroup.Name)} LIKE %@{nameof(options.GroupName)}%
+                """);
+        }
+        if (options.StartYear is not null)
+        {
+            query.AppendLine($"""
+                WHERE fg.{nameof(FreshmanGroup.StartYear)} = @{nameof(options.StartYear)}
+                """);
+        }
+
+        query.AppendLine($"""
+            ORDER BY fg.{nameof(FreshmanGroup.StartYear)}, fg.{nameof(FreshmanGroup.GroupNumber)} ASC
+            LIMIT @{nameof(options.PageSize)} 
+            OFFSET @{nameof(options.PageOffset)}
+            """);
+
+        using var connection = await GetConnection();
+        if (options.DoMinimize)
+        {
+            // Do not map members
+            var minimized = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
+            return minimized.ToArray();
+        }
+
+        string str = query.ToString();
+
+
+        // Map members to groups
+
+        var records = await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>(
+            query.ToString(), MapUserToGroup, options, splitOn: FGM_GroupId);
+
+        return records
+            .GroupBy(x => x.Id)
+            .Select(MapGroupingToGroup)
+            .ToArray();
     }
 
-    public Task<FreshmanGroup?> Get(long id)
+
+
+    public async Task<FreshmanGroup?> Get(long id)
     {
-        throw new NotImplementedException();
+        using var connection = await GetConnection();
+        var record = await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>($"""
+            SELECT * FROM FreshmanGroups fg
+            LEFT JOIN FreshmanGroupMembers fgm 
+                ON fg.{nameof(FreshmanGroup.Id)} = fgm.{FGM_GroupId}
+
+            WHERE fg.{nameof(FreshmanGroup.Id)} = @{nameof(id)}
+            """, MapUserToGroup, new { id }, splitOn: FGM_GroupId);
+
+        return record
+            .GroupBy(x => x.Id)
+            .Select(MapGroupingToGroup)
+            .FirstOrDefault();
     }
 
-    public Task<Guid[]?> GetMembers(long id)
+    public async Task<Guid[]?> GetMembers(long id)
     {
-        throw new NotImplementedException();
+        using var connection = await GetConnection();
+
+        // Return records, no need to check if group exists because of foreign keys
+        var records = await connection.QueryAsync<Guid>($"""
+            SELECT {FGM_UserId} FROM FreshmanGroupMembers 
+            WHERE {FGM_GroupId} = @{nameof(id)}
+            """, new { id });
+
+        return records.ToArray();
     }
 
-    public Task<Result<long>> Insert(FreshmanGroup record)
+    public async Task<Result<long>> Insert(FreshmanGroup record)
     {
-        throw new NotImplementedException();
+        using var connection = await GetConnection();
+        return await connection.ExecuteScalarAsync<long>($"""
+            INSERT INTO FreshmanGroups (
+                {nameof(FreshmanGroup.Name)}, 
+                {nameof(FreshmanGroup.StartYear)}, 
+                {nameof(FreshmanGroup.GroupNumber)})
+            VALUES (
+                @{nameof(FreshmanGroup.Name)}, 
+                @{nameof(FreshmanGroup.StartYear)}, 
+                @{nameof(FreshmanGroup.GroupNumber)});
+            SELECT last_insert_rowid();
+            """, record);
     }
 
-    public Task<Result<long>> InsertMembers(long[] memberIds)
+    record struct InsertModel(long Id, Guid UserId);
+
+    public async Task<Result<int>> InsertMembers(long id, Guid[] members)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var records = members
+                .Distinct()
+                .Select(x => new InsertModel(id, x))
+                .ToArray();
+
+            using var connection = await GetConnection();
+            return await connection.ExecuteAsync($"""
+                INSERT OR IGNORE INTO FreshmanGroupMembers (
+                    {FGM_GroupId}, 
+                    {FGM_UserId})
+                VALUES (
+                    @{nameof(InsertModel.Id)}, 
+                    @{nameof(InsertModel.UserId)});
+                """, records);
+        }
+        catch (SqliteException ex)
+        {
+            switch (ex.SqliteExtendedErrorCode)
+            {
+                case SqliteError.ForeignKey_e:
+                    return new Error(404, "Group or user does not exist.");
+                default:
+                    throw;
+            }
+        }
     }
 
-    public Task<Result<int>> Update(FreshmanGroup record)
+    public async Task<Result<int>> Update(FreshmanGroup record)
     {
-        throw new NotImplementedException();
+        using var connection = await GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE FreshmanGroups SET
+                {nameof(FreshmanGroup.Name)} = @{nameof(FreshmanGroup.Name)},
+                {nameof(FreshmanGroup.StartYear)} = @{nameof(FreshmanGroup.StartYear)},
+                {nameof(FreshmanGroup.GroupNumber)} = @{nameof(FreshmanGroup.GroupNumber)},
+                {nameof(FreshmanGroup.LastModifiedUtc)} = DATETIME('now')
+            WHERE {nameof(FreshmanGroup.Id)} = @{nameof(FreshmanGroup.Id)};
+            """, record);
     }
 
-    public Task<int> Delete(long groupId)
+    public async Task<int> Delete(long id)
     {
-        throw new NotImplementedException();
+        using var connection = await GetConnection();
+
+        int rowsAffected = await connection.ExecuteAsync($"""
+            DELETE FROM FreshmanGroupMembers WHERE {nameof(FGM_GroupId)} = @{nameof(id)};
+            """, new { id });
+
+        return rowsAffected + await connection.ExecuteAsync($"""
+            DELETE FROM FreshmanGroups WHERE {nameof(FreshmanGroup.Id)} = @{nameof(id)};
+            """, new { id });
     }
 
-    public Task<int> DeleteMembers(long groupId, Guid[] memberIds)
+    public async Task<int> DeleteMembers(long id, Guid[] memberIds)
     {
-        throw new NotImplementedException();
+        using var connection = await GetConnection();
+        return await connection.ExecuteAsync($"""
+            DELETE FROM FreshmanGroupMembers 
+            WHERE 
+                {FGM_GroupId} = @{nameof(id)} 
+                AND {FGM_UserId} IN @{nameof(memberIds)};
+            """, new { id, memberIds });
     }
+
+
 
     protected override async Task InitializeAsync(SqliteConnection connection)
     {
@@ -65,12 +213,40 @@ public class FreshmanGroupDatabase(SqliteConnectionString connectionString,
             );
 
             CREATE TABLE IF NOT EXISTS FreshmanGroupMembers (
-                {nameof(FreshmanGroupMember.FreshmanGroupId)} INTEGER,
-                {nameof(FreshmanGroupMember.UserId)} TEXT,
-                PRIMARY KEY ({nameof(FreshmanGroupMember.FreshmanGroupId)}, {nameof(FreshmanGroupMember.UserId)}),
-                FOREIGN KEY ({nameof(FreshmanGroupMember.FreshmanGroupId)}) REFERENCES FreshmanGroups({nameof(FreshmanGroup.Id)}),
-                FOREIGN KEY ({nameof(FreshmanGroupMember.UserId)}) REFERENCES Users({nameof(User.Id)})
+                {FGM_GroupId} INTEGER,
+                {FGM_UserId} TEXT,
+                PRIMARY KEY ({FGM_GroupId}, {FGM_UserId}),
+                FOREIGN KEY ({FGM_GroupId}) REFERENCES FreshmanGroups({nameof(FreshmanGroup.Id)}),
+                FOREIGN KEY ({FGM_UserId}) REFERENCES Users({nameof(User.Id)})
             );
             """);
+    }
+
+    #region NAMEOF_CONSTANTS
+    private const string FGM_GroupId = nameof(FreshmanGroupMember.FreshmanGroupId);
+    private const string FGM_UserId = nameof(FreshmanGroupMember.UserId);
+    #endregion NAMEOF_CONSTANTS
+
+    private static FreshmanGroup MapGroupingToGroup(IGrouping<long, FreshmanGroup> grouping)
+    {
+        FreshmanGroup group = grouping.First();
+        group.Members = grouping
+            .Where(g => g.Members is not null)
+            .SelectMany(y => y.Members!)
+            .Distinct()
+            .ToList();
+        return group;
+    }
+
+    private static FreshmanGroup MapUserToGroup(FreshmanGroup group, FreshmanGroupMember member)
+    {
+        // Add member to group object
+        group.Members ??= [];
+        if (member is null)
+        {
+            return group;
+        }
+        group.Members.Add(member.UserId);
+        return group;
     }
 }

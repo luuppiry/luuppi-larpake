@@ -80,7 +80,7 @@ public class UsersController : ExtendedControllerBase
         var record = User_.MapFrom(dto);
         record.Id = userId;
 
-        Result<int> result = await _db.Update(record);
+        Result<int> result = await _db.UpdatePermissions(userId, dto.Permissions);
         if (result)
         {
             return OkRowsAffected((int)result);

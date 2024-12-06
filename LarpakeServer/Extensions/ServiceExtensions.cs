@@ -25,8 +25,12 @@ public static class ServiceExtensions
         services.AddSingleton(new SqliteConnectionString(configuration["ConnectionStrings:Sqlite"]!));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         
+        services.AddSingleton<EventDatabase>();
         services.AddSingleton<IEventDatabase, EventDatabase>();
+        services.AddSingleton<UserDatabase>();
         services.AddSingleton<IUserDatabase, UserDatabase>();
+        services.AddSingleton<FreshmanGroupDatabase>();
+        services.AddSingleton<IFreshmanGroupDatabase, FreshmanGroupDatabase>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
