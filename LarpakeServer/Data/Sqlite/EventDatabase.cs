@@ -1,37 +1,13 @@
-﻿using LarpakeServer.Helpers;
-using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
 using System.Text;
 
 namespace LarpakeServer.Data.Sqlite;
 
-public class EventDatabase(SqliteConnectionString connectionString)
-    : SqliteDbBase(connectionString), IEventDatabase
+public class EventDatabase(SqliteConnectionString connectionString, UserDatabase userDb)
+    : SqliteDbBase(connectionString, userDb), IEventDatabase
 {
-    protected override async Task InitializeAsync(SqliteConnection connection)
-    {
-        await connection.ExecuteScalarAsync($"""
-            CREATE TABLE IF NOT EXISTS Events (
-                {nameof(Event.Id)} INTEGER,
-                {nameof(Event.Title)} TEXT NOT NULL,
-                {nameof(Event.Body)} TEXT,
-                {nameof(Event.StartTimeUtc)} DATETIME NOT NULL,
-                {nameof(Event.EndTimeUtc)} DATETIME DEFAULT NULL,
-                {nameof(Event.Location)} TEXT NOT NULL,
-                {nameof(Event.ImageUrl)} TEXT,
-                {nameof(Event.LuuppiRefId)} INTEGER,
-                {nameof(Event.WebsiteUrl)} TEXT,
-                {nameof(Event.CreatedBy)} TEXT NOT NULL,
-                {nameof(Event.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(Event.LastModifiedBy)} TEXT NOT NULL,
-                {nameof(Event.LastModifiedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(Event.TimeDeletedUtc)} DATETIME,
-                PRIMARY KEY({nameof(Event.Id)})
-            )
-            """);
-    }
-
     public async Task<Event[]> Get(EventQueryOptions options)
     {
         StringBuilder query = new();
@@ -71,8 +47,6 @@ public class EventDatabase(SqliteConnectionString connectionString)
             """);
 
         using var connection = await GetConnection();
-        var queryStr = query.ToString();
-
         var events = await connection.QueryAsync<Event>(query.ToString(), options);
         return events.ToArray();
     }
@@ -121,21 +95,17 @@ public class EventDatabase(SqliteConnectionString connectionString)
             using var connection = await GetConnection();
             return await connection.ExecuteScalarAsync<long>(sql, record);
         }
-        catch (SqliteException ex) when (ex.SqliteErrorCode is 19)
+        catch (SqliteException ex)
         {
-            return new Error(500, "Cannot create new primary key.", ex);
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode is 1)
-        {
-            return new Error(500, "Server failed to process request.", ex);
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode is 1)
-        {
-            return new Error(404, "User id not found.", ex);
-        }
-        catch (Exception)
-        {
-            throw;
+            switch (ex.SqliteExtendedErrorCode)
+            {
+                case SqliteError.PrimaryKey_e:
+                    return new Error(500, "Could not create Id.");
+                case SqliteError.ForeignKey_e:
+                    return new Error(404, "Request user not found.");
+                default:
+                    throw;
+            }
         }
     }
 
@@ -146,8 +116,6 @@ public class EventDatabase(SqliteConnectionString connectionString)
             return new Error(400, $"Cannot update object with null id '{Constants.NullId}'.");
         }
 
-        /* Don't really like using dynamic here,
-         * but it's the easiest way to add a property to the object */
         using var connection = await GetConnection();
         return await connection.ExecuteAsync($"""
             UPDATE Events 
@@ -181,5 +149,29 @@ public class EventDatabase(SqliteConnectionString connectionString)
             """, new { eventId, modifyingUser });
     }
 
- 
+    protected override async Task InitializeAsync(SqliteConnection connection)
+    {
+        await connection.ExecuteAsync($"""
+            CREATE TABLE IF NOT EXISTS Events (
+                {nameof(Event.Id)} INTEGER,
+                {nameof(Event.Title)} TEXT NOT NULL,
+                {nameof(Event.Body)} TEXT,
+                {nameof(Event.StartTimeUtc)} DATETIME NOT NULL,
+                {nameof(Event.EndTimeUtc)} DATETIME DEFAULT NULL,
+                {nameof(Event.Location)} TEXT NOT NULL,
+                {nameof(Event.ImageUrl)} TEXT,
+                {nameof(Event.LuuppiRefId)} INTEGER,
+                {nameof(Event.WebsiteUrl)} TEXT,
+                {nameof(Event.CreatedBy)} TEXT NOT NULL,
+                {nameof(Event.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(Event.LastModifiedBy)} TEXT NOT NULL,
+                {nameof(Event.LastModifiedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(Event.TimeDeletedUtc)} DATETIME,
+                FOREIGN KEY({nameof(Event.CreatedBy)}) REFERENCES Users({nameof(User.Id)}),
+                FOREIGN KEY({nameof(Event.LastModifiedBy)}) REFERENCES Users({nameof(User.Id)}),
+                PRIMARY KEY({nameof(Event.Id)})
+            )
+            """);
+    }
+
 }

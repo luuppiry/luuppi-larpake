@@ -1,9 +1,43 @@
-﻿namespace LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models.PostDtos;
+using LarpakeServer.Models.PutDtos;
+
+namespace LarpakeServer.Models.DatabaseModels;
 
 public class User
 {
     public required Guid Id { get; set; }
-    public Permissions Persmissions { get; set; } = Permissions.None;
+    public Permissions Permissions { get; set; } = Permissions.None;
+    public int? StartYear { get; set; } = null;
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
+
+    public static User MapFrom(UserPostDto dto)
+    {
+        return new User
+        {
+            Id = Guid.Empty,
+            Permissions = Permissions.None,
+            StartYear = dto.StartYear,
+        };
+    }
+
+    public static User MapFrom(UserPutDto dto)
+    {
+        return new User
+        {
+            Id = Guid.Empty,
+            Permissions = Permissions.None,
+            StartYear = dto.StartYear,
+        };
+    }
+
+    public static User MapFrom(UserPermissionsPutDto dto)
+    {
+        return new User
+        {
+            Id = Guid.Empty,
+            Permissions = dto.Permissions,
+            StartYear = null,
+        };
+    }
 }

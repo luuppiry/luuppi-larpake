@@ -2,6 +2,7 @@
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
+using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Controllers;
@@ -38,7 +39,7 @@ public class EventsController : ExtendedControllerBase
         var record = await _db.Get(eventId);
         if (record is null)
         {
-            return NotFound(new { Message = "Id not found." });
+            return IdNotFound();
         }
         return Ok(EventGetDto.From(record));
     }
@@ -60,12 +61,11 @@ public class EventsController : ExtendedControllerBase
     }
 
     [HttpPut("{eventId}")]
-    public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] EventPostDto dto)
+    public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] EventPutDto dto)
     {
         // TODO: Add user Guid
         var record = Event.MapFrom(dto, Guid.Empty);
         record.Id = eventId;
-
         Result<int> result = await _db.Update(record);
         if (result)
         {

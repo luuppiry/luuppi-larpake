@@ -26,6 +26,7 @@ public static class ServiceExtensions
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         
         services.AddSingleton<IEventDatabase, EventDatabase>();
+        services.AddSingleton<IUserDatabase, UserDatabase>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)

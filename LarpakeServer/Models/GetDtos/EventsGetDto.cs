@@ -18,25 +18,8 @@ public class EventsGetDto
 
         for (var i = 0; i < events.LongLength; i++)
         {
-            Event current = events[i];
-            result.Events[i] = new EventGetDto
-            {
-                Id = current.Id,
-                Title = current.Title,
-                Body = current.Body,
-                StartTimeUtc = current.StartTimeUtc,
-                EndTimeUtc = current.EndTimeUtc,
-                Location = current.Location,
-                WebsiteUrl = current.WebsiteUrl,
-                ImageUrl = current.ImageUrl,
-                SoftDeletionInfo = current.TimeDeletedUtc.HasValue
-                    ? new SoftDeletionInfo(current.TimeDeletedUtc.Value) : null
-            };
+            result.Events[i] = EventGetDto.From(events[i]);
         }
         return result;
-
-
-
-
     }
 }

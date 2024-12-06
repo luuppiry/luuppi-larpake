@@ -2,8 +2,8 @@
 
 namespace LarpakeServer.Models.PutDtos;
 
-public class UserPermissionsPutDto
+public class UserPutDto
 {
     [Required]
-    public required Permissions Permissions { get; set; } 
+    public int StartYear { get; set; } = -1;
 }

@@ -36,9 +36,7 @@ public class Event
             WebsiteUrl = dto.WebsiteUrl,
             // TODO: Image ImageUrl = dto.Image?.Url,
             CreatedBy = requestUserId,
-            CreatedUtc = DateTime.UtcNow,
             LastModifiedBy = requestUserId,
-            LastModifiedUtc = DateTime.UtcNow,
             TimeDeletedUtc = null
         };
     }

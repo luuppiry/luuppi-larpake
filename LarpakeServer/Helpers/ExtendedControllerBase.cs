@@ -25,4 +25,9 @@ public class ExtendedControllerBase : ControllerBase
         return Created(resourceUrl, new { Id = id });
     }
 
+    protected ObjectResult IdNotFound()
+    {
+        return NotFound(new { Message = "Id not found." });
+    }
+
 }
