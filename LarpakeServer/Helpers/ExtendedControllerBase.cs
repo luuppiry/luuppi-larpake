@@ -4,8 +4,13 @@ public class ExtendedControllerBase : ControllerBase
 {
     protected ObjectResult FromError<T>(Result<T> error)
     {
+#if DEBUG
+        var (statusCode, message) = (Error)error;
+        return StatusCode(statusCode, new { Message = message, Exception = error });
+#else
         var (statusCode, message) = (Error)error;
         return StatusCode(statusCode, message);
+#endif
     }
     
     protected ObjectResult OkRowsAffected(int rowsAffected)

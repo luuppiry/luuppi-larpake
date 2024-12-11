@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LarpakeServer.Models.PostDtos;
+namespace LarpakeServer.Models.PutDtos;
 
-public class AttendancePostDto
+public class UncomepletedPutDto
 {
     [Required]
     public required Guid UserId { get; set; }

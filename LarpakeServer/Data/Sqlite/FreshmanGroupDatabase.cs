@@ -1,12 +1,12 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
-using System.Linq;
-using System.Text;
+
 
 namespace LarpakeServer.Data.Sqlite;
 
-public class FreshmanGroupDatabase(SqliteConnectionString connectionString,
+public class FreshmanGroupDatabase(
+    SqliteConnectionString connectionString,
     UserDatabase userDb)
     : SqliteDbBase(connectionString, userDb), IFreshmanGroupDatabase
 {
@@ -22,6 +22,7 @@ public class FreshmanGroupDatabase(SqliteConnectionString connectionString,
                 SELECT * FROM FreshmanGroups fg
                 """);
 
+
         if (doJoins)
         {
             query.AppendLine($"""
@@ -29,24 +30,25 @@ public class FreshmanGroupDatabase(SqliteConnectionString connectionString,
                     ON fg.{nameof(FreshmanGroup.Id)} = fgm.{FGM_GroupId}
                 LEFT JOIN Users u 
                     ON fgm.{FGM_UserId} = u.{nameof(User.Id)}
+                WHERE TRUE
                 """);
         }
         if (searchUser)
         {
             query.AppendLine($"""
-                WHERE u.{nameof(User.Id)} = @{nameof(options.ContainsUser)}
+                AND u.{nameof(User.Id)} = @{nameof(options.ContainsUser)}
                 """);
         }
         if (options.GroupName is not null)
         {
             query.AppendLine($"""
-                WHERE fg.{nameof(FreshmanGroup.Name)} LIKE %@{nameof(options.GroupName)}%
+                AND fg.{nameof(FreshmanGroup.Name)} LIKE %@{nameof(options.GroupName)}%
                 """);
         }
         if (options.StartYear is not null)
         {
             query.AppendLine($"""
-                WHERE fg.{nameof(FreshmanGroup.StartYear)} = @{nameof(options.StartYear)}
+                AND fg.{nameof(FreshmanGroup.StartYear)} = @{nameof(options.StartYear)}
                 """);
         }
 

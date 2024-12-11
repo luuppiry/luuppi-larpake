@@ -13,7 +13,7 @@ builder.Services.AddOpenApi();
 
 
 builder.Services.AddServices(configuration);
-builder.Services.AddRepositories(configuration);
+builder.Services.AddSqliteDatabases(configuration);
 builder.Services.ConfigureCors();
 
 builder.Services.AddRouting(options =>

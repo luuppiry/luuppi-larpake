@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Data;
+using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
@@ -26,12 +27,7 @@ public class UsersController : ExtendedControllerBase
     {
         var records = await _db.Get(options);
         var result = UsersGetDto.MapFrom(records);
-
-        // Calculate paging
-        if (result.Users.Length == options.PageSize)
-        {
-            result.NextPage = options.GetNextOffset();
-        }
+        result.CalculateNextPageFrom(options);
         return Ok(result);
     }
 

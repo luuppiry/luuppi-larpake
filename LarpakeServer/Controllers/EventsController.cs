@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Data;
+using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
@@ -24,11 +25,7 @@ public class EventsController : ExtendedControllerBase
         var records = await _db.Get(options);
         var result = EventsGetDto.MapFrom(records);
         
-        // Calculate paging
-        if (result.Events.Length == options.PageSize)
-        {
-            result.NextPage = options.GetNextOffset();
-        }
+        result.CalculateNextPageFrom(options);
         return Ok(result);
     }
 

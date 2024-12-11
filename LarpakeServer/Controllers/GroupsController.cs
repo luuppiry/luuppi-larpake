@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Data;
+using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DeleteDtos;
 using LarpakeServer.Models.GetDtos;
@@ -25,12 +26,7 @@ public class GroupsController : ExtendedControllerBase
     {
         var records = await _db.Get(options);
         var result = FreshmanGroupsGetDto.MapFrom(records);
-
-        // Calculate paging
-        if (result.Groups.Length == options.PageSize)
-        {
-            result.NextPage = options.GetNextOffset();
-        }
+        result.CalculateNextPageFrom(options);
         return Ok(result);
     }
 

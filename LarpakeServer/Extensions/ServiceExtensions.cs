@@ -1,6 +1,8 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Data.Sqlite;
 using LarpakeServer.Helpers;
+using LarpakeServer.Services;
+using LarpakeServer.Services.Implementations;
 using System.Text.Json;
 
 namespace LarpakeServer.Extensions;
@@ -20,22 +22,27 @@ public static class ServiceExtensions
         });
     }
 
-    public static void AddRepositories(this IServiceCollection services, IConfiguration configuration)
+    public static void AddSqliteDatabases(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton(new SqliteConnectionString(configuration["ConnectionStrings:Sqlite"]!));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         
-        services.AddSingleton<EventDatabase>();
         services.AddSingleton<IEventDatabase, EventDatabase>();
-        services.AddSingleton<UserDatabase>();
+        services.AddSingleton<EventDatabase>();
         services.AddSingleton<IUserDatabase, UserDatabase>();
-        services.AddSingleton<FreshmanGroupDatabase>();
+        services.AddSingleton<UserDatabase>();
         services.AddSingleton<IFreshmanGroupDatabase, FreshmanGroupDatabase>();
+        services.AddSingleton<FreshmanGroupDatabase>();
+        services.AddSingleton<IAttendanceDatabase, AttendanceDatabase>();
+        services.AddSingleton<AttendanceDatabase>();
+        services.AddSingleton<ISignatureDatabase, SignatureDatabase>();
+        services.AddSingleton<SignatureDatabase>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-
+        services.AddSingleton<CompletionMessageService>();
+        services.AddSingleton<ISubscriptionClientPool, InMemorySubscriptionClientService>();
     }
     
     public static void AddLogging(this IServiceCollection services)
