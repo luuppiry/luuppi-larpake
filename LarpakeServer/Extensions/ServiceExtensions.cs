@@ -1,9 +1,7 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Data.Sqlite;
-using LarpakeServer.Helpers;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
-using System.Text.Json;
 
 namespace LarpakeServer.Extensions;
 
@@ -42,24 +40,11 @@ public static class ServiceExtensions
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<CompletionMessageService>();
-        services.AddSingleton<ISubscriptionClientPool, InMemorySubscriptionClientService>();
+        services.AddSingleton(new ClientPoolConfiguration
+        {
+            MaxSize = configuration.GetValue<int>("SSE:InMemoryClientPoolSize")
+        });
+        services.AddSingleton<IClientPool, InMemoryClientPool>();
     }
     
-    public static void AddLogging(this IServiceCollection services)
-    {
-        services.AddLogging(builder =>
-        {
-            builder.AddJsonConsole(config => 
-            {
-#if DEBUG   
-                    config.JsonWriterOptions = new JsonWriterOptions
-                    {
-                        Indented = true
-                    };
-#endif
-            });
-        });
-    }
-
-
 }

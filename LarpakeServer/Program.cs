@@ -1,7 +1,5 @@
 using LarpakeServer.Extensions;
-using LarpakeServer.Helpers;
 using Scalar.AspNetCore;
-using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 

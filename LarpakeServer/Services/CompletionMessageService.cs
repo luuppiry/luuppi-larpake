@@ -2,7 +2,7 @@
 
 namespace LarpakeServer.Services;
 
-public class CompletionMessageService
+public class CompletionMessageService 
 {
     public void SendAttendanceCompletedMessage(AttendedCreated metadata)
     {

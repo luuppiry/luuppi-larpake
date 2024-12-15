@@ -1,113 +1,135 @@
 ﻿using LarpakeServer.Models.EventModels;
 using LarpakeServer.Services;
+using Microsoft.Extensions.Primitives;
 using System.Text.Json;
 
 namespace LarpakeServer.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/sse/[controller]")]
 public class SubscribeController : ControllerBase
 {
     readonly CompletionMessageService _messageService;
-    readonly ISubscriptionClientPool _clients;
+    readonly IClientPool _clients;
     readonly ILogger<SubscribeController> _logger;
-    readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = false };
-
+    static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = false };
 
     public SubscribeController(
-        CompletionMessageService service, 
-        ISubscriptionClientPool clients,
-        ILogger<SubscribeController> logger
-        )
+        CompletionMessageService service,
+        IClientPool clients,
+        ILogger<SubscribeController> logger)
     {
         _logger = logger;
-        _messageService = service;
         _clients = clients;
-
-        _messageService.TaskReceived += async (sender, e) =>
-        {
-            if (e.TargetClientId is not null)
-            {
-                var client = _clients.TryFind(e.TargetClientId.Value);
-                if (client is not null)
-                {
-                    await Message(client, e);
-                    return;
-                }
-            }
-            await MessageAll(e);
-        };
+        _messageService = service;
+        _messageService.TaskReceived += async (_, e)=> await HandleTask(e);
     }
 
-
-
-    [HttpGet]
-    public async Task Get()
-    {
-        Response.Headers.Append("Content-Type", "text/event-stream");
-        _clients.Add(Response, null);
-        while (HttpContext.RequestAborted.IsCancellationRequested is false)
-        {
-            await Task.Delay(1000);
-        }
-        _clients.Remove(Response);
-    }
 
     [HttpGet("{clientId}")]
-    public async Task Get(Guid clientId)
+    public async Task<IActionResult> Subscribe(Guid clientId, CancellationToken token)
     {
-        Response.Headers.Append("Content-Type", "text/event-stream");
-        _clients.Add(Response, clientId);
-        while (HttpContext.RequestAborted.IsCancellationRequested is false)
+        if (clientId == Guid.Empty)
         {
-            await Task.Delay(1000);
+            _logger.LogInformation("");
+            return BadRequest(new
+            {
+                Message = "Invalid client id",
+                Details = "Client id cannot be empty, to generate one see UUIDv7"
+            });
         }
-        _clients.Remove(Response);
+
+
+
+        // Add client to pool
+        var client = Response;
+        var insertStatus = _clients.Add(clientId, client);
+
+        if (insertStatus is not PoolInsertStatus.Success)
+        {
+            return insertStatus switch
+            {
+                PoolInsertStatus.Full => StatusCode(503, new
+                {
+                    Message = "Service Unavailable",
+                    Details = "Server is currently full, try again later"
+                }),
+                _ => throw new InvalidOperationException($"Invalid {nameof(PoolInsertStatus)}")
+            };
+        }
+
+
+        // Open SSE connection
+        Response.Headers.Append("Content-Type", "text/event-stream");
+
+
+        // Maintain connection
+        try
+        {
+            while (HttpContext.RequestAborted.IsCancellationRequested is false)
+            {
+                await Task.Delay(1000, token);
+            }
+        }
+        catch (TaskCanceledException) { }
+
+        // Close connection
+        if (_clients.Remove(clientId, client) is false)
+        {
+            _logger.LogWarning("Client {clientId} was not removed from the pool.", clientId);
+        }
+        return Ok();
     }
 
-
-
-
-    private async Task MessageAll(AttendedCreated e)
+    private async Task HandleTask(AttendedCreated e)
     {
-        object data = new
-        {
-            e.UserId,
-            e.EventId,
-            e.CompletionId,
-            Message = "Attendance completed"
-        };
-        var json = JsonSerializer.Serialize(data, _jsonOptions);
+        // jsonify event
+        var json = JsonSerializer.Serialize((Completed)e, _jsonOptions);
+
+        // validate json
         while (json.Contains("\n\n"))
         {
 #if DEBUG
             throw new InvalidOperationException(
-                "Message contains invalid characters");
+                "SSE Message contains invalid sequence of line breaks '\\n\\n'");
 #else
-            _logger.LogError("SSE Message contained invalid characters (2xline break): {json}", json);
+            _logger.LogWarning("SSE Message contained invalid sequence '\\n\\n': {json}", json);
             json = json.Replace("\n\n", "\n");
 #endif
         }
+
+        // format message
         var message = $"data: {json}\n\n";
 
-        foreach (var client in _clients.GetAll())
+        // find target client or message all
+        if (_clients.TryFind(e.TargetClientId, out var idClient))
         {
-            await client.WriteAsync(message);
-            await client.Body.FlushAsync();
+            await idClient.WriteAsync($"data: {json}\n\n");
+            await idClient.Body.FlushAsync();
+            return;
+        }
+
+        foreach (var nonIdClient in _clients.GetAll())
+        {
+            await nonIdClient.WriteAsync(message);
+            await nonIdClient.Body.FlushAsync();
         }
     }
 
-    private static async Task Message(HttpResponse client, AttendedCreated e)
+    class Completed
     {
-        object data = new
+        public required Guid UserId { get; init; }
+        public required long EventId { get; init; }
+        public required Guid CompletionId { get; init; }
+
+        public const string Status = Constants.CompletedStatusString;
+        public const string Message = "Attendance completed";
+
+        public static implicit operator Completed(AttendedCreated e) => new()
         {
-            e.UserId,
-            e.EventId,
-            e.CompletionId,
-            Message = "Attendance completed"
+            UserId = e.UserId,
+            EventId = e.EventId,
+            CompletionId = e.CompletionId
         };
-        var json = JsonSerializer.Serialize(data);
-        await client.WriteAsync($"data: {json}\n\n");
-        await client.Body.FlushAsync();
     }
 }
