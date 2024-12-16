@@ -10,7 +10,7 @@ namespace LarpakeServer.Controllers;
 public class SubscribeController : ControllerBase
 {
     readonly CompletionMessageService _messageService;
-    readonly IClientPool _clients;
+    readonly IClientPool _clientPool;
     readonly ILogger<SubscribeController> _logger;
     static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = false };
 
@@ -20,16 +20,16 @@ public class SubscribeController : ControllerBase
         ILogger<SubscribeController> logger)
     {
         _logger = logger;
-        _clients = clients;
+        _clientPool = clients;
         _messageService = service;
         _messageService.TaskReceived += async (_, e)=> await HandleTask(e);
     }
 
 
-    [HttpGet("{clientId}")]
-    public async Task<IActionResult> Subscribe(Guid clientId, CancellationToken token)
+    [HttpGet("{userId}")]
+    public async Task<IActionResult> Subscribe(Guid userId, CancellationToken token)
     {
-        if (clientId == Guid.Empty)
+        if (userId == Guid.Empty)
         {
             _logger.LogInformation("");
             return BadRequest(new
@@ -39,11 +39,9 @@ public class SubscribeController : ControllerBase
             });
         }
 
-
-
         // Add client to pool
         var client = Response;
-        var insertStatus = _clients.Add(clientId, client);
+        var insertStatus = _clientPool.Add(userId, client);
 
         if (insertStatus is not PoolInsertStatus.Success)
         {
@@ -74,9 +72,9 @@ public class SubscribeController : ControllerBase
         catch (TaskCanceledException) { }
 
         // Close connection
-        if (_clients.Remove(clientId, client) is false)
+        if (_clientPool.Remove(userId, client) is false)
         {
-            _logger.LogWarning("Client {clientId} was not removed from the pool.", clientId);
+            _logger.LogWarning("Client {clientId} was not removed from the pool.", userId);
         }
         return Ok();
     }
@@ -101,18 +99,17 @@ public class SubscribeController : ControllerBase
         // format message
         var message = $"data: {json}\n\n";
 
-        // find target client or message all
-        if (_clients.TryFind(e.TargetClientId, out var idClient))
-        {
-            await idClient.WriteAsync($"data: {json}\n\n");
-            await idClient.Body.FlushAsync();
-            return;
-        }
+        // Try find client from id, if not found send to all
+        HttpResponse[]? clients;
+        clients = _clientPool.TryFind(e.UserId, out clients) 
+            ? clients 
+            : _clientPool.GetAll();
 
-        foreach (var nonIdClient in _clients.GetAll())
+        // Send message to chosen clients
+        foreach (var client in clients)
         {
-            await nonIdClient.WriteAsync(message);
-            await nonIdClient.Body.FlushAsync();
+            await client.WriteAsync(message);
+            await client.Body.FlushAsync();
         }
     }
 

@@ -89,13 +89,11 @@ public class AttendanceDatabase(
                 INSERT INTO Attendances (
                     {nameof(Attendance.UserId)}, 
                     {nameof(Attendance.EventId)}, 
-                    {nameof(Attendance.CreationClientId)},
                     {nameof(Attendance.CompletionId)}
                 )
                 VALUES (
                     @{nameof(attendance.UserId)},
                     @{nameof(attendance.EventId)},
-                    @{nameof(attendance.CreationClientId)},
                     NULL
                 );
                 """);
@@ -114,7 +112,7 @@ public class AttendanceDatabase(
         }
     }
 
-    public async Task<Result<int>> UnComplete(Guid userId, long eventId)
+    public async Task<Result<int>> Uncomplete(Guid userId, long eventId)
     {
         if (userId == Guid.Empty)
         {
@@ -172,7 +170,10 @@ public class AttendanceDatabase(
             completion.Id = Guid.CreateVersion7();
 
             using var connection = await GetConnection();
-            Guid? creationClientId = await connection.QueryFirstOrDefaultAsync($"""
+
+            // This query inserts AttendanceCompletion only id event
+            // attendance with userId and eventId exists
+            await connection.QueryFirstOrDefaultAsync($"""
                 INSERT INTO AttendanceCompletions (
                     {nameof(AttendanceCompletion.Id)}, 
                     {nameof(AttendanceCompletion.SignerId)}, 
@@ -197,14 +198,10 @@ public class AttendanceDatabase(
                     {nameof(Attendance.LastModified)} = DATETIME('now')
                 )
                 WHERE {nameof(Attendance.UserId)} = @{nameof(completion.UserId)}
-                    AND {nameof(Attendance.EventId)} = @{nameof(completion.EventId)}
-                ;
-
-                SELECT {nameof(Attendance.CreationClientId)} FROM  ;
+                    AND {nameof(Attendance.EventId)} = @{nameof(completion.EventId)};
                 """, completion);
             return new AttendedCreated
             {
-                TargetClientId = creationClientId,
                 CompletionId = completion.Id,
                 EventId = completion.EventId,
                 UserId = completion.UserId,
@@ -242,7 +239,6 @@ public class AttendanceDatabase(
             CREATE TABLE IF NOT EXISTS EventAttendances (
                 {nameof(Attendance.UserId)} TEXT,
                 {nameof(Attendance.EventId)} INTEGER,
-                {nameof(Attendance.CreationClientId)} TEXT,
                 {nameof(Attendance.CompletionId)} INTEGER,
                 {nameof(Attendance.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(Attendance.LastModified)} DATETIME DEFAULT CURRENT_TIMESTAMP,

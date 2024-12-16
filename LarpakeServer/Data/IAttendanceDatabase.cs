@@ -10,5 +10,5 @@ public interface IAttendanceDatabase
     Task<Attendance[]> Get(AttendanceQueryOptions options);
     Task<Result<int>> InsertUncompleted(Attendance attendance);
     Task<Result<AttendedCreated>> Complete(AttendanceCompletionMetadata completion);
-    Task<Result<int>> UnComplete(Guid userId, long eventId);
+    Task<Result<int>> Uncomplete(Guid userId, long eventId);
 }

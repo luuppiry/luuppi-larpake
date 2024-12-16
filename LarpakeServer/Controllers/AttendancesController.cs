@@ -36,10 +36,10 @@ public class AttendancesController : ExtendedControllerBase
 
 
     [HttpPost]
-    public async Task<IActionResult> Post([FromBody] AttendancePostDto dto, [FromHeader] Guid? clientId)
+    public async Task<IActionResult> Post([FromBody] AttendancePostDto dto)
     {
         // TODO: Add client Guid
-        var record = Attendance.MapFrom(dto, clientId);
+        var record = Attendance.MapFrom(dto);
         Result<int> result = await _db.InsertUncompleted(record);
         if (result)
         {
@@ -63,9 +63,9 @@ public class AttendancesController : ExtendedControllerBase
     }
 
     [HttpPost("uncomplete")]
-    public async Task<IActionResult> Uncomplete([FromBody] UncomepletedPutDto dto)
+    public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
-        Result<int> result = await _db.UnComplete(dto.UserId, dto.EventId);
+        Result<int> result = await _db.Uncomplete(dto.UserId, dto.EventId);
         if (result)
         {
             return OkRowsAffected((int)result);
