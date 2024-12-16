@@ -9,5 +9,5 @@ public class SignaturePostDto
     public required Guid OwnerId { get; set; }
 
     [Required]
-    public required Image Signature { get; set; }
+    public required SvgMetadata Signature { get; set; }
 }

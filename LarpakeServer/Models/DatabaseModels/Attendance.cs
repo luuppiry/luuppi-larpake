@@ -6,7 +6,7 @@ public class Attendance
 {
     public required Guid UserId { get; set; }
     public required long EventId { get; set; }
-    public long? CompletionId { get; set; } = null;
+    public Guid? CompletionId { get; set; } = null;
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModified { get; set; }
     public AttendanceCompletion? Completion { get; set; } = null;

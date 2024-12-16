@@ -4,9 +4,19 @@ public class ExtendedControllerBase : ControllerBase
 {
     protected ObjectResult FromError<T>(Result<T> error)
     {
+        if (((Error)error) is DataError dataError)
+        {
+            return StatusCode(dataError.StatusCode, new {
+                dataError.Message,
+                dataError.Data,
+                dataError.DataKind
+                });
+        }
+
+
 #if DEBUG
         var (statusCode, message) = (Error)error;
-        return StatusCode(statusCode, new { Message = message, Exception = error });
+        return StatusCode(statusCode, new { Message = message, Exception = ((Error)error).Ex });
 #else
         var (statusCode, message) = (Error)error;
         return StatusCode(statusCode, message);

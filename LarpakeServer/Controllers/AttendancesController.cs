@@ -49,10 +49,10 @@ public class AttendancesController : ExtendedControllerBase
     }
 
     [HttpPost("complete")]
-    public async Task<IActionResult> Complete([FromBody] CompletedPutDto dto)
+    public async Task<IActionResult> Complete([FromBody] CompletedPutDto dto, [FromHeader] Guid userId)
     {
         // TODO: Add user Guid
-        var record = AttendanceCompletionMetadata.From(dto, Guid.Empty);
+        var record = AttendanceCompletionMetadata.From(dto, userId);
         Result<AttendedCreated> result = await _db.Complete(record);
         if (result)
         {

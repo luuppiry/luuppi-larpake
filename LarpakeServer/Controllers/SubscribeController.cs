@@ -34,8 +34,8 @@ public class SubscribeController : ControllerBase
             _logger.LogInformation("");
             return BadRequest(new
             {
-                Message = "Invalid client id",
-                Details = "Client id cannot be empty, to generate one see UUIDv7"
+                Message = "Invalid user id",
+                Details = "User id cannot be empty"
             });
         }
 
@@ -50,7 +50,7 @@ public class SubscribeController : ControllerBase
                 PoolInsertStatus.Full => StatusCode(503, new
                 {
                     Message = "Service Unavailable",
-                    Details = "Server is currently full, try again later"
+                    Details = "SSE server is currently full, try again later"
                 }),
                 _ => throw new InvalidOperationException($"Invalid {nameof(PoolInsertStatus)}")
             };
@@ -69,7 +69,9 @@ public class SubscribeController : ControllerBase
                 await Task.Delay(1000, token);
             }
         }
-        catch (TaskCanceledException) { }
+        catch (TaskCanceledException) 
+        { 
+        }
 
         // Close connection
         if (_clientPool.Remove(userId, client) is false)

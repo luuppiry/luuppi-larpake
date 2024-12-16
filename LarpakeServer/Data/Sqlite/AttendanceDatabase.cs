@@ -66,7 +66,7 @@ public class AttendanceDatabase(
             OFFSET @{nameof(options.PageOffset)};
             """);
 
-        string str = query.ToString(); 
+        string str = query.ToString();
         using var connection = await GetConnection();
         var records = await connection.QueryAsync<Attendance, AttendanceCompletion?, Attendance>(query.ToString(),
             (attendance, completion) =>
@@ -86,7 +86,7 @@ public class AttendanceDatabase(
         try
         {
             return await connection.ExecuteAsync($"""
-                INSERT INTO Attendances (
+                INSERT INTO EventAttendances (
                     {nameof(Attendance.UserId)}, 
                     {nameof(Attendance.EventId)}, 
                     {nameof(Attendance.CompletionId)}
@@ -96,7 +96,7 @@ public class AttendanceDatabase(
                     @{nameof(attendance.EventId)},
                     NULL
                 );
-                """);
+                """, attendance);
         }
         catch (SqliteException ex)
         {
@@ -125,8 +125,8 @@ public class AttendanceDatabase(
 
         try
         {
-            using var connection = await GetConnection();
-            return await connection.ExecuteAsync($"""
+
+            string query = $"""
                 DELETE FROM AttendanceCompletions
                     WHERE {nameof(AttendanceCompletion.Id)} IN (
                         SELECT {nameof(Attendance.CompletionId)} FROM EventAttendances
@@ -134,13 +134,15 @@ public class AttendanceDatabase(
                             AND {nameof(Attendance.EventId)} = @{nameof(eventId)}
                 );
 
-                UPDATE Attendances SET
-                    {nameof(Attendance.UserId)} = @{nameof(userId)}, 
-                    {nameof(Attendance.EventId)} = @{nameof(eventId)}, 
+                UPDATE EventAttendances 
+                SET
                     {nameof(Attendance.CompletionId)} = NULL,
                     {nameof(Attendance.LastModified)} = DATETIME('now')
-                );
-                """, new { userId, eventId });
+                WHERE {nameof(Attendance.UserId)} = @{nameof(userId)}
+                    AND {nameof(Attendance.EventId)} = @{nameof(eventId)};
+                """;
+            using var connection = await GetConnection();
+            return await connection.ExecuteAsync(query, new { userId, eventId });
         }
         catch (SqliteException ex)
         {
@@ -164,6 +166,10 @@ public class AttendanceDatabase(
         {
             return Error.BadRequest("EventId cannot be -1.");
         }
+        if (completion.SignerId == Guid.Empty)
+        {
+            return Error.BadRequest("SignerId cannot be null.");
+        }
 
         try
         {
@@ -173,33 +179,52 @@ public class AttendanceDatabase(
 
             // This query inserts AttendanceCompletion only id event
             // attendance with userId and eventId exists
-            await connection.QueryFirstOrDefaultAsync($"""
+            var (completionId, attendanceExists) = await connection.QueryFirstOrDefaultAsync<(Guid? Id, bool RecordExists)>($"""
+                SELECT
+                    {nameof(Attendance.CompletionId)} AS Id,
+                    TRUE AS RecordExists
+                FROM EventAttendances
+                WHERE {nameof(Attendance.UserId)} = @{nameof(completion.UserId)}
+                    AND {nameof(Attendance.EventId)} = @{nameof(completion.EventId)}
+                LIMIT 1;
+                """, completion);
+
+            if (attendanceExists && completionId is not null)
+            {
+                // If attendance is already completed
+                return DataError.AlreadyExistsNoError(
+                    completionId.Value, 
+                    nameof(AttendedCreated.CompletionId),
+                    $"Attendance is already completed, completion id in response body.");
+            }
+
+            if (attendanceExists is false)
+            {
+                return Error.NotFound("Attendance with given userId and eventId not found");
+            }
+
+            int rowsAffected = await connection.ExecuteAsync($"""
                 INSERT INTO AttendanceCompletions (
                     {nameof(AttendanceCompletion.Id)}, 
                     {nameof(AttendanceCompletion.SignerId)}, 
                     {nameof(AttendanceCompletion.SignatureId)},
                     {nameof(AttendanceCompletion.CompletionTimeUtc)}
                 )
-                SELECT
+                VALUES (
                     @{nameof(completion.Id)},
                     @{nameof(completion.SignerId)},
                     @{nameof(completion.SignatureId)},
-                    @{nameof(completion.CompletionTimeUtc)},
-                WHERE EXISTS (
-                    SELECT 1 FROM EventAttendances
-                    WHERE {nameof(Attendance.UserId)} = @{nameof(completion.UserId)}
-                        AND {nameof(Attendance.EventId)} = @{nameof(completion.EventId)}
-                    LIMIT 1
-                );
-
+                    @{nameof(completion.CompletionTimeUtc)}
+                ); 
+                
                 UPDATE EventAttendances 
                 SET
                     {nameof(Attendance.CompletionId)} = @{nameof(completion.Id)}, 
                     {nameof(Attendance.LastModified)} = DATETIME('now')
-                )
                 WHERE {nameof(Attendance.UserId)} = @{nameof(completion.UserId)}
                     AND {nameof(Attendance.EventId)} = @{nameof(completion.EventId)};
                 """, completion);
+
             return new AttendedCreated
             {
                 CompletionId = completion.Id,
@@ -225,7 +250,7 @@ public class AttendanceDatabase(
     {
         await connection.ExecuteAsync($"""
             CREATE TABLE IF NOT EXISTS AttendanceCompletions (
-                {nameof(AttendanceCompletion.Id)} INTEGER,
+                {nameof(AttendanceCompletion.Id)} TEXT,
                 {nameof(AttendanceCompletion.SignerId)} NOT NULL,
                 {nameof(AttendanceCompletion.SignatureId)} TEXT,
                 {nameof(AttendanceCompletion.CompletionTimeUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -239,13 +264,13 @@ public class AttendanceDatabase(
             CREATE TABLE IF NOT EXISTS EventAttendances (
                 {nameof(Attendance.UserId)} TEXT,
                 {nameof(Attendance.EventId)} INTEGER,
-                {nameof(Attendance.CompletionId)} INTEGER,
+                {nameof(Attendance.CompletionId)} TEXT,
                 {nameof(Attendance.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(Attendance.LastModified)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY ({nameof(Attendance.UserId)}, {nameof(Attendance.EventId)}),
                 FOREIGN KEY ({nameof(Attendance.UserId)}) REFERENCES Users({nameof(User.Id)}),
                 FOREIGN KEY ({nameof(Attendance.EventId)}) REFERENCES Events({nameof(Event.Id)}),
-                FOREIGN KEY ({nameof(Attendance.CompletionId)}) REFERENCES Events({nameof(AttendanceCompletion.Id)})
+                FOREIGN KEY ({nameof(Attendance.CompletionId)}) REFERENCES AttendanceCompletions({nameof(AttendanceCompletion.Id)})
             );
             """);
     }

@@ -11,9 +11,9 @@ public class AttendanceCompletionMetadata : AttendanceCompletion
     {
         return new AttendanceCompletionMetadata
         {
+            Id = Guid.Empty,
             UserId = dto.UserId,
             EventId = dto.EventId,
-            Id = Guid.Empty,
             SignerId = signerId,
             SignatureId = dto.SignatureId,
             CompletionTimeUtc = dto.CompletionDateUtc,
