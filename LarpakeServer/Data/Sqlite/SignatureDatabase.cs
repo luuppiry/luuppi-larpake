@@ -20,7 +20,7 @@ public class SignatureDatabase(SqliteConnectionString connectionString, UserData
                 """);
         }
         query.AppendLine($"""
-            ORDER BY {nameof(Signature.UserId)} ASC, {nameof(Signature.CreatedUtc)} DESC
+            ORDER BY {nameof(Signature.UserId)} ASC, {nameof(Signature.CreatedAt)} DESC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);
@@ -88,7 +88,7 @@ public class SignatureDatabase(SqliteConnectionString connectionString, UserData
                 {nameof(Signature.LineWidth)} INTEGER DEFAULT 2,
                 {nameof(Signature.StrokeStyle)} TEXT,
                 {nameof(Signature.LineCap)} TEXT,
-                {nameof(Signature.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(Signature.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY ({nameof(Signature.Id)}),
                 FOREIGN KEY ({nameof(Signature.UserId)}) REFERENCES Users({nameof(User.Id)})
             );

@@ -12,5 +12,5 @@ public class CompletedPutDto
 
     public Guid? SignatureId { get; set; } = null;
 
-    public DateTime CompletionDateUtc { get; set; } = DateTime.UtcNow;
+    public DateTime CompletedAt { get; set; } = DateTime.UtcNow;
 }

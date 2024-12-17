@@ -11,6 +11,7 @@ using LarpakeServer.Services;
 
 namespace LarpakeServer.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AttendancesController : ExtendedControllerBase
@@ -18,7 +19,10 @@ public class AttendancesController : ExtendedControllerBase
     private readonly IAttendanceDatabase _db;
     private readonly CompletionMessageService _messageService;
 
-    public AttendancesController(IAttendanceDatabase db, CompletionMessageService messageService)
+    public AttendancesController(
+        IAttendanceDatabase db, 
+        CompletionMessageService messageService,
+        ILogger<AttendancesController> logger) : base(logger)
     {
         _db = db;
         _messageService = messageService;

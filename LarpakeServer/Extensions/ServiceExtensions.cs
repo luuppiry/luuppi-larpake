@@ -1,5 +1,7 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Data.Sqlite;
+using LarpakeServer.Data.Sqlite.TypeHandlers;
+using LarpakeServer.Identity;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
 
@@ -24,6 +26,7 @@ public static class ServiceExtensions
     {
         services.AddSingleton(new SqliteConnectionString(configuration["ConnectionStrings:Sqlite"]!));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
+        SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
         
         services.AddSingleton<IEventDatabase, EventDatabase>();
         services.AddSingleton<EventDatabase>();
@@ -45,6 +48,7 @@ public static class ServiceExtensions
             MaxSize = configuration.GetValue<int>("SSE:InMemoryClientPoolSize")
         });
         services.AddSingleton<IClientPool, InMemoryClientPool>();
+        services.AddSingleton<TokenService>();
     }
     
 }

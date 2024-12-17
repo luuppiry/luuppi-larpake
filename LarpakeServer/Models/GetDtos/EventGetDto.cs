@@ -12,8 +12,8 @@ public class EventGetDto
     public required string Location { get; set; }
     public string? WebsiteUrl { get; set; } = null;
     public string? ImageUrl { get; set; } = null;
-    public DateTime CreatedUtc { get; set; }
-    public DateTime LastModifiedUtc { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
     public SoftDeletionInfo? SoftDeletionInfo { get; set; } = null;
 
     internal static EventGetDto From(Event record)
@@ -23,16 +23,16 @@ public class EventGetDto
             Id = record.Id,
             Title = record.Title,
             Body = record.Body,
-            StartTimeUtc = record.StartTimeUtc,
-            EndTimeUtc = record.EndTimeUtc,
+            StartTimeUtc = record.StartsAt,
+            EndTimeUtc = record.EndsAt,
             Location = record.Location,
             WebsiteUrl = record.WebsiteUrl,
             ImageUrl = record.ImageUrl,
-            CreatedUtc = record.CreatedUtc,
-            LastModifiedUtc = record.LastModifiedUtc,
+            CreatedAt = record.CreatedAt,
+            UpdatedAt = record.UpdatedAt,
 
-            SoftDeletionInfo = record.TimeDeletedUtc.HasValue
-                ? new SoftDeletionInfo(record.TimeDeletedUtc.Value) : null
+            SoftDeletionInfo = record.DeletedAt.HasValue
+                ? new SoftDeletionInfo(record.DeletedAt.Value) : null
         };
     }
 }

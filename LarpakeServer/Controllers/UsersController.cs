@@ -9,13 +9,14 @@ using User_ = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ExtendedControllerBase
 {
     private readonly IUserDatabase _db;
 
-    public UsersController(IUserDatabase db)
+    public UsersController(IUserDatabase db, ILogger<UsersController> logger) : base(logger)
     {
         _db = db;
     }
@@ -50,6 +51,7 @@ public class UsersController : ExtendedControllerBase
         Result<Guid> result = await _db.Insert(record);
         if (result)
         {
+            _logger.LogInformation("Created new user {id}", (Guid)result);
             return CreatedId((Guid)result);
         }
         return FromError(result);

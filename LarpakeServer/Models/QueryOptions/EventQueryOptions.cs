@@ -4,8 +4,8 @@ namespace LarpakeServer.Models.QueryOptions;
 
 public class EventQueryOptions : QueryOptions
 {
-    public DateTime? BeforeUtc { get; set; } = null;
-    public DateTime? AfterUtc { get; set; } = null;
+    public DateTime? Before { get; set; } = null;
+    public DateTime? After { get; set; } = null;
 
     [MinLength(3)]
     [MaxLength(30)]
@@ -14,8 +14,8 @@ public class EventQueryOptions : QueryOptions
 
     public override bool HasNonNullValues()
     {
-        return BeforeUtc is not null 
-            || AfterUtc is not null 
+        return Before is not null 
+            || After is not null 
             || Title is not null;
     }
 }

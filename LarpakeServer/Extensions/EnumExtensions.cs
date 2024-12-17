@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models;
+﻿using LarpakeServer.Identity;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LarpakeServer.Extensions;
 
@@ -18,4 +19,16 @@ public static class EnumExtensions
     {
         return (permissions & value) == value;
     }
+
+    public static bool TryConvertPermissions(string? value, [NotNullWhen(true)]out Permissions? result) 
+    {
+        if (int.TryParse(value, out int raw))
+        {
+            result = (Permissions)raw;
+            return true;
+        }
+        result = null;
+        return false;
+    }
+
 }

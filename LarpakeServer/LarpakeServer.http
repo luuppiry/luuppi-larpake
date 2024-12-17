@@ -1,6 +1,21 @@
 @LarpakeServer_HostAddress = http://localhost:5190
+@Api = {{LarpakeServer_HostAddress}}/api
 
 GET {{LarpakeServer_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{api}}/users/
+Accept: application/json
+
+###
+
+POST {{api}}/users/
+Content-Type: application/json
+{
+  "startYear": 2024
+}
+
+###
+

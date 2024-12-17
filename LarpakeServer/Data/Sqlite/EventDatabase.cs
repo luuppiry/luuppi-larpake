@@ -14,22 +14,22 @@ public class EventDatabase(SqliteConnectionString connectionString, UserDatabase
 
         query.AppendLine($"""
             SELECT * FROM Events
-            WHERE {nameof(Event.TimeDeletedUtc)} IS NULL
+            WHERE {nameof(Event.DeletedAt)} IS NULL
             """);
 
         // Add filters
-        if (options.AfterUtc is not null)
+        if (options.After is not null)
         {
             // Start time is after given time
             query.AppendLine($"""
-                AND {nameof(Event.StartTimeUtc)} >= @{nameof(options.AfterUtc)} 
+                AND {nameof(Event.StartsAt)} >= @{nameof(options.After)} 
                 """);
         }
-        if (options.BeforeUtc is not null)
+        if (options.Before is not null)
         {
             // Start time is before given time
             query.AppendLine($"""
-                AND {nameof(Event.StartTimeUtc)} <= @{nameof(options.BeforeUtc)} 
+                AND {nameof(Event.StartsAt)} <= @{nameof(options.Before)} 
                 """);
         }
         if (options.Title is not null)
@@ -41,7 +41,7 @@ public class EventDatabase(SqliteConnectionString connectionString, UserDatabase
         }
 
         query.Append($"""
-            ORDER BY {nameof(Event.StartTimeUtc)} ASC
+            ORDER BY {nameof(Event.StartsAt)} ASC
             LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)};
             """);
@@ -67,27 +67,27 @@ public class EventDatabase(SqliteConnectionString connectionString, UserDatabase
                 INSERT INTO Events (
                     {nameof(Event.Title)}, 
                     {nameof(Event.Body)}, 
-                    {nameof(Event.StartTimeUtc)},
-                    {nameof(Event.EndTimeUtc)}, 
+                    {nameof(Event.StartsAt)},
+                    {nameof(Event.EndsAt)}, 
                     {nameof(Event.Location)}, 
                     {nameof(Event.LuuppiRefId)},
                     {nameof(Event.WebsiteUrl)}, 
                     {nameof(Event.ImageUrl)}, 
                     {nameof(Event.CreatedBy)},
-                    {nameof(Event.LastModifiedBy)},
-                    {nameof(Event.TimeDeletedUtc)}
+                    {nameof(Event.UpdatedBy)},
+                    {nameof(Event.DeletedAt)}
                 ) 
                 Values (
                     @{nameof(Event.Title)},
                     @{nameof(Event.Body)},
-                    @{nameof(Event.StartTimeUtc)},
-                    @{nameof(Event.EndTimeUtc)},
+                    @{nameof(Event.StartsAt)},
+                    @{nameof(Event.EndsAt)},
                     @{nameof(Event.Location)},
                     @{nameof(Event.LuuppiRefId)},
                     @{nameof(Event.WebsiteUrl)},
                     @{nameof(Event.ImageUrl)},
                     @{nameof(Event.CreatedBy)},
-                    @{nameof(Event.LastModifiedBy)},
+                    @{nameof(Event.UpdatedBy)},
                     NULL
                 );
                 SELECT last_insert_rowid();
@@ -122,14 +122,14 @@ public class EventDatabase(SqliteConnectionString connectionString, UserDatabase
             SET 
                 {nameof(Event.Title)} = @{nameof(record.Title)},
                 {nameof(Event.Body)} = @{nameof(record.Body)},
-                {nameof(Event.StartTimeUtc)} = @{nameof(record.StartTimeUtc)},
-                {nameof(Event.EndTimeUtc)} = @{nameof(record.EndTimeUtc)},
+                {nameof(Event.StartsAt)} = @{nameof(record.StartsAt)},
+                {nameof(Event.EndsAt)} = @{nameof(record.EndsAt)},
                 {nameof(Event.Location)} = @{nameof(record.Location)},
                 {nameof(Event.LuuppiRefId)} = @{nameof(record.LuuppiRefId)},
                 {nameof(Event.WebsiteUrl)} = @{nameof(record.WebsiteUrl)},
                 {nameof(Event.ImageUrl)} = @{nameof(record.ImageUrl)},
-                {nameof(Event.LastModifiedBy)} = @{nameof(record.LastModifiedBy)},
-                {nameof(Event.LastModifiedUtc)} = DATETIME('now')
+                {nameof(Event.UpdatedBy)} = @{nameof(record.UpdatedBy)},
+                {nameof(Event.UpdatedAt)} = DATETIME('now')
             WHERE 
                 {nameof(Event.Id)} = @{nameof(record.Id)};
             """, record);
@@ -141,9 +141,9 @@ public class EventDatabase(SqliteConnectionString connectionString, UserDatabase
         return await connection.ExecuteAsync($"""
             UPDATE Events 
             SET 
-                {nameof(Event.TimeDeletedUtc)} = DATETIME('now'),
-                {nameof(Event.LastModifiedUtc)} = DATETIME('now'),
-                {nameof(Event.LastModifiedBy)} = @{nameof(modifyingUser)}
+                {nameof(Event.DeletedAt)} = DATETIME('now'),
+                {nameof(Event.UpdatedAt)} = DATETIME('now'),
+                {nameof(Event.UpdatedBy)} = @{nameof(modifyingUser)}
             WHERE 
                 {nameof(Event.Id)} = @{nameof(eventId)};
             """, new { eventId, modifyingUser });
@@ -156,19 +156,19 @@ public class EventDatabase(SqliteConnectionString connectionString, UserDatabase
                 {nameof(Event.Id)} INTEGER,
                 {nameof(Event.Title)} TEXT NOT NULL,
                 {nameof(Event.Body)} TEXT,
-                {nameof(Event.StartTimeUtc)} DATETIME NOT NULL,
-                {nameof(Event.EndTimeUtc)} DATETIME DEFAULT NULL,
+                {nameof(Event.StartsAt)} DATETIME NOT NULL,
+                {nameof(Event.EndsAt)} DATETIME DEFAULT NULL,
                 {nameof(Event.Location)} TEXT NOT NULL,
                 {nameof(Event.ImageUrl)} TEXT,
                 {nameof(Event.LuuppiRefId)} INTEGER,
                 {nameof(Event.WebsiteUrl)} TEXT,
                 {nameof(Event.CreatedBy)} TEXT NOT NULL,
-                {nameof(Event.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(Event.LastModifiedBy)} TEXT NOT NULL,
-                {nameof(Event.LastModifiedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(Event.TimeDeletedUtc)} DATETIME,
+                {nameof(Event.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(Event.UpdatedBy)} TEXT NOT NULL,
+                {nameof(Event.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(Event.DeletedAt)} DATETIME,
                 FOREIGN KEY({nameof(Event.CreatedBy)}) REFERENCES Users({nameof(User.Id)}),
-                FOREIGN KEY({nameof(Event.LastModifiedBy)}) REFERENCES Users({nameof(User.Id)}),
+                FOREIGN KEY({nameof(Event.UpdatedBy)}) REFERENCES Users({nameof(User.Id)}),
                 PRIMARY KEY({nameof(Event.Id)})
             )
             """);

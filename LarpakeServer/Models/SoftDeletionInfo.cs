@@ -13,7 +13,7 @@ public class SoftDeletionInfo
     [SetsRequiredMembers]
     public SoftDeletionInfo(DateTime timeDeletedUtc)
     {
-        TimeDeletedUtc = timeDeletedUtc;
+        DeletedAt = timeDeletedUtc;
     }
 
     [SetsRequiredMembers]
@@ -23,6 +23,6 @@ public class SoftDeletionInfo
     }
 
     public readonly bool IsDeleted = true;
-    public required DateTime TimeDeletedUtc { get; init; }
+    public required DateTime DeletedAt { get; init; }
     public string Reason { get; init; } = "This item was deleted.";
 }

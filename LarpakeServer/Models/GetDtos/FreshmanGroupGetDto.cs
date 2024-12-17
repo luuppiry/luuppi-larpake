@@ -8,7 +8,9 @@ public class FreshmanGroupGetDto
     public required string Name { get; set; }
     public int? StartYear { get; set; } = null;
     public int? GroupNumber { get; set; } = null;
-    public List<Guid>? MemberIds { get; set; } = [];
+    public List<Guid>? Members { get; set; } = [];
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
     internal static FreshmanGroupGetDto From(FreshmanGroup group)
     {
@@ -18,7 +20,7 @@ public class FreshmanGroupGetDto
             Name = group.Name,
             StartYear = group.StartYear,
             GroupNumber = group.GroupNumber,
-            MemberIds = group.Members
+            Members = group.Members
         };
     }
 }

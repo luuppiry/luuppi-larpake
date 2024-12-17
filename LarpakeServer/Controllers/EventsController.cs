@@ -8,13 +8,14 @@ using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class EventsController : ExtendedControllerBase
 {
     private readonly IEventDatabase _db;
 
-    public EventsController(IEventDatabase db)
+    public EventsController(IEventDatabase db, ILogger<EventsController> logger) : base(logger)
     {
         _db = db;
     }
@@ -59,8 +60,9 @@ public class EventsController : ExtendedControllerBase
     [HttpPut("{eventId}")]
     public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] EventPutDto dto)
     {
+        
         // TODO: Add user Guid
-        var record = Event.MapFrom(dto, Guid.Empty);
+        var record = Event.MapFrom(dto, Guid.Empty, eventId);
         record.Id = eventId;
         Result<int> result = await _db.Update(record);
         if (result)

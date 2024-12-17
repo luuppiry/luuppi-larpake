@@ -63,5 +63,41 @@ public abstract class SqliteDbBase
 
 
 
+    protected class SelectQuery
+    {
+        readonly StringBuilder _builder = new();
+        bool hasWhere = false;
+
+        /// <summary>
+        /// Same as <see cref="StringBuilder.AppendLine(string?)"/>
+        /// </summary>
+        /// <param name="line"></param>
+        internal void AppendLine(string line) => _builder.AppendLine(line);
+
+        /// <summary>
+        /// Append a condition line to the query.
+        /// Automatically chooses whether to append WHERE or AND if already conditions appended.
+        /// </summary>
+        /// <param name="condition"></param>
+        internal void AppendConditionLine(string condition)
+        {
+            if (hasWhere is false)
+            {
+                _builder.Append("WHERE ");
+                hasWhere = true;
+            }
+            else
+            {
+                _builder.Append("AND ");
+            }
+            _builder.AppendLine(condition);
+        }
+        internal string Build()
+        {
+            return _builder.ToString();
+        }
+
+        public override string ToString() => Build();
+    }
 
 }

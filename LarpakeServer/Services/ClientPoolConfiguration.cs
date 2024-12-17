@@ -1,4 +1,4 @@
-﻿namespace LarpakeServer.Services.Implementations;
+﻿namespace LarpakeServer.Services;
 
 public record ClientPoolConfiguration(int MaxSize)
 {

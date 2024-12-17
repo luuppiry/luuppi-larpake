@@ -1,42 +1,44 @@
-﻿using LarpakeServer.Models;
+﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
-using System.Reflection.Metadata;
-using System.Text;
 
 namespace LarpakeServer.Data.Sqlite;
 
 public class UserDatabase(SqliteConnectionString connectionString)
     : SqliteDbBase(connectionString), IUserDatabase
 {
-
-
     public async Task<User[]> Get(UserQueryOptions options)
     {
-        StringBuilder query = new();
+        SelectQuery query = new();
         query.AppendLine($"""
-            SELECT * FROM Users
+            SELECT 
+                {nameof(User.Id)},
+                {nameof(User.Permissions)},
+                {nameof(User.StartYear)},
+                {nameof(User.CreatedAt)},
+                {nameof(User.UpdatedAt)}
+            FROM Users
             """);
 
         if (options.Permissions is not null)
         {
             /* TODO: Permissions are not as straightforward as this query
              * This works if main permission roles are only used */
-            query.AppendLine($"""
-                WHERE {nameof(User.Permissions)} >= @{nameof(options.Permissions)}
+            query.AppendConditionLine($"""
+                {nameof(User.Permissions)} >= @{nameof(options.Permissions)}
                 """);
         }
         if (options.StartedOnOrAfter is not null)
         {
-            query.AppendLine($"""
-                WHERE {nameof(User.StartYear)} >= @{nameof(options.StartedOnOrAfter)}
+            query.AppendConditionLine($"""
+                {nameof(User.StartYear)} >= @{nameof(options.StartedOnOrAfter)}
                 """);
         }
         if (options.StartedOnOrBefore is not null)
         {
-            query.AppendLine($"""
-                WHERE {nameof(User.StartYear)} <= @{nameof(options.StartedOnOrBefore)}
+            query.AppendConditionLine($"""
+                {nameof(User.StartYear)} <= @{nameof(options.StartedOnOrBefore)}
                 """);
         }
 
@@ -47,7 +49,7 @@ public class UserDatabase(SqliteConnectionString connectionString)
             """);
 
         using var connection = await GetConnection();
-        var records = await connection.QueryAsync<User>(query.ToString(), options);
+        var records = await connection.QueryAsync<User>(query.Build(), options);
         return records.ToArray();
     }
 
@@ -84,7 +86,7 @@ public class UserDatabase(SqliteConnectionString connectionString)
             SET
                 {nameof(User.Permissions)} = @{nameof(User.Permissions)},
                 {nameof(User.StartYear)} = @{nameof(User.StartYear)},
-                {nameof(User.LastModifiedUtc)} = DATETIME('now')
+                {nameof(User.UpdatedAt)} = DATETIME('now')
             WHERE {nameof(User.Id)} = @{nameof(User.Id)};
             """, record);
     }
@@ -101,7 +103,7 @@ public class UserDatabase(SqliteConnectionString connectionString)
             UPDATE Users 
             SET
                 {nameof(User.Permissions)} = @{nameof(permissions)},
-                {nameof(User.LastModifiedUtc)} = DATETIME('now')
+                {nameof(User.UpdatedAt)} = DATETIME('now')
             WHERE {nameof(User.Id)} = @{nameof(id)};
             """, new { id, permissions });
     }
@@ -116,19 +118,7 @@ public class UserDatabase(SqliteConnectionString connectionString)
 
 
 
-    protected override async Task InitializeAsync(SqliteConnection connection)
-    {
-        await connection.ExecuteAsync($"""
-            CREATE TABLE IF NOT EXISTS Users (
-                {nameof(User.Id)} TEXT,
-                {nameof(User.Permissions)} INTEGER NOT NULL DEFAULT 0,
-                {nameof(User.StartYear)} INTEGER,
-                {nameof(User.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(User.LastModifiedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY ({nameof(User.Id)})
-            );
-            """);
-    }
+
 
     private async Task<Result<Guid>> InsertRetriedRecursive(User record, int retriesLeft = 0)
     {
@@ -163,5 +153,57 @@ public class UserDatabase(SqliteConnectionString connectionString)
                     throw;
             }
         }
+    }
+
+    public async Task<bool> IsSameRefreshToken(Guid id, string token)
+    {
+        using var connection = await GetConnection();
+        string? validToken = await connection.QueryFirstOrDefaultAsync<string>($"""
+            SELECT {nameof(User.RefreshToken)} FROM Users WHERE {nameof(User.Id)} = @{nameof(id)};
+            """, new { id });
+        
+        if (validToken is null)
+        {
+            return false;
+        }
+        return validToken == token;
+    }
+
+    public async Task<bool> SetRefreshToken(Guid id, string token)
+    {
+        using var connection = await GetConnection();
+        int rowsAffected = await connection.ExecuteAsync($"""
+            UPDATE Users 
+            SET {nameof(User.RefreshToken)} = @{nameof(token)}
+            WHERE {nameof(User.Id)} = @{nameof(id)};
+            """, new { id, token });
+        return rowsAffected > 0;
+    }
+
+    public async Task<int> RevokeRefreshToken(Guid id)
+    {
+        using var connection = await GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE Users 
+            SET {nameof(User.RefreshToken)} = NULL
+            WHERE {nameof(User.Id)} = @{nameof(id)};
+            """, new { id });
+    }
+
+
+
+    protected override async Task InitializeAsync(SqliteConnection connection)
+    {
+        await connection.ExecuteAsync($"""
+            CREATE TABLE IF NOT EXISTS Users (
+                {nameof(User.Id)} TEXT,
+                {nameof(User.Permissions)} INTEGER NOT NULL DEFAULT 0,
+                {nameof(User.StartYear)} INTEGER,
+                {nameof(User.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(User.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(User.RefreshToken)} TEXT,
+                PRIMARY KEY ({nameof(User.Id)})
+            );
+            """);
     }
 }

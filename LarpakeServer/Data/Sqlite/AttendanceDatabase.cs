@@ -16,51 +16,50 @@ public class AttendanceDatabase(
 
     public async Task<Attendance[]> Get(AttendanceQueryOptions options)
     {
-        StringBuilder query = new();
+        SelectQuery query = new();
         query.AppendLine($"""
             SELECT * FROM EventAttendances a
             LEFT JOIN AttendanceCompletions c
                 ON a.{nameof(Attendance.CompletionId)} = c.{nameof(AttendanceCompletion.Id)}
-            WHERE TRUE
             """);
 
         if (options.UserId is not null)
         {
-            query.AppendLine($"""
-                AND {nameof(Attendance.UserId)} = @{nameof(options.UserId)}
+            query.AppendConditionLine($"""
+                {nameof(Attendance.UserId)} = @{nameof(options.UserId)}
                 """);
         }
         if (options.EventId is not null)
         {
-            query.AppendLine($"""
-                AND {nameof(Attendance.EventId)} = @{nameof(options.EventId)}
+            query.AppendConditionLine($"""
+                {nameof(Attendance.EventId)} = @{nameof(options.EventId)}
                 """);
         }
         if (options.IsCompleted is true)
         {
-            query.AppendLine($"""
-                AND {nameof(Attendance.CompletionId)} IS NOT NULL
+            query.AppendConditionLine($"""
+                {nameof(Attendance.CompletionId)} IS NOT NULL
                 """);
         }
         if (options.IsCompleted is false)
         {
-            query.AppendLine($"""
-                AND {nameof(Attendance.CompletionId)} IS NULL
+            query.AppendConditionLine($"""
+                {nameof(Attendance.CompletionId)} IS NULL
                 """);
         }
-        if (options.AfterUtc is not null)
+        if (options.After is not null)
         {
-            query.AppendLine($"""
-                AND {nameof(Attendance.CreatedUtc)} >= @{nameof(options.AfterUtc)}
+            query.AppendConditionLine($"""
+                {nameof(Attendance.CreatedAt)} >= @{nameof(options.After)}
                 """);
         }
-        if (options.BeforeUtc is not null)
+        if (options.Before is not null)
         {
-            query.AppendLine($"""
-                AND {nameof(Attendance.CreatedUtc)} <= @{nameof(options.BeforeUtc)}
+            query.AppendConditionLine($"""
+                {nameof(Attendance.CreatedAt)} <= @{nameof(options.Before)}
                 """);
         }
-        query.Append($"""
+        query.AppendLine($"""
             ORDER BY {nameof(Attendance.EventId)} ASC, {nameof(Attendance.CompletionId)} ASC NULLS LAST 
             LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)};
@@ -137,7 +136,7 @@ public class AttendanceDatabase(
                 UPDATE EventAttendances 
                 SET
                     {nameof(Attendance.CompletionId)} = NULL,
-                    {nameof(Attendance.LastModified)} = DATETIME('now')
+                    {nameof(Attendance.UpdatedAt)} = DATETIME('now')
                 WHERE {nameof(Attendance.UserId)} = @{nameof(userId)}
                     AND {nameof(Attendance.EventId)} = @{nameof(eventId)};
                 """;
@@ -220,7 +219,7 @@ public class AttendanceDatabase(
                 UPDATE EventAttendances 
                 SET
                     {nameof(Attendance.CompletionId)} = @{nameof(completion.Id)}, 
-                    {nameof(Attendance.LastModified)} = DATETIME('now')
+                    {nameof(Attendance.UpdatedAt)} = DATETIME('now')
                 WHERE {nameof(Attendance.UserId)} = @{nameof(completion.UserId)}
                     AND {nameof(Attendance.EventId)} = @{nameof(completion.EventId)};
                 """, completion);
@@ -254,8 +253,8 @@ public class AttendanceDatabase(
                 {nameof(AttendanceCompletion.SignerId)} NOT NULL,
                 {nameof(AttendanceCompletion.SignatureId)} TEXT,
                 {nameof(AttendanceCompletion.CompletionTimeUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(AttendanceCompletion.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(AttendanceCompletion.LastModifiedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(AttendanceCompletion.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(AttendanceCompletion.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY ({nameof(AttendanceCompletion.Id)}),
                 FOREIGN KEY ({nameof(AttendanceCompletion.SignerId)}) REFERENCES Users({nameof(User.Id)}),
                 FOREIGN KEY ({nameof(AttendanceCompletion.SignatureId)}) REFERENCES Signatures({nameof(Signature.Id)})
@@ -265,8 +264,8 @@ public class AttendanceDatabase(
                 {nameof(Attendance.UserId)} TEXT,
                 {nameof(Attendance.EventId)} INTEGER,
                 {nameof(Attendance.CompletionId)} TEXT,
-                {nameof(Attendance.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(Attendance.LastModified)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(Attendance.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(Attendance.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY ({nameof(Attendance.UserId)}, {nameof(Attendance.EventId)}),
                 FOREIGN KEY ({nameof(Attendance.UserId)}) REFERENCES Users({nameof(User.Id)}),
                 FOREIGN KEY ({nameof(Attendance.EventId)}) REFERENCES Events({nameof(Event.Id)}),

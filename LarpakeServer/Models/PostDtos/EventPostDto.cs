@@ -13,9 +13,8 @@ public class EventPostDto
     public string Body { get; set; } = string.Empty;
 
     [Required]
-    public required DateTime StartTimeUtc { get; set; }
-
-    public DateTime? EndTimeUtc { get; set; } = null;
+    public required DateTime StartsAt { get; set; }
+    public DateTime? EndsAt { get; set; } = null;
 
     [Required]
     [MaxLength(70)]

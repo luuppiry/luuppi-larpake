@@ -13,7 +13,7 @@ public class FreshmanGroupDatabase(
 
     public async Task<FreshmanGroup[]> Get(FreshmanGroupQueryOptions options)
     {
-        StringBuilder query = new();
+        SelectQuery query = new();
 
         bool searchUser = options.ContainsUser is not null;
         bool doJoins = searchUser || options.DoMinimize is false;
@@ -30,25 +30,24 @@ public class FreshmanGroupDatabase(
                     ON fg.{nameof(FreshmanGroup.Id)} = fgm.{FGM_GroupId}
                 LEFT JOIN Users u 
                     ON fgm.{FGM_UserId} = u.{nameof(User.Id)}
-                WHERE TRUE
                 """);
         }
         if (searchUser)
         {
-            query.AppendLine($"""
-                AND u.{nameof(User.Id)} = @{nameof(options.ContainsUser)}
+            query.AppendConditionLine($"""
+                u.{nameof(User.Id)} = @{nameof(options.ContainsUser)}
                 """);
         }
         if (options.GroupName is not null)
         {
-            query.AppendLine($"""
-                AND fg.{nameof(FreshmanGroup.Name)} LIKE %@{nameof(options.GroupName)}%
+            query.AppendConditionLine($"""
+                fg.{nameof(FreshmanGroup.Name)} LIKE %@{nameof(options.GroupName)}%
                 """);
         }
         if (options.StartYear is not null)
         {
-            query.AppendLine($"""
-                AND fg.{nameof(FreshmanGroup.StartYear)} = @{nameof(options.StartYear)}
+            query.AppendConditionLine($"""
+                fg.{nameof(FreshmanGroup.StartYear)} = @{nameof(options.StartYear)}
                 """);
         }
 
@@ -169,7 +168,7 @@ public class FreshmanGroupDatabase(
                 {nameof(FreshmanGroup.Name)} = @{nameof(FreshmanGroup.Name)},
                 {nameof(FreshmanGroup.StartYear)} = @{nameof(FreshmanGroup.StartYear)},
                 {nameof(FreshmanGroup.GroupNumber)} = @{nameof(FreshmanGroup.GroupNumber)},
-                {nameof(FreshmanGroup.LastModifiedUtc)} = DATETIME('now')
+                {nameof(FreshmanGroup.UpdatedAt)} = DATETIME('now')
             WHERE {nameof(FreshmanGroup.Id)} = @{nameof(FreshmanGroup.Id)};
             """, record);
     }
@@ -209,8 +208,8 @@ public class FreshmanGroupDatabase(
                 {nameof(FreshmanGroup.Name)} TEXT UNIQUE,
                 {nameof(FreshmanGroup.StartYear)} INTEGER NOT NULL,
                 {nameof(FreshmanGroup.GroupNumber)} INTEGER,
-                {nameof(FreshmanGroup.CreatedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(FreshmanGroup.LastModifiedUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(FreshmanGroup.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(FreshmanGroup.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY ({nameof(FreshmanGroup.Id)})
             );
 

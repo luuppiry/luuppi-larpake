@@ -1,10 +1,10 @@
-﻿namespace LarpakeServer.Models;
+﻿namespace LarpakeServer.Identity;
 
 /// <summary>
 /// Enum flags representing different permissions.
-/// Normally use <see cref="Permissions.User"/>,
-/// <see cref="Permissions.Tutor"/> or <see cref="Permissions.Admin"/>.
-/// <see cref="Permissions.Sudo"/> is only for special occasions.
+/// Normally use <see cref="User"/>,
+/// <see cref="Tutor"/> or <see cref="Admin"/>.
+/// <see cref="Sudo"/> is only for special occasions.
 /// </summary>
 [Flags]
 public enum Permissions : int
@@ -111,9 +111,9 @@ public enum Permissions : int
     HardDeleteEvent = 1 << 30,
 
     #endregion SUDO_PERMISSIONS
-    
-    
-    
+
+
+
     /* YOU SHOULD NEVER SHIFT OVER 30 (with int)
      * (Sign bit is 1 << 31 so we will also not touch it for now) 
      */

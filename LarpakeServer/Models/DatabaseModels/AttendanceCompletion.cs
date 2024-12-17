@@ -1,6 +1,4 @@
-﻿using LarpakeServer.Models.PutDtos;
-
-namespace LarpakeServer.Models.DatabaseModels;
+﻿namespace LarpakeServer.Models.DatabaseModels;
 
 public class AttendanceCompletion
 {
@@ -8,6 +6,6 @@ public class AttendanceCompletion
     public required Guid SignerId { get; set; }
     public Guid? SignatureId { get; set; }
     public required DateTime CompletionTimeUtc { get; set; }
-    public DateTime CreatedUtc { get; set; }
-    public DateTime LastModifiedUtc { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

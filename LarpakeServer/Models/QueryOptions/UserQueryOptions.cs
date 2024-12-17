@@ -19,7 +19,7 @@ public class UserQueryOptions : QueryOptions
     
     public int? StartedOnOrAfter { get; set; } = null;
 
-    public Permissions? Permissions { get; set; } = null;
+    public int? Permissions { get; set; } = null;
 
     public override bool HasNonNullValues()
     {

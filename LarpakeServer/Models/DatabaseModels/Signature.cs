@@ -14,7 +14,7 @@ public class Signature
     public int LineWidth { get; set; } = 2;
     public string? StrokeStyle { get; set; }
     public string? LineCap { get; set; }
-    public DateTime CreatedUtc { get; set; }
+    public DateTime CreatedAt { get; set; }
 
     internal static Signature From(SignaturePostDto dto)
     {

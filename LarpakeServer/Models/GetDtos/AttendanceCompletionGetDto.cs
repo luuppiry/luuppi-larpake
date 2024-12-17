@@ -7,7 +7,9 @@ public class AttendanceCompletionGetDto
     public required Guid Id { get; set; }
     public required Guid SignerId { get; set; }
     public Guid? SignatureId { get; set; } = null;
-    public DateTime CompletionTimeUtc { get; set; }
+    public DateTime CompletionTime { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
     internal static AttendanceCompletionGetDto From(AttendanceCompletion completion)
     {
@@ -16,7 +18,7 @@ public class AttendanceCompletionGetDto
             Id = completion.Id,
             SignerId = completion.SignerId,
             SignatureId = completion.SignatureId,
-            CompletionTimeUtc = completion.CompletionTimeUtc
+            CompletionTime = completion.CompletionTimeUtc
         };
     }
 }

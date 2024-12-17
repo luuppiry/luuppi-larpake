@@ -10,13 +10,14 @@ using LarpakeServer.Models.QueryOptions;
 namespace LarpakeServer.Controllers;
 
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class GroupsController : ExtendedControllerBase
 {
     private readonly IFreshmanGroupDatabase _db;
 
-    public GroupsController(IFreshmanGroupDatabase db)
+    public GroupsController(IFreshmanGroupDatabase db, ILogger<GroupsController> logger) : base(logger)
     {
         _db = db;
     }

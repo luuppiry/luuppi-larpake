@@ -1,7 +1,16 @@
-﻿namespace LarpakeServer.Helpers;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+
+namespace LarpakeServer.Helpers;
 
 public class ExtendedControllerBase : ControllerBase
 {
+    protected ILogger<ExtendedControllerBase> _logger;
+
+    public ExtendedControllerBase(ILogger<ExtendedControllerBase>? logger = null)
+    {
+        _logger = logger ?? NullLogger<ExtendedControllerBase>.Instance;
+    }
+
     protected ObjectResult FromError<T>(Result<T> error)
     {
         if (((Error)error) is DataError dataError)
@@ -12,7 +21,6 @@ public class ExtendedControllerBase : ControllerBase
                 dataError.DataKind
                 });
         }
-
 
 #if DEBUG
         var (statusCode, message) = (Error)error;

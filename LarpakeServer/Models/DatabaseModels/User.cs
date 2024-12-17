@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.PostDtos;
+﻿using LarpakeServer.Identity;
+using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 
 namespace LarpakeServer.Models.DatabaseModels;
@@ -8,8 +9,9 @@ public class User
     public required Guid Id { get; set; }
     public Permissions Permissions { get; set; } = Permissions.None;
     public int? StartYear { get; set; } = null;
-    public DateTime CreatedUtc { get; set; }
-    public DateTime LastModifiedUtc { get; set; }
+    public string? RefreshToken { get; set; } = null;
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
     public static User MapFrom(UserPostDto dto)
     {

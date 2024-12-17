@@ -5,6 +5,7 @@ using System.Text.Json;
 
 namespace LarpakeServer.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/sse/[controller]")]
 public class SubscribeController : ControllerBase
@@ -83,6 +84,8 @@ public class SubscribeController : ControllerBase
 
     private async Task HandleTask(AttendedCreated e)
     {
+        _logger.LogInformation("New SSE message for user {userId}.", e.UserId);
+
         // jsonify event
         var json = JsonSerializer.Serialize((Completed)e, _jsonOptions);
 

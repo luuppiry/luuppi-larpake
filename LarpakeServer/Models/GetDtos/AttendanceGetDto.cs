@@ -7,6 +7,8 @@ public class AttendanceGetDto
     public required Guid UserId { get; set; }
     public required long EventId { get; set; }
     public AttendanceCompletionGetDto? Completed { get; set; } = null;
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 
     internal static AttendanceGetDto From(Attendance attendance)
     {

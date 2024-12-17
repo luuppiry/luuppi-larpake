@@ -7,13 +7,14 @@ using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SignaturesController : ExtendedControllerBase
 {
     private readonly ISignatureDatabase _db;
 
-    public SignaturesController(ISignatureDatabase db)
+    public SignaturesController(ISignatureDatabase db, ILogger<SignaturesController> logger) : base(logger) 
     {
         _db = db;
     }
