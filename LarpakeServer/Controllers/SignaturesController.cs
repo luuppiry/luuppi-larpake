@@ -19,10 +19,10 @@ public class SignaturesController : ExtendedControllerBase
     readonly int _signaturePointLimit;
 
     public SignaturesController(
-        ISignatureDatabase db, 
+        ISignatureDatabase db,
         ILogger<SignaturesController> logger,
         IConfiguration config,
-        IClaimsReader reader) : base(logger) 
+        IClaimsReader reader) : base(logger)
     {
         _db = db;
         _claimsReader = reader;
@@ -76,8 +76,8 @@ public class SignaturesController : ExtendedControllerBase
     public async Task<IActionResult> DeleteSignature(Guid signatureId)
     {
         // Validate only admins or signature owner can delete
-        var isValid = await RequireOwnOrAdmin(signatureId);
-        if (isValid is not null)
+        var isValid = await RequireOwnerOrAdmin(signatureId);
+        if (isValid.IsError)
         {
             return FromError(isValid);
         }
@@ -91,23 +91,30 @@ public class SignaturesController : ExtendedControllerBase
     }
 
 
-    private async Task<Result<bool>> RequireOwnOrAdmin(Guid signatureId)
+    private async Task<Result<bool>> RequireOwnerOrAdmin(Guid signatureId)
     {
-        // Null means no error
+
         Permissions userPermissions = _claimsReader.ReadAuthorizedUserPermissions(Request);
-        if (userPermissions.Has(Permissions.Admin) is false)
+        if (userPermissions.Has(Permissions.Admin))
         {
-            Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
-            Signature? signature = await _db.Get(signatureId);
-            if (signature is null)
-            {
-                return Error.NotFound("Id not found");
-            }
-            if (userId != signature?.UserId)
-            {
-                return Error.Unauthorized("Cannot delete unowned signature.");
-            }
+            // Is admin
+            return true;
         }
+
+        // Is not admin
+        Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+        Signature? signature = await _db.Get(signatureId);
+        if (signature is null)
+        {
+            // Signature does not even exist
+            return Error.NotFound("Id not found");
+        }
+        if (userId != signature?.UserId)
+        {
+            // Not owner
+            return Error.Unauthorized("Must be admin or signature owner.");
+        }
+        // Is owner
         return true;
     }
 

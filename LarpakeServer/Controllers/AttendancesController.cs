@@ -5,7 +5,6 @@ using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
 using LarpakeServer.Models.GetDtos;
-using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
@@ -43,11 +42,13 @@ public class AttendancesController : ExtendedControllerBase
     }
 
 
-    [HttpPost]
-    public async Task<IActionResult> Post([FromBody] AttendancePostDto dto)
+    [HttpPost("{eventId}")]
+    [RequiresPermissions(Permissions.AttendEvent)]
+    public async Task<IActionResult> Post(long eventId)
     {
-        // TODO: Add client Guid
-        var record = Attendance.MapFrom(dto);
+        Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+        var record = Attendance.MapFrom(eventId, userId);
+
         Result<int> result = await _db.InsertUncompleted(record);
         if (result)
         {
@@ -83,7 +84,4 @@ public class AttendancesController : ExtendedControllerBase
         }
         return FromError(result);
     }
-
-
-    
 }

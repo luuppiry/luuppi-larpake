@@ -20,7 +20,7 @@ public class GroupsController : ExtendedControllerBase
     private readonly IClaimsReader _reader;
 
     public GroupsController(
-        IFreshmanGroupDatabase db, 
+        IFreshmanGroupDatabase db,
         ILogger<GroupsController> logger,
         IClaimsReader reader) : base(logger)
     {
@@ -60,6 +60,7 @@ public class GroupsController : ExtendedControllerBase
     }
 
     [HttpPost]
+    [RequiresPermissions(Permissions.CreateGroup)]
     public async Task<IActionResult> CreateGroup([FromBody] FreshmanGroupPostDto dto)
     {
         var record = FreshmanGroup.MapFrom(dto);
@@ -73,8 +74,15 @@ public class GroupsController : ExtendedControllerBase
     }
 
     [HttpPost("{groupId}/members")]
-    public async Task<IActionResult> AddMembers(long groupId,FreshmanGroupMemberPostDto members)
+    [RequiresPermissions(Permissions.EditGroup)]
+    public async Task<IActionResult> AddMembers(long groupId, FreshmanGroupMemberPostDto members)
     {
+        var isValid = await RequireMemberOrAdmin(groupId);
+        if (isValid.IsError)
+        {
+            return FromError(isValid);
+        }
+
         Result<int> result = await _db.InsertMembers(groupId, members.MemberIds);
         if (result)
         {
@@ -84,8 +92,15 @@ public class GroupsController : ExtendedControllerBase
     }
 
     [HttpPut("{groupId}")]
+    [RequiresPermissions(Permissions.EditGroup)]
     public async Task<IActionResult> UpdateGroup(long groupId, [FromBody] FreshmanGroupPutDto dto)
     {
+        var isValid = await RequireMemberOrAdmin(groupId);
+        if (isValid.IsError)
+        {
+            return FromError(isValid);
+        }
+
         var record = FreshmanGroup.MapFrom(dto);
         record.Id = groupId;
         Result<int> result = await _db.Update(record);
@@ -96,18 +111,53 @@ public class GroupsController : ExtendedControllerBase
         return FromError(result);
     }
 
+    [HttpDelete("{groupId}/members")]
+    [RequiresPermissions(Permissions.EditGroup)]
+    public async Task<IActionResult> DeleteMembers(long groupId, FreshmanGroupMemberDeleteDto members)
+    {
+        var isValid = await RequireMemberOrAdmin(groupId);
+        if (isValid.IsError)
+        {
+            return FromError(isValid);
+        }
+
+        int result = await _db.DeleteMembers(groupId, members.MemberIds);
+        return OkRowsAffected(result);
+    }
+
     [HttpDelete("{groupId}")]
+    [RequiresPermissions(Permissions.Admin)]
     public async Task<IActionResult> DeleteGroup(long groupId)
     {
         int result = await _db.Delete(groupId);
         return OkRowsAffected(result);
     }
 
-    [HttpDelete("{groupId}/members")]
-    public async Task<IActionResult> DeleteMembers(long groupId, FreshmanGroupMemberDeleteDto members)
-    {
-        int result = await _db.DeleteMembers(groupId, members.MemberIds);
-        return OkRowsAffected(result);
-    }
 
+
+
+    private async Task<Result<bool>> RequireMemberOrAdmin(long groupId)
+    {
+        if (_reader.ReadAuthorizedUserPermissions(Request).Has(Permissions.Admin))
+        {
+            // Is admin
+            return true;
+        }
+
+        // Is not admin
+        var userId = _reader.ReadAuthorizedUserId(Request);
+        var members = await _db.GetMembers(groupId);
+        if (members is null)
+        {
+            // Group not found
+            return Error.NotFound("Group not found");
+        }
+        if (members.Contains(userId) is false)
+        {
+            // Not a member
+            return Error.Unauthorized("Must be admin or group member.");
+        }
+        // Is member
+        return true;
+    }
 }

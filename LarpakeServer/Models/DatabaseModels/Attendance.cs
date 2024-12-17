@@ -11,12 +11,12 @@ public class Attendance
     public DateTime UpdatedAt { get; set; }
     public AttendanceCompletion? Completion { get; set; } = null;
 
-    public static Attendance MapFrom(AttendancePostDto attendance)
+    public static Attendance MapFrom(long eventId, Guid userId)
     {
         return new Attendance
         {
-            UserId = attendance.UserId,
-            EventId = attendance.EventId,
+            UserId = userId,
+            EventId = eventId,
         };
     }
 }

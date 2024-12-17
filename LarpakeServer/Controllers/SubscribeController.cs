@@ -8,19 +8,17 @@ namespace LarpakeServer.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/sse/[controller]")]
-public class SubscribeController : ControllerBase
+public class SubscribeController : ExtendedControllerBase
 {
     readonly CompletionMessageService _messageService;
     readonly IClientPool _clientPool;
-    readonly ILogger<SubscribeController> _logger;
     static readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = false };
 
     public SubscribeController(
         CompletionMessageService service,
         IClientPool clients,
-        ILogger<SubscribeController> logger)
+        ILogger<SubscribeController> logger) : base(logger)
     {
-        _logger = logger;
         _clientPool = clients;
         _messageService = service;
         _messageService.TaskReceived += async (_, e)=> await HandleTask(e);
@@ -32,12 +30,7 @@ public class SubscribeController : ControllerBase
     {
         if (userId == Guid.Empty)
         {
-            _logger.LogInformation("");
-            return BadRequest(new
-            {
-                Message = "Invalid user id",
-                Details = "User id cannot be empty"
-            });
+            return BadRequest("Invalid user id", "User id cannot be empty");
         }
 
         // Add client to pool

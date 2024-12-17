@@ -18,11 +18,12 @@ public class ExtendedControllerBase : ControllerBase
     {
         if (((Error)error) is DataError dataError)
         {
-            return StatusCode(dataError.StatusCode, new {
+            return StatusCode(dataError.StatusCode, new
+            {
                 dataError.Message,
                 dataError.Data,
                 dataError.DataKind
-                });
+            });
         }
 
 #if DEBUG
@@ -33,7 +34,7 @@ public class ExtendedControllerBase : ControllerBase
         return StatusCode(statusCode, message);
 #endif
     }
-    
+
     protected ObjectResult OkRowsAffected(int rowsAffected)
     {
         return Ok(new { RowsAffected = rowsAffected });
@@ -55,20 +56,20 @@ public class ExtendedControllerBase : ControllerBase
     {
         return NotFound(new { Message = "Id not found." });
     }
-    
+
     protected ObjectResult IdNotFound(string message)
     {
-        return NotFound(new 
-        { 
-            Message = "Id not found.", 
+        return NotFound(new
+        {
+            Message = "Id not found.",
             Details = message
         });
     }
 
     protected ObjectResult InvalidJWT(string message)
     {
-        return BadRequest(new 
-        { 
+        return BadRequest(new
+        {
             Message = "Invalid JWT token.",
             Details = message
         });
@@ -77,5 +78,14 @@ public class ExtendedControllerBase : ControllerBase
     protected ObjectResult InternalServerError(string message)
     {
         return StatusCode(500, new { Message = message });
+    }
+
+    protected ObjectResult BadRequest(string message, string? details = null)
+    {
+        return StatusCode(400, new
+        {
+            Message = message,
+            Details = details
+        });
     }
 }
