@@ -14,6 +14,6 @@ public interface IUserDatabase
     Task<int> Delete(Guid id);
 
     Task<bool> IsSameRefreshToken(Guid id, string token);
-    Task<bool> SetRefreshToken(Guid id, string token);
+    Task<bool> SetRefreshToken(Guid id, string token, DateTime expires);
     Task<int> RevokeRefreshToken(Guid id);
 }

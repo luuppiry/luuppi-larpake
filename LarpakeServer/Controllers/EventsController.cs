@@ -1,10 +1,12 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
+using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using System.Diagnostics;
 
 namespace LarpakeServer.Controllers;
 
@@ -13,11 +15,16 @@ namespace LarpakeServer.Controllers;
 [Route("api/[controller]")]
 public class EventsController : ExtendedControllerBase
 {
-    private readonly IEventDatabase _db;
+    readonly IEventDatabase _db;
+    readonly IClaimsReader _claimsReader;
 
-    public EventsController(IEventDatabase db, ILogger<EventsController> logger) : base(logger)
+    public EventsController(
+        IEventDatabase db, 
+        ILogger<EventsController> logger,
+        IClaimsReader claimsReader) : base(logger)
     {
         _db = db;
+        _claimsReader = claimsReader;
     }
 
     [HttpGet]
@@ -42,14 +49,12 @@ public class EventsController : ExtendedControllerBase
     }
 
     [HttpPost]
+    [RequiresPermissions(Permissions.CreateEvent)]
     public async Task<IActionResult> CreateEvent([FromBody] EventPostDto dto)
     {
-        // TODO: Add user Guid
-        // TODO: validate permissions
-
-        var record = Event.MapFrom(dto, Guid.Empty);
+        
+        var record = Event.MapFrom(dto, GetRequestUserId());
         Result<long> result = await _db.Insert(record);
-
         if (result)
         {
             return CreatedId((long)result);
@@ -58,11 +63,11 @@ public class EventsController : ExtendedControllerBase
     }
 
     [HttpPut("{eventId}")]
+    [RequiresPermissions(Permissions.CreateEvent)]
     public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] EventPutDto dto)
     {
-        
-        // TODO: Add user Guid
-        var record = Event.MapFrom(dto, Guid.Empty, eventId);
+
+        var record = Event.MapFrom(dto, eventId, GetRequestUserId());
         record.Id = eventId;
         Result<int> result = await _db.Update(record);
         if (result)
@@ -73,12 +78,16 @@ public class EventsController : ExtendedControllerBase
     }
 
     [HttpDelete("{eventId}")]
+    [RequiresPermissions(Permissions.DeleteEvent)]
     public async Task<IActionResult> DeleteEvent(long eventId)
     {
-        // TODO: Add user Guid
-        int rowsAffected = await _db.Delete(eventId, Guid.Empty);
+        int rowsAffected = await _db.Delete(eventId, GetRequestUserId());
         return OkRowsAffected(rowsAffected);
     }
 
-  
+    private Guid GetRequestUserId()
+    {
+        return Request.GetAuthorizerUserId(_claimsReader)
+           ?? throw new UnreachableException("User id was not part of JWT token (unauthorized?).");
+    }
 }

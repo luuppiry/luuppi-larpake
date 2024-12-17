@@ -10,6 +10,7 @@ public class User
     public Permissions Permissions { get; set; } = Permissions.None;
     public int? StartYear { get; set; } = null;
     public string? RefreshToken { get; set; } = null;
+    public DateTime? RefreshTokenExpiresAt { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

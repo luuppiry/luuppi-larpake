@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using LarpakeServer.Extensions;
+using LarpakeServer.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
+using System.Diagnostics;
 
 namespace LarpakeServer.Helpers;
 
@@ -52,5 +55,27 @@ public class ExtendedControllerBase : ControllerBase
     {
         return NotFound(new { Message = "Id not found." });
     }
+    
+    protected ObjectResult IdNotFound(string message)
+    {
+        return NotFound(new 
+        { 
+            Message = "Id not found.", 
+            Details = message
+        });
+    }
 
+    protected ObjectResult InvalidJWT(string message)
+    {
+        return BadRequest(new 
+        { 
+            Message = "Invalid JWT token.",
+            Details = message
+        });
+    }
+
+    protected ObjectResult InternalServerError(string message)
+    {
+        return StatusCode(500, new { Message = message });
+    }
 }

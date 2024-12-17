@@ -2,6 +2,14 @@
 
 public class TokenDto
 {
-    public required string AccessToken { get; set; }
-    public required string RefreshToken { get; set; }
+    public TokenDto() {}
+    internal TokenDto(DateTime refreshExpiration)
+    {
+        RefreshExpiresAt = refreshExpiration;
+    }
+
+
+    public required string AccessToken { get; init; }
+    public required string RefreshToken { get; init; }
+    public DateTime? RefreshExpiresAt { get; } = null;
 }

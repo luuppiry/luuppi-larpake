@@ -11,20 +11,24 @@ public class TokenService : IClaimsReader
 {
     readonly IConfiguration _config;
     readonly ILogger<TokenService> _logger;
-    readonly TimeSpan _accessTokenLifetimeMinutes;
-    readonly TimeSpan _refreshTokenLifetimeDays;
+    readonly int _refreshTokenLength;
 
+
+    public TimeSpan AccessTokenLifetime { get; }
+    public TimeSpan RefreshTokenLifetime { get; }
 
     public TokenService(IConfiguration config, ILogger<TokenService> logger)
     {
         _config = config;
         _logger = logger;
 
-        _accessTokenLifetimeMinutes = TimeSpan.FromMinutes(
-            _config.GetValue<int>("Jwt:TokenLifetimeMinutes"));
+        AccessTokenLifetime = TimeSpan.FromMinutes(
+            _config.GetValue<int>("Jwt:AccessTokenLifetimeMinutes"));
 
-        _refreshTokenLifetimeDays = TimeSpan.FromDays(
+        RefreshTokenLifetime = TimeSpan.FromDays(
             _config.GetValue<int>("Jwt:RefreshTokenLifetimeDays"));
+
+        _refreshTokenLength = _config.GetValue<int>("JWT:RefreshTokenByteLength");
     }
 
     public string GenerateToken(User user)
@@ -43,11 +47,10 @@ public class TokenService : IClaimsReader
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
-            Expires = DateTime.UtcNow.Add(_accessTokenLifetimeMinutes),
+            Expires = DateTime.UtcNow.Add(AccessTokenLifetime),
             IssuedAt = DateTime.UtcNow,
             Issuer = _config.GetValue<string>("Jwt:Issuer"),
             Audience = _config.GetValue<string>("Jwt:Audience"),
-
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature)
@@ -59,7 +62,7 @@ public class TokenService : IClaimsReader
 
     public string GenerateRefreshToken()
     {
-        var number = new byte[64];
+        var number = new byte[_refreshTokenLength];
         using var gen = RandomNumberGenerator.Create();
         gen.GetBytes(number);
         return Convert.ToBase64String(number);
@@ -72,9 +75,13 @@ public class TokenService : IClaimsReader
 
         string accessToken = GenerateToken(user);
         string refreshToken = GenerateRefreshToken();
+        DateTime refreshExpires = DateTime.UtcNow.Add(RefreshTokenLifetime);
 
-
-        throw new NotImplementedException();
+        return new TokenDto(refreshExpires)
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+        };
     }
 
 
@@ -93,8 +100,15 @@ public class TokenService : IClaimsReader
             ValidateIssuerSigningKey = true,
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateLifetime = validateExpiration,
+            ValidateLifetime = validateExpiration
         };
+
+        /* I don't know why this is necessary,
+         * but it fixes sub from getting mapped to some stupid value
+         * or something like that, I dont know why anyone would want that 
+         * This fixes reading sub (userId) later, so it is now here. */
+        tokenHandler.InboundClaimTypeMap.Clear();
+        
         try
         {
             claims = tokenHandler.ValidateToken(token, validationParameters, out _);
@@ -116,7 +130,7 @@ public class TokenService : IClaimsReader
     public Guid? GetUserId(ClaimsPrincipal principal)
     {
         Guard.ThrowIfNull(principal);
-
+        
         Claim? idClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub);
         if (idClaim is null)
         {
@@ -124,5 +138,21 @@ public class TokenService : IClaimsReader
         }
         _ = Guid.TryParse(idClaim.Value, out Guid id);
         return id;
+    }
+
+    public DateTime? GetTokenIssuedAt(ClaimsPrincipal principal)
+    {
+        Guard.ThrowIfNull(principal);
+
+        Claim? iatClaim = principal.FindFirst(JwtRegisteredClaimNames.Iat);
+        if (iatClaim is null)
+        {
+            return null;
+        }
+        if (long.TryParse(iatClaim.Value, out long iat) is false)
+        {
+            return null;
+        }
+        return DateTimeOffset.FromUnixTimeSeconds(iat).DateTime;
     }
 }

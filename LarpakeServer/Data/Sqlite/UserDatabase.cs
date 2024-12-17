@@ -66,11 +66,32 @@ public class UserDatabase(SqliteConnectionString connectionString)
 
     public async Task<Result<Guid>> Insert(User record)
     {
-        /* UUIDv7 is used to generate a unique Id
-         * This is a very rare case, but if a collision occurs,
-         * the server will retry max of 5 times */
+        record.Id = Guid.CreateVersion7();
+        try
+        {
+            string query = $"""
+                INSERT INTO Users (
+                    {nameof(User.Id)}, 
+                    {nameof(User.StartYear)})
+                VALUES (
+                    @{nameof(User.Id)}, 
+                    @{nameof(User.StartYear)});
+                """;
 
-        return await InsertRetriedRecursive(record, 5);
+            using var connection = await GetConnection();
+            await connection.ExecuteAsync(query, record);
+            return record.Id;
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode is 19)
+        {
+            switch (ex.SqliteExtendedErrorCode)
+            {
+                case SqliteError.PrimaryKey_e:
+                    return Error.InternalServerError("Failed to create unique id.");
+                default:
+                    throw;
+            }
+        }
     }
 
     public async Task<Result<int>> Update(User record)
@@ -118,65 +139,31 @@ public class UserDatabase(SqliteConnectionString connectionString)
 
 
 
-
-
-    private async Task<Result<Guid>> InsertRetriedRecursive(User record, int retriesLeft = 0)
-    {
-        if (retriesLeft <= 0)
-        {
-            return new Error(500, "Server failed to generate a unique Id, try resending the request.");
-        }
-        record.Id = Guid.CreateVersion7();
-        try
-        {
-            string query = $"""
-                INSERT INTO Users (
-                    {nameof(User.Id)}, 
-                    {nameof(User.StartYear)})
-                VALUES (
-                    @{nameof(User.Id)}, 
-                    @{nameof(User.StartYear)});
-                """;
-
-            using var connection = await GetConnection();
-            await connection.ExecuteAsync(query, record);
-            return record.Id;
-        }
-        catch (SqliteException ex) when (ex.SqliteErrorCode is 19)
-        {
-            switch (ex.SqliteExtendedErrorCode)
-            {
-                case SqliteError.PrimaryKey_e:
-                    // Retry with new Id, UUIDv7 should happen very rarely.
-                    return await InsertRetriedRecursive(record, retriesLeft--);
-                default:
-                    throw;
-            }
-        }
-    }
-
     public async Task<bool> IsSameRefreshToken(Guid id, string token)
     {
         using var connection = await GetConnection();
         string? validToken = await connection.QueryFirstOrDefaultAsync<string>($"""
-            SELECT {nameof(User.RefreshToken)} FROM Users WHERE {nameof(User.Id)} = @{nameof(id)};
+            SELECT 
+                {nameof(User.RefreshToken)} 
+            FROM Users 
+            WHERE {nameof(User.Id)} = @{nameof(id)}
+                AND {nameof(User.RefreshTokenExpiresAt)} > DATETIME('now');
             """, new { id });
         
-        if (validToken is null)
-        {
-            return false;
-        }
-        return validToken == token;
+        return validToken is not null && validToken == token;
     }
 
-    public async Task<bool> SetRefreshToken(Guid id, string token)
+    public async Task<bool> SetRefreshToken(Guid id, string token, DateTime expires)
     {
         using var connection = await GetConnection();
         int rowsAffected = await connection.ExecuteAsync($"""
             UPDATE Users 
-            SET {nameof(User.RefreshToken)} = @{nameof(token)}
+            SET 
+                {nameof(User.RefreshToken)} = @{nameof(token)},
+                {nameof(User.RefreshTokenExpiresAt)} = @{nameof(expires)},
+                {nameof(User.UpdatedAt)} = DATETIME('now')
             WHERE {nameof(User.Id)} = @{nameof(id)};
-            """, new { id, token });
+            """, new { id, token, expires });
         return rowsAffected > 0;
     }
 
@@ -185,7 +172,10 @@ public class UserDatabase(SqliteConnectionString connectionString)
         using var connection = await GetConnection();
         return await connection.ExecuteAsync($"""
             UPDATE Users 
-            SET {nameof(User.RefreshToken)} = NULL
+            SET 
+                {nameof(User.RefreshToken)} = NULL,
+                {nameof(User.RefreshTokenExpiresAt)} = NULL,
+                {nameof(User.UpdatedAt)} = DATETIME('now')
             WHERE {nameof(User.Id)} = @{nameof(id)};
             """, new { id });
     }
@@ -202,6 +192,7 @@ public class UserDatabase(SqliteConnectionString connectionString)
                 {nameof(User.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(User.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(User.RefreshToken)} TEXT,
+                {nameof(User.RefreshTokenExpiresAt)} DATETIME,
                 PRIMARY KEY ({nameof(User.Id)})
             );
             """);

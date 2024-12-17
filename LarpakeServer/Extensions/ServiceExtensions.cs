@@ -49,6 +49,7 @@ public static class ServiceExtensions
         });
         services.AddSingleton<IClientPool, InMemoryClientPool>();
         services.AddSingleton<TokenService>();
+        services.AddSingleton<IClaimsReader, TokenService>();
     }
     
 }

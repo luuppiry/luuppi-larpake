@@ -44,6 +44,7 @@ public class UsersController : ExtendedControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
     public async Task<IActionResult> CreateUser([FromBody] UserPostDto dto)
     {
         var record = User_.MapFrom(dto);

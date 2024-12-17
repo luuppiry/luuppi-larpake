@@ -24,7 +24,7 @@ public class Event
     public bool IsDeleted => DeletedAt is not null;
 
 
-    public static Event MapFrom(EventPutDto dto, Guid requestUserId, long id)
+    public static Event MapFrom(EventPutDto dto, long id, Guid modifyingUser)
     {
         return new Event
         {
@@ -37,13 +37,13 @@ public class Event
             LuuppiRefId = dto.LuuppiRefId,
             WebsiteUrl = dto.WebsiteUrl,
             // TODO: ImageUrl = dto.ImageUrl,
-            UpdatedBy = requestUserId,
+            UpdatedBy = modifyingUser,
             DeletedAt = null
 
         };
     }
 
-    public static Event MapFrom(EventPostDto dto, Guid requestUserId)
+    public static Event MapFrom(EventPostDto dto, Guid modifyingUser)
     {
         return new Event
         {
@@ -56,8 +56,8 @@ public class Event
             LuuppiRefId = dto.LuuppiRefId,
             WebsiteUrl = dto.WebsiteUrl,
             // TODO: ImageUrl = dto.Image?.Url,
-            CreatedBy = requestUserId,
-            UpdatedBy = requestUserId,
+            CreatedBy = modifyingUser,
+            UpdatedBy = modifyingUser,
             DeletedAt = null
         };
     }
