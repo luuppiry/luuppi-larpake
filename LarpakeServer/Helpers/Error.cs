@@ -19,5 +19,5 @@ public record Error(int StatusCode, string Message, Exception? Ex = null)
     public static Error Conflict(string message, Exception? ex = null) => new(409, message, ex);
     public static Error NotFound(string message, Exception? ex = null) => new(404, message, ex);
     public static Error InternalServerError(string message, Exception? ex = null) => new(500, message, ex);
-
+    public static Error Unauthorized(string? message = null, Exception? ex = null) => new(401, message ?? "Unauthorized", ex);
 }

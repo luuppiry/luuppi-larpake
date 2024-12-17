@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.QueryOptions;
+using System.Runtime.CompilerServices;
 
 namespace LarpakeServer.Extensions;
 
@@ -14,9 +15,21 @@ public static class HelperExtensions
         }
     }
 
-    public static Guid? GetAuthorizerUserId(this HttpRequest request, IClaimsReader reader)
-    {
-        return reader.GetUserId(request.HttpContext.User);
 
+    public static Guid ReadAuthorizedUserId(this IClaimsReader reader, HttpRequest request)
+    {
+        return reader.GetUserId(request.HttpContext.User) 
+            ?? throw new InvalidOperationException("User not found in claims, is user authenticated correctly?");
+    }
+    
+    public static Permissions ReadAuthorizedUserPermissions(this IClaimsReader reader, HttpRequest request)
+    {
+        return reader.GetUserPermissions(request.HttpContext.User) 
+            ?? throw new InvalidOperationException("User not found in claims, is user authenticated correctly?");
+    }
+    
+    public static int? ReadAuthorizedUserStartYear(this IClaimsReader reader, HttpRequest request)
+    {
+        return reader.GetUserStartYear(request.HttpContext.User);
     }
 }

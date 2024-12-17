@@ -140,6 +140,22 @@ public class TokenService : IClaimsReader
         return id;
     }
 
+    public Permissions? GetUserPermissions(ClaimsPrincipal principal)
+    {
+        Guard.ThrowIfNull(principal);
+
+        Claim? permissionsClaim = principal.FindFirst(Constants.PermissionsFieldName);
+        if (permissionsClaim is null)
+        {
+            return null;
+        }
+        if (int.TryParse(permissionsClaim.Value, out int permissions) is false)
+        {
+            return null;
+        }
+        return (Permissions)permissions;
+    }
+
     public DateTime? GetTokenIssuedAt(ClaimsPrincipal principal)
     {
         Guard.ThrowIfNull(principal);
@@ -154,5 +170,21 @@ public class TokenService : IClaimsReader
             return null;
         }
         return DateTimeOffset.FromUnixTimeSeconds(iat).DateTime;
+    }
+
+    public int? GetUserStartYear(ClaimsPrincipal principal)
+    {
+        Guard.ThrowIfNull(principal);
+
+        Claim? syClaim = principal.FindFirst(Constants.StartYearFieldName);
+        if (syClaim is null)
+        {
+            return null;
+        }
+        if (int.TryParse(syClaim.Value, out int startYear) is false)
+        {
+            return null;
+        }
+        return startYear;
     }
 }

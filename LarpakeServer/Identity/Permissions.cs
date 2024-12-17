@@ -34,7 +34,7 @@ public enum Permissions : int
     /// <summary>
     /// User can add signature to app database.
     /// </summary>
-    AddSignature = 1 << 4,
+    CreateSignature = 1 << 4,
 
     /// <summary>
     /// User can add members to their own freshman group.
@@ -131,7 +131,7 @@ public enum Permissions : int
     /// add group members and create group events.
     /// Also has all the permissions of User.
     /// </summary>
-    Tutor = User | CompleteAttendance | AddSignature
+    Tutor = User | CompleteAttendance | CreateSignature
         | AddGroupMembers | CreateGroupEvent,
 
     /// <summary>

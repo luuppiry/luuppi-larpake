@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
+using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
@@ -18,14 +19,17 @@ public class AttendancesController : ExtendedControllerBase
 {
     private readonly IAttendanceDatabase _db;
     private readonly CompletionMessageService _messageService;
+    private readonly IClaimsReader _claimsReader;
 
     public AttendancesController(
         IAttendanceDatabase db, 
         CompletionMessageService messageService,
+        IClaimsReader claimsReader,
         ILogger<AttendancesController> logger) : base(logger)
     {
         _db = db;
         _messageService = messageService;
+        _claimsReader = claimsReader;
     }
 
 
@@ -53,10 +57,12 @@ public class AttendancesController : ExtendedControllerBase
     }
 
     [HttpPost("complete")]
-    public async Task<IActionResult> Complete([FromBody] CompletedPutDto dto, [FromHeader] Guid userId)
+    [RequiresPermissions(Permissions.CompleteAttendance)]
+    public async Task<IActionResult> Complete([FromBody] CompletedPutDto dto)
     {
-        // TODO: Add user Guid
+        Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         var record = AttendanceCompletionMetadata.From(dto, userId);
+        
         Result<AttendedCreated> result = await _db.Complete(record);
         if (result)
         {
@@ -67,6 +73,7 @@ public class AttendancesController : ExtendedControllerBase
     }
 
     [HttpPost("uncomplete")]
+    [RequiresPermissions(Permissions.Admin)]
     public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
         Result<int> result = await _db.Uncomplete(dto.UserId, dto.EventId);
@@ -77,4 +84,6 @@ public class AttendancesController : ExtendedControllerBase
         return FromError(result);
     }
 
+
+    
 }

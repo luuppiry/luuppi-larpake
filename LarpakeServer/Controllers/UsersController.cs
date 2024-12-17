@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
+using LarpakeServer.Identity;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
@@ -16,7 +17,9 @@ public class UsersController : ExtendedControllerBase
 {
     private readonly IUserDatabase _db;
 
-    public UsersController(IUserDatabase db, ILogger<UsersController> logger) : base(logger)
+    public UsersController(
+        IUserDatabase db, 
+        ILogger<UsersController> logger) : base(logger)
     {
         _db = db;
     }
@@ -59,6 +62,7 @@ public class UsersController : ExtendedControllerBase
     }
 
     [HttpPut("{userId}")]
+    [RequiresPermissions(Permissions.Admin)]
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserPutDto dto)
     {
         var record = User_.MapFrom(dto);
@@ -73,6 +77,7 @@ public class UsersController : ExtendedControllerBase
     }
 
     [HttpPut("{userId}/permissions")]
+    [RequiresPermissions(Permissions.Admin)]
     public async Task<IActionResult> UpdateUserPermissions(Guid userId, [FromBody] UserPermissionsPutDto dto)
     {
         var record = User_.MapFrom(dto);
@@ -87,6 +92,7 @@ public class UsersController : ExtendedControllerBase
     }
 
     [HttpDelete("{userId}")]
+    [RequiresPermissions(Permissions.Admin)]
     public async Task<IActionResult> DeleteUser(Guid userId)
     {
         int rowsAffected = await _db.Delete(userId);

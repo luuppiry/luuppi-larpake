@@ -6,7 +6,6 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
-using System.Diagnostics;
 
 namespace LarpakeServer.Controllers;
 
@@ -52,8 +51,8 @@ public class EventsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.CreateEvent)]
     public async Task<IActionResult> CreateEvent([FromBody] EventPostDto dto)
     {
-        
-        var record = Event.MapFrom(dto, GetRequestUserId());
+        Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+        var record = Event.MapFrom(dto, userId);
         Result<long> result = await _db.Insert(record);
         if (result)
         {
@@ -66,8 +65,8 @@ public class EventsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.CreateEvent)]
     public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] EventPutDto dto)
     {
-
-        var record = Event.MapFrom(dto, eventId, GetRequestUserId());
+        Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+        var record = Event.MapFrom(dto, eventId, userId);
         record.Id = eventId;
         Result<int> result = await _db.Update(record);
         if (result)
@@ -81,13 +80,8 @@ public class EventsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.DeleteEvent)]
     public async Task<IActionResult> DeleteEvent(long eventId)
     {
-        int rowsAffected = await _db.Delete(eventId, GetRequestUserId());
+        Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+        int rowsAffected = await _db.Delete(eventId, userId);
         return OkRowsAffected(rowsAffected);
-    }
-
-    private Guid GetRequestUserId()
-    {
-        return Request.GetAuthorizerUserId(_claimsReader)
-           ?? throw new UnreachableException("User id was not part of JWT token (unauthorized?).");
     }
 }

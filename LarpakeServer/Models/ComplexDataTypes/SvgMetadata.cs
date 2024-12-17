@@ -23,4 +23,18 @@ public class SvgMetadata
 
     [MaxLength(10)]
     public string? LineCap { get; set; }
+
+    public int CalculatePointsCount()
+    {
+        // Throws if overflow
+        int count = 0;
+        foreach (var line in Data)
+        {
+            checked
+            {
+                count += line.Count;
+            }
+        }
+        return count;
+    }
 }

@@ -1,9 +1,11 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
+using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.QueryOptions;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace LarpakeServer.Controllers;
 
@@ -12,11 +14,19 @@ namespace LarpakeServer.Controllers;
 [Route("api/[controller]")]
 public class SignaturesController : ExtendedControllerBase
 {
-    private readonly ISignatureDatabase _db;
+    readonly ISignatureDatabase _db;
+    readonly IClaimsReader _claimsReader;
+    readonly int _signaturePointLimit;
 
-    public SignaturesController(ISignatureDatabase db, ILogger<SignaturesController> logger) : base(logger) 
+    public SignaturesController(
+        ISignatureDatabase db, 
+        ILogger<SignaturesController> logger,
+        IConfiguration config,
+        IClaimsReader reader) : base(logger) 
     {
         _db = db;
+        _claimsReader = reader;
+        _signaturePointLimit = config.GetValue<int>("Signature:PointLimit");
     }
 
 
@@ -41,9 +51,17 @@ public class SignaturesController : ExtendedControllerBase
     }
 
 
-    [HttpPost] 
+    [HttpPost]
+    [RequiresPermissions(Permissions.CreateSignature)]
     public async Task<IActionResult> PostSignature([FromBody] SignaturePostDto dto)
     {
+        if (dto.Signature.CalculatePointsCount() > _signaturePointLimit)
+        {
+            Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+            _logger.LogInformation("User {userId} tried to load too large signature.", userId);
+            return BadRequest($"Signature point limit ({_signaturePointLimit}) exceeded.");
+        }
+
         Signature record = Signature.From(dto);
         Result<Guid> id = await _db.Insert(record);
         if (id)
@@ -54,8 +72,16 @@ public class SignaturesController : ExtendedControllerBase
     }
 
     [HttpDelete("{signatureId}")]
+    [RequiresPermissions(Permissions.CreateSignature)]
     public async Task<IActionResult> DeleteSignature(Guid signatureId)
     {
+        // Validate only admins or signature owner can delete
+        var isValid = await RequireOwnOrAdmin(signatureId);
+        if (isValid is not null)
+        {
+            return FromError(isValid);
+        }
+
         Result<int> result = await _db.Delete(signatureId);
         if (result)
         {
@@ -64,6 +90,26 @@ public class SignaturesController : ExtendedControllerBase
         return FromError(result);
     }
 
+
+    private async Task<Result<bool>> RequireOwnOrAdmin(Guid signatureId)
+    {
+        // Null means no error
+        Permissions userPermissions = _claimsReader.ReadAuthorizedUserPermissions(Request);
+        if (userPermissions.Has(Permissions.Admin) is false)
+        {
+            Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+            Signature? signature = await _db.Get(signatureId);
+            if (signature is null)
+            {
+                return Error.NotFound("Id not found");
+            }
+            if (userId != signature?.UserId)
+            {
+                return Error.Unauthorized("Cannot delete unowned signature.");
+            }
+        }
+        return true;
+    }
 
 
 }

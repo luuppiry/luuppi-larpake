@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
+using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DeleteDtos;
 using LarpakeServer.Models.GetDtos;
@@ -16,10 +17,15 @@ namespace LarpakeServer.Controllers;
 public class GroupsController : ExtendedControllerBase
 {
     private readonly IFreshmanGroupDatabase _db;
+    private readonly IClaimsReader _reader;
 
-    public GroupsController(IFreshmanGroupDatabase db, ILogger<GroupsController> logger) : base(logger)
+    public GroupsController(
+        IFreshmanGroupDatabase db, 
+        ILogger<GroupsController> logger,
+        IClaimsReader reader) : base(logger)
     {
         _db = db;
+        _reader = reader;
     }
 
     [HttpGet]
