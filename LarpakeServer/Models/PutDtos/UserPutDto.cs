@@ -4,6 +4,5 @@ namespace LarpakeServer.Models.PutDtos;
 
 public class UserPutDto
 {
-    [Required]
-    public int StartYear { get; set; } = -1;
+    public int? StartYear { get; set; } = null;
 }

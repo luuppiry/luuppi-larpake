@@ -32,7 +32,7 @@ public class EventsController : ExtendedControllerBase
         var records = await _db.Get(options);
         var result = EventsGetDto.MapFrom(records);
         
-        result.CalculateNextPageFrom(options);
+        result.SetNextPaginationPage(options);
         return Ok(result);
     }
 

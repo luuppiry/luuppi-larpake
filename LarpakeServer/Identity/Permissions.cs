@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Enum flags representing different permissions.
-/// Normally use <see cref="User"/>,
+/// Normally use <see cref="Freshman"/>,
 /// <see cref="Tutor"/> or <see cref="Admin"/>.
 /// <see cref="Sudo"/> is only for special occasions.
 /// </summary>
@@ -11,7 +11,8 @@ public enum Permissions : int
 {
     None = 0,
 
-    #region USER_PERMISSIONS
+    #region FRESHMAN_PERMISSIONS
+
     /// <summary>
     /// Read data from own year and group.
     /// </summary>
@@ -22,7 +23,7 @@ public enum Permissions : int
     /// </summary>
     AttendEvent = 1 << 2,
 
-    #endregion USER_PERMISSIONS
+    #endregion FRESHMAN_PERMISSIONS
     #region TUTOR_PERMISSIONS
 
     /// <summary>
@@ -84,6 +85,27 @@ public enum Permissions : int
     /// </summary>
     DeleteAttendance = 1 << 13,
 
+    /// <summary>
+    /// Update user with lower role.
+    /// Sudo -> Admin -> Tutor -> Freshman
+    /// </summary>
+    UpdateUserInformation = 1 << 14,
+
+    /// <summary>
+    /// User can delete user with lower role.
+    /// </summary>
+    DeleteUser = 1 << 15,
+
+    /// <summary>
+    /// User can manage any permissions that user can have.
+    /// </summary>
+    ManageFreshmanPermissions = 1 << 16,
+
+    /// <summary>
+    /// User can manage any permissions that tutor can have.
+    /// </summary>
+    ManageTutorPermissions = 1 << 17 | ManageFreshmanPermissions,
+
     #endregion ADMIN_PERMISSIONS
     #region SUDO_PERMISSIONS
 
@@ -93,22 +115,35 @@ public enum Permissions : int
     /// <summary>
     /// User can uncomplete or edit attendance record.
     /// </summary>
-    EditAttendance = 1 << 27,
+    EditAttendance = 1 << 20,
 
     /// <summary>
     /// Permission allows to read any data.
     /// </summary>
-    ReadAllData = 1 << 28,
+    ReadAllData = 1 << 21,
 
     /// <summary>
     /// Permission allows to write any data.
     /// </summary>
-    WriteAllData = 1 << 29,
+    WriteAllData = 1 << 22,
 
     /// <summary>
     /// Permission allows to hard delete any event.
     /// </summary>
-    HardDeleteEvent = 1 << 30,
+    HardDeleteEvent = 1 << 23,
+
+    /// <summary>
+    /// User can give or take admin permissions of any other admin 
+    /// (if user has the permission).
+    /// </summary>
+    ManageAdminPermissions = 1 << 24 | ManageTutorPermissions,
+
+    /// <summary>
+    /// User can change any permission of any other user 
+    /// (if user has the permission).
+    /// </summary>
+    ManageAllPermissions = 1 << 30 | ManageAdminPermissions,
+
 
     #endregion SUDO_PERMISSIONS
 
@@ -124,14 +159,14 @@ public enum Permissions : int
     /// <summary>
     /// Permission allows to read common information and attend event.
     /// </summary>
-    User = CommonRead | AttendEvent,
+    Freshman = CommonRead | AttendEvent,
 
     /// <summary>
     /// Permission allow to complete attendance, 
     /// add group members and create group events.
     /// Also has all the permissions of User.
     /// </summary>
-    Tutor = User | CompleteAttendance | CreateSignature
+    Tutor = Freshman | CompleteAttendance | CreateSignature
         | AddGroupMembers | CreateGroupEvent,
 
     /// <summary>
@@ -140,11 +175,12 @@ public enum Permissions : int
     /// Also has all the permissions of Tutor.
     /// </summary>
     Admin = Tutor | CreateGroup | CreateEvent | DeleteEvent
-        | SeeHiddenMembers | EditAttendance | DeleteAttendance,
+        | SeeHiddenMembers | EditAttendance | DeleteAttendance
+        | ManageTutorPermissions | UpdateUserInformation | DeleteUser,
 
     /// <summary>
     /// This is a special permission that allows should
     /// not be given to anyone other than developers
     /// </summary>
-    Sudo = int.MaxValue
+    Sudo = int.MaxValue // All flags are set (but not the sign bit)
 }

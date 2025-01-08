@@ -69,6 +69,16 @@ public class Result<T>
     }
 
 
+    public IActionResult MatchToResponse(Func<T, IActionResult> ok, Func<Result<T>, IActionResult> error)
+    {
+        if (this)
+        {
+            return ok((T)this);
+        }
+        return error(this);
+    }
+
+
 
     public static implicit operator Result<T>(T value)
     {

@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Identity;
+using LarpakeServer.Models.DatabaseModels;
 using System.Diagnostics.CodeAnalysis;
 
 namespace LarpakeServer.Extensions;
@@ -20,7 +21,7 @@ public static class EnumExtensions
         return (permissions & value) == value;
     }
 
-    public static bool TryConvertPermissions(string? value, [NotNullWhen(true)]out Permissions? result) 
+    public static bool TryConvertPermissions(string? value, [NotNullWhen(true)] out Permissions? result)
     {
         if (int.TryParse(value, out int raw))
         {
@@ -31,4 +32,28 @@ public static class EnumExtensions
         return false;
     }
 
+
+    /// <summary>
+    /// See <see cref="HasHigherRoleOrSudo(Permissions, Permissions)"/> for documentation.
+    /// This is just wrapper.
+    /// </summary>
+    /// <param name="first"></param>
+    /// <param name="second"></param>
+    /// <returns></returns>
+    internal static bool HasHigherRoleOrSudo(this User first, User second)
+    {
+        return first.Permissions.HasHigherRoleOrSudo(second.Permissions);
+    }
+
+    internal static bool IsAllowedToSet(this User author, Permissions value)
+    {
+        return author.Permissions.IsAllowedToSet(value);
+    }
+
+    internal static bool Has(this User user, Permissions value)
+    {
+        return user.Permissions.Has(value);
+    }
+
+ 
 }

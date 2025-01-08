@@ -1,12 +1,13 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
+using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 
-using User_ = LarpakeServer.Models.DatabaseModels.User;
+using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
 
@@ -15,13 +16,16 @@ namespace LarpakeServer.Controllers;
 [Route("api/[controller]")]
 public class UsersController : ExtendedControllerBase
 {
-    private readonly IUserDatabase _db;
+    readonly IUserDatabase _db;
+    readonly IClaimsReader _reader;
 
     public UsersController(
-        IUserDatabase db, 
+        IUserDatabase db,
+        IClaimsReader reader,
         ILogger<UsersController> logger) : base(logger)
     {
         _db = db;
+        _reader = reader;
     }
 
 
@@ -30,7 +34,7 @@ public class UsersController : ExtendedControllerBase
     {
         var records = await _db.Get(options);
         var result = UsersGetDto.MapFrom(records);
-        result.CalculateNextPageFrom(options);
+        result.SetNextPaginationPage(options);
         return Ok(result);
     }
 
@@ -50,8 +54,10 @@ public class UsersController : ExtendedControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> CreateUser([FromBody] UserPostDto dto)
     {
-        var record = User_.MapFrom(dto);
-        
+        // TODO: This should be handled differently when I know how
+        // Might move this to authentication controller
+
+        var record = DbUser.MapFrom(dto);
         Result<Guid> result = await _db.Insert(record);
         if (result)
         {
@@ -61,42 +67,115 @@ public class UsersController : ExtendedControllerBase
         return FromError(result);
     }
 
+
+
+
     [HttpPut("{userId}")]
-    [RequiresPermissions(Permissions.Admin)]
+    [RequiresPermissions(Permissions.UpdateUserInformation)]
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserPutDto dto)
     {
-        var record = User_.MapFrom(dto);
+        // Validate request author role is higher than target role
+        Result<bool> roleValidationResult = await IsRequestAuthorInHigherRole(userId);
+        if (roleValidationResult.IsError)
+        {
+            return FromError(roleValidationResult);
+        }
+
+        // Update
+        DbUser record = DbUser.MapFrom(dto);
         record.Id = userId;
 
         Result<int> result = await _db.Update(record);
         if (result)
         {
+            _logger.LogInformation("Updated user {id}", userId);
             return OkRowsAffected((int)result);
         }
         return FromError(result);
     }
+
+
 
     [HttpPut("{userId}/permissions")]
-    [RequiresPermissions(Permissions.Admin)]
     public async Task<IActionResult> UpdateUserPermissions(Guid userId, [FromBody] UserPermissionsPutDto dto)
     {
-        var record = User_.MapFrom(dto);
-        record.Id = userId;
+        /* Validate roles (Author is always validated from database, not only from JWT)
+         * - Request author must have matching permission to set target permission value.
+         * - Request author must also have at least same permissions to be updated. 
+         * - User cannot change their own permissions.
+         */
 
-        Result<int> result = await _db.UpdatePermissions(userId, dto.Permissions);
-        if (result)
+        if (userId == Guid.Empty)
         {
-            return OkRowsAffected((int)result);
+            return BadRequest("UserId must be provided.");
         }
-        return FromError(result);
+
+        Guid authorizedUserId = _reader.ReadAuthorizedUserId(Request);
+        if (userId == authorizedUserId)
+        {
+            _logger.LogInformation("User {id} tried to change own permissions.", userId);
+            return BadRequest("Cannot change own permissions.");
+        }
+
+        DbUser? author = await _db.Get(authorizedUserId);
+        if (author is null)
+        {
+            _logger.LogError("Authorized user {id} not found in database, " +
+                "token might have leaked and needs immidiate actions!", authorizedUserId);
+            return InternalServerError("Invalid token.");
+        }
+        if (author.IsAllowedToSet(dto.Permissions) is false)
+        {
+            return Unauthorized("Higher request author role required.");
+        }
+        if (author.Has(dto.Permissions) is false)
+        {
+            return Unauthorized("Higher request author role required.");
+        }
+
+        // Update
+        Result<int> result = await _db.UpdatePermissions(userId, dto.Permissions);
+
+        return result.MatchToResponse(OkRowsAffected, FromError);
     }
 
+
+
     [HttpDelete("{userId}")]
-    [RequiresPermissions(Permissions.Admin)]
+    [RequiresPermissions(Permissions.DeleteUser)]
     public async Task<IActionResult> DeleteUser(Guid userId)
     {
+        // Validate request author role is higher than target role
+        Result<bool> roleValidationResult = await IsRequestAuthorInHigherRole(userId);
+        if (roleValidationResult.IsError)
+        {
+            return FromError(roleValidationResult);
+        }
+
         int rowsAffected = await _db.Delete(userId);
         return OkRowsAffected(rowsAffected);
     }
 
+
+
+    private async Task<Result<bool>> IsRequestAuthorInHigherRole(Guid targetId)
+    {
+        if (targetId == Guid.Empty)
+        {
+            return Error.BadRequest("UserId must be provided.");
+        }
+
+        DbUser? target = await _db.Get(targetId);
+        if (target is null)
+        {
+            return Error.NotFound("User not found.");
+        }
+
+        Permissions authorizedPermissions = _reader.ReadAuthorizedUserPermissions(Request);
+        if (authorizedPermissions.HasHigherRoleOrSudo(target.Permissions) is false)
+        {
+            return Error.Unauthorized("Higher role required.");
+        }
+        return true;
+    }
 }

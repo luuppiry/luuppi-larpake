@@ -1,7 +1,4 @@
-﻿using LarpakeServer.Extensions;
-using LarpakeServer.Identity;
-using Microsoft.Extensions.Logging.Abstractions;
-using System.Diagnostics;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LarpakeServer.Helpers;
 
@@ -35,6 +32,8 @@ public class ExtendedControllerBase : ControllerBase
 #endif
     }
 
+    
+
     protected ObjectResult OkRowsAffected(int rowsAffected)
     {
         return Ok(new { RowsAffected = rowsAffected });
@@ -56,7 +55,7 @@ public class ExtendedControllerBase : ControllerBase
     {
         return NotFound(new { Message = "Id not found." });
     }
-
+    
     protected ObjectResult IdNotFound(string message)
     {
         return NotFound(new
@@ -87,5 +86,17 @@ public class ExtendedControllerBase : ControllerBase
             Message = message,
             Details = details
         });
+    }
+
+    protected ObjectResult Unauthorized(string message)
+    {
+        return Unauthorized(new
+        {
+            Message = message,
+        });
+    }
+    protected ObjectResult BadRequest(string message)
+    {
+        return NotFound(new { Message = message });
     }
 }

@@ -37,7 +37,7 @@ public class AttendancesController : ExtendedControllerBase
     {
         var records = await _db.Get(options);
         var result  = AttendancesGetDto.MapFrom(records);
-        result.CalculateNextPageFrom(options);
+        result.SetNextPaginationPage(options);
         return Ok(result);
     }
 

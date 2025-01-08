@@ -35,7 +35,7 @@ public class SignaturesController : ExtendedControllerBase
     {
         var records = await _db.Get(options);
         var result = SignaturesGetDto.MapFrom(records);
-        result.CalculateNextPageFrom(options);
+        result.SetNextPaginationPage(options);
         return Ok(result);
     }
 
