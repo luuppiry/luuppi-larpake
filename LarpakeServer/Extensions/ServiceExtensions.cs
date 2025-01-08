@@ -38,6 +38,8 @@ public static class ServiceExtensions
         services.AddSingleton<AttendanceDatabase>();
         services.AddSingleton<ISignatureDatabase, SignatureDatabase>();
         services.AddSingleton<SignatureDatabase>();
+        services.AddSingleton<IRefreshTokenDatabase, RefreshTokenDatabase>();
+        services.AddSingleton<RefreshTokenDatabase>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)

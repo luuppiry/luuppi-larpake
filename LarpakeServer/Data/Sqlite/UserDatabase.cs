@@ -82,7 +82,7 @@ public class UserDatabase(SqliteConnectionString connectionString)
             await connection.ExecuteAsync(query, record);
             return record.Id;
         }
-        catch (SqliteException ex) when (ex.SqliteErrorCode is 19)
+        catch (SqliteException ex) when (ex.SqliteErrorCode is SqliteError.Constraint)
         {
             switch (ex.SqliteExtendedErrorCode)
             {
@@ -98,7 +98,7 @@ public class UserDatabase(SqliteConnectionString connectionString)
     {
         if (record.Id == Guid.Empty)
         {
-            return new Error(400, "Id is required.");
+            return Error.BadRequest("Id is required.");
         }
 
         using var connection = await GetConnection();
@@ -116,7 +116,7 @@ public class UserDatabase(SqliteConnectionString connectionString)
     {
         if (id == Guid.Empty)
         {
-            return new Error(400, "Id is required.");
+            return Error.BadRequest("Id is required.");
         }
 
         using var connection = await GetConnection();
