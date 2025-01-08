@@ -9,8 +9,6 @@ public class User
     public required Guid Id { get; set; }
     public Permissions Permissions { get; set; } = Permissions.None;
     public int? StartYear { get; set; } = null;
-    public string? RefreshToken { get; set; } = null;
-    public DateTime? RefreshTokenExpiresAt { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

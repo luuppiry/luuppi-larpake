@@ -139,46 +139,9 @@ public class UserDatabase(SqliteConnectionString connectionString)
 
 
 
-    public async Task<bool> IsSameRefreshToken(Guid id, string token)
-    {
-        using var connection = await GetConnection();
-        string? validToken = await connection.QueryFirstOrDefaultAsync<string>($"""
-            SELECT 
-                {nameof(User.RefreshToken)} 
-            FROM Users 
-            WHERE {nameof(User.Id)} = @{nameof(id)}
-                AND {nameof(User.RefreshTokenExpiresAt)} > DATETIME('now');
-            """, new { id });
-        
-        return validToken is not null && validToken == token;
-    }
+   
 
-    public async Task<bool> SetRefreshToken(Guid id, string token, DateTime expires)
-    {
-        using var connection = await GetConnection();
-        int rowsAffected = await connection.ExecuteAsync($"""
-            UPDATE Users 
-            SET 
-                {nameof(User.RefreshToken)} = @{nameof(token)},
-                {nameof(User.RefreshTokenExpiresAt)} = @{nameof(expires)},
-                {nameof(User.UpdatedAt)} = DATETIME('now')
-            WHERE {nameof(User.Id)} = @{nameof(id)};
-            """, new { id, token, expires });
-        return rowsAffected > 0;
-    }
 
-    public async Task<int> RevokeRefreshToken(Guid id)
-    {
-        using var connection = await GetConnection();
-        return await connection.ExecuteAsync($"""
-            UPDATE Users 
-            SET 
-                {nameof(User.RefreshToken)} = NULL,
-                {nameof(User.RefreshTokenExpiresAt)} = NULL,
-                {nameof(User.UpdatedAt)} = DATETIME('now')
-            WHERE {nameof(User.Id)} = @{nameof(id)};
-            """, new { id });
-    }
 
 
 
@@ -191,8 +154,6 @@ public class UserDatabase(SqliteConnectionString connectionString)
                 {nameof(User.StartYear)} INTEGER,
                 {nameof(User.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(User.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(User.RefreshToken)} TEXT,
-                {nameof(User.RefreshTokenExpiresAt)} DATETIME,
                 PRIMARY KEY ({nameof(User.Id)})
             );
             """);

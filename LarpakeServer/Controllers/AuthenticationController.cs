@@ -2,7 +2,6 @@
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.PostDtos;
-using System.Diagnostics;
 using System.Security.Claims;
 
 namespace LarpakeServer.Controllers;
@@ -15,14 +14,17 @@ public class AuthenticationController : ExtendedControllerBase
 {
     private readonly TokenService _tokenService;
     private readonly IUserDatabase _userDb;
+    private readonly IRefreshTokenDatabase _refreshTokenDb;
 
     public AuthenticationController(
         TokenService generator,
         IUserDatabase userDb,
+        IRefreshTokenDatabase refreshTokenDb,
         ILogger<AuthenticationController> logger) : base(logger)
     {
         _tokenService = generator;
         _userDb = userDb;
+        _refreshTokenDb = refreshTokenDb;
     }
 
 
@@ -61,6 +63,8 @@ public class AuthenticationController : ExtendedControllerBase
     [HttpPost("token/refresh")]
     public async Task<IActionResult> Refresh([FromBody] TokenDto dto)
     {
+        // TODO: RateLimit this, maybe limit how many tokens per user can be created
+
         // Validate expired access token 
         if (_tokenService.ValidateAccessToken(dto.AccessToken, out ClaimsPrincipal? claims, false) is false)
         {
@@ -82,16 +86,19 @@ public class AuthenticationController : ExtendedControllerBase
         }
 
         // Validate refresh token
-        bool isSame = await _userDb.IsSameRefreshToken(userId.Value, dto.RefreshToken);
-        if (isSame is false)
+        bool isValid = await _refreshTokenDb.IsValid(userId.Value, dto.RefreshToken);
+        if (isValid is false)
         {
             return Unauthorized();
         }
 
+
         // Tokens are valid, generate new ones
-        User user = await _userDb.Get(userId.Value)
-            ?? throw new UnreachableException(
-                "User not found even though their refresh token was found?.");
+        User? user = await _userDb.Get(userId.Value);
+        if (user is null)
+        {
+            return IdNotFound("User does not exist.");
+        }
 
         // Generate new tokens
         TokenDto tokens = _tokenService.GenerateTokens(user);
@@ -109,14 +116,14 @@ public class AuthenticationController : ExtendedControllerBase
         Guard.ThrowIfNull(tokens.RefreshExpiresAt);
 
         // Save refresh token
-        bool success = await _userDb.SetRefreshToken(
-            user.Id, tokens.RefreshToken, tokens.RefreshExpiresAt.Value);
-
-        if (success is false)
+        var result = await _refreshTokenDb.Add(new RefreshToken
         {
-            return InternalServerError("Error storing refresh token.");
-        }
-        return Ok(tokens);
+            UserId = user.Id,
+            Token = tokens.RefreshToken,
+            InvalidAt = tokens.RefreshExpiresAt.Value
+        });
+
+        return result.MatchToResponse(_ => Ok(tokens), FromError);
     }
 }
 

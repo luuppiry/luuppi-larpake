@@ -49,7 +49,7 @@ public class RefreshTokenDatabase : SqliteDbBase, IRefreshTokenDatabase
             VALUES (
                 ${nameof(RefreshToken.UserId)}, 
                 ${nameof(RefreshToken.Token)}, 
-                ${nameof(RefreshToken.InvalidAt)})
+                ${nameof(RefreshToken.InvalidAt)}
             );
             """, hashed);
         }
@@ -70,7 +70,7 @@ public class RefreshTokenDatabase : SqliteDbBase, IRefreshTokenDatabase
         string hash = ComputeSHA512Hash(refreshToken);
 
         using var connection = await GetConnection();
-        RefreshToken? token = await connection.QueryFirstOrDefaultAsync($"""
+        var token = await connection.QueryFirstOrDefaultAsync<RefreshToken>($"""
             DELETE FROM RefreshTokens
             WHERE 
                 {nameof(RefreshToken.UserId)} = @{nameof(userId)} 
@@ -120,6 +120,6 @@ public class RefreshTokenDatabase : SqliteDbBase, IRefreshTokenDatabase
         string salt = _configuration["Jwt:RefreshTokenSalt"]!;
         byte[] tokenBytes = Encoding.UTF8.GetBytes(refreshToken + salt);
         byte[] hash = SHA512.HashData(tokenBytes);
-        return Encoding.UTF8.GetString(hash);
+        return Convert.ToHexString(hash);
     }
 }
