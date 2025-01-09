@@ -86,6 +86,9 @@ public class GroupsController : ExtendedControllerBase
         var validation = await RequireMemberOrAdmin(groupId);
         if (validation.IsError)
         {
+            Guid userId = _reader.ReadAuthorizedUserId(Request);
+            _logger.LogInformation("User {userId} tried to add members to group {groupId} " +
+                "with insufficent permissions.", userId, groupId);
             return FromError(validation);
         }
 
@@ -142,6 +145,12 @@ public class GroupsController : ExtendedControllerBase
         }
 
         int result = await _db.DeleteMembers(groupId, members.MemberIds);
+        if (result > 0)
+        {
+            Guid userId = _reader.ReadAuthorizedUserId(Request);
+            _logger.LogInformation("Removed members {members} from group {groupId} by {userId}.", 
+                members.MemberIds, groupId, userId);
+        }
         return OkRowsAffected(result);
     }
 
@@ -150,6 +159,11 @@ public class GroupsController : ExtendedControllerBase
     public async Task<IActionResult> DeleteGroup(long groupId)
     {
         int result = await _db.Delete(groupId);
+        if (result > 0)
+        {
+            Guid userId = _reader.ReadAuthorizedUserId(Request);
+            _logger.LogInformation("Group {groupId} deleted by {userId}.", groupId, userId);
+        }
         return OkRowsAffected(result);
     }
 

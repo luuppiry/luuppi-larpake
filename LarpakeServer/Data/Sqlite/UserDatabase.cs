@@ -24,10 +24,8 @@ public class UserDatabase(SqliteConnectionString connectionString)
 
         if (options.Permissions is not null)
         {
-            /* TODO: Permissions are not as straightforward as this query
-             * This works if main permission roles are only used */
             query.AppendConditionLine($"""
-                {nameof(User.Permissions)} >= @{nameof(options.Permissions)}
+                {nameof(User.Permissions)} & @{nameof(options.Permissions)} = @{nameof(options.Permissions)}
                 """);
         }
         if (options.StartedOnOrAfter is not null)

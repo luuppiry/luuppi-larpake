@@ -116,8 +116,26 @@ public enum Permissions : int
     /// </summary>
     ManageTutorPermissions = 1 << 19 | ManageFreshmanPermissions,
 
+    /// <summary>
+    /// User can read statistics of the app.
+    /// Like total points, attendance rate etc.
+    /// </summary>
+    ReadStatistics = 1 << 20,
+
     #endregion ADMIN_PERMISSIONS
     #region SUDO_PERMISSIONS
+
+
+    #region MANAGEMENT_PERMISSIONS
+    ManageGroup = CreateGroup | EditGroup,
+
+
+
+    #endregion MANAGEMENT_PERMISSIONS
+
+
+
+
 
     // Sudo permissions are only used for special occasions. 
     // They should not be given to anyone other than developers.
@@ -171,7 +189,8 @@ public enum Permissions : int
     /// </summary>
     Admin = Tutor | CreateGroup | CreateEvent | DeleteEvent
         | SeeHiddenMembers | EditAttendance | DeleteAttendance
-        | ManageTutorPermissions | UpdateUserInformation | DeleteUser,
+        | ManageTutorPermissions | UpdateUserInformation | DeleteUser
+        | ReadRawUserInfomation | ReadStatistics,
 
     /// <summary>
     /// This is a special permission that allows should
