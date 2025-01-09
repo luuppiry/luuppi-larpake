@@ -1,5 +1,5 @@
 ﻿using LarpakeServer.Identity;
-using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.QueryOptions;
 using System.Runtime.CompilerServices;
 

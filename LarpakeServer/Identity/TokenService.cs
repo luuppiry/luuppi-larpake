@@ -69,7 +69,7 @@ public class TokenService : IClaimsReader
     }
 
 
-    public TokenDto GenerateTokens(User user)
+    public TokenGetDto GenerateTokens(User user)
     {
         Guard.ThrowIfNull(user);
 
@@ -77,7 +77,7 @@ public class TokenService : IClaimsReader
         string refreshToken = GenerateRefreshToken();
         DateTime refreshExpires = DateTime.UtcNow.Add(RefreshTokenLifetime);
 
-        return new TokenDto(refreshExpires)
+        return new TokenGetDto(refreshExpires)
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,

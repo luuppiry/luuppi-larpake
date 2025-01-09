@@ -1,26 +1,25 @@
 ﻿namespace LarpakeServer.Helpers;
 
 /// <summary>
-/// Result type that can be either a value or an error.
+/// Non generic result type.
+/// Used to store success or error state.
+/// Error state contains information about the error.
 /// </summary>
-/// <typeparam name="T">Type of the success value.</typeparam>
-public class Result<T>
+public class Result
 {
-    readonly T? _value;
     readonly Error? _error;
 
     /// <summary>
-    /// New success result with a value.
+    /// New success result.
+    /// Use <see cref="Ok"/> for success."/>
     /// </summary>
-    /// <param name="value"></param>
-    public Result(T value)
-    {
-        _value = value;
-    }
+    private Result() { }
 
     /// <summary>
     /// New error result.
+    /// Note that implicit conversion from <see cref="Error"/> exists.
     /// </summary>
+    /// <param name="error"></param>
     public Result(Error error)
     {
         _error = error;
@@ -37,24 +36,11 @@ public class Result<T>
     public bool IsError => !IsOk;
 
     /// <summary>
-    /// Get the value if the result is ok, otherwise throw an exception
-    /// </summary>
-    /// <param name="result"></param>
-    /// <exception cref="InvalidCastException">If object is in error state.</exception>
-    public static explicit operator T(Result<T> result)
-    {
-        if (result.IsOk)
-        {
-            return result._value!;
-        }
-        throw new InvalidCastException("Error result cannot be casted to valid.");
-    }
-    /// <summary>
-    ///  Get the error if the result is error, otherwise throw an exception
+    ///  Get the error if the result is error, otherwise throw an exception.
     /// </summary>
     /// <param name="result"></param>
     /// <exception cref="InvalidCastException">If object is in valid state.</exception>"
-    public static explicit operator Error(Result<T> result)
+    public static explicit operator Error(Result result)
     {
         if (result.IsError)
         {
@@ -63,28 +49,13 @@ public class Result<T>
         throw new InvalidCastException("Valid result cannot be casted to error.");
     }
 
-    public static implicit operator bool(Result<T> result)
+    public static implicit operator bool(Result result)
     {
         return result.IsOk;
     }
 
-
-    public IActionResult MatchToResponse(Func<T, IActionResult> ok, Func<Result<T>, IActionResult> error)
-    {
-        if (this)
-        {
-            return ok((T)this);
-        }
-        return error(this);
-    }
-
-
-
-    public static implicit operator Result<T>(T value)
-    {
-        return new(value);
-    }
-    public static implicit operator Result<T>(Error error)
+    public static readonly Result Ok = new();
+    public static implicit operator Result(Error error)
     {
         return new(error);
     }

@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Data;
+using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.PostDtos;
@@ -12,19 +13,22 @@ namespace LarpakeServer.Controllers;
 [Route("api")]
 public class AuthenticationController : ExtendedControllerBase
 {
-    private readonly TokenService _tokenService;
-    private readonly IUserDatabase _userDb;
-    private readonly IRefreshTokenDatabase _refreshTokenDb;
+    readonly TokenService _tokenService;
+    readonly IUserDatabase _userDb;
+    readonly IRefreshTokenDatabase _refreshTokenDb;
+    readonly IClaimsReader _claimsReader;
 
     public AuthenticationController(
         TokenService generator,
         IUserDatabase userDb,
         IRefreshTokenDatabase refreshTokenDb,
+        IClaimsReader claimsReader,
         ILogger<AuthenticationController> logger) : base(logger)
     {
         _tokenService = generator;
         _userDb = userDb;
         _refreshTokenDb = refreshTokenDb;
+        _claimsReader = claimsReader;
     }
 
 
@@ -51,19 +55,19 @@ public class AuthenticationController : ExtendedControllerBase
         }
 
         // Generate tokens
-        TokenDto tokens = _tokenService.GenerateTokens(user);
+        TokenGetDto tokens = _tokenService.GenerateTokens(user);
 
         _logger.LogInformation("User {id} logged in.", user.Id);
 
         // Finish by saving refresh token
-        return await SaveToken(user, tokens);
+        return await SaveToken(user, tokens, Guid.Empty);
     }
 
 
     [HttpPost("token/refresh")]
-    public async Task<IActionResult> Refresh([FromBody] TokenDto dto)
+    public async Task<IActionResult> Refresh([FromBody] TokenGetDto dto)
     {
-        // TODO: RateLimit this, maybe limit how many tokens per user can be created
+        // TODO: RateLimit this
 
         // Validate expired access token 
         if (_tokenService.ValidateAccessToken(dto.AccessToken, out ClaimsPrincipal? claims, false) is false)
@@ -86,8 +90,8 @@ public class AuthenticationController : ExtendedControllerBase
         }
 
         // Validate refresh token
-        bool isValid = await _refreshTokenDb.IsValid(userId.Value, dto.RefreshToken);
-        if (isValid is false)
+        var validation = await _refreshTokenDb.IsValid(userId.Value, dto.RefreshToken);
+        if (validation.IsValid is false)
         {
             return Unauthorized();
         }
@@ -101,15 +105,27 @@ public class AuthenticationController : ExtendedControllerBase
         }
 
         // Generate new tokens
-        TokenDto tokens = _tokenService.GenerateTokens(user);
+        TokenGetDto tokens = _tokenService.GenerateTokens(user);
 
         _logger.LogInformation("Refreshed tokens for user {id}.", user.Id);
 
         // Finish by saving refresh token
-        return await SaveToken(user, tokens);
+        return await SaveToken(user, tokens, validation.TokenFamily.Value);
     }
 
-    private async Task<IActionResult> SaveToken(User user, TokenDto tokens)
+
+    [Authorize]
+    [HttpPost("token/invalidate")]
+    public async Task<IActionResult> InvalidateTokens()
+    {
+        Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+        int rowsAffected = await _refreshTokenDb.RevokeUserTokens(userId);
+        return OkRowsAffected(rowsAffected);
+    }
+
+
+
+    private async Task<IActionResult> SaveToken(User user, TokenGetDto tokens, Guid tokenFamily)
     {
         Guard.ThrowIfNull(user);
         Guard.ThrowIfNull(tokens);
@@ -120,10 +136,15 @@ public class AuthenticationController : ExtendedControllerBase
         {
             UserId = user.Id,
             Token = tokens.RefreshToken,
-            InvalidAt = tokens.RefreshExpiresAt.Value
+            InvalidAt = tokens.RefreshExpiresAt.Value,
+            TokenFamily = tokenFamily
         });
 
-        return result.MatchToResponse(_ => Ok(tokens), FromError);
+        if (result.IsError)
+        {
+            return FromError(result);
+        }
+        return Ok(tokens);
     }
 }
 

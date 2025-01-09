@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
+using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
@@ -35,9 +36,22 @@ public class AttendancesController : ExtendedControllerBase
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] AttendanceQueryOptions options)
     {
+        Permissions permissions = _claimsReader.ReadAuthorizedUserPermissions(Request);
+        bool readSelfOnly = permissions.Has(Permissions.Tutor) is false;
+        if (readSelfOnly)
+        {
+            options.UserId = _claimsReader.ReadAuthorizedUserId(Request);
+        }
+
+
+
         var records = await _db.Get(options);
-        var result  = AttendancesGetDto.MapFrom(records);
+        var result = AttendancesGetDto.MapFrom(records);
         result.SetNextPaginationPage(options);
+        if (readSelfOnly)
+        {
+            result.Details.Add("Permissions limit to own attendances only.");
+        }
         return Ok(result);
     }
 

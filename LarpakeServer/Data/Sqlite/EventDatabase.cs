@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Helpers.Generic;
+using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
 

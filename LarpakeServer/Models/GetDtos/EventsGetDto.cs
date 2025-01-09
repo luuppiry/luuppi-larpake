@@ -1,13 +1,15 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
+using System.Text.Json.Serialization;
 
 namespace LarpakeServer.Models.GetDtos;
 
-public class EventsGetDto : IPageable
+public class EventsGetDto : GetDtoBase
 {
     public required EventGetDto[] Events { get; set; }
 
-    public int NextPage { get; set; } = -1;
-    public int ItemCount => Events.Length;
+    [JsonIgnore]
+    public override int ItemCount => Events.Length;
 
     internal static EventsGetDto MapFrom(Event[] events)
     {

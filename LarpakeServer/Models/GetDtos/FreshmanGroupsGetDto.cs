@@ -1,16 +1,16 @@
 ﻿
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 using System.Text.Json.Serialization;
 
 namespace LarpakeServer.Models.GetDtos;
 
-public class FreshmanGroupsGetDto : IPageable
+public class FreshmanGroupsGetDto : GetDtoBase
 {
     public required FreshmanGroupGetDto[] Groups { get; set; }
-    public int NextPage { get; set; } = -1;
 
     [JsonIgnore]
-    public int ItemCount => Groups.Length;
+    public override int ItemCount => Groups.Length;
 
     internal static FreshmanGroupsGetDto MapFrom(FreshmanGroup[] records)
     {

@@ -1,15 +1,15 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 using System.Text.Json.Serialization;
 
 namespace LarpakeServer.Models.GetDtos;
 
-public class SignaturesGetDto : IPageable
+public class SignaturesGetDto : GetDtoBase
 {
     public required SignatureGetDto[] Signatures { get; set; }
-    public int NextPage { get; set; } = -1;
 
     [JsonIgnore]
-    public int ItemCount => Signatures.Length;
+    public override int ItemCount => Signatures.Length;
 
     internal static SignaturesGetDto MapFrom(IEnumerable<Signature> records)
     {

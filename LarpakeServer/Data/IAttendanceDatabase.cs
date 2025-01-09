@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Helpers.Generic;
+using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
 using LarpakeServer.Models.QueryOptions;

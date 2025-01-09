@@ -3,16 +3,40 @@
 namespace LarpakeServer.Data;
 public interface IRefreshTokenDatabase
 {
-    Task<Result<bool>> Add(RefreshToken token);
+    /// <summary>
+    /// Adds a refresh token to the database.
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns>Successful result if success, otherwise false</returns>
+    Task<Result> Add(RefreshToken token);
 
     /// <summary>
-    /// Check if the refresh token is valid for the user.
-    /// Token is revoked in the database during the validation.
+    /// Check if the refresh token is valid against the database.
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="refreshToken"></param>
-    /// <returns>True if token is valid and new token can be given to the user, otherwise false.</returns>
-    Task<bool> IsValid(Guid userId, string refreshToken);
-    Task<int> Delete(Guid userId);
-    Task ClearOldEntries();
+    /// <returns><see cref="RefreshTokenValidationResult"/> that represents succes or invalidation.</returns>
+    Task<RefreshTokenValidationResult> IsValid(Guid userId, string refreshToken);
+
+    /// <summary>
+    /// Revoke all tokens from specific token family (same refresh token chain).
+    /// </summary>
+    /// <param name="tokenFamilyId"></param>
+    /// <returns>Number of rows affected.</returns>
+    Task<int> RevokeFamily(Guid tokenFamilyId);
+
+    /// <summary>
+    /// Invalidate all tokens from specific user.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns>Number of rows affected.</returns>
+    Task<int> RevokeUserTokens(Guid userId);
+
+    /// <summary>
+    /// Clear all expired refresh tokens.
+    /// </summary>
+    /// <returns>Number of rows affected</returns>
+    Task<int> ClearOldEntries();
+
+
 }

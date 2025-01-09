@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using LarpakeServer.Helpers.Generic;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LarpakeServer.Helpers;
 
@@ -11,28 +12,12 @@ public class ExtendedControllerBase : ControllerBase
         _logger = logger ?? NullLogger<ExtendedControllerBase>.Instance;
     }
 
-    protected ObjectResult FromError<T>(Result<T> error)
-    {
-        if (((Error)error) is DataError dataError)
-        {
-            return StatusCode(dataError.StatusCode, new
-            {
-                dataError.Message,
-                dataError.Data,
-                dataError.DataKind
-            });
-        }
+    protected ObjectResult FromError(Result result) => FromError((Error)result);
+    protected ObjectResult FromError<T>(Result<T> error) => FromError((Error)error);
 
-#if DEBUG
-        var (statusCode, message) = (Error)error;
-        return StatusCode(statusCode, new { Message = message, Exception = ((Error)error).Ex });
-#else
-        var (statusCode, message) = (Error)error;
-        return StatusCode(statusCode, message);
-#endif
-    }
 
-    
+
+
 
     protected ObjectResult OkRowsAffected(int rowsAffected)
     {
@@ -98,5 +83,27 @@ public class ExtendedControllerBase : ControllerBase
     protected ObjectResult BadRequest(string message)
     {
         return NotFound(new { Message = message });
+    }
+
+
+    private ObjectResult FromError(Error error)
+    {
+        if (error is DataError dataError)
+        {
+            return StatusCode(dataError.StatusCode, new
+            {
+                dataError.Message,
+                dataError.Data,
+                dataError.DataKind
+            });
+        }
+
+#if DEBUG
+        var (statusCode, message) = error;
+        return StatusCode(statusCode, new { Message = message, Exception = error.Ex });
+#else
+        var (statusCode, message) = (Error)error;
+        return StatusCode(statusCode, message);
+#endif
     }
 }

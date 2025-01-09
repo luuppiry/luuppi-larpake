@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace LarpakeServer.Models.GetDtos;
+namespace LarpakeServer.Models.GetDtos.Templates;
 
 public interface IPageable
 {
