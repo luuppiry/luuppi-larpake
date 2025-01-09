@@ -8,15 +8,11 @@ namespace LarpakeServer.Data.Sqlite;
 
 public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
 {
-    readonly ILogger<IFreshmanGroupDatabase> _logger;
-
     public FreshmanGroupDatabase(
         SqliteConnectionString connectionString,
-        UserDatabase userDb,
-        ILogger<IFreshmanGroupDatabase> logger)
+        UserDatabase userDb)
         : base(connectionString, userDb)
     {
-        _logger = logger;
     }
 
     public async Task<FreshmanGroup[]> Get(FreshmanGroupQueryOptions options)

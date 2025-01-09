@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LarpakeServer", "LarpakeSer
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LarpakeServerTests", "LarpakeServerTests\LarpakeServerTests.csproj", "{BE640D15-9422-4F1F-A124-8EF6E2DD41BC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDataGenerator", "TestDataGenerator\TestDataGenerator.csproj", "{28F4984E-3FB9-4D1B-B460-C36E3D76100C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{BE640D15-9422-4F1F-A124-8EF6E2DD41BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE640D15-9422-4F1F-A124-8EF6E2DD41BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE640D15-9422-4F1F-A124-8EF6E2DD41BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28F4984E-3FB9-4D1B-B460-C36E3D76100C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28F4984E-3FB9-4D1B-B460-C36E3D76100C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28F4984E-3FB9-4D1B-B460-C36E3D76100C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28F4984E-3FB9-4D1B-B460-C36E3D76100C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

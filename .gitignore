@@ -5,6 +5,7 @@
 
 # Self Added 
 appsettings.Development.json
+TestDataGenerator/
 
 # dotenv files
 .env
