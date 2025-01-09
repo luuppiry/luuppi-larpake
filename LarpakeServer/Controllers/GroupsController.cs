@@ -17,8 +17,8 @@ namespace LarpakeServer.Controllers;
 [Route("api/[controller]")]
 public class GroupsController : ExtendedControllerBase
 {
-    private readonly IFreshmanGroupDatabase _db;
-    private readonly IClaimsReader _reader;
+    readonly IFreshmanGroupDatabase _db;
+    readonly IClaimsReader _reader;
 
     public GroupsController(
         IFreshmanGroupDatabase db,
@@ -30,8 +30,13 @@ public class GroupsController : ExtendedControllerBase
     }
 
     [HttpGet]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetGroups([FromQuery] FreshmanGroupQueryOptions options)
     {
+        // Check if user has permission to see hidden members
+        Permissions permissions = _reader.ReadAuthorizedUserPermissions(Request);
+        options.IncludeHiddenMembers = permissions.Has(Permissions.SeeHiddenMembers);
+
         var records = await _db.Get(options);
         var result = FreshmanGroupsGetDto.MapFrom(records);
         result.SetNextPaginationPage(options);
@@ -39,6 +44,7 @@ public class GroupsController : ExtendedControllerBase
     }
 
     [HttpGet("{groupId}")]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetGroup(long groupId)
     {
         var record = await _db.Get(groupId);
@@ -50,6 +56,7 @@ public class GroupsController : ExtendedControllerBase
     }
 
     [HttpGet("{groupId}/members")]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetMembers(long groupId)
     {
         var record = await _db.GetMembers(groupId);
@@ -66,50 +73,62 @@ public class GroupsController : ExtendedControllerBase
     {
         var record = FreshmanGroup.MapFrom(dto);
         Result<long> result = await _db.Insert(record);
-
-        if (result)
-        {
-            return CreatedId((long)result);
-        }
-        return FromError(result);
+        return result.MatchToResponse(
+            ok: CreatedId,
+            error: FromError
+        );
     }
 
     [HttpPost("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
     public async Task<IActionResult> AddMembers(long groupId, FreshmanGroupMemberPostDto members)
     {
-        var isValid = await RequireMemberOrAdmin(groupId);
-        if (isValid.IsError)
+        var validation = await RequireMemberOrAdmin(groupId);
+        if (validation.IsError)
         {
-            return FromError(isValid);
+            return FromError(validation);
         }
 
         Result<int> result = await _db.InsertMembers(groupId, members.MemberIds);
-        if (result)
+        return result.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError
+        );
+    }
+
+    [HttpPost("{groupId}/members/hidden")]
+    [RequiresPermissions(Permissions.EditGroup | Permissions.SeeHiddenMembers)]
+    public async Task<IActionResult> AddHiddenMembers(long groupId, FreshmanGroupMemberPostDto members)
+    {
+        var validation = await RequireMemberOrAdmin(groupId);
+        if (validation.IsError)
         {
-            return OkRowsAffected((int)result);
+            return FromError(validation);
         }
-        return FromError(result);
+        Result<int> result = await _db.InsertHiddenMembers(groupId, members.MemberIds);
+        return result.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError
+        );
     }
 
     [HttpPut("{groupId}")]
     [RequiresPermissions(Permissions.EditGroup)]
     public async Task<IActionResult> UpdateGroup(long groupId, [FromBody] FreshmanGroupPutDto dto)
     {
-        var isValid = await RequireMemberOrAdmin(groupId);
-        if (isValid.IsError)
+        var validation = await RequireMemberOrAdmin(groupId);
+        if (validation.IsError)
         {
-            return FromError(isValid);
+            return FromError(validation);
         }
 
         var record = FreshmanGroup.MapFrom(dto);
         record.Id = groupId;
         Result<int> result = await _db.Update(record);
-        if (result)
-        {
-            return OkRowsAffected((int)result);
-        }
-        return FromError(result);
+        return result.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError
+        );
     }
 
     [HttpDelete("{groupId}/members")]
@@ -137,12 +156,12 @@ public class GroupsController : ExtendedControllerBase
 
 
 
-    private async Task<Result<bool>> RequireMemberOrAdmin(long groupId)
+    private async Task<Result> RequireMemberOrAdmin(long groupId)
     {
         if (_reader.ReadAuthorizedUserPermissions(Request).Has(Permissions.Admin))
         {
             // Is admin
-            return true;
+            return Result.Ok;
         }
 
         // Is not admin
@@ -159,6 +178,6 @@ public class GroupsController : ExtendedControllerBase
             return Error.Unauthorized("Must be admin or group member.");
         }
         // Is member
-        return true;
+        return Result.Ok;
     }
 }

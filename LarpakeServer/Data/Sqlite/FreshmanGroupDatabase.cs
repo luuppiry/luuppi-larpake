@@ -52,6 +52,12 @@ public class FreshmanGroupDatabase(
                 """);
         }
 
+        var includeHidden = options.IncludeHiddenMembers ? "TRUE" : "FALSE";
+        query.AppendConditionLine($"""
+            fgm.{FGM_IsHidden} = {includeHidden}
+            """);
+
+
         query.AppendLine($"""
             ORDER BY fg.{nameof(FreshmanGroup.StartYear)}, fg.{nameof(FreshmanGroup.GroupNumber)} ASC
             LIMIT @{nameof(options.PageSize)} 
@@ -149,15 +155,36 @@ public class FreshmanGroupDatabase(
                     @{nameof(InsertModel.UserId)});
                 """, records);
         }
-        catch (SqliteException ex)
+        catch (SqliteException ex) when (ex.SqliteExtendedErrorCode is SqliteError.ForeignKey_e)
         {
-            switch (ex.SqliteExtendedErrorCode)
-            {
-                case SqliteError.ForeignKey_e:
-                    return new Error(404, "Group or user does not exist.");
-                default:
-                    throw;
-            }
+            return Error.NotFound("Group or user does not exist.");
+        }
+    }
+
+    public async Task<Result<int>> InsertHiddenMembers(long groupId, Guid[] members)
+    {
+        try
+        {
+            var records = members
+                .Distinct()
+                .Select(x => new InsertModel(groupId, x));
+
+            using var connection = await GetConnection();
+            return await connection.ExecuteAsync($"""
+                INSERT OR IGNORE INTO FreshmanGroupMembers (
+                    {FGM_GroupId}, 
+                    {FGM_UserId}, 
+                    {FGM_IsHidden})
+                VALUES (
+                    @{nameof(InsertModel.Id)}, 
+                    @{nameof(InsertModel.UserId)}, 
+                    TRUE);
+                """, records);
+
+        }
+        catch (SqliteException ex) when (ex.SqliteExtendedErrorCode is SqliteError.ForeignKey_e)
+        {
+            return Error.NotFound("Group or user does not exist.");
         }
     }
 
@@ -203,7 +230,6 @@ public class FreshmanGroupDatabase(
     protected override async Task InitializeAsync(SqliteConnection connection)
     {
         await connection.ExecuteAsync($"""
-
             CREATE TABLE IF NOT EXISTS FreshmanGroups (
                 {nameof(FreshmanGroup.Id)} INTEGER,
                 {nameof(FreshmanGroup.Name)} TEXT UNIQUE,
@@ -217,6 +243,7 @@ public class FreshmanGroupDatabase(
             CREATE TABLE IF NOT EXISTS FreshmanGroupMembers (
                 {FGM_GroupId} INTEGER,
                 {FGM_UserId} TEXT,
+                {FGM_IsHidden} BOOL NOT NULL DEFAULT TRUE,
                 PRIMARY KEY ({FGM_GroupId}, {FGM_UserId}),
                 FOREIGN KEY ({FGM_GroupId}) REFERENCES FreshmanGroups({nameof(FreshmanGroup.Id)}),
                 FOREIGN KEY ({FGM_UserId}) REFERENCES Users({nameof(User.Id)})
@@ -227,6 +254,7 @@ public class FreshmanGroupDatabase(
     #region NAMEOF_CONSTANTS
     private const string FGM_GroupId = nameof(FreshmanGroupMember.FreshmanGroupId);
     private const string FGM_UserId = nameof(FreshmanGroupMember.UserId);
+    private const string FGM_IsHidden = nameof(FreshmanGroupMember.IsHidden);
     #endregion NAMEOF_CONSTANTS
 
     private static FreshmanGroup MapGroupingToGroup(IGrouping<long, FreshmanGroup> grouping)
@@ -251,4 +279,6 @@ public class FreshmanGroupDatabase(
         group.Members.Add(member.UserId);
         return group;
     }
+
+
 }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace LarpakeServer.Models.QueryOptions;
 
@@ -10,6 +11,9 @@ public class FreshmanGroupQueryOptions : QueryOptions
     public Guid? ContainsUser { get; set; }
     public int? StartYear { get; set; }
     public bool DoMinimize { get; set; } = true;
+
+    [JsonIgnore]
+    public bool IncludeHiddenMembers { get; set; } = false;
 
 
     public override bool HasNonNullValues()

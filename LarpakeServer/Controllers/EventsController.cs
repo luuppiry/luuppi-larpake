@@ -19,7 +19,7 @@ public class EventsController : ExtendedControllerBase
     readonly IClaimsReader _claimsReader;
 
     public EventsController(
-        IEventDatabase db, 
+        IEventDatabase db,
         ILogger<EventsController> logger,
         IClaimsReader claimsReader) : base(logger)
     {
@@ -28,16 +28,18 @@ public class EventsController : ExtendedControllerBase
     }
 
     [HttpGet]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetEvents([FromQuery] EventQueryOptions options)
     {
         var records = await _db.Get(options);
         var result = EventsGetDto.MapFrom(records);
-        
+
         result.SetNextPaginationPage(options);
         return Ok(result);
     }
 
     [HttpGet("{eventId}")]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetEvent(long eventId)
     {
         var record = await _db.Get(eventId);
@@ -83,6 +85,19 @@ public class EventsController : ExtendedControllerBase
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         int rowsAffected = await _db.Delete(eventId, userId);
+        return OkRowsAffected(rowsAffected);
+    }
+
+    [HttpDelete("{eventId}/hard")]
+    [RequiresPermissions(Permissions.HardDeleteEvent)]
+    public async Task<IActionResult> HardDeleteEvent(long eventId)
+    {
+        int rowsAffected = await _db.HardDelete(eventId);
+        if (rowsAffected > 0)
+        {
+            Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+            _logger.LogInformation("User {userId} hard deleted event {eventId}", userId, eventId);
+        }
         return OkRowsAffected(rowsAffected);
     }
 }

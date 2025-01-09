@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LarpakeServer.Identity;
+namespace LarpakeServer.Models.PostDtos;
 
 public class TokenPostDto
 {

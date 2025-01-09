@@ -5,7 +5,8 @@ using Microsoft.Data.Sqlite;
 
 namespace LarpakeServer.Data.Sqlite;
 
-public class EventDatabase(SqliteConnectionString connectionString, UserDatabase userDb)
+public class EventDatabase(
+    SqliteConnectionString connectionString, UserDatabase userDb)
     : SqliteDbBase(connectionString, userDb), IEventDatabase
 {
     public async Task<Event[]> Get(EventQueryOptions options)
@@ -149,6 +150,16 @@ public class EventDatabase(SqliteConnectionString connectionString, UserDatabase
             """, new { eventId, modifyingUser });
     }
 
+    public async Task<int> HardDelete(long eventId)
+    {
+        using var connection = await GetConnection();
+        return await connection.ExecuteAsync($"""
+            DELETE FROM Events 
+            WHERE 
+                {nameof(Event.Id)} = @{nameof(eventId)};
+            """, new { eventId });
+    }
+
     protected override async Task InitializeAsync(SqliteConnection connection)
     {
         await connection.ExecuteAsync($"""
@@ -174,4 +185,5 @@ public class EventDatabase(SqliteConnectionString connectionString, UserDatabase
             """);
     }
 
+   
 }

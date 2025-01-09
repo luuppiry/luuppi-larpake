@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.EventModels;
+﻿using LarpakeServer.Identity;
+using LarpakeServer.Models.EventModels;
 using LarpakeServer.Services;
 using Microsoft.Extensions.Primitives;
 using System.Text.Json;
@@ -21,11 +22,12 @@ public class SubscribeController : ExtendedControllerBase
     {
         _clientPool = clients;
         _messageService = service;
-        _messageService.TaskReceived += async (_, e)=> await HandleTask(e);
+        _messageService.TaskReceived += async (_, e) => await HandleTask(e);
     }
 
 
     [HttpGet("{userId}")]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> Subscribe(Guid userId, CancellationToken token)
     {
         if (userId == Guid.Empty)
@@ -63,8 +65,8 @@ public class SubscribeController : ExtendedControllerBase
                 await Task.Delay(1000, token);
             }
         }
-        catch (TaskCanceledException) 
-        { 
+        catch (TaskCanceledException)
+        {
         }
 
         // Close connection
@@ -99,8 +101,8 @@ public class SubscribeController : ExtendedControllerBase
 
         // Try find client from id, if not found send to all
         HttpResponse[]? clients;
-        clients = _clientPool.TryFind(e.UserId, out clients) 
-            ? clients 
+        clients = _clientPool.TryFind(e.UserId, out clients)
+            ? clients
             : _clientPool.GetAll();
 
         // Send message to chosen clients

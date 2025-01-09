@@ -11,4 +11,5 @@ public interface IEventDatabase
     Task<Result<long>> Insert(Event record);
     Task<Result<int>> Update(Event record);
     Task<int> Delete(long eventId, Guid modifyingUser);
+    Task<int> HardDelete(long eventId);
 }

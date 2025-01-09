@@ -86,46 +86,41 @@ public enum Permissions : int
     DeleteAttendance = 1 << 13,
 
     /// <summary>
+    /// See user information like ids and permissions.
+    /// </summary>
+    ReadRawUserInfomation = 1 << 14,
+
+    /// <summary>
     /// Update user with lower role.
     /// Sudo -> Admin -> Tutor -> Freshman
     /// </summary>
-    UpdateUserInformation = 1 << 14,
+    UpdateUserInformation = 1 << 15,
 
     /// <summary>
     /// User can delete user with lower role.
     /// </summary>
-    DeleteUser = 1 << 15,
+    DeleteUser = 1 << 16,
+
+    /// <summary>
+    /// User can uncomplete or edit attendance record.
+    /// </summary>
+    EditAttendance = 1 << 17,
 
     /// <summary>
     /// User can manage any permissions that user can have.
     /// </summary>
-    ManageFreshmanPermissions = 1 << 16,
+    ManageFreshmanPermissions = 1 << 18,
 
     /// <summary>
     /// User can manage any permissions that tutor can have.
     /// </summary>
-    ManageTutorPermissions = 1 << 17 | ManageFreshmanPermissions,
+    ManageTutorPermissions = 1 << 19 | ManageFreshmanPermissions,
 
     #endregion ADMIN_PERMISSIONS
     #region SUDO_PERMISSIONS
 
     // Sudo permissions are only used for special occasions. 
     // They should not be given to anyone other than developers.
-
-    /// <summary>
-    /// User can uncomplete or edit attendance record.
-    /// </summary>
-    EditAttendance = 1 << 20,
-
-    /// <summary>
-    /// Permission allows to read any data.
-    /// </summary>
-    ReadAllData = 1 << 21,
-
-    /// <summary>
-    /// Permission allows to write any data.
-    /// </summary>
-    WriteAllData = 1 << 22,
 
     /// <summary>
     /// Permission allows to hard delete any event.

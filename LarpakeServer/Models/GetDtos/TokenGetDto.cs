@@ -1,13 +1,13 @@
-﻿namespace LarpakeServer.Identity;
+﻿namespace LarpakeServer.Models.GetDtos;
 
 public class TokenGetDto
 {
-    public TokenGetDto() {}
+    public TokenGetDto() { }
     internal TokenGetDto(DateTime refreshExpiration)
     {
-        RefreshExpiresAt = refreshExpiration;
+        RefreshTokenExpiresAt = refreshExpiration;
     }
     public required string AccessToken { get; init; }
     public required string RefreshToken { get; init; }
-    public DateTime? RefreshExpiresAt { get; } = null;
+    public DateTime? RefreshTokenExpiresAt { get; } = null;
 }

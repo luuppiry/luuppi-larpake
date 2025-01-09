@@ -31,6 +31,7 @@ public class UsersController : ExtendedControllerBase
 
 
     [HttpGet]
+    [RequiresPermissions(Permissions.ReadRawUserInfomation)]
     public async Task<IActionResult> GetUsers([FromQuery] UserQueryOptions options)
     {
         var records = await _db.Get(options);
@@ -41,6 +42,7 @@ public class UsersController : ExtendedControllerBase
 
 
     [HttpGet("{userId}")]
+    [RequiresPermissions(Permissions.ReadRawUserInfomation)]
     public async Task<IActionResult> GetUser(Guid userId)
     {
         var record = await _db.Get(userId);
@@ -76,7 +78,7 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserPutDto dto)
     {
         // Validate request author role is higher than target role
-        Result<bool> roleValidationResult = await IsRequestAuthorInHigherRole(userId);
+        Result roleValidationResult = await IsRequestAuthorInHigherRole(userId);
         if (roleValidationResult.IsError)
         {
             return FromError(roleValidationResult);
@@ -89,7 +91,7 @@ public class UsersController : ExtendedControllerBase
         Result<int> result = await _db.Update(record);
         if (result)
         {
-            _logger.LogInformation("Updated user {id}", userId);
+            _logger.LogInformation("Updated user {id}.", userId);
             return OkRowsAffected((int)result);
         }
         return FromError(result);
@@ -111,33 +113,38 @@ public class UsersController : ExtendedControllerBase
             return BadRequest("UserId must be provided.");
         }
 
-        Guid authorizedUserId = _reader.ReadAuthorizedUserId(Request);
-        if (userId == authorizedUserId)
+        Guid authorId = _reader.ReadAuthorizedUserId(Request);
+        if (userId == authorId)
         {
             _logger.LogInformation("User {id} tried to change own permissions.", userId);
             return BadRequest("Cannot change own permissions.");
         }
 
-        DbUser? author = await _db.Get(authorizedUserId);
+        DbUser? author = await _db.Get(authorId);
         if (author is null)
         {
             _logger.LogError("Authorized user {id} not found in database, " +
-                "token might have leaked and needs immidiate actions!", authorizedUserId);
+                "token might have leaked and needs immidiate actions!", authorId);
             return InternalServerError("Invalid token.");
         }
         if (author.IsAllowedToSet(dto.Permissions) is false)
         {
-            return Unauthorized("Higher request author role required.");
+            _logger.LogInformation("User {id} tried to set permissions for higher role user.", authorId);
+            return Unauthorized("Higher request role required.");
         }
         if (author.Has(dto.Permissions) is false)
         {
-            return Unauthorized("Higher request author role required.");
+            _logger.LogInformation("User {id} tried to set permissions higher than own.", authorId);
+            return Unauthorized("Higher request role required.");
         }
 
         // Update
         Result<int> result = await _db.UpdatePermissions(userId, dto.Permissions);
 
-        return result.MatchToResponse(OkRowsAffected, FromError);
+        return result.MatchToResponse(
+                ok: OkRowsAffected,
+                error: FromError
+            );
     }
 
 
@@ -147,19 +154,25 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> DeleteUser(Guid userId)
     {
         // Validate request author role is higher than target role
-        Result<bool> roleValidationResult = await IsRequestAuthorInHigherRole(userId);
+        Result roleValidationResult = await IsRequestAuthorInHigherRole(userId);
         if (roleValidationResult.IsError)
         {
+            _logger.LogInformation("User {id} tried to delete user {userId} without correct permission.", 
+                _reader.ReadAuthorizedUserId(Request), userId);
             return FromError(roleValidationResult);
         }
 
         int rowsAffected = await _db.Delete(userId);
+        if (rowsAffected > 0)
+        {
+            _logger.LogInformation("Deleted user {id}.", userId);
+        }
         return OkRowsAffected(rowsAffected);
     }
 
 
 
-    private async Task<Result<bool>> IsRequestAuthorInHigherRole(Guid targetId)
+    private async Task<Result> IsRequestAuthorInHigherRole(Guid targetId)
     {
         if (targetId == Guid.Empty)
         {
@@ -177,6 +190,6 @@ public class UsersController : ExtendedControllerBase
         {
             return Error.Unauthorized("Higher role required.");
         }
-        return true;
+        return Result.Ok;
     }
 }

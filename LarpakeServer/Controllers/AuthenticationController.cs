@@ -2,12 +2,11 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using System.Security.Claims;
 
 namespace LarpakeServer.Controllers;
-
-
 
 [ApiController]
 [Route("api")]
@@ -65,9 +64,10 @@ public class AuthenticationController : ExtendedControllerBase
 
 
     [HttpPost("token/refresh")]
-    public async Task<IActionResult> Refresh([FromBody] TokenGetDto dto)
+    public async Task<IActionResult> Refresh([FromBody] TokenPostDto dto)
     {
         // TODO: RateLimit this
+        // TODO: Refresh token should be read from http only cookie and access token from header (probably)
 
         // Validate expired access token 
         if (_tokenService.ValidateAccessToken(dto.AccessToken, out ClaimsPrincipal? claims, false) is false)
@@ -105,12 +105,14 @@ public class AuthenticationController : ExtendedControllerBase
         }
 
         // Generate new tokens
-        TokenGetDto tokens = _tokenService.GenerateTokens(user);
+        TokenGetDto newTokens = _tokenService.GenerateTokens(user);
 
         _logger.LogInformation("Refreshed tokens for user {id}.", user.Id);
 
+        // TODO: Set refresh token to http only cookie
+
         // Finish by saving refresh token
-        return await SaveToken(user, tokens, validation.TokenFamily.Value);
+        return await SaveToken(user, newTokens, validation.TokenFamily.Value);
     }
 
 
@@ -129,14 +131,14 @@ public class AuthenticationController : ExtendedControllerBase
     {
         Guard.ThrowIfNull(user);
         Guard.ThrowIfNull(tokens);
-        Guard.ThrowIfNull(tokens.RefreshExpiresAt);
+        Guard.ThrowIfNull(tokens.RefreshTokenExpiresAt);
 
         // Save refresh token
         var result = await _refreshTokenDb.Add(new RefreshToken
         {
             UserId = user.Id,
             Token = tokens.RefreshToken,
-            InvalidAt = tokens.RefreshExpiresAt.Value,
+            InvalidAt = tokens.RefreshTokenExpiresAt.Value,
             TokenFamily = tokenFamily
         });
 

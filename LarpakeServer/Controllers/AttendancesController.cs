@@ -34,8 +34,12 @@ public class AttendancesController : ExtendedControllerBase
 
 
     [HttpGet]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> Get([FromQuery] AttendanceQueryOptions options)
     {
+        /* Everyone can read their own attendances,
+         * all attendances can be read from tutor upwards
+         */
         Permissions permissions = _claimsReader.ReadAuthorizedUserPermissions(Request);
         bool readSelfOnly = permissions.Has(Permissions.Tutor) is false;
         if (readSelfOnly)
@@ -43,13 +47,12 @@ public class AttendancesController : ExtendedControllerBase
             options.UserId = _claimsReader.ReadAuthorizedUserId(Request);
         }
 
-
-
         var records = await _db.Get(options);
         var result = AttendancesGetDto.MapFrom(records);
         result.SetNextPaginationPage(options);
         if (readSelfOnly)
         {
+            // Add information if user can only read their own attendances
             result.Details.Add("Permissions limit to own attendances only.");
         }
         return Ok(result);
@@ -88,7 +91,7 @@ public class AttendancesController : ExtendedControllerBase
     }
 
     [HttpPost("uncomplete")]
-    [RequiresPermissions(Permissions.Admin)]
+    [RequiresPermissions(Permissions.DeleteAttendance)]
     public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
         Result<int> result = await _db.Uncomplete(dto.UserId, dto.EventId);

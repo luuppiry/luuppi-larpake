@@ -6,7 +6,6 @@ using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.QueryOptions;
-using Microsoft.AspNetCore.Mvc.Routing;
 
 namespace LarpakeServer.Controllers;
 
@@ -32,6 +31,7 @@ public class SignaturesController : ExtendedControllerBase
 
 
     [HttpGet]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetSignatures([FromQuery] SignatureQueryOptions options)
     {
         var records = await _db.Get(options);
@@ -41,6 +41,7 @@ public class SignaturesController : ExtendedControllerBase
     }
 
     [HttpGet("{signatureId}")]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetSignature(Guid signatureId)
     {
         Signature? record = await _db.Get(signatureId);
