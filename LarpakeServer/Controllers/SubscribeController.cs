@@ -18,7 +18,9 @@ public class SubscribeController : ExtendedControllerBase
     public SubscribeController(
         CompletionMessageService service,
         IClientPool clients,
-        ILogger<SubscribeController> logger) : base(logger)
+        ILogger<SubscribeController> logger,
+        IClaimsReader claimsReader
+        ) : base(claimsReader, logger)
     {
         _clientPool = clients;
         _messageService = service;
@@ -26,10 +28,11 @@ public class SubscribeController : ExtendedControllerBase
     }
 
 
-    [HttpGet("{userId}")]
+    [HttpGet]
     [RequiresPermissions(Permissions.CommonRead)]
-    public async Task<IActionResult> Subscribe(Guid userId, CancellationToken token)
+    public async Task<IActionResult> Subscribe(CancellationToken token)
     {
+        Guid userId = GetRequestUserId();
         if (userId == Guid.Empty)
         {
             return BadRequest("Invalid user id", "User id cannot be empty");
@@ -47,6 +50,15 @@ public class SubscribeController : ExtendedControllerBase
                 {
                     Message = "Service Unavailable",
                     Details = "SSE server is currently full, try again later"
+                }),
+                PoolInsertStatus.Blocked => StatusCode(403, new
+                {
+                    Message = "Forbidden",
+                    Details = "User is already connected to the SSE server"
+                }),
+                PoolInsertStatus.Failed => StatusCode(500, new
+                {
+                    Message = "Internal Server Error",
                 }),
                 _ => throw new InvalidOperationException($"Invalid {nameof(PoolInsertStatus)}")
             };
@@ -70,10 +82,11 @@ public class SubscribeController : ExtendedControllerBase
         }
 
         // Close connection
-        if (_clientPool.Remove(userId, client) is false)
-        {
-            _logger.LogWarning("Client {clientId} was not removed from the pool.", userId);
-        }
+        bool isRemoved = _clientPool.Remove(userId, client);
+
+        _logger.IfFalse(isRemoved)
+               .LogWarning("Client {clientId} was not removed from the pool.", userId);
+
         return Ok();
     }
 

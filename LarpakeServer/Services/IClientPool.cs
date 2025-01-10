@@ -14,6 +14,10 @@ public interface IClientPool
     /// </summary>
     int MaxSize { get; init; }
 
+    /// <summary>
+    /// Limit on how many clients a user can have in the pool at the time.
+    /// </summary>
+    int MaxClientsPerUser { get; init; }
 
     /// <summary>
     /// Adds a client to the pool. 

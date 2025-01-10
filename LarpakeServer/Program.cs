@@ -1,4 +1,5 @@
 using LarpakeServer.Extensions;
+using LarpakeServer.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;

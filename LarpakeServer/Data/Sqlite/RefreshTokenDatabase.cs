@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Identity;
+using LarpakeServer.Models.DatabaseModels;
 using Microsoft.Data.Sqlite;
 using System.Security.Cryptography;
 
@@ -37,7 +38,7 @@ public class RefreshTokenDatabase : SqliteDbBase, IRefreshTokenDatabase
         var hashed = new RefreshToken
         {
             UserId = token.UserId,
-            Token = ComputeSHA512Hash(token.Token),
+            Token = ComputeSHA256Hash(token.Token),
             InvalidAt = token.InvalidAt,
             TokenFamily = token.TokenFamily == Guid.Empty ? Guid.NewGuid() : token.TokenFamily
         };
@@ -73,7 +74,7 @@ public class RefreshTokenDatabase : SqliteDbBase, IRefreshTokenDatabase
     public async Task<RefreshTokenValidationResult> IsValid(Guid userId, string refreshToken)
     {
         // Get hash
-        string hash = ComputeSHA512Hash(refreshToken);
+        string hash = ComputeSHA256Hash(refreshToken);
 
         // Retrieve token
         using var connection = await GetConnection();
@@ -168,7 +169,7 @@ public class RefreshTokenDatabase : SqliteDbBase, IRefreshTokenDatabase
             """);
     }
 
-    private static string ComputeSHA512Hash(string refreshToken)
+    private static string ComputeSHA256Hash(string refreshToken)
     {
         Guard.ThrowIfNull(refreshToken);
 

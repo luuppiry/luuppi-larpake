@@ -15,17 +15,15 @@ namespace LarpakeServer.Controllers;
 public class SignaturesController : ExtendedControllerBase
 {
     readonly ISignatureDatabase _db;
-    readonly IClaimsReader _claimsReader;
     readonly int _signaturePointLimit;
 
     public SignaturesController(
         ISignatureDatabase db,
         ILogger<SignaturesController> logger,
         IConfiguration config,
-        IClaimsReader reader) : base(logger)
+        IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
-        _claimsReader = reader;
         _signaturePointLimit = config.GetValue<int>("Signature:PointLimit");
     }
 

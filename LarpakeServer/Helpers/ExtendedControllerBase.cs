@@ -1,4 +1,6 @@
-﻿using LarpakeServer.Helpers.Generic;
+﻿using LarpakeServer.Extensions;
+using LarpakeServer.Helpers.Generic;
+using LarpakeServer.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LarpakeServer.Helpers;
@@ -6,11 +8,20 @@ namespace LarpakeServer.Helpers;
 public class ExtendedControllerBase : ControllerBase
 {
     protected ILogger<ExtendedControllerBase> _logger;
+    protected readonly IClaimsReader _claimsReader;
 
-    public ExtendedControllerBase(ILogger<ExtendedControllerBase>? logger = null)
+    public ExtendedControllerBase(IClaimsReader claimsReader, ILogger<ExtendedControllerBase>? logger = null)
     {
         _logger = logger ?? NullLogger<ExtendedControllerBase>.Instance;
+        _claimsReader = claimsReader;
     }
+
+    protected Guid GetRequestUserId() => _claimsReader.ReadAuthorizedUserId(Request);
+    protected Permissions GetRequestPermissions() => _claimsReader.ReadAuthorizedUserPermissions(Request);
+
+
+
+    
 
     protected ObjectResult FromError(Result result) => FromError((Error)result);
     protected ObjectResult FromError<T>(Result<T> error) => FromError((Error)error);

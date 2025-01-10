@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
 
-namespace LarpakeServer.Helpers;
+namespace LarpakeServer.Identity;
 
 internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
 {
@@ -14,17 +14,17 @@ internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransfor
     }
 
     public async Task TransformAsync(
-        OpenApiDocument document, 
-        OpenApiDocumentTransformerContext context, 
+        OpenApiDocument document,
+        OpenApiDocumentTransformerContext context,
         CancellationToken cancellationToken)
     {
         var authenticationSchemes = await _provider.GetAllSchemesAsync();
-        
+
         // Validate bearer scheme exists
         if (authenticationSchemes.All(x => x.Name is not "Bearer"))
         {
             return;
-        } 
+        }
 
         var requirements = new Dictionary<string, OpenApiSecurityScheme>
         {

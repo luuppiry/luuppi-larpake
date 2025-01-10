@@ -7,6 +7,7 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using System.Reflection.PortableExecutable;
 
 namespace LarpakeServer.Controllers;
 
@@ -16,15 +17,13 @@ namespace LarpakeServer.Controllers;
 public class EventsController : ExtendedControllerBase
 {
     readonly IEventDatabase _db;
-    readonly IClaimsReader _claimsReader;
 
     public EventsController(
         IEventDatabase db,
         ILogger<EventsController> logger,
-        IClaimsReader claimsReader) : base(logger)
+        IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
-        _claimsReader = claimsReader;
     }
 
     [HttpGet]
@@ -56,12 +55,16 @@ public class EventsController : ExtendedControllerBase
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         var record = Event.MapFrom(dto, userId);
+        
         Result<long> result = await _db.Insert(record);
-        if (result)
-        {
-            return CreatedId((long)result);
-        }
-        return FromError(result);
+        
+        _logger.IfTrue(result)
+            .LogInformation("User {userId} created event {eventId}", 
+                GetRequestUserId(), (long)result);
+        
+        return result.MatchToResponse(
+            ok: CreatedId,
+            error: FromError);
     }
 
     [HttpPut("{eventId}")]
@@ -71,12 +74,15 @@ public class EventsController : ExtendedControllerBase
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         var record = Event.MapFrom(dto, eventId, userId);
         record.Id = eventId;
+        
         Result<int> result = await _db.Update(record);
-        if (result)
-        {
-            return OkRowsAffected((int)result);
-        }
-        return FromError(result);
+        _logger.IfTrue(result)
+            .LogInformation("User {userId} updated event {eventId}", 
+                GetRequestUserId(), eventId);
+
+        return result.MatchToResponse(
+            ok: OkRowsAffected, 
+            error: FromError);
     }
 
     [HttpDelete("{eventId}")]
@@ -84,7 +90,12 @@ public class EventsController : ExtendedControllerBase
     public async Task<IActionResult> DeleteEvent(long eventId)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
+        
         int rowsAffected = await _db.Delete(eventId, userId);
+        _logger.IfPositive(rowsAffected)
+            .LogInformation("User {userId} deleted event {eventId}", 
+                userId, eventId);
+
         return OkRowsAffected(rowsAffected);
     }
 
@@ -93,11 +104,11 @@ public class EventsController : ExtendedControllerBase
     public async Task<IActionResult> HardDeleteEvent(long eventId)
     {
         int rowsAffected = await _db.HardDelete(eventId);
-        if (rowsAffected > 0)
-        {
-            Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
-            _logger.LogInformation("User {userId} hard deleted event {eventId}", userId, eventId);
-        }
+        _logger.IfPositive(rowsAffected)
+            .LogInformation("User {userId} hard deleted event {eventId}", 
+                GetRequestUserId(), eventId);
+        
         return OkRowsAffected(rowsAffected);
     }
+
 }

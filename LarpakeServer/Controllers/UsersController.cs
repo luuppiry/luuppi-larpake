@@ -18,15 +18,13 @@ namespace LarpakeServer.Controllers;
 public class UsersController : ExtendedControllerBase
 {
     readonly IUserDatabase _db;
-    readonly IClaimsReader _reader;
 
     public UsersController(
         IUserDatabase db,
-        IClaimsReader reader,
-        ILogger<UsersController> logger) : base(logger)
+        IClaimsReader claimsReader,
+        ILogger<UsersController> logger) : base(claimsReader, logger)
     {
         _db = db;
-        _reader = reader;
     }
 
 
@@ -113,7 +111,7 @@ public class UsersController : ExtendedControllerBase
             return BadRequest("UserId must be provided.");
         }
 
-        Guid authorId = _reader.ReadAuthorizedUserId(Request);
+        Guid authorId = GetRequestUserId();
         if (userId == authorId)
         {
             _logger.LogInformation("User {id} tried to change own permissions.", userId);
@@ -157,16 +155,17 @@ public class UsersController : ExtendedControllerBase
         Result roleValidationResult = await IsRequestAuthorInHigherRole(userId);
         if (roleValidationResult.IsError)
         {
-            _logger.LogInformation("User {id} tried to delete user {userId} without correct permission.", 
-                _reader.ReadAuthorizedUserId(Request), userId);
+            _logger.LogInformation(
+                "User {authorId} tried to delete user {userId} without correct permission.", 
+                    GetRequestUserId(), userId);
             return FromError(roleValidationResult);
         }
 
         int rowsAffected = await _db.Delete(userId);
-        if (rowsAffected > 0)
-        {
-            _logger.LogInformation("Deleted user {id}.", userId);
-        }
+        
+        _logger.IfPositive(rowsAffected)
+            .LogInformation("Deleted user {id}.", userId);
+
         return OkRowsAffected(rowsAffected);
     }
 
@@ -185,11 +184,13 @@ public class UsersController : ExtendedControllerBase
             return Error.NotFound("User not found.");
         }
 
-        Permissions authorizedPermissions = _reader.ReadAuthorizedUserPermissions(Request);
+        Permissions authorizedPermissions = GetRequestPermissions();
         if (authorizedPermissions.HasHigherRoleOrSudo(target.Permissions) is false)
         {
             return Error.Unauthorized("Higher role required.");
         }
         return Result.Ok;
     }
+
+
 }

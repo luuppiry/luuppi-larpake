@@ -18,15 +18,13 @@ namespace LarpakeServer.Controllers;
 public class GroupsController : ExtendedControllerBase
 {
     readonly IFreshmanGroupDatabase _db;
-    readonly IClaimsReader _reader;
 
     public GroupsController(
         IFreshmanGroupDatabase db,
         ILogger<GroupsController> logger,
-        IClaimsReader reader) : base(logger)
+        IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
-        _reader = reader;
     }
 
     [HttpGet]
@@ -34,7 +32,7 @@ public class GroupsController : ExtendedControllerBase
     public async Task<IActionResult> GetGroups([FromQuery] FreshmanGroupQueryOptions options)
     {
         // Check if user has permission to see hidden members
-        Permissions permissions = _reader.ReadAuthorizedUserPermissions(Request);
+        Permissions permissions = GetRequestPermissions();
         options.IncludeHiddenMembers = permissions.Has(Permissions.SeeHiddenMembers);
 
         var records = await _db.Get(options);
@@ -86,7 +84,7 @@ public class GroupsController : ExtendedControllerBase
         var validation = await RequireMemberOrAdmin(groupId);
         if (validation.IsError)
         {
-            Guid userId = _reader.ReadAuthorizedUserId(Request);
+            Guid userId = GetRequestUserId();
             _logger.LogInformation("User {userId} tried to add members to group {groupId} " +
                 "with insufficent permissions.", userId, groupId);
             return FromError(validation);
@@ -145,12 +143,11 @@ public class GroupsController : ExtendedControllerBase
         }
 
         int result = await _db.DeleteMembers(groupId, members.MemberIds);
-        if (result > 0)
-        {
-            Guid userId = _reader.ReadAuthorizedUserId(Request);
-            _logger.LogInformation("Removed members {members} from group {groupId} by {userId}.", 
-                members.MemberIds, groupId, userId);
-        }
+
+        _logger.IfPositive(result)
+            .LogInformation("Removed members {members} from group {groupId} by {userId}.",
+                members.MemberIds, groupId, GetRequestUserId());
+
         return OkRowsAffected(result);
     }
 
@@ -159,11 +156,11 @@ public class GroupsController : ExtendedControllerBase
     public async Task<IActionResult> DeleteGroup(long groupId)
     {
         int result = await _db.Delete(groupId);
-        if (result > 0)
-        {
-            Guid userId = _reader.ReadAuthorizedUserId(Request);
-            _logger.LogInformation("Group {groupId} deleted by {userId}.", groupId, userId);
-        }
+        
+        _logger.IfPositive(result)
+            .LogInformation("Group {groupId} deleted by {authorId}.", 
+                groupId, GetRequestUserId());
+      
         return OkRowsAffected(result);
     }
 
@@ -172,14 +169,14 @@ public class GroupsController : ExtendedControllerBase
 
     private async Task<Result> RequireMemberOrAdmin(long groupId)
     {
-        if (_reader.ReadAuthorizedUserPermissions(Request).Has(Permissions.Admin))
+        if (GetRequestPermissions().Has(Permissions.Admin))
         {
             // Is admin
             return Result.Ok;
         }
 
         // Is not admin
-        var userId = _reader.ReadAuthorizedUserId(Request);
+        var userId = GetRequestUserId();
         var members = await _db.GetMembers(groupId);
         if (members is null)
         {

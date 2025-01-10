@@ -17,19 +17,17 @@ namespace LarpakeServer.Controllers;
 [Route("api/[controller]")]
 public class AttendancesController : ExtendedControllerBase
 {
-    private readonly IAttendanceDatabase _db;
-    private readonly CompletionMessageService _messageService;
-    private readonly IClaimsReader _claimsReader;
+    readonly IAttendanceDatabase _db;
+    readonly CompletionMessageService _messageService;
 
     public AttendancesController(
         IAttendanceDatabase db, 
         CompletionMessageService messageService,
         IClaimsReader claimsReader,
-        ILogger<AttendancesController> logger) : base(logger)
+        ILogger<AttendancesController> logger) : base(claimsReader, logger)
     {
         _db = db;
         _messageService = messageService;
-        _claimsReader = claimsReader;
     }
 
 
@@ -67,11 +65,9 @@ public class AttendancesController : ExtendedControllerBase
         var record = Attendance.MapFrom(eventId, userId);
 
         Result<int> result = await _db.InsertUncompleted(record);
-        if (result)
-        {
-            return OkRowsAffected((int)result);
-        }
-        return FromError(result);
+        return result.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError);
     }
 
     [HttpPost("complete")]
@@ -95,10 +91,8 @@ public class AttendancesController : ExtendedControllerBase
     public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
         Result<int> result = await _db.Uncomplete(dto.UserId, dto.EventId);
-        if (result)
-        {
-            return OkRowsAffected((int)result);
-        }
-        return FromError(result);
+        return result.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError);
     }
 }

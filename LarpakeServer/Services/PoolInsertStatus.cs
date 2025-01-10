@@ -15,5 +15,11 @@ public enum PoolInsertStatus
     /// <summary>
     /// Pool is full, client was not added. Try again later.
     /// </summary>
-    Full
+    Full,
+
+    /// <summary>
+    /// Client has already maximum number of connections in the pool.
+    /// Connection was not added.
+    /// </summary>
+    Blocked
 }

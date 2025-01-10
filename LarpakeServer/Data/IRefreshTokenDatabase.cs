@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Identity;
+using LarpakeServer.Models.DatabaseModels;
 
 namespace LarpakeServer.Data;
 public interface IRefreshTokenDatabase

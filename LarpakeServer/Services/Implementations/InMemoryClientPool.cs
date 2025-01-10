@@ -49,6 +49,7 @@ public class InMemoryClientPool : IClientPool
         }
     }
     public int MaxSize { get; init; } = 1000;
+    public int MaxClientsPerUser { get; init; } = 5;
 
 
     public PoolInsertStatus Add(Guid userId, HttpResponse client)
@@ -74,10 +75,17 @@ public class InMemoryClientPool : IClientPool
         {
             if (_clients.TryGetValue(userId, out var clients))
             {
+                if (clients.Count > MaxClientsPerUser)
+                {
+                    _logger.LogInformation("User {id} has maximum number of connections ({}).", 
+                        userId, MaxClientsPerUser);
+                    return PoolInsertStatus.Blocked;
+                }
                 clients.Add(client);      
             }
             else
             {
+                // Add new list
                 _clients[userId] = [client];
             }
             Size++;

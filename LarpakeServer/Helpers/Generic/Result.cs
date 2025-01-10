@@ -1,4 +1,6 @@
-﻿namespace LarpakeServer.Helpers.Generic;
+﻿using Microsoft.AspNetCore.Components.RenderTree;
+
+namespace LarpakeServer.Helpers.Generic;
 
 /// <summary>
 /// Generic implementation of <see cref="Result"/>.

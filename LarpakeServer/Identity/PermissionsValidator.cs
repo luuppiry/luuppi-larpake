@@ -1,8 +1,7 @@
 ﻿using LarpakeServer.Extensions;
-using LarpakeServer.Identity;
 
 
-namespace LarpakeServer.Helpers;
+namespace LarpakeServer.Identity;
 
 internal static class PermissionsValidator
 {

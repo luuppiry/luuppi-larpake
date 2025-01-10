@@ -15,19 +15,17 @@ public class AuthenticationController : ExtendedControllerBase
     readonly TokenService _tokenService;
     readonly IUserDatabase _userDb;
     readonly IRefreshTokenDatabase _refreshTokenDb;
-    readonly IClaimsReader _claimsReader;
 
     public AuthenticationController(
         TokenService generator,
         IUserDatabase userDb,
         IRefreshTokenDatabase refreshTokenDb,
         IClaimsReader claimsReader,
-        ILogger<AuthenticationController> logger) : base(logger)
+        ILogger<AuthenticationController> logger) : base(claimsReader, logger)
     {
         _tokenService = generator;
         _userDb = userDb;
         _refreshTokenDb = refreshTokenDb;
-        _claimsReader = claimsReader;
     }
 
 

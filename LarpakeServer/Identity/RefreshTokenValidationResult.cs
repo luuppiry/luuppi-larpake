@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace LarpakeServer.Helpers;
+namespace LarpakeServer.Identity;
 
 public readonly struct RefreshTokenValidationResult
 {

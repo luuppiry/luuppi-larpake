@@ -1,4 +1,4 @@
-﻿namespace LarpakeServer.Helpers;
+﻿namespace LarpakeServer.Data.Sqlite;
 
 /// <summary>
 /// Enum for SQLite error codes.

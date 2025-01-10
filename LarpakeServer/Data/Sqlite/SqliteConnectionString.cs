@@ -1,3 +1,3 @@
-﻿namespace LarpakeServer.Helpers;
+﻿namespace LarpakeServer.Data.Sqlite;
 
 public record SqliteConnectionString(string Value);
