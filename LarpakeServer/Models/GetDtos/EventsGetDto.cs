@@ -11,7 +11,7 @@ public class EventsGetDto : GetDtoBase
     [JsonIgnore]
     public override int ItemCount => Events.Length;
 
-    internal static EventsGetDto MapFrom(Event[] events)
+    internal static EventsGetDto MapFrom(OrganizationEvent[] events)
     {
         return new EventsGetDto
         {

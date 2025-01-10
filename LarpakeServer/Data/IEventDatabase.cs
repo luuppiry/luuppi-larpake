@@ -6,10 +6,10 @@ namespace LarpakeServer.Data;
 
 public interface IEventDatabase
 {
-    Task<Event[]> Get(EventQueryOptions options);
-    Task<Event?> Get(long id);
-    Task<Result<long>> Insert(Event record);
-    Task<Result<int>> Update(Event record);
+    Task<OrganizationEvent[]> Get(EventQueryOptions options);
+    Task<OrganizationEvent?> Get(long id);
+    Task<Result<long>> Insert(OrganizationEvent record);
+    Task<Result<int>> Update(OrganizationEvent record);
     Task<int> Delete(long eventId, Guid modifyingUser);
     Task<int> HardDelete(long eventId);
 }

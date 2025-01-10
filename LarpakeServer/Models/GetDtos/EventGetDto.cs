@@ -16,7 +16,7 @@ public class EventGetDto
     public DateTime UpdatedAt { get; set; }
     public SoftDeletionInfo? SoftDeletionInfo { get; set; } = null;
 
-    internal static EventGetDto From(Event record)
+    internal static EventGetDto From(OrganizationEvent record)
     {
         return new EventGetDto
         {

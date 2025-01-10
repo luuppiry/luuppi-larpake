@@ -269,7 +269,7 @@ public class AttendanceDatabase(
                 {nameof(Attendance.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY ({nameof(Attendance.UserId)}, {nameof(Attendance.EventId)}),
                 FOREIGN KEY ({nameof(Attendance.UserId)}) REFERENCES Users({nameof(User.Id)}),
-                FOREIGN KEY ({nameof(Attendance.EventId)}) REFERENCES Events({nameof(Event.Id)}),
+                FOREIGN KEY ({nameof(Attendance.EventId)}) REFERENCES Events({nameof(OrganizationEvent.Id)}),
                 FOREIGN KEY ({nameof(Attendance.CompletionId)}) REFERENCES AttendanceCompletions({nameof(AttendanceCompletion.Id)})
             );
             """);

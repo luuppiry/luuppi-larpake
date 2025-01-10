@@ -9,13 +9,13 @@ public class EventDatabase(
     SqliteConnectionString connectionString, UserDatabase userDb)
     : SqliteDbBase(connectionString, userDb), IEventDatabase
 {
-    public async Task<Event[]> Get(EventQueryOptions options)
+    public async Task<OrganizationEvent[]> Get(EventQueryOptions options)
     {
         StringBuilder query = new();
 
         query.AppendLine($"""
             SELECT * FROM Events
-            WHERE {nameof(Event.DeletedAt)} IS NULL
+            WHERE {nameof(OrganizationEvent.DeletedAt)} IS NULL
             """);
 
         // Add filters
@@ -23,72 +23,72 @@ public class EventDatabase(
         {
             // Start time is after given time
             query.AppendLine($"""
-                AND {nameof(Event.StartsAt)} >= @{nameof(options.After)} 
+                AND {nameof(OrganizationEvent.StartsAt)} >= @{nameof(options.After)} 
                 """);
         }
         if (options.Before is not null)
         {
             // Start time is before given time
             query.AppendLine($"""
-                AND {nameof(Event.StartsAt)} <= @{nameof(options.Before)} 
+                AND {nameof(OrganizationEvent.StartsAt)} <= @{nameof(options.Before)} 
                 """);
         }
         if (options.Title is not null)
         {
             // Title like given title (can include any characters around)
             query.AppendLine($"""
-                AND {nameof(Event.Title)} LIKE %@{nameof(options.Title)}% 
+                AND {nameof(OrganizationEvent.Title)} LIKE %@{nameof(options.Title)}% 
                 """);
         }
 
         query.Append($"""
-            ORDER BY {nameof(Event.StartsAt)} ASC
+            ORDER BY {nameof(OrganizationEvent.StartsAt)} ASC
             LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)};
             """);
 
         using var connection = await GetConnection();
-        var events = await connection.QueryAsync<Event>(query.ToString(), options);
+        var events = await connection.QueryAsync<OrganizationEvent>(query.ToString(), options);
         return events.ToArray();
     }
 
-    public async Task<Event?> Get(long id)
+    public async Task<OrganizationEvent?> Get(long id)
     {
         using var connection = await GetConnection();
-        return await connection.QueryFirstOrDefaultAsync<Event>($"""
-            SELECT * FROM Events WHERE {nameof(Event.Id)} = @id LIMIT 1;
+        return await connection.QueryFirstOrDefaultAsync<OrganizationEvent>($"""
+            SELECT * FROM Events WHERE {nameof(OrganizationEvent.Id)} = @id LIMIT 1;
             """, new { id });
     }
 
-    public async Task<Result<long>> Insert(Event record)
+    public async Task<Result<long>> Insert(OrganizationEvent record)
     {
         try
         {
             var sql = $"""
                 INSERT INTO Events (
-                    {nameof(Event.Title)}, 
-                    {nameof(Event.Body)}, 
-                    {nameof(Event.StartsAt)},
-                    {nameof(Event.EndsAt)}, 
-                    {nameof(Event.Location)}, 
-                    {nameof(Event.LuuppiRefId)},
-                    {nameof(Event.WebsiteUrl)}, 
-                    {nameof(Event.ImageUrl)}, 
-                    {nameof(Event.CreatedBy)},
-                    {nameof(Event.UpdatedBy)},
-                    {nameof(Event.DeletedAt)}
+                    {nameof(OrganizationEvent.Title)}, 
+                    {nameof(OrganizationEvent.Body)}, 
+                    {nameof(OrganizationEvent.StartsAt)},
+                    {nameof(OrganizationEvent.EndsAt)}, 
+                    {nameof(OrganizationEvent.Location)}, 
+                    {nameof(OrganizationEvent.LuuppiRefId)},
+                    {nameof(OrganizationEvent.WebsiteUrl)}, 
+                    {nameof(OrganizationEvent.ImageUrl)}, 
+                    {nameof(OrganizationEvent.CreatedBy)},
+                    {nameof(OrganizationEvent.UpdatedBy)},
+                    {nameof(OrganizationEvent.DeletedAt)}
                 ) 
                 Values (
-                    @{nameof(Event.Title)},
-                    @{nameof(Event.Body)},
-                    @{nameof(Event.StartsAt)},
-                    @{nameof(Event.EndsAt)},
-                    @{nameof(Event.Location)},
-                    @{nameof(Event.LuuppiRefId)},
-                    @{nameof(Event.WebsiteUrl)},
-                    @{nameof(Event.ImageUrl)},
-                    @{nameof(Event.CreatedBy)},
-                    @{nameof(Event.UpdatedBy)},
+                    @{nameof(OrganizationEvent.Title)},
+                    @{nameof(OrganizationEvent.Body)},
+                    @{nameof(OrganizationEvent.StartsAt)},
+                    @{nameof(OrganizationEvent.EndsAt)},
+                    @{nameof(OrganizationEvent.Location)},
+                    @{nameof(OrganizationEvent.LuuppiRefId)},
+                    @{nameof(OrganizationEvent.WebsiteUrl)},
+                    @{nameof(OrganizationEvent.ImageUrl)},
+                    @{nameof(OrganizationEvent.CreatedBy)},
+                    @{nameof(OrganizationEvent.UpdatedBy)},
                     NULL
                 );
                 SELECT last_insert_rowid();
@@ -110,7 +110,7 @@ public class EventDatabase(
         }
     }
 
-    public async Task<Result<int>> Update(Event record)
+    public async Task<Result<int>> Update(OrganizationEvent record)
     {
         if (record.Id is Constants.NullId)
         {
@@ -121,18 +121,18 @@ public class EventDatabase(
         return await connection.ExecuteAsync($"""
             UPDATE Events 
             SET 
-                {nameof(Event.Title)} = @{nameof(record.Title)},
-                {nameof(Event.Body)} = @{nameof(record.Body)},
-                {nameof(Event.StartsAt)} = @{nameof(record.StartsAt)},
-                {nameof(Event.EndsAt)} = @{nameof(record.EndsAt)},
-                {nameof(Event.Location)} = @{nameof(record.Location)},
-                {nameof(Event.LuuppiRefId)} = @{nameof(record.LuuppiRefId)},
-                {nameof(Event.WebsiteUrl)} = @{nameof(record.WebsiteUrl)},
-                {nameof(Event.ImageUrl)} = @{nameof(record.ImageUrl)},
-                {nameof(Event.UpdatedBy)} = @{nameof(record.UpdatedBy)},
-                {nameof(Event.UpdatedAt)} = DATETIME('now')
+                {nameof(OrganizationEvent.Title)} = @{nameof(record.Title)},
+                {nameof(OrganizationEvent.Body)} = @{nameof(record.Body)},
+                {nameof(OrganizationEvent.StartsAt)} = @{nameof(record.StartsAt)},
+                {nameof(OrganizationEvent.EndsAt)} = @{nameof(record.EndsAt)},
+                {nameof(OrganizationEvent.Location)} = @{nameof(record.Location)},
+                {nameof(OrganizationEvent.LuuppiRefId)} = @{nameof(record.LuuppiRefId)},
+                {nameof(OrganizationEvent.WebsiteUrl)} = @{nameof(record.WebsiteUrl)},
+                {nameof(OrganizationEvent.ImageUrl)} = @{nameof(record.ImageUrl)},
+                {nameof(OrganizationEvent.UpdatedBy)} = @{nameof(record.UpdatedBy)},
+                {nameof(OrganizationEvent.UpdatedAt)} = DATETIME('now')
             WHERE 
-                {nameof(Event.Id)} = @{nameof(record.Id)};
+                {nameof(OrganizationEvent.Id)} = @{nameof(record.Id)};
             """, record);
     }
 
@@ -142,11 +142,11 @@ public class EventDatabase(
         return await connection.ExecuteAsync($"""
             UPDATE Events 
             SET 
-                {nameof(Event.DeletedAt)} = DATETIME('now'),
-                {nameof(Event.UpdatedAt)} = DATETIME('now'),
-                {nameof(Event.UpdatedBy)} = @{nameof(modifyingUser)}
+                {nameof(OrganizationEvent.DeletedAt)} = DATETIME('now'),
+                {nameof(OrganizationEvent.UpdatedAt)} = DATETIME('now'),
+                {nameof(OrganizationEvent.UpdatedBy)} = @{nameof(modifyingUser)}
             WHERE 
-                {nameof(Event.Id)} = @{nameof(eventId)};
+                {nameof(OrganizationEvent.Id)} = @{nameof(eventId)};
             """, new { eventId, modifyingUser });
     }
 
@@ -156,7 +156,7 @@ public class EventDatabase(
         return await connection.ExecuteAsync($"""
             DELETE FROM Events 
             WHERE 
-                {nameof(Event.Id)} = @{nameof(eventId)};
+                {nameof(OrganizationEvent.Id)} = @{nameof(eventId)};
             """, new { eventId });
     }
 
@@ -164,23 +164,23 @@ public class EventDatabase(
     {
         await connection.ExecuteAsync($"""
             CREATE TABLE IF NOT EXISTS Events (
-                {nameof(Event.Id)} INTEGER,
-                {nameof(Event.Title)} TEXT NOT NULL,
-                {nameof(Event.Body)} TEXT,
-                {nameof(Event.StartsAt)} DATETIME NOT NULL,
-                {nameof(Event.EndsAt)} DATETIME DEFAULT NULL,
-                {nameof(Event.Location)} TEXT NOT NULL,
-                {nameof(Event.ImageUrl)} TEXT,
-                {nameof(Event.LuuppiRefId)} INTEGER,
-                {nameof(Event.WebsiteUrl)} TEXT,
-                {nameof(Event.CreatedBy)} TEXT NOT NULL,
-                {nameof(Event.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(Event.UpdatedBy)} TEXT NOT NULL,
-                {nameof(Event.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(Event.DeletedAt)} DATETIME,
-                FOREIGN KEY({nameof(Event.CreatedBy)}) REFERENCES Users({nameof(User.Id)}),
-                FOREIGN KEY({nameof(Event.UpdatedBy)}) REFERENCES Users({nameof(User.Id)}),
-                PRIMARY KEY({nameof(Event.Id)})
+                {nameof(OrganizationEvent.Id)} INTEGER,
+                {nameof(OrganizationEvent.Title)} TEXT NOT NULL,
+                {nameof(OrganizationEvent.Body)} TEXT,
+                {nameof(OrganizationEvent.StartsAt)} DATETIME NOT NULL,
+                {nameof(OrganizationEvent.EndsAt)} DATETIME DEFAULT NULL,
+                {nameof(OrganizationEvent.Location)} TEXT NOT NULL,
+                {nameof(OrganizationEvent.ImageUrl)} TEXT,
+                {nameof(OrganizationEvent.LuuppiRefId)} INTEGER,
+                {nameof(OrganizationEvent.WebsiteUrl)} TEXT,
+                {nameof(OrganizationEvent.CreatedBy)} TEXT NOT NULL,
+                {nameof(OrganizationEvent.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(OrganizationEvent.UpdatedBy)} TEXT NOT NULL,
+                {nameof(OrganizationEvent.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(OrganizationEvent.DeletedAt)} DATETIME,
+                FOREIGN KEY({nameof(OrganizationEvent.CreatedBy)}) REFERENCES Users({nameof(User.Id)}),
+                FOREIGN KEY({nameof(OrganizationEvent.UpdatedBy)}) REFERENCES Users({nameof(User.Id)}),
+                PRIMARY KEY({nameof(OrganizationEvent.Id)})
             )
             """);
     }

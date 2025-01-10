@@ -54,7 +54,7 @@ public class EventsController : ExtendedControllerBase
     public async Task<IActionResult> CreateEvent([FromBody] EventPostDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
-        var record = Event.MapFrom(dto, userId);
+        var record = OrganizationEvent.MapFrom(dto, userId);
         
         Result<long> result = await _db.Insert(record);
         
@@ -72,7 +72,7 @@ public class EventsController : ExtendedControllerBase
     public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] EventPutDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
-        var record = Event.MapFrom(dto, eventId, userId);
+        var record = OrganizationEvent.MapFrom(dto, eventId, userId);
         record.Id = eventId;
         
         Result<int> result = await _db.Update(record);

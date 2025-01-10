@@ -3,7 +3,7 @@ using LarpakeServer.Models.PutDtos;
 
 namespace LarpakeServer.Models.DatabaseModels;
 
-public class Event
+public class OrganizationEvent
 {
     public required long Id { get; set; }
     public required string Title { get; set; }
@@ -11,7 +11,6 @@ public class Event
     public required DateTime StartsAt { get; set; }
     public DateTime? EndsAt { get; set; } = null;
     public string Location { get; set; } = string.Empty;
-    public long LuuppiRefId { get; set; } = Constants.NullId;
     public string? WebsiteUrl { get; set; } = null;
     public string? ImageUrl { get; set; } = null;
     
@@ -24,9 +23,9 @@ public class Event
     public bool IsDeleted => DeletedAt is not null;
 
 
-    public static Event MapFrom(EventPutDto dto, long id, Guid modifyingUser)
+    public static OrganizationEvent MapFrom(EventPutDto dto, long id, Guid modifyingUser)
     {
-        return new Event
+        return new OrganizationEvent
         {
             Id = id,
             Title = dto.Title,
@@ -34,7 +33,6 @@ public class Event
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,
             Location = dto.Location,
-            LuuppiRefId = dto.LuuppiRefId,
             WebsiteUrl = dto.WebsiteUrl,
             // TODO: ImageUrl = dto.ImageUrl,
             UpdatedBy = modifyingUser,
@@ -43,9 +41,9 @@ public class Event
         };
     }
 
-    public static Event MapFrom(EventPostDto dto, Guid modifyingUser)
+    public static OrganizationEvent MapFrom(EventPostDto dto, Guid modifyingUser)
     {
-        return new Event
+        return new OrganizationEvent
         {
             Id = Constants.NullId,
             Title = dto.Title,
@@ -53,7 +51,6 @@ public class Event
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,
             Location = dto.Location,
-            LuuppiRefId = dto.LuuppiRefId,
             WebsiteUrl = dto.WebsiteUrl,
             // TODO: ImageUrl = dto.Image?.Url,
             CreatedBy = modifyingUser,
