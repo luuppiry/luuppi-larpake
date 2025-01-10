@@ -28,8 +28,8 @@ public static class ServiceExtensions
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
         
-        services.AddSingleton<IEventDatabase, EventDatabase>();
-        services.AddSingleton<EventDatabase>();
+        services.AddSingleton<IEventDatabase, OrganizationEventDatabase>();
+        services.AddSingleton<OrganizationEventDatabase>();
         services.AddSingleton<IUserDatabase, UserDatabase>();
         services.AddSingleton<UserDatabase>();
         services.AddSingleton<IFreshmanGroupDatabase, FreshmanGroupDatabase>();
@@ -40,6 +40,8 @@ public static class ServiceExtensions
         services.AddSingleton<SignatureDatabase>();
         services.AddSingleton<IRefreshTokenDatabase, RefreshTokenDatabase>();
         services.AddSingleton<RefreshTokenDatabase>();
+        services.AddSingleton<ILarpakeDatabase, LarpakeDatabase>();
+        services.AddSingleton<LarpakeDatabase>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)

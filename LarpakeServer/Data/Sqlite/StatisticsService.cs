@@ -8,7 +8,7 @@ public class StatisticsService(
         SqliteConnectionString connectionString,
         UserDatabase userDb,
         FreshmanGroupDatabase groupDb,
-        EventDatabase eventDb)
+        OrganizationEventDatabase eventDb)
     : SqliteDbBase(connectionString, userDb, groupDb, eventDb), IStatisticsService
 {
     public async Task<long?> GetFreshmanGroupPoints(int groupId)

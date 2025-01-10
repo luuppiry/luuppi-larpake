@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 
 namespace LarpakeServer.Data.Sqlite;
 
-public class EventDatabase(
+public class OrganizationEventDatabase(
     SqliteConnectionString connectionString, UserDatabase userDb)
     : SqliteDbBase(connectionString, userDb), IEventDatabase
 {
@@ -71,7 +71,6 @@ public class EventDatabase(
                     {nameof(OrganizationEvent.StartsAt)},
                     {nameof(OrganizationEvent.EndsAt)}, 
                     {nameof(OrganizationEvent.Location)}, 
-                    {nameof(OrganizationEvent.LuuppiRefId)},
                     {nameof(OrganizationEvent.WebsiteUrl)}, 
                     {nameof(OrganizationEvent.ImageUrl)}, 
                     {nameof(OrganizationEvent.CreatedBy)},
@@ -84,7 +83,6 @@ public class EventDatabase(
                     @{nameof(OrganizationEvent.StartsAt)},
                     @{nameof(OrganizationEvent.EndsAt)},
                     @{nameof(OrganizationEvent.Location)},
-                    @{nameof(OrganizationEvent.LuuppiRefId)},
                     @{nameof(OrganizationEvent.WebsiteUrl)},
                     @{nameof(OrganizationEvent.ImageUrl)},
                     @{nameof(OrganizationEvent.CreatedBy)},
@@ -126,7 +124,6 @@ public class EventDatabase(
                 {nameof(OrganizationEvent.StartsAt)} = @{nameof(record.StartsAt)},
                 {nameof(OrganizationEvent.EndsAt)} = @{nameof(record.EndsAt)},
                 {nameof(OrganizationEvent.Location)} = @{nameof(record.Location)},
-                {nameof(OrganizationEvent.LuuppiRefId)} = @{nameof(record.LuuppiRefId)},
                 {nameof(OrganizationEvent.WebsiteUrl)} = @{nameof(record.WebsiteUrl)},
                 {nameof(OrganizationEvent.ImageUrl)} = @{nameof(record.ImageUrl)},
                 {nameof(OrganizationEvent.UpdatedBy)} = @{nameof(record.UpdatedBy)},
@@ -171,7 +168,6 @@ public class EventDatabase(
                 {nameof(OrganizationEvent.EndsAt)} DATETIME DEFAULT NULL,
                 {nameof(OrganizationEvent.Location)} TEXT NOT NULL,
                 {nameof(OrganizationEvent.ImageUrl)} TEXT,
-                {nameof(OrganizationEvent.LuuppiRefId)} INTEGER,
                 {nameof(OrganizationEvent.WebsiteUrl)} TEXT,
                 {nameof(OrganizationEvent.CreatedBy)} TEXT NOT NULL,
                 {nameof(OrganizationEvent.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,

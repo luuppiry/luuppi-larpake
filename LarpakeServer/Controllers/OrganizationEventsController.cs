@@ -7,20 +7,19 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
-using System.Reflection.PortableExecutable;
 
 namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class EventsController : ExtendedControllerBase
+public class OrganizationEventsController : ExtendedControllerBase
 {
     readonly IEventDatabase _db;
 
-    public EventsController(
+    public OrganizationEventsController(
         IEventDatabase db,
-        ILogger<EventsController> logger,
+        ILogger<OrganizationEventsController> logger,
         IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
