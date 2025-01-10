@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
 
 namespace LarpakeServer.Data.Sqlite;
@@ -8,7 +9,7 @@ public class StatisticsService(
         UserDatabase userDb,
         FreshmanGroupDatabase groupDb,
         EventDatabase eventDb)
-    : SqliteDbBase(connectionString, userDb, groupDb, eventDb)
+    : SqliteDbBase(connectionString, userDb, groupDb, eventDb), IStatisticsService
 {
     public async Task<long?> GetFreshmanGroupPoints(int groupId)
     {
@@ -29,7 +30,7 @@ public class StatisticsService(
             """, new { groupId });
     }
 
-    public async Task<GroupPoints[]> GetLeaderGroups(int count)
+    public async Task<GroupPoints[]> GetLeadingGroups(QueryOptions options)
     {
         using var connection = await GetConnection();
         var records = await connection.QueryAsync<GroupPoints>($"""
@@ -47,9 +48,10 @@ public class StatisticsService(
                 ea.{nameof(Attendance.CompletionId)} IS NOT NULL;
             GROUP BY fg.{nameof(FreshmanGroup.Id)}
                 ORDER BY COUNT(ea.{nameof(Attendance.CompletionId)}) DESC
-                LIMIT @{nameof(count)};
+                LIMIT @{nameof(QueryOptions.PageSize)}
+                OFFSET @{nameof(QueryOptions.PageOffset)};
             
-            """, new { count });
+            """, options);
         return records.ToArray();
     }
 
@@ -70,32 +72,27 @@ public class StatisticsService(
             """, new { userId });
     }
 
-    public async Task<long[]> GetLeadingUserPoints(int count, int offset)
+    public async Task<long[]> GetLeadingUserPoints(QueryOptions options)
     {
         using var connection = await GetConnection();
         var records = await connection.QueryAsync<long>($"""
             SELECT 
-                COUNT(*) AS count
+                COUNT(*) AS aCount
             FROM EventAttendances
             WHERE {nameof(Attendance.CompletionId)} IS NOT NULL
             GROUP BY {nameof(Attendance.UserId)}
-                ORDER BY count DESC
-                LIMIT @{nameof(count)}
-                OFFSET @{nameof(offset)};
-            """, new { count, offset });
+                ORDER BY aCount DESC
+                LIMIT @{nameof(QueryOptions.PageSize)}
+                OFFSET @{nameof(QueryOptions.PageOffset)};
+            """, options);
         return records.ToArray();
     }
 
-    public async Task<UserPoints[]> GetLeadingUsers(int count, int offset)
+    public async Task<UserPoints[]> GetLeadingUsers(QueryOptions options)
     {
         /* If multiple users have the same number of points,
          * This query might return more than count users.
          */
-
-        if (count <= 0)
-        {
-            return [];
-        }
 
         using var connection = await GetConnection();
         var records = await connection.QueryAsync<UserPoints>($"""
@@ -106,33 +103,53 @@ public class StatisticsService(
             WHERE {nameof(Attendance.CompletionId)} IS NOT NULL
             GROUP BY {nameof(Attendance.UserId)}
             HAVING COUNT(*) IN (
-                SELECT COUNT(*) AS count
+                SELECT COUNT(*) AS aCount
                     FROM EventAttendances
                 WHERE {nameof(Attendance.CompletionId)} IS NOT NULL
-                GROUP BY count
-                    ORDER BY count DESC
-                    LIMIT @{nameof(count)}
-                    OFFSET @{nameof(offset)}
-                );
-            """, new { count, offset });
+                GROUP BY aCount
+                    ORDER BY aCount DESC
+                    LIMIT @{nameof(QueryOptions.PageSize)}
+                    OFFSET @{nameof(QueryOptions.PageOffset)}
+            );
+            """, options);
         return records.ToArray();
     }
 
-    public async Task<long> GetAverageUserPoints()
+    public async Task<long> GetAveragePoints(int year)
     {
         using var connection = await GetConnection();
         return await connection.QueryFirstOrDefaultAsync<long>($"""
-            SELECT AVG(*)
-                FROM (
-                    SELECT COUNT(*)
-                        FROM EventAttendances
-                    WHERE {nameof(Attendance.CompletionId)} IS NOT NULL
-                    GROUP BY {nameof(Attendance.UserId)}
-                );
-            """);
+            SELECT 
+                AVG(*)
+            FROM (
+                SELECT 
+                    COUNT(*)
+                FROM Users u
+                    LEFT JOIN EventAttendances ea
+                        ON u.{nameof(User.Id)} = ea.{nameof(Attendance.UserId)}
+                WHERE u.{nameof(User.StartYear)} = @{nameof(year)}
+                    AND ea.{nameof(Attendance.CompletionId)} IS NOT NULL
+                GROUP BY {nameof(Attendance.UserId)}
+            );
+            """, new { year });
+    }
 
+    public async Task<long> GetTotalPoints(int year)
+    {
+        using var connection = await GetConnection();
+        return await connection.QueryFirstOrDefaultAsync<long>($"""
+            SELECT 
+                COUNT(*)
+            FROM Users u
+                LEFT JOIN EventAttendances ea
+                    ON u.{nameof(User.Id)} = ea.{nameof(Attendance.UserId)}
+            WHERE u.{nameof(User.StartYear)} = @{nameof(year)}
+                AND ea.{nameof(Attendance.CompletionId)} IS NOT NULL;
+            """, new { year });
     }
 
 
     protected override Task InitializeAsync(SqliteConnection connection) => Task.CompletedTask;
+
+   
 }

@@ -18,6 +18,7 @@ public class ExtendedControllerBase : ControllerBase
 
     protected Guid GetRequestUserId() => _claimsReader.ReadAuthorizedUserId(Request);
     protected Permissions GetRequestPermissions() => _claimsReader.ReadAuthorizedUserPermissions(Request);
+    protected int? GetRequestUserStartYear() => _claimsReader.ReadAuthorizedUserStartYear(Request);
 
 
 
