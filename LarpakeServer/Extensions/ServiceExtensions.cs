@@ -42,6 +42,8 @@ public static class ServiceExtensions
         services.AddSingleton<RefreshTokenDatabase>();
         services.AddSingleton<ILarpakeDatabase, LarpakeDatabase>();
         services.AddSingleton<LarpakeDatabase>();
+        services.AddSingleton<ILarpakeEventDatabase, LarpakeEventDatabase>();
+        services.AddSingleton<LarpakeEventDatabase>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)

@@ -37,9 +37,9 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
                 {nameof(Larpake.Title)}, 
                 {nameof(Larpake.Description)}) 
             VALUES (
-                @{nameof(Larpake.Year)},
-                @{nameof(Larpake.Title)},
-                @{nameof(Larpake.Description)}
+                @{nameof(record.Year)},
+                @{nameof(record.Title)},
+                @{nameof(record.Description)}
             );
             SELECT last_insert_rowid();
             """, record);
@@ -52,11 +52,11 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
         return await connection.ExecuteAsync($"""
             UPDATE Larpakkeet 
             SET
-                {nameof(Larpake.Year)} = @{nameof(Larpake.Year)},
-                {nameof(Larpake.Title)} = @{nameof(Larpake.Title)},
-                {nameof(Larpake.Description)} = @{nameof(Larpake.Description)},
+                {nameof(Larpake.Year)} = @{nameof(record.Year)},
+                {nameof(Larpake.Title)} = @{nameof(record.Title)},
+                {nameof(Larpake.Description)} = @{nameof(record.Description)},
                 {nameof(Larpake.UpdatedAt)} = DATETIME('now')
-            WHERE {nameof(Larpake.Id)} = @{nameof(Larpake.Id)};
+            WHERE {nameof(Larpake.Id)} = @{nameof(record.Id)};
             """, record);
     }
 
@@ -97,7 +97,7 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
         return records.ToArray();
     }
 
-    public async Task<Result<long>> InsertSection(LarpakeSection section)
+    public async Task<Result<long>> InsertSection(LarpakeSection record)
     {
         using var connection = await GetConnection();
         return await connection.ExecuteScalarAsync<long>($"""
@@ -106,15 +106,15 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
                 {nameof(LarpakeSection.Title)}, 
                 {nameof(LarpakeSection.SectionSequenceNumber)}) 
             SELECT
-                @{nameof(LarpakeSection.LarpakeId)},
-                @{nameof(LarpakeSection.Title)},
+                @{nameof(record.LarpakeId)},
+                @{nameof(record.Title)},
                 MAX({nameof(LarpakeSection.SectionSequenceNumber)}
             FROM LarpakeSections
-                 WHERE {nameof(LarpakeSection.LarpakeId)} = @{nameof(LarpakeSection.LarpakeId)}
+                 WHERE {nameof(LarpakeSection.LarpakeId)} = @{nameof(record.LarpakeId)}
                  LIMIT 1)
             );
             SELECT last_insert_rowid();
-            """, section);
+            """, record);
     }
 
     public async Task<Result<int>> UpdateSection(LarpakeSection record)
@@ -124,10 +124,10 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
         return await connection.ExecuteAsync($"""
             UPDATE Larpakkeet 
             SET
-                {nameof(LarpakeSection.Title)} = @{nameof(Larpake.Title)},
-                {nameof(LarpakeSection.SectionSequenceNumber)} = @{nameof(LarpakeSection.SectionSequenceNumber)},
+                {nameof(LarpakeSection.Title)} = @{nameof(record.Title)},
+                {nameof(LarpakeSection.SectionSequenceNumber)} = @{nameof(record.SectionSequenceNumber)},
                 {nameof(LarpakeSection.UpdatedAt)} = DATETIME('now')
-            WHERE {nameof(LarpakeSection.Id)} = @{nameof(LarpakeSection.Id)};
+            WHERE {nameof(LarpakeSection.Id)} = @{nameof(record.Id)};
             """, record);
     }
 
