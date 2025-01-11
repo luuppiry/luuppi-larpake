@@ -11,6 +11,25 @@ Luuppi is student organization for computer science, mathematics and statistical
 
 Fuksilärpäke is traditional part of freshman year for students in Luuppi. Fresmen compete on who gathers the most points during their freshman year. You can get points by fro example attending different events organized by Luuppi and other university organizations. Those with the most points are awarded with different prizes at the Luuppi Christmas party.  
 
+## Getting started
+
+### Requirements
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+- [ASP.NET Core 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+
+### Steps
+
+1) Clone repository
+2) Go inside `LarpakeServer` -folder
+3) Run command
+```ps
+dotnet run build --launch-profile https
+```
+4) Server starts to run
+
+You can now view api endpoints and make requests in `https://localhost:7267/openapi`
+
 ## Technologies
 
 ### Web API
@@ -39,14 +58,16 @@ Web api serves Server Sent Events (SSE) for subscribed clients when user's event
 Front end technologies are in the works. It will probably be web UI and not a mobile application at first.
 For UI design drawings see `Wiki` -> `Design` ([here](https://github.com/henrivain/Larpake/wiki/Design)).
 
+### Client
+TODO: Choose which one of the millions of js frameworks to use
+
 ## Project Timeline
 
 This project is meant to be production ready for Freshmen starting their studies in fall 2025. Front end development will start soon.  
 
+## Contributing
 
-
-### Client
-TODO: Choose which one of the millions of js frameworks to use
+Contributions are always welcomed! Project is still at its youth so no contributing guidelines are written so far. If you are interested in improving Lärpäke, contact us! 
 
 ## Contributors
 @henrivain
