@@ -25,7 +25,9 @@ The web API uses SQLite database to store all the data created by user clients. 
 For those interested, database graphs can be found `Wiki` -pages under `Database Graphs` ([here](https://github.com/henrivain/Larpake/wiki/Diagrams)).
 
 #### Api Events
+
 `SSE`
+
 Web api serves Server Sent Events (SSE) for subscribed clients when user's event attendance is marked as completed hereby causing UI update. 
 
 ### Front End
