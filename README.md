@@ -1,3 +1,5 @@
+![image](https://github.com/user-attachments/assets/02668fb1-df04-47ac-91d2-2f3162df7630)
+
 # Lärpäke
 Electronical Luuppi Lärpäke. Track who attends the most events in their freshman year!
 
