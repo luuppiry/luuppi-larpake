@@ -24,9 +24,19 @@ In the heart of the Lärpäke is the REST api implemented using ASP.NET Core Web
 The web API uses SQLite database to store all the data created by user clients. Dapper ORM is used in the C# code to map sql queries into.
 For those interested, database graphs can be found `Wiki` -pages under `Database Graphs` ([here](https://github.com/henrivain/Larpake/wiki/Diagrams)).
 
-#### Api events
+#### Api Events
 `SSE`
-When user event attendance marked is completed, the server sends 
+Web api serves Server Sent Events (SSE) for subscribed clients when user's event attendance is marked as completed hereby causing UI update. 
+
+### Front End
+
+Front end technologies are in the works. It will probably be web UI and not a mobile application at first.
+For UI design drawings see `Wiki` -> `Design` ([here](https://github.com/henrivain/Larpake/wiki/Design)).
+
+## Project Timeline
+
+This project is meant to be production ready for Freshmen starting their studies in fall 2025. Front end development will start when Api is ready enough.  
+
 
 
 ### Client
