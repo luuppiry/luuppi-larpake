@@ -1,9 +1,9 @@
-![image](https://github.com/user-attachments/assets/02668fb1-df04-47ac-91d2-2f3162df7630)
-
 # Lärpäke
 Electronical Luuppi Lärpäke. Track who attends the most events in their freshman year!
 
 ## About
+
+<img src="https://github.com/user-attachments/assets/02668fb1-df04-47ac-91d2-2f3162df7630" width="320" align="right" alt="Image of Lärpäke" />
 
 This repository contains implementation for the new generation of freshman event attendance cards (aka Lärpäke). 
 
@@ -14,6 +14,8 @@ Fuksilärpäke is traditional part of freshman year for students in Luuppi. Fres
 ## Technologies
 
 ### Web API
+
+<img src="https://github.com/user-attachments/assets/e20ade74-437f-49c9-aa22-6472866b1986" width="60" align="right" alt="c sharp logo" />
 
 `ASP.NET Core` `.NET9` `C#` `C# 13` `Web API` `Controllers` `REST` `JWT` `OpenApi Scalar` `Dependency Injection`
 
@@ -54,3 +56,14 @@ TODO: Choose which one of the millions of js frameworks to use
 For support and feature requests open issue in Github (see `Issues` -page)
 You can also email at
 matikkaeditorinkaantaja(at)gmail.com (don't ask why this is one of my email addresses)
+
+<details>
+
+<summary>Aika on rahaa?</summary>
+
+### Tähän projektiin kulutettu aika
+
+#### @henrivain
+[![wakatime](https://wakatime.com/badge/user/33becafa-9125-4b20-b55e-a824ccc490f1/project/ad9cdb99-5373-46b4-8af9-a789d14f6abc.svg)](https://wakatime.com/badge/user/33becafa-9125-4b20-b55e-a824ccc490f1/project/ad9cdb99-5373-46b4-8af9-a789d14f6abc)
+
+</details>
