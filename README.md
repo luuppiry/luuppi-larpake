@@ -37,9 +37,18 @@ For UI design drawings see `Wiki` -> `Design` ([here](https://github.com/henriva
 
 ## Project Timeline
 
-This project is meant to be production ready for Freshmen starting their studies in fall 2025. Front end development will start when Api is ready enough.  
+This project is meant to be production ready for Freshmen starting their studies in fall 2025. Front end development will start soon.  
 
 
 
 ### Client
 TODO: Choose which one of the millions of js frameworks to use
+
+## Contributors
+@henrivain
+
+## Support & Features
+
+For support and feature requests open issue in Github (see `Issues` -page)
+You can also email at
+matikkaeditorinkaantaja(at)gmail.com (don't ask why this is one of my email addresses)
