@@ -47,6 +47,8 @@ In the heart of the Lärpäke is the REST api implemented using ASP.NET Core Web
 The web API uses SQLite database to store all the data created by user clients. Dapper ORM is used in the C# code to map sql queries into.
 For those interested, database graphs can be found `Wiki` -pages under `Database Graphs` ([here](https://github.com/henrivain/Larpake/wiki/Diagrams)).
 
+Production setup might move databases later to something like PostgreSQL.
+
 #### Api Events
 
 `SSE`
