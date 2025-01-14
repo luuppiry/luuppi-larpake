@@ -74,9 +74,9 @@ Contributions are always welcomed! Project is still at its youth so no contribut
 
 ## Support & Features
 
-For support and feature requests open issue in Github (see `Issues` -page)
-You can also email at
-matikkaeditorinkaantaja(at)gmail.com (don't ask why this is one of my email addresses)
+For support and feature requests preferably open a issue in Github (see `Issues` -page)
+Or send email to
+henri.vainio(at)luuppi.fi (don't ask why this is one of my email addresses)
 
 <details>
 
