@@ -75,8 +75,9 @@ Contributions are always welcomed! Project is still at its youth so no contribut
 ## Support & Features
 
 For support and feature requests preferably open a issue in Github (see `Issues` -page)
-Or send email to
-henri.vainio(at)luuppi.fi (don't ask why this is one of my email addresses)
+Or send email to  
+
+henri.vainio(at)luuppi.fi
 
 <details>
 
