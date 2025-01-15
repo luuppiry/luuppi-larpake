@@ -46,6 +46,13 @@ public static class ServiceExtensions
         services.AddSingleton<LarpakeEventDatabase>();
     }
 
+    public static void AddPostgreSQLDatabases(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton(new NpgsqlConnectionString(configuration["ConnectionStrings:PostgreSQL"]!));
+        DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+    }
+
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<CompletionMessageService>();

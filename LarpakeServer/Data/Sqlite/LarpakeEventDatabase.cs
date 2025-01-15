@@ -28,7 +28,7 @@ public class LarpakeEventDatabase(
         using var connection = await GetConnection();
         var records = await connection.QueryAsync<LarpakeEvent>($"""
             SELECT * FROM LarpakeEvents 
-            WHERE {nameof(LarpakeEvent.LarpakeSectionId)} = @{nameof(sectionId)};
+            WHERE {nameof(LarpakeEvent.LarpakeSectionId)} = @{nameof(sectionId)}
             """, new { sectionId });
         return records.ToArray();
     }

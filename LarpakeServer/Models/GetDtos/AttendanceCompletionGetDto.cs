@@ -18,7 +18,7 @@ public class AttendanceCompletionGetDto
             Id = completion.Id,
             SignerId = completion.SignerId,
             SignatureId = completion.SignatureId,
-            CompletionTime = completion.CompletionTimeUtc
+            CompletionTime = completion.CompletedAt
         };
     }
 }

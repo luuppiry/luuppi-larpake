@@ -31,8 +31,8 @@ public class EventGetDto
             CreatedAt = record.CreatedAt,
             UpdatedAt = record.UpdatedAt,
 
-            SoftDeletionInfo = record.DeletedAt.HasValue
-                ? new SoftDeletionInfo(record.DeletedAt.Value) : null
+            SoftDeletionInfo = record.CancelledAt.HasValue
+                ? new SoftDeletionInfo(record.CancelledAt.Value) : null
         };
     }
 }

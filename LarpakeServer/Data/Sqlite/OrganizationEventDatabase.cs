@@ -15,7 +15,7 @@ public class OrganizationEventDatabase(
 
         query.AppendLine($"""
             SELECT * FROM Events
-            WHERE {nameof(OrganizationEvent.DeletedAt)} IS NULL
+            WHERE {nameof(OrganizationEvent.CancelledAt)} IS NULL
             """);
 
         // Add filters
@@ -75,7 +75,7 @@ public class OrganizationEventDatabase(
                     {nameof(OrganizationEvent.ImageUrl)}, 
                     {nameof(OrganizationEvent.CreatedBy)},
                     {nameof(OrganizationEvent.UpdatedBy)},
-                    {nameof(OrganizationEvent.DeletedAt)}
+                    {nameof(OrganizationEvent.CancelledAt)}
                 ) 
                 Values (
                     @{nameof(OrganizationEvent.Title)},
@@ -139,7 +139,7 @@ public class OrganizationEventDatabase(
         return await connection.ExecuteAsync($"""
             UPDATE Events 
             SET 
-                {nameof(OrganizationEvent.DeletedAt)} = DATETIME('now'),
+                {nameof(OrganizationEvent.CancelledAt)} = DATETIME('now'),
                 {nameof(OrganizationEvent.UpdatedAt)} = DATETIME('now'),
                 {nameof(OrganizationEvent.UpdatedBy)} = @{nameof(modifyingUser)}
             WHERE 
@@ -173,7 +173,7 @@ public class OrganizationEventDatabase(
                 {nameof(OrganizationEvent.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(OrganizationEvent.UpdatedBy)} TEXT NOT NULL,
                 {nameof(OrganizationEvent.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
-                {nameof(OrganizationEvent.DeletedAt)} DATETIME,
+                {nameof(OrganizationEvent.CancelledAt)} DATETIME,
                 FOREIGN KEY({nameof(OrganizationEvent.CreatedBy)}) REFERENCES Users({nameof(User.Id)}),
                 FOREIGN KEY({nameof(OrganizationEvent.UpdatedBy)}) REFERENCES Users({nameof(User.Id)}),
                 PRIMARY KEY({nameof(OrganizationEvent.Id)})

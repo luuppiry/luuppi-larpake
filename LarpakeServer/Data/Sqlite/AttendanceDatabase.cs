@@ -208,13 +208,13 @@ public class AttendanceDatabase(
                     {nameof(AttendanceCompletion.Id)}, 
                     {nameof(AttendanceCompletion.SignerId)}, 
                     {nameof(AttendanceCompletion.SignatureId)},
-                    {nameof(AttendanceCompletion.CompletionTimeUtc)}
+                    {nameof(AttendanceCompletion.CompletedAt)}
                 )
                 VALUES (
                     @{nameof(completion.Id)},
                     @{nameof(completion.SignerId)},
                     @{nameof(completion.SignatureId)},
-                    @{nameof(completion.CompletionTimeUtc)}
+                    @{nameof(completion.CompletedAt)}
                 ); 
                 
                 UPDATE EventAttendances 
@@ -251,9 +251,9 @@ public class AttendanceDatabase(
         await connection.ExecuteAsync($"""
             CREATE TABLE IF NOT EXISTS AttendanceCompletions (
                 {nameof(AttendanceCompletion.Id)} TEXT,
-                {nameof(AttendanceCompletion.SignerId)} NOT NULL,
+                {nameof(AttendanceCompletion.SignerId)} TEXT NOT NULL,
                 {nameof(AttendanceCompletion.SignatureId)} TEXT,
-                {nameof(AttendanceCompletion.CompletionTimeUtc)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                {nameof(AttendanceCompletion.CompletedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(AttendanceCompletion.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(AttendanceCompletion.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY ({nameof(AttendanceCompletion.Id)}),

@@ -246,7 +246,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
             CREATE TABLE IF NOT EXISTS FreshmanGroupMembers (
                 {FGM_GroupId} INTEGER,
                 {FGM_UserId} TEXT,
-                {FGM_IsHidden} BOOL NOT NULL DEFAULT TRUE,
+                {FGM_IsHidden} BOOL NOT NULL DEFAULT FALSE,
                 PRIMARY KEY ({FGM_GroupId}, {FGM_UserId}),
                 FOREIGN KEY ({FGM_GroupId}) REFERENCES FreshmanGroups({nameof(FreshmanGroup.Id)}),
                 FOREIGN KEY ({FGM_UserId}) REFERENCES Users({nameof(User.Id)})

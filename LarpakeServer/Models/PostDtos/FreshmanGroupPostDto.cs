@@ -6,7 +6,7 @@ public class FreshmanGroupPostDto
 {
     [Required]
     [MinLength(5)]
-    [MaxLength(50)]
+    [MaxLength(80)]
     public required string Name { get; set; } 
     
     public int StartYear { get; set; } = -1;

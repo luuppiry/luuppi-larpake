@@ -19,8 +19,8 @@ public class OrganizationEvent
     public DateTime CreatedAt { get; set; }
     public Guid UpdatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public DateTime? DeletedAt { get; set; } = null;
-    public bool IsDeleted => DeletedAt is not null;
+    public DateTime? CancelledAt { get; set; } = null;
+    public bool IsDeleted => CancelledAt is not null;
 
 
     public static OrganizationEvent MapFrom(EventPutDto dto, long id, Guid modifyingUser)
@@ -36,7 +36,7 @@ public class OrganizationEvent
             WebsiteUrl = dto.WebsiteUrl,
             // TODO: ImageUrl = dto.ImageUrl,
             UpdatedBy = modifyingUser,
-            DeletedAt = null
+            CancelledAt = null
 
         };
     }
@@ -55,7 +55,7 @@ public class OrganizationEvent
             // TODO: ImageUrl = dto.Image?.Url,
             CreatedBy = modifyingUser,
             UpdatedBy = modifyingUser,
-            DeletedAt = null
+            CancelledAt = null
         };
     }
 }

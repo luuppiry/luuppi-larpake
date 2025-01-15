@@ -16,7 +16,7 @@ public class AttendanceCompletionMetadata : AttendanceCompletion
             EventId = dto.EventId,
             SignerId = signerId,
             SignatureId = dto.SignatureId,
-            CompletionTimeUtc = dto.CompletedAt,
+            CompletedAt = dto.CompletedAt,
         };
     }
 }

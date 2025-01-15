@@ -7,9 +7,10 @@ public class EventPostDto
 {
     [Required]
     [MinLength(5)]
-    [MaxLength(50)]
+    [MaxLength(80)]
     public required string Title { get; set; }
 
+    [MaxLength(4000)]
     public string Body { get; set; } = string.Empty;
 
     [Required]
@@ -17,11 +18,12 @@ public class EventPostDto
     public DateTime? EndsAt { get; set; } = null;
 
     [Required]
-    [MaxLength(70)]
+    [MaxLength(100)]
     public string Location { get; set; } = string.Empty;
 
-    [MaxLength(200)]
-    public string? WebsiteUrl { get; set; } = null;
+    [MaxLength(150)]
+    public string? ImageUrl { get; set; }
 
-    public Image? Image { get; set; } = null;
+    [MaxLength(150)]
+    public string? WebsiteUrl { get; set; } = null;
 }
