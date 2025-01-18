@@ -1,7 +1,9 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
+using LarpakeServer.Models.DatabaseModels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);

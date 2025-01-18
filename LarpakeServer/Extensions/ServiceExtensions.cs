@@ -49,6 +49,8 @@ public static class ServiceExtensions
     public static void AddPostgreSQLDatabases(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton(new NpgsqlConnectionString(configuration["ConnectionStrings:PostgreSQL"]!));
+        SqlMapper.AddTypeHandler(new GuidTypeHandler());
+        SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
         DefaultTypeMap.MatchNamesWithUnderscores = true;
 
     }
