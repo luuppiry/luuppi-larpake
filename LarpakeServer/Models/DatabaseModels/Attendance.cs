@@ -1,6 +1,4 @@
-﻿using LarpakeServer.Models.PostDtos;
-
-namespace LarpakeServer.Models.DatabaseModels;
+﻿namespace LarpakeServer.Models.DatabaseModels;
 
 public class Attendance
 {

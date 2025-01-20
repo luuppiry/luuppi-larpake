@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
 
 namespace LarpakeServer.Data.Sqlite;
@@ -20,6 +21,17 @@ public class LarpakeEventDatabase(
                 SELECT {nameof(LarpakeSection.Id)} FROM LarpakeSections
                     WHERE {nameof(LarpakeSection.LarpakeId)} = {nameof(larpakeId)});
             """, new { larpakeId });
+        return records.ToArray();
+    }
+
+    public async Task<LarpakeEvent[]> GetEvents(QueryOptions options)
+    {
+        using var connection = await GetConnection();
+        var records = await connection.QueryAsync<LarpakeEvent>($"""
+            SELECT * FROM LarpakeEvents
+            LIMIT @{nameof(options.PageSize)} 
+            OFFSET @{nameof(options.PageOffset)};
+            """, options);
         return records.ToArray();
     }
 
@@ -143,4 +155,6 @@ public class LarpakeEventDatabase(
                     REFERENCES Events({nameof(OrganizationEvent.Id)})
             """);
     }
+
+   
 }

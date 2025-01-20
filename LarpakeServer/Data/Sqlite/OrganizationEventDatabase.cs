@@ -7,7 +7,7 @@ namespace LarpakeServer.Data.Sqlite;
 
 public class OrganizationEventDatabase(
     SqliteConnectionString connectionString, UserDatabase userDb)
-    : SqliteDbBase(connectionString, userDb), IEventDatabase
+    : SqliteDbBase(connectionString, userDb), IOrganizationEventDatabase
 {
     public async Task<OrganizationEvent[]> Get(EventQueryOptions options)
     {

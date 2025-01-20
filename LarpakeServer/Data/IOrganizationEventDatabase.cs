@@ -4,7 +4,7 @@ using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Data;
 
-public interface IEventDatabase
+public interface IOrganizationEventDatabase
 {
     Task<OrganizationEvent[]> Get(EventQueryOptions options);
     Task<OrganizationEvent?> Get(long id);

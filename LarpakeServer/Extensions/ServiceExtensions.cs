@@ -28,7 +28,7 @@ public static class ServiceExtensions
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
         
-        services.AddSingleton<IEventDatabase, OrganizationEventDatabase>();
+        services.AddSingleton<IOrganizationEventDatabase, OrganizationEventDatabase>();
         services.AddSingleton<OrganizationEventDatabase>();
         services.AddSingleton<IUserDatabase, UserDatabase>();
         services.AddSingleton<UserDatabase>();

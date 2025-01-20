@@ -15,10 +15,10 @@ namespace LarpakeServer.Controllers;
 [Route("api/[controller]")]
 public class OrganizationEventsController : ExtendedControllerBase
 {
-    readonly IEventDatabase _db;
+    readonly IOrganizationEventDatabase _db;
 
     public OrganizationEventsController(
-        IEventDatabase db,
+        IOrganizationEventDatabase db,
         ILogger<OrganizationEventsController> logger,
         IClaimsReader claimsReader) : base(claimsReader, logger)
     {
