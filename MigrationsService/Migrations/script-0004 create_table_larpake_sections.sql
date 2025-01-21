@@ -2,7 +2,7 @@ CREATE TABLE larpake_sections (
     id BIGSERIAL,
     larpake_id BIGINT NOT NULL,
     title VARCHAR(80) NOT NULL,
-    section_sequence_number INT,
+    ordering_weight_number INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),

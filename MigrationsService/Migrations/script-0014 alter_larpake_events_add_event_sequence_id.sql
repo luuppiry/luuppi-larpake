@@ -1,1 +1,0 @@
-ALTER TABLE larpake_events ADD event_sequence_id INT DEFAULT 0;
