@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace LarpakeServer.Data.Sqlite.TypeHandlers;
+namespace LarpakeServer.Data.TypeHandlers;
 
 public class GuidTypeHandler : SqlMapper.TypeHandler<Guid>
 {
