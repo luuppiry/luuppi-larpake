@@ -108,7 +108,7 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
             SELECT
                 @{nameof(record.LarpakeId)},
                 @{nameof(record.Title)},
-                MAX({nameof(LarpakeSection.SectionSequenceNumber)}
+                MAX(SELECT {nameof(LarpakeSection.SectionSequenceNumber)}
             FROM LarpakeSections
                  WHERE {nameof(LarpakeSection.LarpakeId)} = @{nameof(record.LarpakeId)}
                  LIMIT 1)

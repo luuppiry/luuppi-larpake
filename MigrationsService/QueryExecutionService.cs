@@ -94,7 +94,7 @@ internal class QueryExecutionService
                 // Commit
                 transaction.Commit();
 
-                _logger.LogInformation("Completed migrations all {count} migrations.", newMigrations.Length);
+                _logger.LogInformation("Completed all {count} migrations.", newMigrations.Length);
 
             }
         }
