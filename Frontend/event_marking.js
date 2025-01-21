@@ -8,7 +8,7 @@ const eventDatabase = {
     path: "Lärpäke / Ensi askeleet / Kaupunkikävely",
     updated: "19.01.2024 klo 12.00",
     description: "Osallistu orientaatioviikon kaupunkikävelyyn.",
-    code: "ABCD-1234",
+    code: "MOIKKA69",
     date: "Tiistai 20. elok.",
     time: "15:00-19:00",
     location: "Tampereen keskusta",
@@ -18,7 +18,7 @@ const eventDatabase = {
     path: "Lärpäke / Kaikenlaista / Poikkitieteellinen tapahtuma Tampereella",
     updated: "19.01.2024 klo 12.00",
     description: "Osallistu (Luupin ja) toisen ainejärjestön kanssa järjestettävään tapahtumaan. Kolmiobileiden kaltaiset opiskelijabileet eivät käy poikkitieteellisestä tapahtumasta. Valmistaudu todistamaan osallistumisesi kuvatodistein tai haalarimerkein!",
-    code: "WXYZ-6789",
+    code: "WXYZ6789",
     date: "XX.YY.ZZZZ",
     time: "XX:XX-YY:YY",
     location: "Tampere",
@@ -28,12 +28,14 @@ const eventDatabase = {
     path: "Lärpäke / Tanpereella / Syö siipiä, vegesiipiä, mustamakkaraa tai Pyynikin munkkeja",
     updated: "19.01.2024 klo 12.00",
     description: "Syö tamperelaista perinneruokaa ravintolassa. Todistukseksi kelpaa tuore kuva tai tuutorin läsnäolo.",
-    code: "HGER-4129",
+    code: "HGER41J9",
     date: "XX.YY.ZZZZ",
     time: "XX:XX-YY:YY",
     location: "Pirkanmaa",
   },
 };
+
+// Fuksi section
 
 // Populate event details
 if (eventId && eventDatabase[eventId]) {
@@ -42,9 +44,11 @@ if (eventId && eventDatabase[eventId]) {
   document.getElementById("event-title").textContent = event.title;
   document.getElementById("event-updated").textContent = `Päivitetty: ${event.updated}`;
   document.getElementById("event-description").textContent = event.description;
+  document.getElementById("qr-section-text-1").textContent = "Näytä tämä QR-koodi tuutorille kirjataksesi osallistumisesi"
+  document.getElementById("qr-section-text-2").textContent = "tai käytä seuraavanlaista koodia"
   document.getElementById("qr-code").src = `https://api.qrserver.com/v1/create-qr-code/?data=${event.code}&amp;size=250x250`;
   document.getElementById("event-code").textContent = event.code;
-  document.getElementById("event-date").textContent = `Päivämäärä: ${event.date}`;
+  document.getElementById("event-date").textContent = `Päivämäärä: ${event.date} - ${event.title}`;
   document.getElementById("event-time").textContent = `Aika: ${event.time}`;
   document.getElementById("event-location").textContent = `Sijainti: ${event.location}`;
 } else {

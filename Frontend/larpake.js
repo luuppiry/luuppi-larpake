@@ -1,3 +1,7 @@
+// Parse query string to get page number
+const urlParams = new URLSearchParams(window.location.search);
+const pageNum = urlParams.get("page");
+
 const pages = [
     {
         header: "Lärpäke / Ensi askeleet",
@@ -166,9 +170,17 @@ const pages = [
     }
 ];
 
+
 let currentPage = 0;
+if (Number(pageNum)) {
+    currentPage = Number(pageNum);
+}
 
 function renderPage() {
+    if (currentPage === pages.length){
+        window.open("statistics.html", "_self");
+    }
+
     const header = document.getElementById("larpake-page-name");
     const buttonContainer = document.getElementById("larpake-button-container");
     const pageInfo = document.getElementById("page-info");
@@ -226,11 +238,11 @@ function renderPage() {
     });
 
     // Update pagination info
-    pageInfo.textContent = `${currentPage + 1} / ${pages.length}`;
+    pageInfo.textContent = `${currentPage + 1} / ${pages.length + 1}`;
 
     // Update button states
     prevPage.disabled = currentPage === 0;
-    nextPage.disabled = currentPage === pages.length - 1;
+    //nextPage.disabled = currentPage === pages.length - 1;
 }
 
 function getSignatureImage() {
