@@ -41,7 +41,7 @@ internal class AttendancesGenerator : IRunAll
         var attendances = new Faker<Attendance>()
             .UseSeed(App.Seed)
             .RuleFor(a => a.UserId, f => f.PickRandom(users).Id)
-            .RuleFor(a => a.EventId, f => f.PickRandom(events).Id)
+            .RuleFor(a => a.LarpakeEventId, f => f.PickRandom(events).Id)
             .Generate(200)
             .DistinctBy(x => new { x.UserId, x.EventId })
             .ToArray();
@@ -80,11 +80,11 @@ internal class AttendancesGenerator : IRunAll
 
         foreach (var a in attendancesToComplete)
         {
-            var completion = new AttendanceCompletionMetadata
+            var completion = new CompletionMetadata
             {
                 Id = Guid.Empty,
                 CompletedAt = faker.Date.Future(1),
-                EventId = a.EventId,
+                EventId = a.LarpakeEventId,
                 UserId = a.UserId,
                 SignerId = faker.PickRandom(tutors).Id,
                 SignatureId = faker.PickRandom(signatures).Id.OrNull(faker, 0.25f),

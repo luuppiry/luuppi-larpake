@@ -2,14 +2,14 @@
 
 namespace LarpakeServer.Models.DatabaseModels.Metadata;
 
-public class AttendanceCompletionMetadata : AttendanceCompletion
+public class CompletionMetadata : Completion
 {
     public required Guid UserId { get; set; }
     public required long EventId { get; set; }
 
-    public static AttendanceCompletionMetadata From(CompletedPutDto dto, Guid signerId)
+    public static CompletionMetadata From(CompletionPutDto dto, Guid signerId)
     {
-        return new AttendanceCompletionMetadata
+        return new CompletionMetadata
         {
             Id = Guid.Empty,
             UserId = dto.UserId,

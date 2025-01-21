@@ -64,18 +64,18 @@ public class AttendancesController : ExtendedControllerBase
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         var record = Attendance.MapFrom(eventId, userId);
 
-        Result<int> result = await _db.InsertUncompleted(record);
+        Result<AttendanceKey> result = await _db.RequestAttendanceKey(record);
         return result.MatchToResponse(
-            ok: OkRowsAffected,
+            ok: x => Ok((AttendanceKey)result),
             error: FromError);
     }
 
     [HttpPost("complete")]
     [RequiresPermissions(Permissions.CompleteAttendance)]
-    public async Task<IActionResult> Complete([FromBody] CompletedPutDto dto)
+    public async Task<IActionResult> Complete([FromBody] CompletionPutDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
-        var record = AttendanceCompletionMetadata.From(dto, userId);
+        var record = CompletionMetadata.From(dto, userId);
         
         Result<AttendedCreated> result = await _db.Complete(record);
         if (result)

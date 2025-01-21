@@ -11,7 +11,7 @@ public class StatisticsService(
         OrganizationEventDatabase eventDb)
     : SqliteDbBase(connectionString, userDb, groupDb, eventDb), IStatisticsService
 {
-    public async Task<long?> GetFreshmanGroupPoints(int groupId)
+    public async Task<long?> GetFreshmanGroupPoints(long groupId)
     {
         using var connection = await GetConnection();
         return await connection.QueryFirstOrDefaultAsync<long?>($"""
@@ -23,14 +23,14 @@ public class StatisticsService(
                 LEFT JOIN EventAttendances ea
                     ON fgm.{nameof(FreshmanGroupMember.UserId)} = ea.{nameof(Attendance.UserId)}
                 LEFT JOIN AttendanceCompletions ac
-                    ON ea.{nameof(Attendance.CompletionId)} = ac.{nameof(AttendanceCompletion.Id)}
+                    ON ea.{nameof(Attendance.CompletionId)} = ac.{nameof(Completion.Id)}
             WHERE 
                 fg.{nameof(FreshmanGroup.Id)} = @{nameof(groupId)}    
                 AND ea.{nameof(Attendance.CompletionId)} IS NOT NULL;
             """, new { groupId });
     }
 
-    public async Task<GroupPoints[]> GetLeadingGroups(QueryOptions options)
+    public async Task<GroupPoints[]> GetLeadingGroups(StatisticsQueryOptions options)
     {
         using var connection = await GetConnection();
         var records = await connection.QueryAsync<GroupPoints>($"""
@@ -43,7 +43,7 @@ public class StatisticsService(
                 LEFT JOIN EventAttendances ea
                     ON fgm.{nameof(FreshmanGroupMember.UserId)} = ea.{nameof(Attendance.UserId)}
                 LEFT JOIN AttendanceCompletions ac
-                    ON ea.{nameof(Attendance.CompletionId)} = ac.{nameof(AttendanceCompletion.Id)}
+                    ON ea.{nameof(Attendance.CompletionId)} = ac.{nameof(Completion.Id)}
             WHERE 
                 ea.{nameof(Attendance.CompletionId)} IS NOT NULL;
             GROUP BY fg.{nameof(FreshmanGroup.Id)}
@@ -72,7 +72,7 @@ public class StatisticsService(
             """, new { userId });
     }
 
-    public async Task<long[]> GetLeadingUserPoints(QueryOptions options)
+    public async Task<long[]> GetLeadingUserPoints(StatisticsQueryOptions options)
     {
         using var connection = await GetConnection();
         var records = await connection.QueryAsync<long>($"""
@@ -88,10 +88,10 @@ public class StatisticsService(
         return records.ToArray();
     }
 
-    public async Task<UserPoints[]> GetLeadingUsers(QueryOptions options)
+    public async Task<UserPoints[]> GetLeadingUsers(StatisticsQueryOptions options)
     {
         /* If multiple users have the same number of points,
-         * This query might return more than count users.
+         * This query might return more than requested users.
          */
 
         using var connection = await GetConnection();
@@ -151,5 +151,13 @@ public class StatisticsService(
 
     protected override Task InitializeAsync(SqliteConnection connection) => Task.CompletedTask;
 
-   
+    Task<long> IStatisticsService.GetTotalPoints(long larpakeId)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<long> IStatisticsService.GetAveragePoints(long larpakeId)
+    {
+        throw new NotImplementedException();
+    }
 }

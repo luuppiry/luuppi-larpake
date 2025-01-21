@@ -15,7 +15,7 @@ public class AttendanceGetDto
         return new AttendanceGetDto
         {
             UserId = attendance.UserId,
-            EventId = attendance.EventId,
+            EventId = attendance.LarpakeEventId,
             Completed = attendance.Completion is null ?
                 null : AttendanceCompletionGetDto.From(attendance.Completion)
         };

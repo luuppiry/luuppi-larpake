@@ -2,7 +2,7 @@
 
 namespace LarpakeServer.Models.PutDtos;
 
-public class CompletedPutDto
+public class CompletionPutDto
 {
     [Required]
     public required Guid UserId { get; set; }

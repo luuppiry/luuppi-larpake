@@ -54,10 +54,21 @@ internal class SelectQuery
         }
     }
 
+    public SelectQuery IfTrue(bool? condition)
+    {
+        return If(condition is true);
+    }
+    
+    public SelectQuery IfFalse(bool? condition)
+    {
+        return If(condition is false);
+    }
+
     public SelectQuery If(bool condition)
     {
         return condition ? this : new NullQuery();
     }
+
     public SelectQuery IfNot(bool condition)
     {
         return If(condition is false);

@@ -1,6 +1,6 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Data.Sqlite;
-using LarpakeServer.Data.Sqlite.TypeHandlers;
+using LarpakeServer.Data.TypeHandlers;
 using LarpakeServer.Identity;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;

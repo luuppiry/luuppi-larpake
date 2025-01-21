@@ -1,6 +1,6 @@
 ﻿namespace LarpakeServer.Models.DatabaseModels;
 
-public class AttendanceCompletion
+public class Completion
 {
     public required Guid Id { get; set; }
     public required Guid SignerId { get; set; }

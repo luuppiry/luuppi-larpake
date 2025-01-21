@@ -1,15 +1,16 @@
-﻿using LarpakeServer.Helpers.Generic;
-using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services;
 
 namespace LarpakeServer.Data;
 
 public interface IAttendanceDatabase
 {
     Task<Attendance[]> Get(AttendanceQueryOptions options);
-    Task<Result<int>> InsertUncompleted(Attendance attendance);
-    Task<Result<AttendedCreated>> Complete(AttendanceCompletionMetadata completion);
+    Task<Result<AttendanceKey>> RequestAttendanceKey(Attendance attendance);
+    Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion);
+    Task<Result<AttendedCreated>> Complete(CompletionMetadata completion);
     Task<Result<int>> Uncomplete(Guid userId, long eventId);
 }

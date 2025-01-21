@@ -37,17 +37,18 @@ public class StatisticsController : ExtendedControllerBase
         return await GetAllAverage(startYear.Value);
     }
     
-    [HttpGet("users/{year}/points/average")]
+    [HttpGet("larpakkeet/{larpakeId}/points/average")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetAllAverage(int year)
+    public async Task<IActionResult> GetAllAverage(long larpakeId)
     {
-        long points = await _statisticsService.GetAveragePoints(year);
+        long points = await _statisticsService.GetAveragePoints(larpakeId);
         return Ok(new { Points = points });
     }
 
-    [HttpGet("users/points")]
+    [HttpGet("larpakkeet/points")]
     public async Task<IActionResult> GetAllTotal()
     {
+        // TODO: rethink permissions here
         int? startYear = GetRequestUserStartYear();
         if (startYear is null)
         {
@@ -56,11 +57,11 @@ public class StatisticsController : ExtendedControllerBase
         return await GetAllTotal(startYear.Value);
     }
 
-    [HttpGet("users/{year}/points")]
+    [HttpGet("larpakkeet/{larpakeId}/points")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetAllTotal(int year)
+    public async Task<IActionResult> GetAllTotal(long larpakeId)
     {
-        long points = await _statisticsService.GetTotalPoints(year);
+        long points = await _statisticsService.GetTotalPoints(larpakeId);
         return Ok(new { Points = points });
     }
 
@@ -84,7 +85,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("users/leading/points")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetLeadingUserPoints([FromQuery] QueryOptions options)
+    public async Task<IActionResult> GetLeadingUserPoints([FromQuery] StatisticsQueryOptions options)
     {
         long[] records = await _statisticsService.GetLeadingUserPoints(options);
         return Ok(new LeadersGetDto<long>(records, options));
@@ -92,7 +93,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("users/leading")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetLeadingUsers([FromQuery] QueryOptions options)
+    public async Task<IActionResult> GetLeadingUsers([FromQuery] StatisticsQueryOptions options)
     {
         var records = await _statisticsService.GetLeadingUsers(options);
         return Ok(new LeadersGetDto<UserPoints>(records, options));
@@ -101,7 +102,7 @@ public class StatisticsController : ExtendedControllerBase
 
 
     [HttpGet("groups/{groupId}/points")]
-    public async Task<IActionResult> GetFreshmanGroupTotal(int groupId)
+    public async Task<IActionResult> GetFreshmanGroupTotal(long groupId)
     {
         /* User must have permissions to read 
          * statistics or be a member of the requested group
@@ -126,7 +127,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("groups/leading")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetLeadingFreshmanGroups([FromQuery] QueryOptions options)
+    public async Task<IActionResult> GetLeadingFreshmanGroups([FromQuery] StatisticsQueryOptions options)
     {
         var records = await _statisticsService.GetLeadingGroups(options);
         return Ok(new LeadersGetDto<GroupPoints>(records, options));
