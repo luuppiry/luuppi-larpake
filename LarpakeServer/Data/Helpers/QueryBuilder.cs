@@ -58,6 +58,11 @@ internal class SelectQuery
     {
         return condition ? this : new NullQuery();
     }
+    public SelectQuery IfNot(bool condition)
+    {
+        return If(condition is false);
+    }
+
     public SelectQuery IfNull<T>(T? value)
     {
         return value is null ? this : new NullQuery();

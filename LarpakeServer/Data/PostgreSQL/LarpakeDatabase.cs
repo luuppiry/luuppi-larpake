@@ -1,13 +1,12 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
+using Npgsql;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
 public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<LarpakeDatabase> logger)
     : PostgresDb(connectionString, logger), ILarpakeDatabase
 {
-  
-
     public async Task<Larpake[]> GetLarpakkeet(QueryOptions options)
     {
         using var connection = GetConnection();
@@ -84,6 +83,8 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     }
 
 
+
+
     public async Task<LarpakeSection[]> GetSections(QueryOptions options)
     {
         using var connection = GetConnection();
@@ -138,13 +139,12 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             """, new { sectionId });
     }
 
-
-
-   
     public async Task<Result<long>> InsertSection(LarpakeSection section)
     {
-        using var connection = GetConnection();
-        return await connection.ExecuteScalarAsync<long>($"""
+        try
+        {
+            using var connection = GetConnection();
+            return await connection.ExecuteScalarAsync<long>($"""
             INSERT INTO larpake_sections (
                 larpake_id,
                 title,
@@ -157,20 +157,33 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             )
             RETURNING id;
             """, section);
+        }
+        catch (PostgresException ex)
+        {
+            // TODO: Handle exception
+            Logger.LogError("Failed to insert section {msg}.", ex.Message);
+            throw;
+        }
     }
 
-   
-
-    public Task<Result<int>> UpdateSection(LarpakeSection record)
+    public async Task<Result<int>> UpdateSection(LarpakeSection record)
     {
-        throw new NotImplementedException();
+        using var connection = GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE larpake_sections
+            SET 
+                title = @{nameof(record.Title)},
+                section_sequence_number = @{nameof(record.SectionSequenceNumber)},
+                updated_at = NOW()
+            WHERE id = @{nameof(record.Id)};
+            """, record);
     }
-
-
-
 
     public Task<int> DeleteSection(long sectionId)
     {
-        throw new NotImplementedException();
+        using var connection = GetConnection();
+        return connection.ExecuteAsync($"""
+            DELETE FROM larpake_sections WHERE id = @{nameof(sectionId)};
+            """, new { sectionId });
     }
 }

@@ -90,7 +90,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         
-        int rowsAffected = await _db.Delete(eventId, userId);
+        int rowsAffected = await _db.SoftDelete(eventId, userId);
         _logger.IfPositive(rowsAffected)
             .LogInformation("User {userId} deleted event {eventId}", 
                 userId, eventId);

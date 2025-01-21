@@ -13,7 +13,7 @@ internal class FreshmanGroupGenerator : IRunAll
 
     public async Task GenerateGroups()
     {
-        var records = await _db.Get(new FreshmanGroupQueryOptions { PageOffset = 0, PageSize = 1 });
+        var records = await _db.GetGroups(new FreshmanGroupQueryOptions { PageOffset = 0, PageSize = 1 });
         if (records.Length is not 0)
         {
             Console.WriteLine("Groups already exist."); 
@@ -40,7 +40,7 @@ internal class FreshmanGroupGenerator : IRunAll
 
     private async Task AddMembers()
     {
-        var groups = await _db.Get(new FreshmanGroupQueryOptions { PageOffset = 0, PageSize = 10, DoMinimize = false });
+        var groups = await _db.GetGroups(new FreshmanGroupQueryOptions { PageOffset = 0, PageSize = 10, DoMinimize = false });
         if (groups.First().Members!.Count is not 0)
         {
             Console.WriteLine("Members already added.");

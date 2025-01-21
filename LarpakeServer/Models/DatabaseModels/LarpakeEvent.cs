@@ -7,6 +7,7 @@ public class LarpakeEvent
     public required long LarpakeSectionId { get; set; } 
     public required string Title { get; set; }
     public required int Points { get; set; }
+    public int OrderingWeightNumber { get; set; }
     public string? Body { get; set; }
     public DateTime? CancelledAt { get; set; }
     public DateTime CreatedAt { get; set; }

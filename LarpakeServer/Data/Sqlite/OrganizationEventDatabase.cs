@@ -1,5 +1,4 @@
-﻿using LarpakeServer.Helpers.Generic;
-using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
 
@@ -133,7 +132,7 @@ public class OrganizationEventDatabase(
             """, record);
     }
 
-    public async Task<int> Delete(long eventId, Guid modifyingUser)
+    public async Task<int> SoftDelete(long eventId, Guid modifyingUser)
     {
         using var connection = await GetConnection();
         return await connection.ExecuteAsync($"""

@@ -3,18 +3,16 @@ using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
-using SQLitePCL;
-using System.Text.RegularExpressions;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
-public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILogger<FreshmanGroupDatabase> logger) 
+public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILogger<FreshmanGroupDatabase> logger)
     : PostgresDb(connectionString, logger), IFreshmanGroupDatabase
 {
     record struct InsertModel(long Id, Guid UserId);
 
 
-    public async Task<FreshmanGroup[]> Get(FreshmanGroupQueryOptions options)
+    public async Task<FreshmanGroup[]> GetGroups(FreshmanGroupQueryOptions options)
     {
         bool searchesUser = options.ContainsUser is not null;
         bool joinsRequired = searchesUser || options.DoMinimize is false;
@@ -83,10 +81,10 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
         return groups.Values.ToArray();
     }
 
-    public async Task<FreshmanGroup?> Get(long id)
+    public async Task<FreshmanGroup?> GetGroup(long id)
     {
         using var connection = GetConnection();
-        
+
         FreshmanGroup? result = null;
         await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>($"""
             SELECT * FROM freshman_groups g
@@ -103,7 +101,7 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
             },
             new { id },
             splitOn: "id");
-        
+
         return result;
     }
 
@@ -121,20 +119,29 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
 
     public async Task<Result<long>> Insert(FreshmanGroup record)
     {
-        using var connection = GetConnection();
-        return await connection.ExecuteScalarAsync<long>($"""
-            INSERT INTO freshman_groups (
-                name, 
-                start_year, 
-                group_number
-            )
-            VALUES (
-                @{nameof(record.Name)},
-                @{nameof(record.StartYear)},
-                @{nameof(record.GroupNumber)}
-            )
-            RETURNING id;
-            """);
+        try
+        {
+            using var connection = GetConnection();
+            return await connection.ExecuteScalarAsync<long>($"""
+                INSERT INTO freshman_groups (
+                    name, 
+                    start_year, 
+                    group_number
+                )
+                VALUES (
+                    @{nameof(record.Name)},
+                    @{nameof(record.StartYear)},
+                    @{nameof(record.GroupNumber)}
+                )
+                RETURNING id;
+                """);
+        }
+        catch (PostgresException ex)
+        {
+            // TODO: Handle exception
+            Logger.LogError("Error inserting freshman group: {msg}", ex.Message);
+            throw;
+        }
     }
 
     public Task<Result<int>> InsertHiddenMembers(long groupId, Guid[] members)
@@ -149,16 +156,25 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
 
     public async Task<Result<int>> Update(FreshmanGroup record)
     {
-        using var connection = GetConnection();
-        return await connection.ExecuteAsync($"""
-            UPDATE freshman_groups
-            SET
-                name = @{nameof(record.Name)},
-                start_year = @{nameof(record.StartYear)},
-                group_number = @{nameof(record.GroupNumber)},
-                updated_at = NOW()
-            WHERE id = @{nameof(record.Id)}
-            """);
+        try
+        {
+            using var connection = GetConnection();
+            return await connection.ExecuteAsync($"""
+                UPDATE freshman_groups
+                SET
+                    name = @{nameof(record.Name)},
+                    start_year = @{nameof(record.StartYear)},
+                    group_number = @{nameof(record.GroupNumber)},
+                    updated_at = NOW()
+                WHERE id = @{nameof(record.Id)}
+                """);
+        }
+        catch (PostgresException ex)
+        {
+            // TODO: Handle exception
+            Logger.LogError("Error updating freshman group: {msg}", ex.Message);
+            throw;
+        }
     }
 
     public async Task<int> Delete(long id)
@@ -217,7 +233,7 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
         }
         catch (NpgsqlException e)
         {
-            // TODO: Handle error
+            // TODO: Handle error "when (e.SqlState == "23505")"
             Logger.LogError("Failed to insert hidden members: {ex}", e.Message);
             throw;
         }

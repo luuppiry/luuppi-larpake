@@ -55,19 +55,19 @@ public class RefreshTokenDatabase : SqliteDbBase, IRefreshTokenDatabase
                 {nameof(RefreshToken.InvalidAt)}
                 )
             VALUES (
-                ${nameof(RefreshToken.UserId)}, 
-                ${nameof(RefreshToken.Token)}, 
-                ${nameof(RefreshToken.TokenFamily)}, 
-                ${nameof(RefreshToken.InvalidAt)}
+                @{nameof(RefreshToken.UserId)}, 
+                @{nameof(RefreshToken.Token)}, 
+                @{nameof(RefreshToken.TokenFamily)}, 
+                @{nameof(RefreshToken.InvalidAt)}
             );
             """, hashed);
+            return Result.Ok;
         }
         catch (SqliteException ex) when (ex.SqliteExtendedErrorCode == SqliteError.ForeignKey_e)
         {
             _logger.LogInformation("Tried to add refresh token for user {id} who does not exist.", token.UserId);
             return Error.NotFound("User does not exist.");
         }
-        return Result.Ok;
     }
 
 
@@ -109,9 +109,10 @@ public class RefreshTokenDatabase : SqliteDbBase, IRefreshTokenDatabase
         // Invalidate token after use
         await connection.ExecuteAsync($"""
             UPDATE RefreshTokens
-            SET {nameof(RefreshToken.InvalidatedAt)} = DATETIME('now')
+            SET 
+                {nameof(RefreshToken.InvalidatedAt)} = DATETIME('now')
             WHERE {nameof(RefreshToken.UserId)} = @{nameof(userId)}
-            AND {nameof(RefreshToken.Token)} = @{nameof(hash)};
+                AND {nameof(RefreshToken.Token)} = @{nameof(hash)};
             """, new { userId, hash });
 
         return new RefreshTokenValidationResult(token.TokenFamily);

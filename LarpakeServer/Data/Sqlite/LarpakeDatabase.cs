@@ -108,10 +108,11 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
             SELECT
                 @{nameof(record.LarpakeId)},
                 @{nameof(record.Title)},
-                MAX(SELECT {nameof(LarpakeSection.SectionSequenceNumber)}
-            FROM LarpakeSections
-                 WHERE {nameof(LarpakeSection.LarpakeId)} = @{nameof(record.LarpakeId)}
-                 LIMIT 1)
+                MAX(
+                    SELECT {nameof(LarpakeSection.SectionSequenceNumber)}
+                    FROM LarpakeSections
+                    WHERE {nameof(LarpakeSection.LarpakeId)} = @{nameof(record.LarpakeId)}
+                )
             );
             SELECT last_insert_rowid();
             """, record);
@@ -122,7 +123,7 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
         using var connection = await GetConnection();
 
         return await connection.ExecuteAsync($"""
-            UPDATE Larpakkeet 
+            UPDATE LarpakeSections 
             SET
                 {nameof(LarpakeSection.Title)} = @{nameof(record.Title)},
                 {nameof(LarpakeSection.SectionSequenceNumber)} = @{nameof(record.SectionSequenceNumber)},

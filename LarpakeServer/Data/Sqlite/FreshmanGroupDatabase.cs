@@ -16,7 +16,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
     {
     }
 
-    public async Task<FreshmanGroup[]> Get(FreshmanGroupQueryOptions options)
+    public async Task<FreshmanGroup[]> GetGroups(FreshmanGroupQueryOptions options)
     {
         SelectQuery query = new();
 
@@ -88,7 +88,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
 
 
 
-    public async Task<FreshmanGroup?> Get(long id)
+    public async Task<FreshmanGroup?> GetGroup(long id)
     {
         using var connection = await GetConnection();
         var record = await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>($"""

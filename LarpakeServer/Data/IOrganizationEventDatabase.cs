@@ -10,6 +10,6 @@ public interface IOrganizationEventDatabase
     Task<OrganizationEvent?> Get(long id);
     Task<Result<long>> Insert(OrganizationEvent record);
     Task<Result<int>> Update(OrganizationEvent record);
-    Task<int> Delete(long eventId, Guid modifyingUser);
+    Task<int> SoftDelete(long eventId, Guid modifyingUser);
     Task<int> HardDelete(long eventId);
 }

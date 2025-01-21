@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Data.Helpers;
+using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
 
@@ -10,38 +11,34 @@ public class LarpakeEventDatabase(
     OrganizationEventDatabase eventDb)
     : SqliteDbBase(connectionString, larpakeDb, eventDb), ILarpakeEventDatabase
 {
-    public record EventMapping(long LarpakeEventId, long OrganizationEventId);
+    public record struct EventMapping(long LarpakeEventId, long OrganizationEventId);
 
-    public async Task<LarpakeEvent[]> GetLarpakeEvents(long larpakeId)
+    public async Task<LarpakeEvent[]> GetEvents(LarpakeEventQueryOptions options)
     {
-        using var connection = await GetConnection();
-        var records = await connection.QueryAsync<LarpakeEvent>($"""
+        SelectQuery query = new();
+        query.AppendLine($"""
             SELECT * FROM LarpakeEvents
-            WHERE {nameof(LarpakeEvent.LarpakeSectionId)} IN (
+            """);
+
+        query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
+            {nameof(LarpakeEvent.LarpakeSectionId)} IN (
                 SELECT {nameof(LarpakeSection.Id)} FROM LarpakeSections
-                    WHERE {nameof(LarpakeSection.LarpakeId)} = {nameof(larpakeId)});
-            """, new { larpakeId });
-        return records.ToArray();
-    }
+                    WHERE {nameof(LarpakeSection.LarpakeId)} = {nameof(options.LarpakeId)}
+            )
+            """);
 
-    public async Task<LarpakeEvent[]> GetEvents(QueryOptions options)
-    {
-        using var connection = await GetConnection();
-        var records = await connection.QueryAsync<LarpakeEvent>($"""
-            SELECT * FROM LarpakeEvents
-            LIMIT @{nameof(options.PageSize)} 
+        query.IfNotNull(options.SectionId).AppendLine($"""
+            {nameof(LarpakeEvent.LarpakeSectionId)} = @{nameof(options.SectionId)}
+            """);
+
+        query.AppendLine($"""
+            LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)};
-            """, options);
-        return records.ToArray();
-    }
+            """);
 
-    public async Task<LarpakeEvent[]> GetSectionEvents(long sectionId)
-    {
+
         using var connection = await GetConnection();
-        var records = await connection.QueryAsync<LarpakeEvent>($"""
-            SELECT * FROM LarpakeEvents 
-            WHERE {nameof(LarpakeEvent.LarpakeSectionId)} = @{nameof(sectionId)}
-            """, new { sectionId });
+        var records = await connection.QueryAsync<LarpakeEvent>(query.ToString(), options);
         return records.ToArray();
     }
 
@@ -122,12 +119,19 @@ public class LarpakeEventDatabase(
         return await connection.ExecuteAsync($"""
             DELETE FROM EventMap 
             WHERE {nameof(EventMapping.LarpakeEventId)} = @{nameof(mapping.LarpakeEventId)}
-                AND {nameof(EventMapping.OrganizationEventId)} = @{nameof(mapping.OrganizationEventId)}
+                AND {nameof(EventMapping.OrganizationEventId)} = @{nameof(mapping.OrganizationEventId)};
             """, mapping);
     }
 
-
-
+    public async Task<int> Cancel(long id)
+    {
+        using var connection = await GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE LarpakeEvents 
+            SET {nameof(LarpakeEvent.CancelledAt)} = DATETIME('now')
+            WHERE {nameof(LarpakeEvent.Id)} = @{nameof(id)};
+            """, new { id });
+    }
 
 
     protected override async Task InitializeAsync(SqliteConnection connection)
@@ -156,5 +160,5 @@ public class LarpakeEventDatabase(
             """);
     }
 
-   
+ 
 }

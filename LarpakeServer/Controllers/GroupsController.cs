@@ -35,7 +35,7 @@ public class GroupsController : ExtendedControllerBase
         Permissions permissions = GetRequestPermissions();
         options.IncludeHiddenMembers = permissions.Has(Permissions.SeeHiddenMembers);
 
-        var records = await _db.Get(options);
+        var records = await _db.GetGroups(options);
         var result = FreshmanGroupsGetDto.MapFrom(records);
         result.SetNextPaginationPage(options);
         return Ok(result);
@@ -45,7 +45,7 @@ public class GroupsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetGroup(long groupId)
     {
-        var record = await _db.Get(groupId);
+        var record = await _db.GetGroup(groupId);
         if (record is null)
         {
             return IdNotFound();
