@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Helpers.Generic;
+﻿using LarpakeServer.Data.Helpers;
+using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
@@ -75,11 +76,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
             return minimized.ToArray();
         }
 
-        string str = query.ToString();
-
-
         // Map members to groups
-
         var records = await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>(
             query.ToString(), MapUserToGroup, options, splitOn: FGM_GroupId);
 
