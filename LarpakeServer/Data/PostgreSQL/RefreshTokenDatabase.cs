@@ -95,7 +95,7 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
         bool isUserInvalidated = token.InvalidatedAt is not null;
         if (isTimeInvalidated || isUserInvalidated)
         {
-            Logger.LogWarning("Token with hash {hashStart}*** is invalidated for user {id}, revoking.",
+            Logger.LogWarning("Token with hash {hashStart}*** is invalidated for user {id}, revoking family.",
                 SafeSlicer.Slice(hash, 10), userId);
 
             await RevokeFamily(token.TokenFamily);
@@ -116,22 +116,45 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
             throw new UnreachableException("Failed to invalidate token.");
         }
 
+        Logger.LogInformation("Token {token}**** is valid for user {id}.", 
+            SafeSlicer.Slice(hash, 10), userId);
+
         return new RefreshTokenValidationResult(token.TokenFamily);
     }
 
     public Task<int> RevokeUserTokens(Guid userId)
     {
-        throw new NotImplementedException();
+        Logger.LogInformation("Revoking all tokens for user {id}.", userId);
+
+        using var connection = GetConnection();
+        return connection.ExecuteAsync($"""
+            UPDATE refresh_tokens
+            SET invalidated_at = NOW()
+            WHERE user_id = @{nameof(userId)};
+            """, new { userId });
     }
 
     public Task<int> RevokeFamily(Guid tokenFamilyId)
     {
-        throw new NotImplementedException();
+        Logger.LogInformation("Revoking all tokens in token family {id}.", tokenFamilyId);
+
+        using var connection = GetConnection();
+        return connection.ExecuteAsync($"""
+            UPDATE refresh_tokens
+            SET invalidated_at = NOW()
+            WHERE token_family = @{nameof(tokenFamilyId)};
+            """, new { tokenFamilyId });
     }
 
-    public Task<int> ClearOldEntries()
+    public async Task<int> ClearOldEntries()
     {
-        throw new NotImplementedException();
+        using var connection = GetConnection();
+        int rowsAffected = await connection.ExecuteAsync($"""
+            DELETE FROM refresh_tokens WHERE invalid_at < NOW();
+            """);
+
+        Logger.LogInformation("Cleared {count} expired refresh token entries.", rowsAffected);
+        return rowsAffected;
     }
 
     private static string ComputeSHA256Hash(string refreshToken)
