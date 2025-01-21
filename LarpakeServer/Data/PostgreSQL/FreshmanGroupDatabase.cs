@@ -2,12 +2,14 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Npgsql;
+using SQLitePCL;
+using System.Text.RegularExpressions;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
-public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString) : PostgresDb(connectionString), IFreshmanGroupDatabase
+public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILogger<FreshmanGroupDatabase> logger) 
+    : PostgresDb(connectionString, logger), IFreshmanGroupDatabase
 {
     record struct InsertModel(long Id, Guid UserId);
 
@@ -137,6 +139,60 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString) : Po
 
     public Task<Result<int>> InsertHiddenMembers(long groupId, Guid[] members)
     {
+        return InsertMembers(groupId, members, isHidden: true);
+    }
+
+    public Task<Result<int>> InsertMembers(long groupId, Guid[] members)
+    {
+        return InsertMembers(groupId, members, isHidden: false);
+    }
+
+    public async Task<Result<int>> Update(FreshmanGroup record)
+    {
+        using var connection = GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE freshman_groups
+            SET
+                name = @{nameof(record.Name)},
+                start_year = @{nameof(record.StartYear)},
+                group_number = @{nameof(record.GroupNumber)},
+                updated_at = NOW()
+            WHERE id = @{nameof(record.Id)}
+            """);
+    }
+
+    public async Task<int> Delete(long id)
+    {
+        using var connection = GetConnection();
+
+        int rowsAffected = connection.Execute($"""
+            DELETE FROM freshman_groups WHERE id = @{nameof(id)}
+            """,
+            new { id });
+
+        rowsAffected += await connection.ExecuteAsync($"""
+            DELETE FROM freshman_group_members WHERE group_id = @{nameof(id)}
+            """,
+            new { id });
+
+        Logger.IfPositive(rowsAffected).LogInformation("Deleted group with id {id}.", id);
+        return rowsAffected;
+    }
+
+    public async Task<int> DeleteMembers(long id, Guid[] members)
+    {
+        using var connection = GetConnection();
+        return await connection.ExecuteAsync($"""
+            DELETE FROM freshman_group_members
+            WHERE group_id = @{nameof(id)}
+                AND user_id IN (@{nameof(members)});
+            """,
+            new { id, members });
+    }
+
+
+    private async Task<Result<int>> InsertMembers(long groupId, Guid[] members, bool isHidden)
+    {
         var records = members
             .Distinct()
             .Select(x => new InsertModel(groupId, x));
@@ -144,31 +200,26 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString) : Po
         using var connection = GetConnection();
         try
         {
-
+            return await connection.ExecuteAsync($"""
+                INSERT INTO freshman_group_members (
+                    group_id,
+                    user_id,
+                    is_hidden
+                )
+                VALUES (
+                    @{nameof(InsertModel.Id)},
+                    @{nameof(InsertModel.UserId)},
+                    {(isHidden ? "TRUE" : "FALSE")}
+                )
+                ON CONFLICT DO NOTHING;
+                """,
+                records);
         }
         catch (NpgsqlException e)
         {
+            // TODO: Handle error
+            Logger.LogError("Failed to insert hidden members: {ex}", e.Message);
             throw;
         }
-    }
-
-    public Task<Result<int>> InsertMembers(long id, Guid[] members)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<Result<int>> Update(FreshmanGroup record)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> Delete(long id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> DeleteMembers(long id, Guid[] members)
-    {
-        throw new NotImplementedException();
     }
 }
