@@ -2,5 +2,7 @@
 
 public class PostgresError
 {
-    const int Success = 0;
+    public const string Success = "0";
+    public const string UniqueViolation = "23505";
+
 }

@@ -76,7 +76,12 @@ public static class ServiceExtensions
 
     public static void AddPostgresDatabases(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton(new NpgsqlConnectionString(configuration.GetConnectionString("PostgreSQL")!));
+
+        string connectionString = configuration.GetConnectionString("PostgreSQL")
+            ?? configuration.GetConnectionString("Default")
+            ?? throw new InvalidOperationException("No connection string found.");
+
+        services.AddSingleton(new NpgsqlConnectionString(connectionString));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
         DefaultTypeMap.MatchNamesWithUnderscores = true;

@@ -91,7 +91,14 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         return records.ToArray();
     }
 
+
+
     public async Task<Result<AttendanceKey>> RequestAttendanceKey(Attendance attendance)
+    {
+        return await RequestAttendanceKeyRetried(attendance, 5);
+    }
+
+    private async Task<Result<AttendanceKey>> RequestAttendanceKeyRetried(Attendance attendance, int retriesLeft = 0)
     {
         AttendanceKey key = _keyService.GenerateKey();
         attendance.QrCodeKey = key.QrCodeKey;
@@ -123,11 +130,23 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 """, attendance);
             return key;
         }
-        catch (PostgresException ex)
+        catch (PostgresException ex) when (ex.SqlState is PostgresError.UniqueViolation)
         {
-            // TODO: Handle exception
-            Logger.LogError(ex, "Failed to insert uncompleted attendance");
-            throw;
+            switch (ex.SqlState)
+            {
+                case PostgresError.UniqueViolation:
+                    if (retriesLeft > 0)
+                    {
+                        Logger.LogInformation("QrCodeKey conflict for {hash}, retrying ({count} left).", 
+                            attendance.GetHashCode(), retriesLeft);
+                        return await RequestAttendanceKeyRetried(attendance, retriesLeft - 1);
+                    }
+                    return Error.Conflict("Key generating failed, retry with same parameters.");
+                default:
+                    // TODO: Handle exception
+                    Logger.LogError(ex, "Failed to insert uncompleted attendance");
+                    throw;
+            }
         }
     }
 
