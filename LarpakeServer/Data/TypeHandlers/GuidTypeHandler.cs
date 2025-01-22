@@ -11,10 +11,14 @@ public class GuidTypeHandler : SqlMapper.TypeHandler<Guid>
 
     public override Guid Parse(object value)
     {
+        if (value is Guid guid)
+        {
+            return guid;
+        }
         if (value is string s)
         {
             return Guid.Parse(s);
         }
-        throw new NotImplementedException("Only strings can be converted to Guid.");
+        throw new NotImplementedException("Only strings and guids can be converted to Guid.");
     }
 }

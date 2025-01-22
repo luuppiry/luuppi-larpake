@@ -160,5 +160,8 @@ public class LarpakeEventDatabase(
             """);
     }
 
- 
+    Task<Guid[]> ILarpakeEventDatabase.GetRefOrganizationEvents(long id)
+    {
+        throw new NotImplementedException();
+    }
 }

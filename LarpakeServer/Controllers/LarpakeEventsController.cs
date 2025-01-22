@@ -88,8 +88,6 @@ public class LarpakeEventsController : ExtendedControllerBase
         return OkRowsAffected(rowsAffected);
     }
 
-
-
     [HttpPost("{id}/attendance-opportunies/{orgEventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
     public async Task<IActionResult> SyncOrganizationEvent(long id, long orgEventId)
@@ -106,6 +104,13 @@ public class LarpakeEventsController : ExtendedControllerBase
         return OkRowsAffected(rowsAffected);
     }
 
+    [HttpGet("{id}/attendance-opportunies")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetAttendanceOpportunies(long id)
+    {
+        Guid[] orgEvents = await _db.GetRefOrganizationEvents(id);
+        return Ok(new { OrganizationEventIds = orgEvents });
+    }
     
 
 

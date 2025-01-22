@@ -49,12 +49,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
                 fg.{nameof(FreshmanGroup.Name)} LIKE %@{nameof(options.GroupName)}%
                 """);
         }
-        if (options.StartYear is not null)
-        {
-            query.AppendConditionLine($"""
-                fg.{nameof(FreshmanGroup.StartYear)} = @{nameof(options.StartYear)}
-                """);
-        }
+  
 
         var includeHidden = options.IncludeHiddenMembers ? "TRUE" : "FALSE";
         query.AppendConditionLine($"""
@@ -63,7 +58,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
 
 
         query.AppendLine($"""
-            ORDER BY fg.{nameof(FreshmanGroup.StartYear)}, fg.{nameof(FreshmanGroup.GroupNumber)} ASC
+            ORDER BY fg.{nameof(FreshmanGroup.GroupNumber)} ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);
@@ -124,11 +119,11 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
         return await connection.ExecuteScalarAsync<long>($"""
             INSERT INTO FreshmanGroups (
                 {nameof(FreshmanGroup.Name)}, 
-                {nameof(FreshmanGroup.StartYear)}, 
+                {nameof(FreshmanGroup.LarpakeId)}, 
                 {nameof(FreshmanGroup.GroupNumber)})
             VALUES (
                 @{nameof(FreshmanGroup.Name)}, 
-                @{nameof(FreshmanGroup.StartYear)}, 
+                @{nameof(FreshmanGroup.LarpakeId)}, 
                 @{nameof(FreshmanGroup.GroupNumber)});
             SELECT last_insert_rowid();
             """, record);
@@ -194,7 +189,6 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
         return await connection.ExecuteAsync($"""
             UPDATE FreshmanGroups SET
                 {nameof(FreshmanGroup.Name)} = @{nameof(FreshmanGroup.Name)},
-                {nameof(FreshmanGroup.StartYear)} = @{nameof(FreshmanGroup.StartYear)},
                 {nameof(FreshmanGroup.GroupNumber)} = @{nameof(FreshmanGroup.GroupNumber)},
                 {nameof(FreshmanGroup.UpdatedAt)} = DATETIME('now')
             WHERE {nameof(FreshmanGroup.Id)} = @{nameof(FreshmanGroup.Id)};
@@ -233,10 +227,11 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
             CREATE TABLE IF NOT EXISTS FreshmanGroups (
                 {nameof(FreshmanGroup.Id)} INTEGER,
                 {nameof(FreshmanGroup.Name)} TEXT UNIQUE,
-                {nameof(FreshmanGroup.StartYear)} INTEGER NOT NULL,
+                {nameof(FreshmanGroup.LarpakeId)} INTEGER NOT NULL,
                 {nameof(FreshmanGroup.GroupNumber)} INTEGER,
                 {nameof(FreshmanGroup.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(FreshmanGroup.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY ({nameof(FreshmanGroup.LarpakeId)}) REFERENCES Larpakkeet({nameof(Larpake.Id)}),
                 PRIMARY KEY ({nameof(FreshmanGroup.Id)})
             );
 

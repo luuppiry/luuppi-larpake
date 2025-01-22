@@ -4,15 +4,20 @@ internal class FreshmanGroupGenerator : IRunAll
 {
     private readonly IFreshmanGroupDatabase _db;
     private readonly IUserDatabase _userDb;
+    private readonly ILarpakeDatabase _larpakeDb;
 
-    public FreshmanGroupGenerator(IFreshmanGroupDatabase db, IUserDatabase userDb)
+    public FreshmanGroupGenerator(IFreshmanGroupDatabase db, IUserDatabase userDb, ILarpakeDatabase larpakeDb)
     {
         _db = db;
         _userDb = userDb;
+        _larpakeDb = larpakeDb;
     }
 
     public async Task GenerateGroups()
     {
+        var larpakkeet = await _larpakeDb.GetLarpakkeet(new QueryOptions { PageOffset = 0, PageSize = 10 });
+        var larpakeIds = larpakkeet.Select(x => x.Id).ToArray();
+
         var records = await _db.GetGroups(new FreshmanGroupQueryOptions { PageOffset = 0, PageSize = 1 });
         if (records.Length is not 0)
         {
@@ -25,8 +30,8 @@ internal class FreshmanGroupGenerator : IRunAll
         var groups = new Faker<FreshmanGroup>()
             .UseSeed(App.Seed)
             .RuleFor(x => x.Name, f => f.Random.Word())
-            .RuleFor(x => x.StartYear, f => f.Random.Int(2010, 2025))
             .RuleFor(x => x.GroupNumber, f => f.Random.Int(0, 15))
+            .RuleFor(x => x.LarpakeId, f => f.PickRandom(larpakeIds))
             .Generate(5);
 
         foreach (var group in groups)

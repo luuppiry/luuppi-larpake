@@ -22,7 +22,7 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                 e.ordering_weight_number,
                 e.created_at,
                 e.updated_at,
-                e.canceled_at,
+                e.cancelled_at,
                 map.organization_event_id
             FROM larpake_events e
                 LEFT JOIN event_map map
@@ -65,12 +65,12 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
 
         // Only include canceled events
         query.If(options.IsCancelled is true).AppendConditionLine($"""
-            e.canceled_at IS NULL
+            e.cancelled_at IS NULL
             """);
 
         // Only include not canceled events
         query.If(options.IsCancelled is false).AppendConditionLine($"""
-            e.canceled_at IS NOT NULL
+            e.cancelled_at IS NOT NULL
             """);
 
         query.AppendLine($"""
@@ -108,7 +108,7 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                 ordering_weight_number,
                 created_at,
                 updated_at,
-                canceled_at
+                cancelled_at
             FROM larpake_events 
             WHERE id = @{nameof(id)} 
             LIMIT 1;
@@ -127,7 +127,7 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                 body,
                 points, 
                 ordering_weight_number,
-                canceled_at
+                cancelled_at
                 ) 
             VALUES (
                 @{nameof(record.LarpakeSectionId)},
@@ -206,9 +206,20 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
         return connection.ExecuteAsync($"""
             UPDATE larpake_events 
             SET
-                canceled_at = NOW()
+                cancelled_at = NOW()
             WHERE id = @{nameof(id)}
-                AND canceled_at = NULL;
+                AND cancelled_at = NULL;
             """, new { id });
+    }
+
+    public async Task<Guid[]> GetRefOrganizationEvents(long id)
+    {
+        using var connection = GetConnection();
+        var records = await connection.QueryAsync<Guid>($"""
+            SELECT organization_event_id
+            FROM event_map
+            WHERE larpake_event_id = @{nameof(id)};
+            """, new { id });
+        return records.ToArray();
     }
 }

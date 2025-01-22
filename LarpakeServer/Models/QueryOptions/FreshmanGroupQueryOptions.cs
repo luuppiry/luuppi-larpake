@@ -17,11 +17,5 @@ public class FreshmanGroupQueryOptions : QueryOptions
     public bool IncludeHiddenMembers { get; set; } = false;
 
 
-    public override bool HasNonNullValues()
-    {
-        return GroupName is not null
-            || ContainsUser is not null
-            || StartYear is not null
-            || LarpakeId is not null;
-    }
+
 }

@@ -93,7 +93,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 id, 
                 larpake_id,
                 title,
-                section_sequence_number,
+                ordering_weight_number,
                 created_at,
                 updated_at
             FROM larpake_sections 
@@ -112,7 +112,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 id, 
                 larpake_id,
                 title,
-                section_sequence_number,
+                ordering_weight_number,
                 created_at,
                 updated_at
             FROM larpake_sections 
@@ -130,7 +130,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 id, 
                 larpake_id,
                 title,
-                section_sequence_number,
+                ordering_weight_number,
                 created_at,
                 updated_at
             FROM larpake_sections 
@@ -148,7 +148,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             INSERT INTO larpake_sections (
                 larpake_id,
                 title,
-                section_sequence_number
+                ordering_weight_number
             ) 
             VALUES (
                 @{nameof(section.LarpakeId)},
@@ -173,7 +173,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             UPDATE larpake_sections
             SET 
                 title = @{nameof(record.Title)},
-                section_sequence_number = @{nameof(record.SectionSequenceNumber)},
+                ordering_weight_number = @{nameof(record.SectionSequenceNumber)},
                 updated_at = NOW()
             WHERE id = @{nameof(record.Id)};
             """, record);

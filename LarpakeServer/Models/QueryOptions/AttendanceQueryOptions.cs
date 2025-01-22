@@ -11,14 +11,5 @@ public class AttendanceQueryOptions : QueryOptions
     public bool? IsCompleted { get; set; } = null;
 
 
-    public override bool HasNonNullValues()
-    {
-        return Before is not null 
-            || After is not null 
-            || CompletedBefore is not null 
-            || CompletedAfter is not null 
-            || LarpakeEventId is not null 
-            || UserId is not null 
-            || IsCompleted is not null;
-    }
+
 }

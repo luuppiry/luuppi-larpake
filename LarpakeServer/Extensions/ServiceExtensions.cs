@@ -6,6 +6,9 @@ using LarpakeServer.Identity;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
 using static LarpakeServer.Services.AttendanceKeyService;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace LarpakeServer.Extensions;
 
@@ -24,12 +27,35 @@ public static class ServiceExtensions
         });
     }
 
+    public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
+    {
+        // This prevents 'sub' claim to be mapped incorrectly
+        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new()
+                {
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!)),
+                    ValidIssuer = configuration["Jwt:Issuer"],
+                    ValidAudience = configuration["Jwt:Audience"],
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                };
+            });
+    }
+
+
     public static void AddSqliteDatabases(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton(new SqliteConnectionString(configuration.GetConnectionString("Sqlite")!));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
-        
+
         services.AddSingleton<IOrganizationEventDatabase, Sqlite.OrganizationEventDatabase>();
         services.AddSingleton<Sqlite.OrganizationEventDatabase>();
         services.AddSingleton<IUserDatabase, Sqlite.UserDatabase>();
@@ -47,8 +73,8 @@ public static class ServiceExtensions
         services.AddSingleton<ILarpakeEventDatabase, Sqlite.LarpakeEventDatabase>();
         services.AddSingleton<Sqlite.LarpakeEventDatabase>();
     }
-    
-    public static void AddSPostgresDatabases(this IServiceCollection services, IConfiguration configuration)
+
+    public static void AddPostgresDatabases(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton(new NpgsqlConnectionString(configuration.GetConnectionString("PostgreSQL")!));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
@@ -82,5 +108,5 @@ public static class ServiceExtensions
             KeyLifetimeHours = configuration.GetValue<int>("AttendanceKey:KeyLifetimeHours")!
         });
     }
-    
+
 }

@@ -1,9 +1,5 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
-using LarpakeServer.Models.DatabaseModels;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Npgsql;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,24 +12,10 @@ builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new()
-        {
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!)),
-            ValidIssuer = configuration["Jwt:Issuer"],
-            ValidAudience = configuration["Jwt:Audience"],
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-        };
-    });
+builder.Services.AddJwt(configuration);
 builder.Services.AddAuthorization();
 builder.Services.AddServices(configuration);
-builder.Services.AddSqliteDatabases(configuration);
+builder.Services.AddPostgresDatabases(configuration);
 builder.Services.ConfigureCors();
 
 builder.Services.AddRouting(options =>

@@ -1,18 +1,24 @@
 ﻿using LarpakeServer.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TestDataGenerator;
 using TestDataGenerator.Generators;
 
+// Pull configuration
+
+
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-builder.Configuration["ConnectionStrings:Sqlite"] = @"Data Source='C:\Users\henri\Documents\SqliteDatabases\Testing\Larpake.db';";
-builder.Configuration["Signature:PointLimit"] = "1000";
+builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+
 
 builder.Services.AddSingleton(builder.Configuration);
 builder.Services.AddServices(builder.Configuration);
-builder.Services.AddSqliteDatabases(builder.Configuration);
+builder.Services.AddPostgresDatabases(builder.Configuration);
 builder.Services.AddLogging();
 builder.Services.AddHostedService<App>();
 

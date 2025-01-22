@@ -8,10 +8,5 @@ public class UserQueryOptions : QueryOptions
 
     public int? Permissions { get; set; } = null;
 
-    public override bool HasNonNullValues()
-    {
-        return Permissions is not null
-            || StartedBefore is not null
-            || StartedAfter is not null;
-    }
+ 
 }

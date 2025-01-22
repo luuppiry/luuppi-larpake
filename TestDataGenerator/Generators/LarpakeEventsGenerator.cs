@@ -10,7 +10,7 @@ internal class LarpakeEventsGenerator : IRunAll
 
     public async Task CreateEvents()
     {
-        var records = await _db.GetEvents(new QueryOptions { PageOffset = 0, PageSize = 1 });
+        var records = await _db.GetEvents(new LarpakeEventQueryOptions { PageOffset = 0, PageSize = 1 });
         if (records.Length is not 0)
         {
             Console.WriteLine("Larpake events already exist.");

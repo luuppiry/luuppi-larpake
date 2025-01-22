@@ -35,7 +35,7 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
         AddWhereClauses(ref query, options);
 
         query.AppendLine($"""
-            ORDER BY g.start_year, g.group_number ASC
+            ORDER BY g.larpake_id, g.group_number ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);

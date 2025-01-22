@@ -36,19 +36,19 @@ internal class AttendancesGenerator : IRunAll
         Console.WriteLine("Generating attendances.");
 
         var users = await _userDb.Get(new UserQueryOptions { PageOffset = 0, PageSize = 40 });
-        var events = await _eventDb.GetEvents(new QueryOptions { PageOffset = 0, PageSize = 40 });
+        var events = await _eventDb.GetEvents(new LarpakeEventQueryOptions { PageOffset = 0, PageSize = 40 });
 
         var attendances = new Faker<Attendance>()
             .UseSeed(App.Seed)
             .RuleFor(a => a.UserId, f => f.PickRandom(users).Id)
             .RuleFor(a => a.LarpakeEventId, f => f.PickRandom(events).Id)
             .Generate(200)
-            .DistinctBy(x => new { x.UserId, x.EventId })
+            .DistinctBy(x => new { x.UserId, x.LarpakeEventId })
             .ToArray();
 
         foreach (var attendance in attendances)
         {
-            await _db.InsertUncompleted(attendance);
+            await _db.RequestAttendanceKey(attendance);
         }
         Console.WriteLine($"Generated {attendances.Length} attendances.");
     }
