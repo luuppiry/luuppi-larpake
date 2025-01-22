@@ -8,13 +8,14 @@ public class LarpakeEventPostDto
     public required long LarpakeSectionId { get; set; }
 
     [Required]
-    [Length(5, 80)]
+    [Length(5, Constants.MaxLarpakeEventTitleLength)]
     public required string Title { get; set; }
 
-    [MaxLength(2000)]
+    [MaxLength(Constants.MaxLarpakeEventBodyLength)]
     public string? Body { get; set; }
 
     [Required]
+    [Range(1, Constants.MaxPointsPerLarpakeEvent)]
     public required int Points { get; set; } = 1;
 
     public int OrderingWeightNumber { get; set; } = 0;

@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Data.Helpers;
+using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
@@ -11,7 +12,6 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
     public async Task<LarpakeEvent[]> GetEvents(LarpakeEventQueryOptions options)
     {
         SelectQuery query = new();
-
         query.AppendLine($"""
              SELECT 
                 e.id, 
@@ -22,8 +22,11 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                 e.ordering_weight_number,
                 e.created_at,
                 e.updated_at,
-                e.canceled_at
+                e.canceled_at,
+                map.organization_event_id
             FROM larpake_events e
+                LEFT JOIN event_map map
+                    ON e.id = map.larpake_event_id
             """);
 
         bool requireSections = options.LarpakeId is not null || options.UserId is not null;
@@ -39,7 +42,7 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
             LEFT JOIN larpakkeet l
                 ON s.larpake_id = l.id
             """);
-        
+
         // Filter larpakkeet, which user participates in 
         query.IfNotNull(options.UserId).AppendConditionLine($"""
             l.id IN (
@@ -49,7 +52,6 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                         ON m.group_id = g.id
             )
             """);
-
 
         // Filter by larpake id
         query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
@@ -77,9 +79,19 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
             OFFSET @{nameof(options.PageOffset)};
             """);
 
+        Dictionary<long, LarpakeEvent> result = [];
 
         using var connection = GetConnection();
-        var records = await connection.QueryAsync<LarpakeEvent>(query.ToString(), options);
+        var records = await connection.QueryAsync<LarpakeEvent, Guid, LarpakeEvent>(query.ToString(), 
+            (lEvent, oEventId) =>
+            {
+                LarpakeEvent value = result.GetOrAdd(lEvent.Id, lEvent)!;
+                value.ReferencedOrganizationEventIds ??= [];
+                value.ReferencedOrganizationEventIds.Add(oEventId);
+                return value;
+            },
+            options,
+            splitOn: "organization_event_id");
         return records.ToArray();
     }
 
@@ -103,12 +115,12 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
             """, new { id });
     }
 
-    public Task<long> Insert(LarpakeEvent record)
+    public async Task<Result<long>> Insert(LarpakeEvent record)
     {
         try
         {
             using var connection = GetConnection();
-            return connection.ExecuteScalarAsync<long>($"""
+            return await connection.ExecuteScalarAsync<long>($"""
             INSERT INTO larpake_events (
                 larpake_section_id, 
                 title, 
@@ -136,10 +148,10 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
         }
     }
 
-    public Task<int> Update(LarpakeEvent record)
+    public async Task<Result<int>> Update(LarpakeEvent record)
     {
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             UPDATE larpake_events 
             SET
                 title = @{nameof(record.Title)},
@@ -195,7 +207,8 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
             UPDATE larpake_events 
             SET
                 canceled_at = NOW()
-            WHERE id = @{nameof(id)};
+            WHERE id = @{nameof(id)}
+                AND canceled_at = NULL;
             """, new { id });
     }
 }

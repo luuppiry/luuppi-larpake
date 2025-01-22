@@ -51,7 +51,7 @@ public class LarpakeEventDatabase(
             """, new { id });
     }
 
-    public async Task<long> Insert(LarpakeEvent record)
+    public async Task<Result<long>> Insert(LarpakeEvent record)
     {
         using var connection = await GetConnection();
         return await connection.ExecuteScalarAsync<long>($"""
@@ -72,7 +72,7 @@ public class LarpakeEventDatabase(
             """, record);
     }
 
-    public async Task<int> Update(LarpakeEvent record)
+    public async Task<Result<int>> Update(LarpakeEvent record)
     {
         using var connection = await GetConnection();
         return await connection.ExecuteAsync($"""
