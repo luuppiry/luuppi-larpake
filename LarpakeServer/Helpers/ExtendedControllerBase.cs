@@ -1,5 +1,4 @@
 ﻿using LarpakeServer.Extensions;
-using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -26,9 +25,6 @@ public class ExtendedControllerBase : ControllerBase
 
     protected ObjectResult FromError(Result result) => FromError((Error)result);
     protected ObjectResult FromError<T>(Result<T> error) => FromError((Error)error);
-
-
-
 
 
     protected ObjectResult OkRowsAffected(int rowsAffected)
@@ -100,6 +96,8 @@ public class ExtendedControllerBase : ControllerBase
 
     private ObjectResult FromError(Error error)
     {
+        _logger.LogInformation("Handled request error: {error}", error);
+
         if (error is DataError dataError)
         {
             return StatusCode(dataError.StatusCode, new

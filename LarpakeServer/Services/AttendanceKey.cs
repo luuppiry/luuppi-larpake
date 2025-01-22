@@ -4,16 +4,16 @@ public readonly struct AttendanceKey
 {
     public AttendanceKey(string key, DateTime invalidAt)
     {
-        Value = key;
-        InvalidAt = invalidAt;
+        QrCodeKey = key;
+        KeyInvalidAt = invalidAt;
     }
 
-    public string Value { get; }
-    public DateTime InvalidAt { get; }
+    public string QrCodeKey { get; }
+    public DateTime KeyInvalidAt { get; }
 
     public void Deconstruct(out string key, out DateTime invalidAt)
     {
-        key = Value;
-        invalidAt = InvalidAt;
+        key = QrCodeKey;
+        invalidAt = KeyInvalidAt;
     }
 }

@@ -104,7 +104,7 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
             """, record);
     }
 
-    public async Task<Result<int>> UpdatePermissions(Guid id, Permissions permissions)
+    public async Task<Result<int>> SetPermissions(Guid id, Permissions permissions)
     {
         if (id == Guid.Empty)
         {

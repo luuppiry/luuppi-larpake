@@ -2,7 +2,7 @@
 
 namespace LarpakeServer.Models.PostDtos;
 
-public class FreshmanGroupMemberPostDto
+public class GroupMemberIdCollection
 {
     [Required]
     public required Guid[] MemberIds { get; set; }

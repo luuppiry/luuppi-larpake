@@ -1,10 +1,7 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
-using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Identity;
-using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
-using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 
@@ -18,14 +15,18 @@ namespace LarpakeServer.Controllers;
 public class UsersController : ExtendedControllerBase
 {
     readonly IUserDatabase _db;
+    readonly IRefreshTokenDatabase _refreshTokenDb;
 
     public UsersController(
         IUserDatabase db,
         IClaimsReader claimsReader,
+        IRefreshTokenDatabase refreshTokenDb,
         ILogger<UsersController> logger) : base(claimsReader, logger)
     {
         _db = db;
+        _refreshTokenDb = refreshTokenDb;
     }
+
 
 
     [HttpGet]
@@ -51,34 +52,17 @@ public class UsersController : ExtendedControllerBase
         return Ok(record);
     }
 
-    [HttpPost]
-    [AllowAnonymous]
-    public async Task<IActionResult> CreateUser([FromBody] UserPostDto dto)
-    {
-        // TODO: This should be handled differently when I know how
-        // Might move this to authentication controller
-
-        var record = DbUser.MapFrom(dto);
-        Result<Guid> result = await _db.Insert(record);
-        if (result)
-        {
-            _logger.LogInformation("Created new user {id}", (Guid)result);
-            return CreatedId((Guid)result);
-        }
-        return FromError(result);
-    }
-
-
-
 
     [HttpPut("{userId}")]
     [RequiresPermissions(Permissions.UpdateUserInformation)]
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserPutDto dto)
     {
         // Validate request author role is higher than target role
-        Result roleValidationResult = await IsRequestAuthorInHigherRole(userId);
+        Result roleValidationResult = await RequireHigherAuthorRole(userId);
         if (roleValidationResult.IsError)
         {
+            _logger.LogInformation("Denied user {id} update request for {targetId}.", 
+                GetRequestUserId(), userId);
             return FromError(roleValidationResult);
         }
 
@@ -111,6 +95,7 @@ public class UsersController : ExtendedControllerBase
             return BadRequest("UserId must be provided.");
         }
 
+        // Validate user is not changing own permissions
         Guid authorId = GetRequestUserId();
         if (userId == authorId)
         {
@@ -118,11 +103,20 @@ public class UsersController : ExtendedControllerBase
             return BadRequest("Cannot change own permissions.");
         }
 
+        // Validate author exists
         DbUser? author = await _db.Get(authorId);
+
+
+        
+
+
+
         if (author is null)
         {
             _logger.LogError("Authorized user {id} not found in database, " +
-                "token might have leaked and needs immidiate actions!", authorId);
+                "token might have leaked and needs immidiate actions, revoking!", authorId);
+
+            await _refreshTokenDb.RevokeUserTokens(authorId);
             return InternalServerError("Invalid token.");
         }
         if (author.IsAllowedToSet(dto.Permissions) is false)
@@ -136,8 +130,12 @@ public class UsersController : ExtendedControllerBase
             return Unauthorized("Higher request role required.");
         }
 
-        // Update
-        Result<int> result = await _db.UpdatePermissions(userId, dto.Permissions);
+        // Do update
+        Result<int> result = await _db.SetPermissions(userId, dto.Permissions);
+        
+
+        _logger.LogInformation("User {author} set permissions {value} for user {target}.",
+            author, dto.Permissions, userId);
 
         return result.MatchToResponse(
                 ok: OkRowsAffected,
@@ -152,7 +150,7 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> DeleteUser(Guid userId)
     {
         // Validate request author role is higher than target role
-        Result roleValidationResult = await IsRequestAuthorInHigherRole(userId);
+        Result roleValidationResult = await RequireHigherAuthorRole(userId);
         if (roleValidationResult.IsError)
         {
             _logger.LogInformation(
@@ -171,7 +169,7 @@ public class UsersController : ExtendedControllerBase
 
 
 
-    private async Task<Result> IsRequestAuthorInHigherRole(Guid targetId)
+    private async Task<Result> RequireHigherAuthorRole(Guid targetId)
     {
         if (targetId == Guid.Empty)
         {

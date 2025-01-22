@@ -22,8 +22,8 @@ public class AttendanceGetDto
                 null : AttendanceCompletionGetDto.From(attendance.Completion),
             CreatedAt = attendance.CreatedAt,
             UpdatedAt = attendance.UpdatedAt,
-            Key = attendance.Key is null ? 
-                null : new AttendanceKey(attendance.Key, attendance.KeyInvalidAt ?? DateTime.UtcNow)
+            Key = attendance.QrCodeKey is null ? 
+                null : new AttendanceKey(attendance.QrCodeKey, attendance.KeyInvalidAt ?? DateTime.UtcNow)
 
         };
     }

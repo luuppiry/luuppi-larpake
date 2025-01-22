@@ -5,6 +5,7 @@ using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using System.Security.Claims;
+using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
 
@@ -27,6 +28,24 @@ public class AuthenticationController : ExtendedControllerBase
         _userDb = userDb;
         _refreshTokenDb = refreshTokenDb;
     }
+
+
+    [HttpPost("sign-up")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CreateUser([FromBody] UserPostDto dto)
+    {
+        // TODO: This should be handled differently when I know how
+
+        var record = DbUser.MapFrom(dto);
+        Result<Guid> result = await _userDb.Insert(record);
+        if (result)
+        {
+            _logger.LogInformation("Created new user {id}", (Guid)result);
+            return CreatedId((Guid)result);
+        }
+        return FromError(result);
+    }
+
 
 
     [HttpPost("login")]

@@ -81,7 +81,7 @@ internal class UserGenerator : IRunAll
         foreach (var user in users)
         {
             user.Permissions = faker.Generate().Permissions;
-            await _db.UpdatePermissions(user.Id, user.Permissions);
+            await _db.SetPermissions(user.Id, user.Permissions);
         }
         Console.WriteLine("Updated permissions");
     }

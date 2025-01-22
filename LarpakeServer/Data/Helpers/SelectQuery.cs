@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
-
-namespace LarpakeServer.Data.Helpers;
+﻿namespace LarpakeServer.Data.Helpers;
 
 
 internal class SelectQuery

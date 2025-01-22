@@ -2,7 +2,6 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.DeleteDtos;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
@@ -26,29 +25,35 @@ public class GroupsController : ExtendedControllerBase
         _db = db;
     }
 
-    [HttpGet]
-    [RequiresPermissions(Permissions.CommonRead)]
-    public async Task<IActionResult> GetGroups([FromQuery] FreshmanGroupQueryOptions options)
-    {
-        // Check if user has permission to see hidden members
-        Permissions permissions = GetRequestPermissions();
-        options.IncludeHiddenMembers = permissions.Has(Permissions.SeeHiddenMembers);
 
-        var records = await _db.GetGroups(options);
-        var result = FreshmanGroupsGetDto.MapFrom(records);
-        result.SetNextPaginationPage(options);
-        return Ok(result);
+    [HttpGet("own")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetOwnGroups([FromQuery] FreshmanGroupQueryOptions options)
+    {
+        /* User can here only see their own groups,
+         * and members in those groups.
+         */
+        options.ContainsUser = GetRequestUserId();
+        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
+
+        FreshmanGroupsGetDto groups = await GetResultGroups(options);
+        return Ok(groups);
     }
 
+    [HttpGet]
+    [RequiresPermissions(Permissions.Tutor)]
+    public async Task<IActionResult> GetGroups([FromQuery] FreshmanGroupQueryOptions options)
+    {
+        /* Tutors can see all groups and members.
+         */
+        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
 
-
-
-
-
-
+        FreshmanGroupsGetDto groups = await GetResultGroups(options);
+        return Ok(groups);
+    }
 
     [HttpGet("{groupId}")]
-    [RequiresPermissions(Permissions.CommonRead)]
+    [RequiresPermissions(Permissions.Tutor)]
     public async Task<IActionResult> GetGroup(long groupId)
     {
         var record = await _db.GetGroup(groupId);
@@ -56,11 +61,12 @@ public class GroupsController : ExtendedControllerBase
         {
             return IdNotFound();
         }
-        return Ok(FreshmanGroupGetDto.From(record));
+        var group = FreshmanGroupGetDto.From(record);
+        return Ok(group);
     }
 
     [HttpGet("{groupId}/members")]
-    [RequiresPermissions(Permissions.CommonRead)]
+    [RequiresPermissions(Permissions.Tutor)]
     public async Task<IActionResult> GetMembers(long groupId)
     {
         var record = await _db.GetMembers(groupId);
@@ -77,6 +83,7 @@ public class GroupsController : ExtendedControllerBase
     {
         var record = FreshmanGroup.MapFrom(dto);
         Result<long> result = await _db.Insert(record);
+
         return result.MatchToResponse(
             ok: CreatedId,
             error: FromError
@@ -85,14 +92,14 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPost("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
-    public async Task<IActionResult> AddMembers(long groupId, FreshmanGroupMemberPostDto members)
+    public async Task<IActionResult> AddMembers(long groupId, GroupMemberIdCollection members)
     {
-        var validation = await RequireMemberOrAdmin(groupId);
+        Result validation = await RequireMemberOrAdmin(groupId);
         if (validation.IsError)
         {
             Guid userId = GetRequestUserId();
-            _logger.LogInformation("User {userId} tried to add members to group {groupId} " +
-                "with insufficent permissions.", userId, groupId);
+            _logger.LogInformation("Insufficent permissions for {userId} to add members to group {groupId}.", 
+                userId, groupId);
             return FromError(validation);
         }
 
@@ -105,11 +112,14 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPost("{groupId}/members/hidden")]
     [RequiresPermissions(Permissions.EditGroup | Permissions.SeeHiddenMembers)]
-    public async Task<IActionResult> AddHiddenMembers(long groupId, FreshmanGroupMemberPostDto members)
+    public async Task<IActionResult> AddHiddenMembers(long groupId, GroupMemberIdCollection members)
     {
-        var validation = await RequireMemberOrAdmin(groupId);
+        Result validation = await RequireMemberOrAdmin(groupId);
         if (validation.IsError)
         {
+            Guid userId = GetRequestUserId();
+            _logger.LogInformation("Insufficent permissions for {userId} to add hidden members to group {groupId}.", 
+                userId, groupId);
             return FromError(validation);
         }
         Result<int> result = await _db.InsertHiddenMembers(groupId, members.MemberIds);
@@ -123,9 +133,12 @@ public class GroupsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.EditGroup)]
     public async Task<IActionResult> UpdateGroup(long groupId, [FromBody] FreshmanGroupPutDto dto)
     {
-        var validation = await RequireMemberOrAdmin(groupId);
+        Result validation = await RequireMemberOrAdmin(groupId);
         if (validation.IsError)
         {
+            Guid userId = GetRequestUserId();
+            _logger.LogInformation("Insufficent permissions for {userId} to update group {groupId}.", 
+                userId, groupId);
             return FromError(validation);
         }
 
@@ -140,11 +153,14 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpDelete("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
-    public async Task<IActionResult> DeleteMembers(long groupId, FreshmanGroupMemberDeleteDto members)
+    public async Task<IActionResult> DeleteMembers(long groupId, [FromBody] GroupMemberIdCollection members)
     {
-        var isValid = await RequireMemberOrAdmin(groupId);
+        Result isValid = await RequireMemberOrAdmin(groupId);
         if (isValid.IsError)
         {
+            Guid userId = GetRequestUserId();
+            _logger.LogInformation("Insufficent permissions for {userId} to delete members from group {groupId}.",
+                userId, groupId);
             return FromError(isValid);
         }
 
@@ -196,5 +212,13 @@ public class GroupsController : ExtendedControllerBase
         }
         // Is member
         return Result.Ok;
+    }
+
+    private async Task<FreshmanGroupsGetDto> GetResultGroups(FreshmanGroupQueryOptions options)
+    {
+        var records = await _db.GetGroups(options);
+        var result = FreshmanGroupsGetDto.MapFrom(records);
+        result.SetNextPaginationPage(options);
+        return result;
     }
 }

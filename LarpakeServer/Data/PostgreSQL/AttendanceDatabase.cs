@@ -94,8 +94,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
     public async Task<Result<AttendanceKey>> RequestAttendanceKey(Attendance attendance)
     {
         AttendanceKey key = _keyService.GenerateKey();
-        attendance.Key = key.Value;
-        attendance.KeyInvalidAt = key.InvalidAt;
+        attendance.QrCodeKey = key.QrCodeKey;
+        attendance.KeyInvalidAt = key.KeyInvalidAt;
 
         try
         {
@@ -105,21 +105,21 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     user_id, 
                     larpake_event_id,
                     completion_id,
-                    key,
+                    qr_code_key,
                     key_invalid_at
                 )
                 VALUES (
                     @{nameof(attendance.UserId)}, 
                     @{nameof(attendance.LarpakeEventId)}, 
                     NULL,
-                    @{nameof(attendance.Key)},
+                    @{nameof(attendance.QrCodeKey)},
                     @{nameof(attendance.KeyInvalidAt)}
                 )
                 ON CONFLICT (user_id, larpake_event_id) 
                     DO UPDATE
                     SET 
                         key_invalid_at = @{nameof(attendance.KeyInvalidAt)}
-                    RETURNING key, key_invalid_at;
+                    RETURNING qr_code_key, key_invalid_at;
                 """, attendance);
             return key;
         }
@@ -155,7 +155,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     larpake_event_id,
                     completion_id,
                 FROM attendances
-                    WHERE key = @{nameof(completion.Key)}
+                    WHERE qr_code_key = @{nameof(completion.Key)}
                         AND key_invalid_at > NOW();
                 """);
 
@@ -197,7 +197,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 SET 
                     completion_id = @{nameof(record.Id)}
                     updated_at = NOW()
-                WHERE key = @{nameof(completion.Key)};
+                WHERE qr_code_key = @{nameof(completion.Key)};
                 """, record);
 
             return new AttendedCreated

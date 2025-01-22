@@ -7,7 +7,7 @@ public class Attendance
     public Guid? CompletionId { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public string? Key { get; set; } = null;
+    public string? QrCodeKey { get; set; } = null;
     public DateTime? KeyInvalidAt { get; set; } = null;
 
     public Completion? Completion { get; set; } = null;

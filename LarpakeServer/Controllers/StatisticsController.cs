@@ -67,7 +67,7 @@ public class StatisticsController : ExtendedControllerBase
 
 
 
-    [HttpGet("users/self/points")]
+    [HttpGet("users/own/points")]
     public async Task<IActionResult> GetUserTotal()
     {
         Guid userId = GetRequestUserId();
