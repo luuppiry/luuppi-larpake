@@ -1,9 +1,6 @@
 ﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.QueryOptions;
-using Microsoft.Extensions.Logging.Abstractions;
-using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace LarpakeServer.Extensions;
 

@@ -1,4 +1,4 @@
-﻿using LarpakeServer.Helpers.Generic;
+﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
@@ -15,7 +15,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
     {
     }
 
-    public async Task<FreshmanGroup[]> Get(FreshmanGroupQueryOptions options)
+    public async Task<FreshmanGroup[]> GetGroups(FreshmanGroupQueryOptions options)
     {
         SelectQuery query = new();
 
@@ -48,12 +48,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
                 fg.{nameof(FreshmanGroup.Name)} LIKE %@{nameof(options.GroupName)}%
                 """);
         }
-        if (options.StartYear is not null)
-        {
-            query.AppendConditionLine($"""
-                fg.{nameof(FreshmanGroup.StartYear)} = @{nameof(options.StartYear)}
-                """);
-        }
+  
 
         var includeHidden = options.IncludeHiddenMembers ? "TRUE" : "FALSE";
         query.AppendConditionLine($"""
@@ -62,7 +57,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
 
 
         query.AppendLine($"""
-            ORDER BY fg.{nameof(FreshmanGroup.StartYear)}, fg.{nameof(FreshmanGroup.GroupNumber)} ASC
+            ORDER BY fg.{nameof(FreshmanGroup.GroupNumber)} ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);
@@ -75,11 +70,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
             return minimized.ToArray();
         }
 
-        string str = query.ToString();
-
-
         // Map members to groups
-
         var records = await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>(
             query.ToString(), MapUserToGroup, options, splitOn: FGM_GroupId);
 
@@ -91,7 +82,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
 
 
 
-    public async Task<FreshmanGroup?> Get(long id)
+    public async Task<FreshmanGroup?> GetGroup(long id)
     {
         using var connection = await GetConnection();
         var record = await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>($"""
@@ -127,11 +118,11 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
         return await connection.ExecuteScalarAsync<long>($"""
             INSERT INTO FreshmanGroups (
                 {nameof(FreshmanGroup.Name)}, 
-                {nameof(FreshmanGroup.StartYear)}, 
+                {nameof(FreshmanGroup.LarpakeId)}, 
                 {nameof(FreshmanGroup.GroupNumber)})
             VALUES (
                 @{nameof(FreshmanGroup.Name)}, 
-                @{nameof(FreshmanGroup.StartYear)}, 
+                @{nameof(FreshmanGroup.LarpakeId)}, 
                 @{nameof(FreshmanGroup.GroupNumber)});
             SELECT last_insert_rowid();
             """, record);
@@ -197,7 +188,6 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
         return await connection.ExecuteAsync($"""
             UPDATE FreshmanGroups SET
                 {nameof(FreshmanGroup.Name)} = @{nameof(FreshmanGroup.Name)},
-                {nameof(FreshmanGroup.StartYear)} = @{nameof(FreshmanGroup.StartYear)},
                 {nameof(FreshmanGroup.GroupNumber)} = @{nameof(FreshmanGroup.GroupNumber)},
                 {nameof(FreshmanGroup.UpdatedAt)} = DATETIME('now')
             WHERE {nameof(FreshmanGroup.Id)} = @{nameof(FreshmanGroup.Id)};
@@ -236,17 +226,18 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
             CREATE TABLE IF NOT EXISTS FreshmanGroups (
                 {nameof(FreshmanGroup.Id)} INTEGER,
                 {nameof(FreshmanGroup.Name)} TEXT UNIQUE,
-                {nameof(FreshmanGroup.StartYear)} INTEGER NOT NULL,
+                {nameof(FreshmanGroup.LarpakeId)} INTEGER NOT NULL,
                 {nameof(FreshmanGroup.GroupNumber)} INTEGER,
                 {nameof(FreshmanGroup.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(FreshmanGroup.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY ({nameof(FreshmanGroup.LarpakeId)}) REFERENCES Larpakkeet({nameof(Larpake.Id)}),
                 PRIMARY KEY ({nameof(FreshmanGroup.Id)})
             );
 
             CREATE TABLE IF NOT EXISTS FreshmanGroupMembers (
                 {FGM_GroupId} INTEGER,
                 {FGM_UserId} TEXT,
-                {FGM_IsHidden} BOOL NOT NULL DEFAULT TRUE,
+                {FGM_IsHidden} BOOL NOT NULL DEFAULT FALSE,
                 PRIMARY KEY ({FGM_GroupId}, {FGM_UserId}),
                 FOREIGN KEY ({FGM_GroupId}) REFERENCES FreshmanGroups({nameof(FreshmanGroup.Id)}),
                 FOREIGN KEY ({FGM_UserId}) REFERENCES Users({nameof(User.Id)})
@@ -255,7 +246,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
     }
 
     #region NAMEOF_CONSTANTS
-    private const string FGM_GroupId = nameof(FreshmanGroupMember.FreshmanGroupId);
+    private const string FGM_GroupId = nameof(FreshmanGroupMember.GroupId);
     private const string FGM_UserId = nameof(FreshmanGroupMember.UserId);
     private const string FGM_IsHidden = nameof(FreshmanGroupMember.IsHidden);
     #endregion NAMEOF_CONSTANTS
@@ -283,5 +274,8 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
         return group;
     }
 
-
+    Task<FreshmanGroup[]> IFreshmanGroupDatabase.GetGroupsMinimized(FreshmanGroupQueryOptions options)
+    {
+        throw new NotImplementedException();
+    }
 }

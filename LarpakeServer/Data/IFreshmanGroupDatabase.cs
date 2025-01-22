@@ -1,13 +1,13 @@
-﻿using LarpakeServer.Helpers.Generic;
-using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Data;
 
 public interface IFreshmanGroupDatabase
 {
-    Task<FreshmanGroup[]> Get(FreshmanGroupQueryOptions options);
-    Task<FreshmanGroup?> Get(long id);
+    Task<FreshmanGroup[]> GetGroups(FreshmanGroupQueryOptions options);
+    Task<FreshmanGroup[]> GetGroupsMinimized(FreshmanGroupQueryOptions options);
+    Task<FreshmanGroup?> GetGroup(long id);
     Task<Guid[]?> GetMembers(long id);
     Task<Result<long>> Insert(FreshmanGroup record);
     Task<Result<int>> InsertMembers(long id, Guid[] members);

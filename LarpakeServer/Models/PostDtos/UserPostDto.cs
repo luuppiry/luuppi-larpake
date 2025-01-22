@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace LarpakeServer.Models.PostDtos;
+﻿namespace LarpakeServer.Models.PostDtos;
 
 
 

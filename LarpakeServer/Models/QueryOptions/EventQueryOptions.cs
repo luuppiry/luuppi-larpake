@@ -12,10 +12,4 @@ public class EventQueryOptions : QueryOptions
     public string? Title { get; set; } = null;
     public bool DoMinimize { get; set; } = false;
 
-    public override bool HasNonNullValues()
-    {
-        return Before is not null 
-            || After is not null 
-            || Title is not null;
-    }
 }

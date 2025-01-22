@@ -91,6 +91,8 @@ public class TokenService : IClaimsReader
         Guard.ThrowIfNull(token);
 
         JwtSecurityTokenHandler tokenHandler = new();
+        tokenHandler.InboundClaimTypeMap.Clear();
+
         byte[] key = Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]!);
 
         var validationParameters = new TokenValidationParameters
@@ -108,7 +110,6 @@ public class TokenService : IClaimsReader
          * but it fixes sub from getting mapped to some stupid value
          * or something like that, I dont know why anyone would want that 
          * This fixes reading sub (userId) later, so it is now here. */
-        tokenHandler.InboundClaimTypeMap.Clear();
         
         try
         {

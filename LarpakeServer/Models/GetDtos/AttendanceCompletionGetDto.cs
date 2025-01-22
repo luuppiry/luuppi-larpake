@@ -11,14 +11,14 @@ public class AttendanceCompletionGetDto
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    internal static AttendanceCompletionGetDto From(AttendanceCompletion completion)
+    internal static AttendanceCompletionGetDto From(Completion completion)
     {
         return new AttendanceCompletionGetDto
         {
             Id = completion.Id,
             SignerId = completion.SignerId,
             SignatureId = completion.SignatureId,
-            CompletionTime = completion.CompletionTimeUtc
+            CompletionTime = completion.CompletedAt
         };
     }
 }

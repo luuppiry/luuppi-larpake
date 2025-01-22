@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Helpers.Generic;
+﻿using LarpakeServer.Data.Helpers;
+using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
@@ -29,16 +30,16 @@ public class UserDatabase(SqliteConnectionString connectionString)
                 {nameof(User.Permissions)} & @{nameof(options.Permissions)} = @{nameof(options.Permissions)}
                 """);
         }
-        if (options.StartedOnOrAfter is not null)
+        if (options.StartedAfter is not null)
         {
             query.AppendConditionLine($"""
-                {nameof(User.StartYear)} >= @{nameof(options.StartedOnOrAfter)}
+                {nameof(User.StartYear)} >= @{nameof(options.StartedAfter)}
                 """);
         }
-        if (options.StartedOnOrBefore is not null)
+        if (options.StartedBefore is not null)
         {
             query.AppendConditionLine($"""
-                {nameof(User.StartYear)} <= @{nameof(options.StartedOnOrBefore)}
+                {nameof(User.StartYear)} <= @{nameof(options.StartedBefore)}
                 """);
         }
 

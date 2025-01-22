@@ -5,7 +5,11 @@
 
 # Self Added 
 appsettings.Development.json
-TestDataGenerator/
+
+## DataGrip files
+.iws
+workspace.xml
+tasks.xml
 
 # dotenv files
 .env
