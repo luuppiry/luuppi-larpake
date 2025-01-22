@@ -2,6 +2,8 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels.Metadata;
+using LarpakeServer.Services;
+using System.Text.Json;
 
 namespace TestDataGenerator.Generators;
 internal class AttendancesGenerator : IRunAll
@@ -10,17 +12,20 @@ internal class AttendancesGenerator : IRunAll
     private readonly IUserDatabase _userDb;
     private readonly ILarpakeEventDatabase _eventDb;
     private readonly ISignatureDatabase _signatureDb;
+    private readonly AttendanceKeyService _keyService;
 
     public AttendancesGenerator(
         IAttendanceDatabase db,
         IUserDatabase userDb,
         ILarpakeEventDatabase eventDb,
-        ISignatureDatabase signatureDb)
+        ISignatureDatabase signatureDb,
+        AttendanceKeyService keyService)
     {
         _db = db;
         _userDb = userDb;
         _eventDb = eventDb;
         _signatureDb = signatureDb;
+        _keyService = keyService;
     }
 
 
@@ -48,6 +53,9 @@ internal class AttendancesGenerator : IRunAll
 
         foreach (var attendance in attendances)
         {
+            var key = _keyService.GenerateKey();
+            attendance.QrCodeKey = key.QrCodeKey;
+            attendance.KeyInvalidAt = key.KeyInvalidAt;
             await _db.RequestAttendanceKey(attendance);
         }
         Console.WriteLine($"Generated {attendances.Length} attendances.");
@@ -76,7 +84,7 @@ internal class AttendancesGenerator : IRunAll
         var attendances = await _db.Get(new AttendanceQueryOptions { PageOffset = 0, PageSize = 200 });
 
         
-        var attendancesToComplete = new Faker().PickRandom(attendances, Math.Max(100, attendances.Length)).ToList();
+        var attendancesToComplete = new Faker().PickRandom(attendances, Math.Min(100, attendances.Length)).ToList();
         var signatures = await _signatureDb.Get(new SignatureQueryOptions { PageOffset = 0, PageSize = 10 });
 
 
@@ -92,6 +100,7 @@ internal class AttendancesGenerator : IRunAll
                 SignatureId = faker.PickRandom(signatures).Id.OrNull(faker, 0.25f),
             };
 
+            Console.WriteLine(JsonSerializer.Serialize(completion));
             await _db.Complete(completion);
         }
 

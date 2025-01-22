@@ -82,7 +82,7 @@ public class UsersController : ExtendedControllerBase
 
 
     [HttpPut("{userId}/permissions")]
-    public async Task<IActionResult> UpdateUserPermissions(Guid userId, [FromBody] UserPermissionsPutDto dto)
+    public async Task<IActionResult> UpdateUserPermissions(Guid targetId, [FromBody] UserPermissionsPutDto dto)
     {
         /* Validate roles (Author is always validated from database, not only from JWT)
          * - Request author must have matching permission to set target permission value.
@@ -90,26 +90,21 @@ public class UsersController : ExtendedControllerBase
          * - User cannot change their own permissions.
          */
 
-        if (userId == Guid.Empty)
+        if (targetId == Guid.Empty)
         {
             return BadRequest("UserId must be provided.");
         }
 
         // Validate user is not changing own permissions
         Guid authorId = GetRequestUserId();
-        if (userId == authorId)
+        if (targetId == authorId)
         {
-            _logger.LogInformation("User {id} tried to change own permissions.", userId);
+            _logger.LogInformation("User {id} tried to change own permissions.", targetId);
             return BadRequest("Cannot change own permissions.");
         }
 
         // Validate author exists
         DbUser? author = await _db.Get(authorId);
-
-
-        
-
-
 
         if (author is null)
         {
@@ -130,12 +125,20 @@ public class UsersController : ExtendedControllerBase
             return Unauthorized("Higher request role required.");
         }
 
+        DbUser? target = await _db.Get(targetId);
+        if (target is null)
+        {
+            _logger.LogInformation("User {id} not found.", targetId);
+            return IdNotFound();
+        }
+
+
         // Do update
-        Result<int> result = await _db.SetPermissions(userId, dto.Permissions);
+        Result<int> result = await _db.SetPermissions(targetId, dto.Permissions);
         
 
         _logger.LogInformation("User {author} set permissions {value} for user {target}.",
-            author, dto.Permissions, userId);
+            author, dto.Permissions, targetId);
 
         return result.MatchToResponse(
                 ok: OkRowsAffected,

@@ -19,8 +19,8 @@ builder.Configuration.SetBasePath(Directory.GetCurrentDirectory())
 builder.Services.AddSingleton(builder.Configuration);
 builder.Services.AddServices(builder.Configuration);
 builder.Services.AddPostgresDatabases(builder.Configuration);
-builder.Services.AddLogging();
 builder.Services.AddHostedService<App>();
+builder.Services.AddLogging();
 
 // generators (order matters)
 builder.Services.AddTransient<IRunAll, UserGenerator>();
