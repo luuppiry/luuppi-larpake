@@ -30,16 +30,21 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
                 m.is_hidden,
                 m.joined_at
             FROM freshman_groups g
+                LEFT JOIN freshman_group_members m
+                    ON g.id = m.group_id
+                LEFT JOIN larpakkeet l
+                    ON g.larpake_id = l.id
             """);
 
         AddWhereClauses(ref query, options);
 
         query.AppendLine($"""
-            ORDER BY g.larpake_id, g.group_number ASC
+            ORDER BY l.year ASC, g.larpake_id, g.group_number ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);
 
+        string q = query.ToString();
 
         using var connection = GetConnection();
         Dictionary<long, FreshmanGroup> groups = [];
@@ -48,8 +53,11 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
             (group, member) =>
             {
                 FreshmanGroup resultGroup = groups.GetOrAdd(group.Id, group)!;
-                resultGroup.Members ??= [];
-                resultGroup.Members.Add(member.UserId);
+                if (member is not null)
+                {
+                    resultGroup.Members ??= [];
+                    resultGroup.Members.Add(member.UserId);
+                }
                 return resultGroup;
             },
             options,
@@ -71,16 +79,22 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
                 g.name,
                 g.group_number,
                 g.created_at,
-                g.updated_at,
+                g.updated_at
             FROM freshman_groups g
+                LEFT JOIN freshman_group_members m
+                    ON g.id = m.group_id
+                LEFT JOIN larpakkeet l
+                    ON g.larpake_id = l.id
             """);
 
         AddWhereClauses(ref query, options);
         query.AppendLine($"""
-            ORDER BY g.start_year, g.group_number ASC
+            ORDER BY l.year ASC, g.larpake_id, g.group_number ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);
+        
+        string q = query.ToString();
 
         using var connection = GetConnection();
         var minimized = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
@@ -89,21 +103,6 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
 
     private static void AddWhereClauses(ref SelectQuery query, in FreshmanGroupQueryOptions options)
     {
-        bool filterByYear = options.StartYear is not null;
-        bool requireMemberData = options.ContainsUser is not null || options.DoMinimize is false;
-
-        // Join members table if necessary
-        query.If(requireMemberData).AppendLine($"""
-            LEFT JOIN freshman_group_members m
-                ON g.id = m.group_id
-            """);
-
-        // Join larpakkeet table if necessary
-        query.If(filterByYear).AppendLine($"""
-            LEFT JOIN larpakkeet l
-                ON g.larpake_id = l.id
-            """);
-
         // Search only groups user is in
         query.IfNotNull(options.ContainsUser).AppendConditionLine($"""
             m.user_id = @{nameof(options.ContainsUser)}
@@ -115,13 +114,13 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
             """);
 
         // Match groups with specific start year
-        query.If(filterByYear).AppendConditionLine($"""
+        query.IfNotNull(options.StartYear).AppendConditionLine($"""
             l.year = @{nameof(options.StartYear)}
             """);
 
         // Are hidden members included?
         query.IfFalse(options.IncludeHiddenMembers).AppendConditionLine($"""
-            m.is_hidden = FALSE
+            m.is_hidden IS NOT TRUE
             """);
 
         // Is participating in larpake
@@ -183,7 +182,7 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
                     @{nameof(record.GroupNumber)}
                 )
                 RETURNING id;
-                """);
+                """, record);
         }
         catch (PostgresException ex)
         {

@@ -1,5 +1,4 @@
 ﻿using LarpakeServer.Data.Helpers;
-using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Data.Sqlite;
@@ -275,5 +274,8 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
         return group;
     }
 
-
+    Task<FreshmanGroup[]> IFreshmanGroupDatabase.GetGroupsMinimized(FreshmanGroupQueryOptions options)
+    {
+        throw new NotImplementedException();
+    }
 }

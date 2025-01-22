@@ -30,7 +30,7 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
             FROM organization_events
             """);
 
-        query.AppendConditionLine("WHERE canceled_at IS NULL");
+        query.AppendConditionLine("cancelled_at IS NULL");
 
         // If event after given time
         query.IfNotNull(options.After).AppendConditionLine($"""
@@ -96,8 +96,9 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                     image_url,
                     website_url,
                     created_by,
-                    updated_by,
-                ) VALUES (
+                    updated_by
+                ) 
+                VALUES (
                     @{nameof(OrganizationEvent.Title)},
                     @{nameof(OrganizationEvent.Body)},
                     @{nameof(OrganizationEvent.StartsAt)},
@@ -106,7 +107,7 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                     @{nameof(OrganizationEvent.ImageUrl)},
                     @{nameof(OrganizationEvent.WebsiteUrl)},
                     @{nameof(OrganizationEvent.CreatedBy)},
-                    @{nameof(OrganizationEvent.CreatedBy)},
+                    @{nameof(OrganizationEvent.CreatedBy)}
                 ) RETURNING id;
                 """, record);
 

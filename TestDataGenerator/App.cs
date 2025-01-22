@@ -21,6 +21,8 @@ internal class App : IHostedService
         {
             await gen.Generate();
         }
+
+        await StopAsync(cancellationToken);
     }
 
 

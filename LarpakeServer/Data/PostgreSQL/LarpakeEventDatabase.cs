@@ -82,12 +82,15 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
         Dictionary<long, LarpakeEvent> result = [];
 
         using var connection = GetConnection();
-        var records = await connection.QueryAsync<LarpakeEvent, Guid, LarpakeEvent>(query.ToString(), 
+        var records = await connection.QueryAsync<LarpakeEvent, Guid?, LarpakeEvent>(query.ToString(), 
             (lEvent, oEventId) =>
             {
                 LarpakeEvent value = result.GetOrAdd(lEvent.Id, lEvent)!;
-                value.ReferencedOrganizationEventIds ??= [];
-                value.ReferencedOrganizationEventIds.Add(oEventId);
+                if (oEventId.HasValue)
+                {
+                    value.ReferencedOrganizationEventIds ??= [];
+                    value.ReferencedOrganizationEventIds.Add(oEventId.Value);
+                }
                 return value;
             },
             options,

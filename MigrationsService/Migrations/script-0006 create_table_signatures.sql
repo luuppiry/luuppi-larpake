@@ -1,7 +1,7 @@
 CREATE TABLE Signatures (
     id UUID,
     user_id UUID NOT NULL,
-    path POINT2D[][] NOT NULL,
+    path_data_json TEXT NOT NULL,
     height INT NOT NULL,
     width INT NOT NULL,
     line_width INT NOT NULL DEFAULT 2,

@@ -1,6 +1,6 @@
 ﻿namespace LarpakeServer.Services;
 
-public class AttendanceKey
+public readonly struct AttendanceKey
 {
     public AttendanceKey(string key, DateTime invalidAt)
     {

@@ -74,7 +74,9 @@ internal class AttendancesGenerator : IRunAll
         var users = await _userDb.Get(new UserQueryOptions { PageOffset = 0, PageSize = 40 });
         var tutors = users.Where(x => x.Permissions.Has(Permissions.Tutor));
         var attendances = await _db.Get(new AttendanceQueryOptions { PageOffset = 0, PageSize = 200 });
-        var attendancesToComplete = new Faker().PickRandom(attendances, 100).ToList();
+
+        
+        var attendancesToComplete = new Faker().PickRandom(attendances, Math.Max(100, attendances.Length)).ToList();
         var signatures = await _signatureDb.Get(new SignatureQueryOptions { PageOffset = 0, PageSize = 10 });
 
 
