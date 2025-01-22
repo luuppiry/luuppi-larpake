@@ -14,6 +14,4 @@ public class QueryOptions
     {
         return PageOffset + PageSize;
     }
-
-    public virtual bool HasNonNullValues() => true;
 }

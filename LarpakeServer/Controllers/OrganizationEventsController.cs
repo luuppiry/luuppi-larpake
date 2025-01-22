@@ -30,7 +30,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     public async Task<IActionResult> GetEvents([FromQuery] EventQueryOptions options)
     {
         var records = await _db.Get(options);
-        var result = EventsGetDto.MapFrom(records);
+        var result = OrganizationEventsGetDto.MapFrom(records);
 
         result.SetNextPaginationPage(options);
         return Ok(result);
@@ -45,12 +45,12 @@ public class OrganizationEventsController : ExtendedControllerBase
         {
             return IdNotFound();
         }
-        return Ok(EventGetDto.From(record));
+        return Ok(OrganizationEventGetDto.From(record));
     }
 
     [HttpPost]
     [RequiresPermissions(Permissions.CreateEvent)]
-    public async Task<IActionResult> CreateEvent([FromBody] EventPostDto dto)
+    public async Task<IActionResult> CreateEvent([FromBody] OrganizationEventPostDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         var record = OrganizationEvent.MapFrom(dto, userId);

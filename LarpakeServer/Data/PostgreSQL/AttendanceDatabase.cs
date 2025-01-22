@@ -37,8 +37,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             """);
 
         // Search specific event
-        query.IfNotNull(options.EventId).AppendConditionLine($"""
-            a.larpake_event_id = @{nameof(options.EventId)}
+        query.IfNotNull(options.LarpakeEventId).AppendConditionLine($"""
+            a.larpake_event_id = @{nameof(options.LarpakeEventId)}
             """);
 
         // Only completed
@@ -240,7 +240,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
              * attendance with userId and eventId exists
              */
 
-            var oldRecord = await connection.QueryFirstOrDefaultAsync<(Guid? Id, bool Exists)>($"""
+            var (oldId, oldExists) = await connection.QueryFirstOrDefaultAsync<(Guid? Id, bool Exists)>($"""
                 SELECT 
                     completion_id AS Id,
                     TRUE as Exists
@@ -250,14 +250,14 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 LIMIT 1;
                 """, completion);
 
-            if (oldRecord.Exists is false)
+            if (oldExists is false)
             {
                 return Error.NotFound("Attendance with given userId and eventId not found");
             }
-            if (oldRecord.Id is not null)
+            if (oldId is not null)
             {
                 return DataError.AlreadyExistsNoError(
-                    oldRecord.Id.Value, nameof(AttendedCreated.CompletionId),
+                    oldId.Value, nameof(AttendedCreated.CompletionId),
                     $"Attendance is already completed, completion id in response body.");
             }
 
@@ -301,9 +301,6 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             throw;
         }
     }
-
-
-
 
     public async Task<Result<int>> Uncomplete(Guid userId, long eventId)
     {

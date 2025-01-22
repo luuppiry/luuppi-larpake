@@ -11,7 +11,7 @@ public class SignaturesGetDto : GetDtoBase
     [JsonIgnore]
     public override int ItemCount => Signatures.Length;
 
-    internal static SignaturesGetDto MapFrom(IEnumerable<Signature> records)
+    internal static SignaturesGetDto MapFrom(Signature[] records)
     {
         return new SignaturesGetDto
         {

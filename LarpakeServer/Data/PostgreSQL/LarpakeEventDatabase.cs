@@ -14,43 +14,65 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
 
         query.AppendLine($"""
              SELECT 
-                id, 
-                larpake_section_id,
-                title,
-                body,
-                points,
-                ordering_weight_number,
-                created_at,
-                updated_at,
-                canceled_at
-            FROM larpake_events
+                e.id, 
+                e.larpake_section_id,
+                e.title,
+                e.body,
+                e.points,
+                e.ordering_weight_number,
+                e.created_at,
+                e.updated_at,
+                e.canceled_at
+            FROM larpake_events e
             """);
+
+        bool requireSections = options.LarpakeId is not null || options.UserId is not null;
+
+        // Join larpake sections
+        query.If(requireSections).AppendLine($"""
+            LEFT JOIN larpake_sections s
+                ON e.larpake_section_id = s.id
+            """);
+
+        // Join larpakkeet
+        query.IfNotNull(options.UserId).AppendLine($"""
+            LEFT JOIN larpakkeet l
+                ON s.larpake_id = l.id
+            """);
+        
+        // Filter larpakkeet, which user participates in 
+        query.IfNotNull(options.UserId).AppendConditionLine($"""
+            l.id IN (
+                SELECT g.larpake_id
+                FROM freshman_group_members m
+                    LEFT JOIN freshman_groups g
+                        ON m.group_id = g.id
+            )
+            """);
+
 
         // Filter by larpake id
         query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
-            larpake_section_id IN (
-                SELECT id FROM larpake_sections
-                    WHERE larpake_id = @{nameof(options.LarpakeId)}
-            )
+            s.larpake_id = @{nameof(options.LarpakeId)}
             """);
 
         // Filter by section id
         query.IfNotNull(options.SectionId).AppendLine($"""
-            larpake_section_id = @{nameof(options.SectionId)}
+            e.larpake_section_id = @{nameof(options.SectionId)}
             """);
 
         // Only include canceled events
         query.If(options.IsCancelled is true).AppendConditionLine($"""
-            canceled_at IS NULL
+            e.canceled_at IS NULL
             """);
 
         // Only include not canceled events
         query.If(options.IsCancelled is false).AppendConditionLine($"""
-            canceled_at IS NOT NULL
+            e.canceled_at IS NOT NULL
             """);
 
         query.AppendLine($"""
-            ORDER BY ordering_weight_number, title ASC
+            ORDER BY e.ordering_weight_number, e.title ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)};
             """);

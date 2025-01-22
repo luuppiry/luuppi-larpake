@@ -29,10 +29,10 @@ public class AttendanceDatabase(
                 {nameof(Attendance.UserId)} = @{nameof(options.UserId)}
                 """);
         }
-        if (options.EventId is not null)
+        if (options.LarpakeEventId is not null)
         {
             query.AppendConditionLine($"""
-                {nameof(Attendance.LarpakeEventId)} = @{nameof(options.EventId)}
+                {nameof(Attendance.LarpakeEventId)} = @{nameof(options.LarpakeEventId)}
                 """);
         }
         if (options.IsCompleted is true)

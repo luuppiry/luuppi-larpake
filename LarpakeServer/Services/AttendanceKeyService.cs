@@ -2,9 +2,10 @@
 
 public class AttendanceKeyService
 {
-    public readonly struct AttendanceKeyServiceOptions
+    public class AttendanceKeyServiceOptions
     {
-        public required string KeyLength { get; init; }
+        public required int KeyLength { get; init; }
+        public required int KeyLifetimeHours { get; init; }
     }
 
 

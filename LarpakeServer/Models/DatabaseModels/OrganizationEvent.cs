@@ -41,7 +41,7 @@ public class OrganizationEvent
         };
     }
 
-    public static OrganizationEvent MapFrom(EventPostDto dto, Guid modifyingUser)
+    public static OrganizationEvent MapFrom(OrganizationEventPostDto dto, Guid modifyingUser)
     {
         return new OrganizationEvent
         {

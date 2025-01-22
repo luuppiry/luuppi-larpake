@@ -1,9 +1,8 @@
-﻿using LarpakeServer.Models.ComplexDataTypes;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LarpakeServer.Models.PostDtos;
 
-public class EventPostDto
+public class OrganizationEventPostDto
 {
     [Required]
     [MinLength(5)]
