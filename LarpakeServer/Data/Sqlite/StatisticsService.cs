@@ -19,7 +19,7 @@ public class StatisticsService(
                 COUNT(ea.{nameof(Attendance.CompletionId)}) 
             FROM FreshmanGroups fg 
                 LEFT JOIN FreshmanGroupMembers fgm 
-                    ON fg.{nameof(FreshmanGroup.Id)} = fgm.{nameof(FreshmanGroupMember.FreshmanGroupId)}
+                    ON fg.{nameof(FreshmanGroup.Id)} = fgm.{nameof(FreshmanGroupMember.GroupId)}
                 LEFT JOIN EventAttendances ea
                     ON fgm.{nameof(FreshmanGroupMember.UserId)} = ea.{nameof(Attendance.UserId)}
                 LEFT JOIN AttendanceCompletions ac
@@ -39,7 +39,7 @@ public class StatisticsService(
                 COUNT(ea.{nameof(Attendance.CompletionId)}) AS {nameof(GroupPoints.Points)}
             FROM FreshmanGroups fg 
                 LEFT JOIN FreshmanGroupMembers fgm 
-                    ON fg.{nameof(FreshmanGroup.Id)} = fgm.{nameof(FreshmanGroupMember.FreshmanGroupId)}
+                    ON fg.{nameof(FreshmanGroup.Id)} = fgm.{nameof(FreshmanGroupMember.GroupId)}
                 LEFT JOIN EventAttendances ea
                     ON fgm.{nameof(FreshmanGroupMember.UserId)} = ea.{nameof(Attendance.UserId)}
                 LEFT JOIN AttendanceCompletions ac

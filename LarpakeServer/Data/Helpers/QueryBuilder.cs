@@ -82,11 +82,4 @@ internal class SelectQuery
     {
         return value is not null ? this : new NullQuery();
     }
-
-
-
-
-
-
-
 }

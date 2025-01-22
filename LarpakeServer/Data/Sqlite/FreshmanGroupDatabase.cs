@@ -252,7 +252,7 @@ public class FreshmanGroupDatabase : SqliteDbBase, IFreshmanGroupDatabase
     }
 
     #region NAMEOF_CONSTANTS
-    private const string FGM_GroupId = nameof(FreshmanGroupMember.FreshmanGroupId);
+    private const string FGM_GroupId = nameof(FreshmanGroupMember.GroupId);
     private const string FGM_UserId = nameof(FreshmanGroupMember.UserId);
     private const string FGM_IsHidden = nameof(FreshmanGroupMember.IsHidden);
     #endregion NAMEOF_CONSTANTS

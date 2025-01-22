@@ -5,8 +5,8 @@ namespace LarpakeServer.Models.DatabaseModels;
 public class FreshmanGroup
 {
     public required long Id { get; set; }
+    public long LarpakeId { get; set; } = Constants.NullId;
     public required string Name { get; set; }
-    public int? StartYear { get; set; } = null;
     public int? GroupNumber { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -17,9 +17,10 @@ public class FreshmanGroup
         return new FreshmanGroup
         {
             Id = Constants.NullId,
+            LarpakeId = dto.LarpakeId,
             Name = dto.Name,
-            StartYear = dto.StartYear,
-            GroupNumber = dto.GroupNumber,
+            GroupNumber = dto.GroupNumber
+
         };
     }
 }

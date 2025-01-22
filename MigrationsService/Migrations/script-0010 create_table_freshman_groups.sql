@@ -1,6 +1,6 @@
 CREATE TABLE freshman_groups (
     id BIGSERIAL,
-    larpake_id BIGINT,
+    larpake_id BIGINT NOT NULL,
     name VARCHAR(80),
     group_number INT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

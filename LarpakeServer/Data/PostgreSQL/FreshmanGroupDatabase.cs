@@ -14,41 +14,25 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
 
     public async Task<FreshmanGroup[]> GetGroups(FreshmanGroupQueryOptions options)
     {
-        bool searchesUser = options.ContainsUser is not null;
-        bool joinsRequired = searchesUser || options.DoMinimize is false;
+        options.DoMinimize = false;
 
         SelectQuery query = new();
         query.AppendLine($"""
-            SELECT * FROM freshman_groups g
+            SELECT 
+                g.id,
+                g.larpake_id,
+                g.name,
+                g.group_number,
+                g.created_at,
+                g.updated_at,
+                m.group_id,
+                m.user_id,
+                m.is_hidden,
+                m.joined_at
+            FROM freshman_groups g
             """);
 
-        // Join tables if necessary
-        query.If(joinsRequired).AppendLine($"""
-            LEFT JOIN freshman_group_members m
-                ON g.id = m.group_id
-            LEFT JOIN users u
-                ON u.id = m.user_id
-            """);
-
-        // Search only groups user is in
-        query.If(searchesUser).AppendConditionLine($"""
-            u.id = @{nameof(options.ContainsUser)}
-            """);
-
-        // Match groups with name including case-insensitive string
-        query.IfNotNull(options.GroupName).AppendConditionLine($"""
-            g.name ILIKE %@{nameof(options.GroupName)}%
-            """);
-
-        // Match groups with specific start year
-        query.IfNotNull(options.StartYear).AppendConditionLine($"""
-            g.start_year = @{nameof(options.StartYear)}
-            """);
-
-        // Are hidden members included?
-        query.If(options.IncludeHiddenMembers is false).AppendConditionLine($"""
-            m.is_hidden = FALSE
-            """);
+        AddWhereClauses(ref query, options);
 
         query.AppendLine($"""
             ORDER BY g.start_year, g.group_number ASC
@@ -58,13 +42,6 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
 
 
         using var connection = GetConnection();
-        if (options.DoMinimize)
-        {
-            var minimized = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
-            return minimized.ToArray();
-        }
-
-
         Dictionary<long, FreshmanGroup> groups = [];
         await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>(
             query.ToString(),
@@ -76,9 +53,81 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
                 return resultGroup;
             },
             options,
-            splitOn: "id");
+            splitOn: "group_id");
 
         return groups.Values.ToArray();
+    }
+
+
+    public async Task<FreshmanGroup[]> GetGroupsMinimized(FreshmanGroupQueryOptions options)
+    {
+        options.DoMinimize = true;
+
+        SelectQuery query = new();
+        query.AppendLine($"""
+            SELECT 
+                g.id,
+                g.larpake_id,
+                g.name,
+                g.group_number,
+                g.created_at,
+                g.updated_at,
+            FROM freshman_groups g
+            """);
+
+        AddWhereClauses(ref query, options);
+        query.AppendLine($"""
+            ORDER BY g.start_year, g.group_number ASC
+            LIMIT @{nameof(options.PageSize)} 
+            OFFSET @{nameof(options.PageOffset)}
+            """);
+
+        using var connection = GetConnection();
+        var minimized = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
+        return minimized.ToArray();
+    }
+
+    private static void AddWhereClauses(ref SelectQuery query, in FreshmanGroupQueryOptions options)
+    {
+        bool filterByYear = options.StartYear is not null;
+        bool requireMemberData = options.ContainsUser is not null || options.DoMinimize is false;
+
+        // Join members table if necessary
+        query.If(requireMemberData).AppendLine($"""
+            LEFT JOIN freshman_group_members m
+                ON g.id = m.group_id
+            """);
+
+        // Join larpakkeet table if necessary
+        query.If(filterByYear).AppendLine($"""
+            LEFT JOIN larpakkeet l
+                ON g.larpake_id = l.id
+            """);
+
+        // Search only groups user is in
+        query.IfNotNull(options.ContainsUser).AppendConditionLine($"""
+            m.user_id = @{nameof(options.ContainsUser)}
+            """);
+
+        // Match groups with name including case-insensitive string
+        query.IfNotNull(options.GroupName).AppendConditionLine($"""
+            g.name ILIKE %@{nameof(options.GroupName)}%
+            """);
+
+        // Match groups with specific start year
+        query.If(filterByYear).AppendConditionLine($"""
+            l.year = @{nameof(options.StartYear)}
+            """);
+
+        // Are hidden members included?
+        query.IfFalse(options.IncludeHiddenMembers).AppendConditionLine($"""
+            m.is_hidden = FALSE
+            """);
+
+        // Is participating in larpake
+        query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
+            g.larpake_id = @{nameof(options.LarpakeId)}
+            """);
     }
 
     public async Task<FreshmanGroup?> GetGroup(long id)
@@ -125,12 +174,12 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
             return await connection.ExecuteScalarAsync<long>($"""
                 INSERT INTO freshman_groups (
                     name, 
-                    start_year, 
+                    larpake_id, 
                     group_number
                 )
                 VALUES (
                     @{nameof(record.Name)},
-                    @{nameof(record.StartYear)},
+                    @{nameof(record.LarpakeId)},
                     @{nameof(record.GroupNumber)}
                 )
                 RETURNING id;
@@ -139,7 +188,7 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
         catch (PostgresException ex)
         {
             // TODO: Handle exception
-            Logger.LogError("Error inserting freshman group: {msg}", ex.Message);
+            Logger.LogError(ex, "Error inserting freshman group.");
             throw;
         }
     }
@@ -163,7 +212,6 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
                 UPDATE freshman_groups
                 SET
                     name = @{nameof(record.Name)},
-                    start_year = @{nameof(record.StartYear)},
                     group_number = @{nameof(record.GroupNumber)},
                     updated_at = NOW()
                 WHERE id = @{nameof(record.Id)}
@@ -172,7 +220,7 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
         catch (PostgresException ex)
         {
             // TODO: Handle exception
-            Logger.LogError("Error updating freshman group: {msg}", ex.Message);
+            Logger.LogError(ex, "Error updating freshman group.");
             throw;
         }
     }

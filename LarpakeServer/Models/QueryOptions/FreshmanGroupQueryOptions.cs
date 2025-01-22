@@ -10,6 +10,7 @@ public class FreshmanGroupQueryOptions : QueryOptions
     public string? GroupName { get; set; }
     public Guid? ContainsUser { get; set; }
     public int? StartYear { get; set; }
+    public long? LarpakeId { get; set; }
     public bool DoMinimize { get; set; } = true;
 
     [JsonIgnore]
@@ -20,6 +21,7 @@ public class FreshmanGroupQueryOptions : QueryOptions
     {
         return GroupName is not null
             || ContainsUser is not null
-            || StartYear is not null;
+            || StartYear is not null
+            || LarpakeId is not null;
     }
 }
