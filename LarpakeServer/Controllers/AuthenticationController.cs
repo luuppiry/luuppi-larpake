@@ -2,7 +2,7 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.SingleItem;
 using LarpakeServer.Models.PostDtos;
 using System.Security.Claims;
 using DbUser = LarpakeServer.Models.DatabaseModels.User;

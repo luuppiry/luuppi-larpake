@@ -56,7 +56,7 @@ internal class AttendancesGenerator : IRunAll
             var key = _keyService.GenerateKey();
             attendance.QrCodeKey = key.QrCodeKey;
             attendance.KeyInvalidAt = key.KeyInvalidAt;
-            await _db.RequestAttendanceKey(attendance);
+            await _db.GetAttendanceKey(attendance);
         }
         Console.WriteLine($"Generated {attendances.Length} attendances.");
     }

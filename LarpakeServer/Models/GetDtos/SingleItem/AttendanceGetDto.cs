@@ -1,7 +1,7 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Services;
 
-namespace LarpakeServer.Models.GetDtos;
+namespace LarpakeServer.Models.GetDtos.SingleItem;
 
 public class AttendanceGetDto
 {
@@ -22,7 +22,7 @@ public class AttendanceGetDto
                 null : AttendanceCompletionGetDto.From(attendance.Completion),
             CreatedAt = attendance.CreatedAt,
             UpdatedAt = attendance.UpdatedAt,
-            Key = attendance.QrCodeKey is null ? 
+            Key = attendance.QrCodeKey is null ?
                 null : new AttendanceKey(attendance.QrCodeKey, attendance.KeyInvalidAt ?? DateTime.UtcNow)
 
         };

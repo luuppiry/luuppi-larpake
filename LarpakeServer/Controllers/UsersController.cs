@@ -1,7 +1,7 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
-using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.MultipleItems;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 
@@ -81,7 +81,7 @@ public class UsersController : ExtendedControllerBase
 
 
 
-    [HttpPut("{userId}/permissions")]
+    [HttpPut("{targetId}/permissions")]
     public async Task<IActionResult> UpdateUserPermissions(Guid targetId, [FromBody] UserPermissionsPutDto dto)
     {
         /* Validate roles (Author is always validated from database, not only from JWT)
@@ -125,6 +125,7 @@ public class UsersController : ExtendedControllerBase
             return Unauthorized("Higher request role required.");
         }
 
+        // Validate target exists
         DbUser? target = await _db.Get(targetId);
         if (target is null)
         {

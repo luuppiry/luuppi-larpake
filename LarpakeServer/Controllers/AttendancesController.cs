@@ -4,10 +4,12 @@ using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
-using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.MultipleItems;
+using LarpakeServer.Models.GetDtos.SingleItem;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
+using LarpakeServer.Services.Options;
 
 namespace LarpakeServer.Controllers;
 
@@ -18,15 +20,18 @@ public class AttendancesController : ExtendedControllerBase
 {
     readonly IAttendanceDatabase _db;
     readonly CompletionMessageService _messageService;
+    readonly AttendanceKeyOptions _keyOptions;
 
     public AttendancesController(
-        IAttendanceDatabase db, 
+        IAttendanceDatabase db,
         CompletionMessageService messageService,
         IClaimsReader claimsReader,
+        AttendanceKeyOptions keyOptions,
         ILogger<AttendancesController> logger) : base(claimsReader, logger)
     {
         _db = db;
         _messageService = messageService;
+        _keyOptions = keyOptions;
     }
 
 
@@ -58,31 +63,66 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("{eventId}")]
     [RequiresPermissions(Permissions.AttendEvent)]
-    public async Task<IActionResult> Post(long eventId)
+    public async Task<IActionResult> GenerateAttendanceKey(long eventId)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
-        var record = Attendance.MapFrom(eventId, userId);
+        var record = Attendance.From(eventId, userId);
 
-        Result<AttendanceKey> result = await _db.RequestAttendanceKey(record);
-        return result.MatchToResponse(
-            ok: x => Ok((AttendanceKey)result),
-            error: FromError);
+        Result<AttendanceKey> result = await _db.GetAttendanceKey(record);
+        if (result.IsError)
+        {
+            return FromError(result);
+        }
+
+        var key = AttendanceKeyGetDto.From((AttendanceKey)result, _keyOptions.Header);
+        return Ok(key);
     }
+
+    [HttpPost("{key}/complete")]
+    [RequiresPermissions(Permissions.CompleteAttendance)]
+    public async Task<IActionResult> Complete(string key)
+    {
+        if (key.StartsWith(_keyOptions.Header) is false)
+        {
+            return BadRequest("Invalid key header.");
+        }
+        if (key.Length != _keyOptions.ValidFullKeyLength)
+        {
+            return BadRequest("Invalid key length.");
+        }
+
+        Guid signerId = GetRequestUserId();
+        var completed = await _db.CompletedKeyed(new KeyedCompletionMetadata
+        {
+            // Exclude header from key
+            Key = key[_keyOptions.Header.Length..],
+            CompletedAt = DateTime.Now,
+            SignerId = signerId
+        });
+
+        if (completed)
+        {
+            _messageService.SendAttendanceCompletedMessage((AttendedCreated)completed);
+            return CreatedId(((AttendedCreated)completed).CompletionId);
+        }
+        return FromError(completed);
+    }
+
 
     [HttpPost("complete")]
     [RequiresPermissions(Permissions.CompleteAttendance)]
     public async Task<IActionResult> Complete([FromBody] CompletionPutDto dto)
     {
-        Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
-        var record = CompletionMetadata.From(dto, userId);
+        Guid signerId = _claimsReader.ReadAuthorizedUserId(Request);
+        var record = CompletionMetadata.From(dto, signerId);
         
-        Result<AttendedCreated> result = await _db.Complete(record);
-        if (result)
+        Result<AttendedCreated> completed = await _db.Complete(record);
+        if (completed)
         {
-            _messageService.SendAttendanceCompletedMessage((AttendedCreated)result);
-            return CreatedId(((AttendedCreated)result).CompletionId);
+            _messageService.SendAttendanceCompletedMessage((AttendedCreated)completed);
+            return CreatedId(((AttendedCreated)completed).CompletionId);
         }
-        return FromError(result);
+        return FromError(completed);
     }
 
     [HttpPost("uncomplete")]

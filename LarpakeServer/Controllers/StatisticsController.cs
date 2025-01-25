@@ -2,7 +2,7 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.MultipleItems;
 using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Controllers;

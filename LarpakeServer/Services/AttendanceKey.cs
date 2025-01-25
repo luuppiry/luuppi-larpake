@@ -1,6 +1,6 @@
 ﻿namespace LarpakeServer.Services;
 
-public readonly struct AttendanceKey
+public class AttendanceKey
 {
     public AttendanceKey(string key, DateTime invalidAt)
     {
@@ -10,10 +10,4 @@ public readonly struct AttendanceKey
 
     public string QrCodeKey { get; }
     public DateTime KeyInvalidAt { get; }
-
-    public void Deconstruct(out string key, out DateTime invalidAt)
-    {
-        key = QrCodeKey;
-        invalidAt = KeyInvalidAt;
-    }
 }

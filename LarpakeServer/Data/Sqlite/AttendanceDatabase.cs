@@ -273,7 +273,7 @@ public class AttendanceDatabase(
             """);
     }
 
-    public Task<Result<AttendanceKey>> RequestAttendanceKey(Attendance attendance)
+    public Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance)
     {
         throw new NotImplementedException();
     }

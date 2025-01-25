@@ -9,7 +9,7 @@ namespace LarpakeServer.Data;
 public interface IAttendanceDatabase
 {
     Task<Attendance[]> Get(AttendanceQueryOptions options);
-    Task<Result<AttendanceKey>> RequestAttendanceKey(Attendance attendance);
+    Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance);
     Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion);
     Task<Result<AttendedCreated>> Complete(CompletionMetadata completion);
     Task<Result<int>> Uncomplete(Guid userId, long eventId);

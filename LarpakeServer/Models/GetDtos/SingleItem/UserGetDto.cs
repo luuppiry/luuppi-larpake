@@ -1,7 +1,7 @@
 ﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 
-namespace LarpakeServer.Models.GetDtos;
+namespace LarpakeServer.Models.GetDtos.SingleItem;
 
 public class UserGetDto
 {

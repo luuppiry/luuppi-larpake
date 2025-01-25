@@ -16,9 +16,16 @@ public class Constants
 
 
     #region LARPAKE_EVENT
+    
+    // LärpäkeEvent
     public const int MaxLarpakeEventTitleLength = 80;
     public const int MaxLarpakeEventBodyLength = 2000;
     public const int MaxPointsPerLarpakeEvent = 100;
+    
+    // Lärpäke
+    public const int MaxLarpakeTitleLength = 80;
+    public const int MaxLarpakeDescriptionLength = 2000;
+    
     #endregion LARPAKE_EVENT
 
 }

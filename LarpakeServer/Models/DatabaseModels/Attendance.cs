@@ -12,7 +12,7 @@ public class Attendance
 
     public Completion? Completion { get; set; } = null;
 
-    public static Attendance MapFrom(long eventId, Guid userId)
+    public static Attendance From(long eventId, Guid userId)
     {
         return new Attendance
         {

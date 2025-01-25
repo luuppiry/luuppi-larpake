@@ -5,6 +5,7 @@ using LarpakeServer.Models.EventModels;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Npgsql;
+using System.Net.Security;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -93,7 +94,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
 
 
-    public async Task<Result<AttendanceKey>> RequestAttendanceKey(Attendance attendance)
+    public async Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance)
     {
         return await RequestAttendanceKeyRetried(attendance, 5);
     }
@@ -165,17 +166,26 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
         try
         {
+            /* Doing this in transaction to ensure that key 
+             * is only invalidated if failed to complete
+             * - Key is not deleted, because we don't want same key used immidiately
+             * - Key is deleted after cooldown period (like 5 days)
+             */
             using var connection = GetConnection();
+            using var transaction = await connection.BeginTransactionAsync();
 
-            // Get by key
+            // Get attendance 
             var attendance = await connection.QueryFirstOrDefaultAsync<Attendance>($"""
-                SELECT 
+                UPDATE attendances
+                    SET 
+                        key_invalid_at = NOW(),
+                        updated_at = NOW()
+                WHERE qr_code_key = @{nameof(completion.Key)}
+                    AND key_invalid_at > NOW()
+                RETURNING
                     user_id,
                     larpake_event_id,
-                    completion_id,
-                FROM attendances
-                    WHERE qr_code_key = @{nameof(completion.Key)}
-                        AND key_invalid_at > NOW();
+                    completion_id;
                 """);
 
             if (attendance is null)
@@ -185,8 +195,10 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
             if (attendance.CompletionId is not null)
             {
+                transaction.Commit();
                 return DataError.AlreadyExistsNoError(
-                    attendance.CompletionId.Value, nameof(AttendedCreated.CompletionId),
+                    attendance.CompletionId.Value, 
+                    nameof(AttendedCreated.CompletionId),
                     $"Attendance is already completed, completion id in response body.");
             }
 
@@ -194,10 +206,10 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             {
                 Id = Guid.CreateVersion7(),
                 SignerId = completion.SignerId,
-                SignatureId = completion.SignatureId,
                 CompletedAt = completion.CompletedAt
             };
 
+            // Create completion
             await connection.ExecuteAsync($"""
                 INSERT INTO completions (
                     id,
@@ -208,17 +220,27 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 VALUES (
                     @{nameof(record.Id)},
                     @{nameof(record.SignerId)},
-                    @{nameof(record.SignatureId)},
+                    (
+                        SELECT id FROM signatures
+                        WHERE user_id = @{nameof(record.SignerId)}
+                        ORDER BY RANDOM() LIMIT 1
+                    ),
                     NOW()
                 );
-
-                UPDATE attendances
-                SET 
-                    completion_id = @{nameof(record.Id)}
-                    updated_at = NOW()
-                WHERE qr_code_key = @{nameof(completion.Key)};
                 """, record);
 
+            // Update attendance to completed
+            await connection.ExecuteAsync($"""
+                UPDATE attendances
+                SET 
+                    completion_id = @{nameof(record.Id)},
+                    updated_at = NOW()
+                    key_invalid_at = NOW()
+                WHERE 
+                    qr_code_key = @{nameof(completion.Key)};
+                """, new { record.Id, completion.Key });
+
+            await transaction.CommitAsync();
             return new AttendedCreated
             {
                 CompletionId = record.Id,
@@ -280,6 +302,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     $"Attendance is already completed, completion id in response body.");
             }
 
+
+
             completion.Id = Guid.CreateVersion7();
             
             await connection.ExecuteAsync($"""
@@ -293,7 +317,11 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 VALUES (
                     @{nameof(completion.Id)},
                     @{nameof(completion.SignerId)},
-                    @{nameof(completion.SignatureId)},
+                    (
+                        SELECT id FROM signatures
+                        WHERE user_id = @{nameof(completion.SignerId)}
+                        ORDER BY RANDOM() LIMIT 1
+                    ),
                     @{nameof(completion.CompletedAt)},
                     NOW()
                 );
@@ -302,6 +330,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 SET 
                     completion_id = @{nameof(completion.Id)},
                     updated_at = NOW()
+                    key_invalid_at = NOW()
                 WHERE user_id = @{nameof(completion.UserId)}
                     AND larpake_event_id = @{nameof(completion.EventId)};
                 """, completion);

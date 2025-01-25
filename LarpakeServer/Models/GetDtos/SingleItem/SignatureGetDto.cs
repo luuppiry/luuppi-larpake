@@ -2,7 +2,7 @@
 using LarpakeServer.Models.DatabaseModels;
 using System.Text.Json;
 
-namespace LarpakeServer.Models.GetDtos;
+namespace LarpakeServer.Models.GetDtos.SingleItem;
 
 public class SignatureGetDto
 {

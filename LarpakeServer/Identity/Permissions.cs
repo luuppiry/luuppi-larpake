@@ -50,7 +50,7 @@ public enum Permissions : int
     /// <summary>
     /// User can read common data from any year.
     /// </summary>
-    ReadAnyYearData = 1 << 7,
+    ReadAllData = 1 << 7,
 
     #endregion TUTOR_PERMISSIONS
     #region ADMIN_PERMISSIONS
@@ -122,16 +122,16 @@ public enum Permissions : int
     /// </summary>
     ReadStatistics = 1 << 20,
 
+    /// <summary>
+    /// User can create new Lärpäke.
+    /// </summary>
+    CreateLarpake = 1 << 21,
+
     #endregion ADMIN_PERMISSIONS
     #region SUDO_PERMISSIONS
 
 
-    #region MANAGEMENT_PERMISSIONS
-    ManageGroup = CreateGroup | EditGroup,
 
-
-
-    #endregion MANAGEMENT_PERMISSIONS
 
 
 
@@ -139,6 +139,11 @@ public enum Permissions : int
 
     // Sudo permissions are only used for special occasions. 
     // They should not be given to anyone other than developers.
+
+    /// <summary>
+    /// Permission allows to delete any Lärpäke.
+    /// </summary>
+    DeleteLarpake = 1 << 22,
 
     /// <summary>
     /// Permission allows to hard delete any event.
@@ -159,8 +164,6 @@ public enum Permissions : int
 
 
     #endregion SUDO_PERMISSIONS
-
-
 
     /* YOU SHOULD NEVER SHIFT OVER 30 (with int)
      * (Sign bit is 1 << 31 so we will also not touch it for now) 
@@ -190,7 +193,7 @@ public enum Permissions : int
     Admin = Tutor | CreateGroup | CreateEvent | DeleteEvent
         | SeeHiddenMembers | EditAttendance | DeleteAttendance
         | ManageTutorPermissions | UpdateUserInformation | DeleteUser
-        | ReadRawUserInfomation | ReadStatistics,
+        | ReadRawUserInfomation | ReadStatistics | CreateLarpake,
 
     /// <summary>
     /// This is a special permission that allows should

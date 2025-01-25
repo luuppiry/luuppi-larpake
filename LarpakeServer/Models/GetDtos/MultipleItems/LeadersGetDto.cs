@@ -2,7 +2,7 @@
 using LarpakeServer.Models.GetDtos.Templates;
 using System.Diagnostics.CodeAnalysis;
 
-namespace LarpakeServer.Models.GetDtos;
+namespace LarpakeServer.Models.GetDtos.MultipleItems;
 
 public class LeadersGetDto<T> : GetDtoBase
 {

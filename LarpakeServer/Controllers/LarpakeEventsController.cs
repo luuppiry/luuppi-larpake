@@ -2,7 +2,8 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.MultipleItems;
+using LarpakeServer.Models.GetDtos.SingleItem;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
@@ -30,7 +31,7 @@ public class LarpakeEventsController : ExtendedControllerBase
     public async Task<IActionResult> Get([FromQuery] LarpakeEventQueryOptions options)
     {
         Permissions permissions = GetRequestPermissions();
-        if (permissions.Has(Permissions.ReadAnyYearData) is false)
+        if (permissions.Has(Permissions.ReadAllData) is false)
         {
             // Limit non-admins to their own events
             options.UserId = GetRequestUserId();
@@ -43,7 +44,7 @@ public class LarpakeEventsController : ExtendedControllerBase
     }
 
     [HttpGet("{id}")]
-    [RequiresPermissions(Permissions.ReadAnyYearData)]
+    [RequiresPermissions(Permissions.ReadAllData)]
     public async Task<IActionResult> Get(long id)
     {
         var record = await _db.GetEvent(id);

@@ -6,9 +6,9 @@ public interface ILarpakeDatabase
 {
     Task<int> DeleteLarpake(long larpakeId);
     Task<int> DeleteSection(long sectionId);
+    Task<Larpake[]> GetLarpakkeet(LarpakeQueryOptions options);
     Task<Larpake?> GetLarpake(long larpakeId);
     Task<LarpakeSection[]> GetLarpakeSections(long larpakeId);
-    Task<Larpake[]> GetLarpakkeet(QueryOptions options);
     Task<LarpakeSection?> GetSection(long sectionId);
     Task<LarpakeSection[]> GetSections(QueryOptions options);
     Task<Result<long>> InsertLarpake(Larpake record);

@@ -1,4 +1,6 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Data.Helpers;
+using LarpakeServer.Extensions;
+using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
 
@@ -7,21 +9,97 @@ namespace LarpakeServer.Data.PostgreSQL;
 public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<LarpakeDatabase> logger)
     : PostgresDb(connectionString, logger), ILarpakeDatabase
 {
-    public async Task<Larpake[]> GetLarpakkeet(QueryOptions options)
+    public async Task<Larpake[]> GetLarpakkeet(LarpakeQueryOptions options)
     {
-        using var connection = GetConnection();
-        var records = await connection.QueryAsync<Larpake>($"""
+        SelectQuery query = new();
+
+        if (options.DoMinimize)
+        {
+            query.AppendLine("""
             SELECT 
-                id, 
-                title,
-                year,
-                description,
-                created_at,
-                updated_at
-            FROM larpakkeet 
+                l.id, 
+                l.title,
+                l.year,
+                l.description,
+                l.created_at,
+                l.updated_at
+            FROM larpakkeet l
+            """);
+        }
+        else
+        {
+            query.AppendLine("""
+            SELECT 
+                l.id, 
+                l.title,
+                l.year,
+                l.description,
+                l.created_at,
+                l.updated_at,
+                s.id,
+                s.larpake_id,
+                s.title,
+                s.ordering_weight_number,
+                s.created_at,
+                s.updated_at
+            FROM larpakkeet l
+            LEFT JOIN larpake_sections s
+                ON l.id = s.larpake_id
+            """);
+        }
+
+        
+
+        // Join tables to search for user
+        if (options.ContainsUser is not null)
+        {
+            query.AppendLine($"""
+                LEFT JOIN freshman_groups g
+                    ON l.id = g.larpake_id
+                LEFT JOIN freshman_group_members m
+                    ON g.id = m.freshman_group_id
+                """);
+            query.AppendConditionLine($"""
+                m.user_id = @{nameof(options.ContainsUser)}
+                """);
+        }
+
+        // Search for year 
+        query.IfNotNull(options.Year).AppendConditionLine($"""
+            year = @{nameof(options.Year)} 
+            """);
+
+        // Search for title
+        query.IfNotNull(options.Title).AppendConditionLine($"""
+            title ILIKE %@{nameof(options.Year)}% 
+            """);
+
+        query.AppendLine($"""
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)};
-            """, options);
+            """);
+
+        using var connection = GetConnection();
+        if (options.DoMinimize)
+        {
+            var minimized = await connection.QueryAsync<Larpake>(query.ToString(), options);
+            return minimized.ToArray();
+        }
+
+        Dictionary<long, Larpake> unminimized = [];
+        var records = await connection.QueryAsync<Larpake, LarpakeSection, Larpake>(query.ToString(),
+            (larpake, section) =>
+            {
+                var value = unminimized.GetOrAdd(larpake.Id, larpake)!;
+                if (section is not null)
+                {
+                    value.Sections ??= [];
+                    value.Sections.Add(section);
+                }
+                return value;
+            },
+            options,
+            splitOn: "id");
         return records.ToArray();
     }
 
@@ -186,4 +264,6 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             DELETE FROM larpake_sections WHERE id = @{nameof(sectionId)};
             """, new { sectionId });
     }
+
+
 }

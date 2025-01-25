@@ -1,9 +1,9 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
-using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.MultipleItems;
+using LarpakeServer.Models.GetDtos.SingleItem;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;

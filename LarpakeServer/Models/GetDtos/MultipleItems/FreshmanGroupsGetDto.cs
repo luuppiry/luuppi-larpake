@@ -1,9 +1,9 @@
-﻿
-using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.SingleItem;
 using LarpakeServer.Models.GetDtos.Templates;
 using System.Text.Json.Serialization;
 
-namespace LarpakeServer.Models.GetDtos;
+namespace LarpakeServer.Models.GetDtos.MultipleItems;
 
 public class FreshmanGroupsGetDto : GetDtoBase
 {

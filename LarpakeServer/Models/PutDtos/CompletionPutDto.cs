@@ -10,7 +10,6 @@ public class CompletionPutDto
     [Required]
     public required long EventId { get; set; }
 
-    public Guid? SignatureId { get; set; } = null;
 
     public DateTime CompletedAt { get; set; } = DateTime.UtcNow;
 }
