@@ -205,13 +205,11 @@ public class AttendanceDatabase(
                 INSERT INTO AttendanceCompletions (
                     {nameof(Completion.Id)}, 
                     {nameof(Completion.SignerId)}, 
-                    {nameof(Completion.SignatureId)},
                     {nameof(Completion.CompletedAt)}
                 )
                 VALUES (
                     @{nameof(completion.Id)},
                     @{nameof(completion.SignerId)},
-                    @{nameof(completion.SignatureId)},
                     @{nameof(completion.CompletedAt)}
                 ); 
                 

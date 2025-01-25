@@ -48,7 +48,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             """);
         }
 
-        
+
 
         // Join tables to search for user
         if (options.ContainsUser is not null)
@@ -57,7 +57,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 LEFT JOIN freshman_groups g
                     ON l.id = g.larpake_id
                 LEFT JOIN freshman_group_members m
-                    ON g.id = m.freshman_group_id
+                    ON g.id = m.group_id
                 """);
             query.AppendConditionLine($"""
                 m.user_id = @{nameof(options.ContainsUser)}
@@ -87,7 +87,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
         }
 
         Dictionary<long, Larpake> unminimized = [];
-        var records = await connection.QueryAsync<Larpake, LarpakeSection, Larpake>(query.ToString(),
+        await connection.QueryAsync<Larpake, LarpakeSection, Larpake>(query.ToString(),
             (larpake, section) =>
             {
                 var value = unminimized.GetOrAdd(larpake.Id, larpake)!;
@@ -100,7 +100,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             },
             options,
             splitOn: "id");
-        return records.ToArray();
+        return unminimized.Values.ToArray();
     }
 
     public async Task<Larpake?> GetLarpake(long larpakeId)
@@ -163,7 +163,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
 
 
 
-    public async Task<LarpakeSection[]> GetSections(QueryOptions options)
+    public async Task<LarpakeSection[]> GetSections(long larpakeId, QueryOptions options)
     {
         using var connection = GetConnection();
         var records = await connection.QueryAsync<LarpakeSection>($"""
@@ -175,9 +175,17 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 created_at,
                 updated_at
             FROM larpake_sections 
+            WHERE 
+                larpake_id = @{nameof(larpakeId)}
+            ORDER BY ordering_weight_number ASC, id ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)};
-            """, options);
+            """, new
+                 {
+                    larpakeId,
+                    options.PageSize,
+                    options.PageOffset
+                 });
 
         return records.ToArray();
     }

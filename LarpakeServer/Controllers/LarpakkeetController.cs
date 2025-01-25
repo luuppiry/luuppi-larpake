@@ -26,7 +26,7 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.ReadAllData)]
-    public async Task<IActionResult> Get(LarpakeQueryOptions options)
+    public async Task<IActionResult> Get([FromQuery] LarpakeQueryOptions options)
     {
         /* Name search is only allowed for admins.
          */
@@ -44,10 +44,12 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpGet("own")]
     [RequiresPermissions(Permissions.CommonRead)]
-    public async Task<IActionResult> Get()
+    public async Task<IActionResult> Get([FromQuery] bool? minimize)
     {
+        minimize ??= false;
         var options = new LarpakeQueryOptions
         {
+            DoMinimize = minimize.Value,
             ContainsUser = GetRequestUserId()
         };
         return await Get(options);
@@ -65,7 +67,21 @@ public class LarpakkeetController : ExtendedControllerBase
         }
         return Ok(record);
     }
-    
+
+    [HttpGet("{larpakeId}/sections")]
+    public async Task<IActionResult> GetSections(long larpakeId, [FromQuery] QueryOptions options)
+    {
+        LarpakeSection[] sections = await _db.GetSections(larpakeId, options);
+        var result = new LarpakeSectionsGetDto
+        {
+            Sections = sections
+        };
+        result.SetNextPaginationPage(options);
+        return Ok(result);
+
+    }
+
+
     [HttpPost]
     [RequiresPermissions(Permissions.CreateLarpake)]
     public async Task<IActionResult> Create([FromBody] LarpakePostDto record)

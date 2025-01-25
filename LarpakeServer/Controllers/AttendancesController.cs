@@ -140,6 +140,9 @@ public class AttendancesController : ExtendedControllerBase
     public async Task<IActionResult> Clean()
     {
         int rowsAffected = await _db.Clean();
+
+        _logger.LogInformation("Cleaned {count} attendances.", rowsAffected);
+
         return OkRowsAffected(rowsAffected);
     }
 }

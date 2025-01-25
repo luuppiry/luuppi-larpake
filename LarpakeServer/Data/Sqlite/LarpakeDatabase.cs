@@ -168,4 +168,14 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
             );
             """);
     }
+
+    Task<Larpake[]> ILarpakeDatabase.GetLarpakkeet(LarpakeQueryOptions options)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<LarpakeSection[]> ILarpakeDatabase.GetSections(long larpakeId, QueryOptions options)
+    {
+        throw new NotImplementedException();
+    }
 }

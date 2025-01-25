@@ -1,18 +1,13 @@
-﻿using System.Security.Cryptography;
+﻿using LarpakeServer.Services.Options;
+using System.Security.Cryptography;
 
 namespace LarpakeServer.Services;
 
 public class AttendanceKeyService
 {
-    public class AttendanceKeyServiceOptions
-    {
-        public required int KeyLength { get; init; }
-        public required int KeyLifetimeHours { get; init; }
-    }
+    readonly AttendanceKeyOptions _options;
 
-    readonly AttendanceKeyServiceOptions _options;
-
-    public AttendanceKeyService(AttendanceKeyServiceOptions options)
+    public AttendanceKeyService(AttendanceKeyOptions options)
     {
         _options = options;
     }

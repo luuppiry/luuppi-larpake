@@ -6,6 +6,15 @@ public class LarpakeGetDto : Larpake
 {
     public static LarpakeGetDto From(Larpake larpake)
     {
-        return (LarpakeGetDto)larpake;
+        return new LarpakeGetDto
+        {
+            Id = larpake.Id,
+            Title = larpake.Title,
+            Year = larpake.Year,
+            Description = larpake.Description,
+            CreatedAt = larpake.CreatedAt,
+            UpdatedAt = larpake.UpdatedAt,
+            Sections = larpake.Sections,
+        };
     }
 }

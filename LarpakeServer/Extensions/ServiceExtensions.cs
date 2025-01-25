@@ -9,6 +9,7 @@ using static LarpakeServer.Services.AttendanceKeyService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using LarpakeServer.Services.Options;
 
 namespace LarpakeServer.Extensions;
 
@@ -94,6 +95,7 @@ public static class ServiceExtensions
         services.AddSingleton<IRefreshTokenDatabase, Postgres.RefreshTokenDatabase>();
         services.AddSingleton<ILarpakeDatabase, Postgres.LarpakeDatabase>();
         services.AddSingleton<ILarpakeEventDatabase, Postgres.LarpakeEventDatabase>();
+        services.AddSingleton<IStatisticsService, Postgres.StatisticsService>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
@@ -107,11 +109,10 @@ public static class ServiceExtensions
         services.AddSingleton<TokenService>();
         services.AddSingleton<IClaimsReader, TokenService>();
         services.AddSingleton<AttendanceKeyService>();
-        services.AddSingleton(new AttendanceKeyServiceOptions
-        {
-            KeyLength = configuration.GetValue<int>("AttendanceKey:KeyLength")!,
-            KeyLifetimeHours = configuration.GetValue<int>("AttendanceKey:KeyLifetimeHours")!
-        });
+
+        AttendanceKeyOptions keyOptions = new();
+        configuration.GetSection("AttendanceKey").Bind(keyOptions);
+        services.AddSingleton(keyOptions);
     }
 
 }
