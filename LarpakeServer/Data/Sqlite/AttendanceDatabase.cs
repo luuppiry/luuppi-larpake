@@ -282,4 +282,9 @@ public class AttendanceDatabase(
     {
         throw new NotImplementedException();
     }
+
+    Task<int> IAttendanceDatabase.Clean()
+    {
+        throw new NotImplementedException();
+    }
 }

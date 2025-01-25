@@ -100,7 +100,6 @@ internal class AttendancesGenerator : IRunAll
                 SignatureId = faker.PickRandom(signatures).Id.OrNull(faker, 0.25f),
             };
 
-            Console.WriteLine(JsonSerializer.Serialize(completion));
             await _db.Complete(completion);
         }
 

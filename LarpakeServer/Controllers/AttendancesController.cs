@@ -94,4 +94,12 @@ public class AttendancesController : ExtendedControllerBase
             ok: OkRowsAffected,
             error: FromError);
     }
+
+    [HttpPost("clean")]
+    [RequiresPermissions(Permissions.Sudo)]
+    public async Task<IActionResult> Clean()
+    {
+        int rowsAffected = await _db.Clean();
+        return OkRowsAffected(rowsAffected);
+    }
 }

@@ -353,4 +353,11 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             throw;
         }
     }
+
+    public async Task<int> Clean()
+    {
+        // Call stored procedure
+        using var connection = GetConnection();
+        return await connection.ExecuteScalarAsync<int>("SELECT CleanAttendanceKeys();");
+    }
 }

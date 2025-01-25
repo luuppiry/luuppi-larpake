@@ -1,7 +1,6 @@
 ﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Npgsql;
 
 namespace LarpakeServer.Data.PostgreSQL;
