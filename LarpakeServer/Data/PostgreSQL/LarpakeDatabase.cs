@@ -71,13 +71,15 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
 
         // Search for title
         query.IfNotNull(options.Title).AppendConditionLine($"""
-            title ILIKE %@{nameof(options.Year)}% 
+            title ILIKE @{nameof(options.TitleQueryValue)}
             """);
 
         query.AppendLine($"""
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)};
             """);
+
+        string s = query.ToString();
 
         using var connection = GetConnection();
         if (options.DoMinimize)

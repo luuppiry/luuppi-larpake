@@ -29,6 +29,7 @@ public class LarpakkeetController : ExtendedControllerBase
     public async Task<IActionResult> Get([FromQuery] LarpakeQueryOptions options)
     {
         /* Name search is only allowed for admins.
+         * Actually you can add as many wildcards in the search as you want
          */
 
         if (GetRequestPermissions().Has(Permissions.Admin) is false)

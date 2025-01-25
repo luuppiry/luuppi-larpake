@@ -5,7 +5,6 @@ using LarpakeServer.Models.EventModels;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Npgsql;
-using System.Net.Security;
 
 namespace LarpakeServer.Data.PostgreSQL;
 

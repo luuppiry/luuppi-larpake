@@ -12,7 +12,7 @@ namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/larpake-events")]
 public class LarpakeEventsController : ExtendedControllerBase
 {
     readonly ILarpakeEventDatabase _db;
