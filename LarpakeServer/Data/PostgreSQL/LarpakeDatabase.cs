@@ -231,7 +231,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             VALUES (
                 @{nameof(section.LarpakeId)},
                 @{nameof(section.Title)},
-                @{nameof(section.SectionSequenceNumber)}
+                @{nameof(section.OrderingWeightNumber)}
             )
             RETURNING id;
             """, section);
@@ -251,7 +251,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             UPDATE larpake_sections
             SET 
                 title = @{nameof(record.Title)},
-                ordering_weight_number = @{nameof(record.SectionSequenceNumber)},
+                ordering_weight_number = @{nameof(record.OrderingWeightNumber)},
                 updated_at = NOW()
             WHERE id = @{nameof(record.Id)};
             """, record);

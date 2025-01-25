@@ -62,25 +62,25 @@ internal class LarpakeGenerator : IRunAll
                 Id = -1,
                 LarpakeId = 1,
                 Title = "Fuksi touhuilee",
-                SectionSequenceNumber = 1,
+                OrderingWeightNumber = 1,
             },
             new() {
                 Id = -1,
                 LarpakeId = 1,
                 Title = "Tanpereella",
-                SectionSequenceNumber = 2,
+                OrderingWeightNumber = 2,
             },
             new() {
                 Id = -1,
                 LarpakeId = 2,
                 Title = "Section 1",
-                SectionSequenceNumber = 1,
+                OrderingWeightNumber = 1,
             },
             new() {
                 Id = -1,
                 LarpakeId = 2,
                 Title = "Section 2",
-                SectionSequenceNumber = 2,
+                OrderingWeightNumber = 2,
             }
         ];
 

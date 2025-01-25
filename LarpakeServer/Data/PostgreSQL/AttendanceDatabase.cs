@@ -107,6 +107,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
         try
         {
+            /* Insert new 
+             */
             using var connection = GetConnection();
             key = await connection.QueryFirstAsync<AttendanceKey>($"""
                 INSERT INTO attendances (
@@ -127,7 +129,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     DO UPDATE
                     SET 
                         key_invalid_at = @{nameof(attendance.KeyInvalidAt)}
-                    RETURNING qr_code_key, key_invalid_at;
+                RETURNING qr_code_key, key_invalid_at;
                 """, attendance);
             return key;
         }

@@ -104,12 +104,12 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
             INSERT INTO LarpakeSections (
                 {nameof(LarpakeSection.LarpakeId)}, 
                 {nameof(LarpakeSection.Title)}, 
-                {nameof(LarpakeSection.SectionSequenceNumber)}) 
+                {nameof(LarpakeSection.OrderingWeightNumber)}) 
             SELECT
                 @{nameof(record.LarpakeId)},
                 @{nameof(record.Title)},
                 MAX(
-                    SELECT {nameof(LarpakeSection.SectionSequenceNumber)}
+                    SELECT {nameof(LarpakeSection.OrderingWeightNumber)}
                     FROM LarpakeSections
                     WHERE {nameof(LarpakeSection.LarpakeId)} = @{nameof(record.LarpakeId)}
                 )
@@ -126,7 +126,7 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
             UPDATE LarpakeSections 
             SET
                 {nameof(LarpakeSection.Title)} = @{nameof(record.Title)},
-                {nameof(LarpakeSection.SectionSequenceNumber)} = @{nameof(record.SectionSequenceNumber)},
+                {nameof(LarpakeSection.OrderingWeightNumber)} = @{nameof(record.OrderingWeightNumber)},
                 {nameof(LarpakeSection.UpdatedAt)} = DATETIME('now')
             WHERE {nameof(LarpakeSection.Id)} = @{nameof(record.Id)};
             """, record);
@@ -160,7 +160,7 @@ public class LarpakeDatabase(SqliteConnectionString connectionString) : SqliteDb
                 {nameof(LarpakeSection.Id)} INTEGER,
                 {nameof(LarpakeSection.LarpakeId)} INTEGER,
                 {nameof(LarpakeSection.Title)} TEXT NOT NULL,
-                {nameof(LarpakeSection.SectionSequenceNumber)} INTEGER,
+                {nameof(LarpakeSection.OrderingWeightNumber)} INTEGER,
                 {nameof(LarpakeSection.CreatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {nameof(LarpakeSection.UpdatedAt)} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY ({nameof(LarpakeSection.Id)}),

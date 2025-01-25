@@ -54,11 +54,11 @@ public class LarpakkeetController : ExtendedControllerBase
     }
 
 
-    [HttpGet("{id}")]
+    [HttpGet("{larpakeId}")]
     [RequiresPermissions(Permissions.ReadAllData)]
-    public async Task<IActionResult> Get(long id)
+    public async Task<IActionResult> Get(long larpakeId)
     {
-        var record = await _db.GetLarpake(id);
+        var record = await _db.GetLarpake(larpakeId);
         if (record is null)
         {
             return IdNotFound();
@@ -77,12 +77,12 @@ public class LarpakkeetController : ExtendedControllerBase
             error: FromError);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{larpakeId}")]
     [RequiresPermissions(Permissions.CreateLarpake)]
-    public async Task<IActionResult> Update(long id, [FromBody] LarpakePutDto record)
+    public async Task<IActionResult> Update(long larpakeId, [FromBody] LarpakePutDto record)
     {
         var larpake = Larpake.From(record);
-        larpake.Id = id;
+        larpake.Id = larpakeId;
         var result = await _db.UpdateLarpake(larpake);
         return result.MatchToResponse(
             ok: OkRowsAffected,
@@ -90,19 +90,41 @@ public class LarpakkeetController : ExtendedControllerBase
     }
 
 
-
-    [HttpDelete("{id}")]
+    [HttpDelete("{larpakeId}")]
     [RequiresPermissions(Permissions.DeleteLarpake)]
-    public async Task<IActionResult> Delete(long id)
+    public async Task<IActionResult> Delete(long larpakeId)
     {
-        int rowsAffected = await _db.DeleteLarpake(id);
+        int rowsAffected = await _db.DeleteLarpake(larpakeId);
         return OkRowsAffected(rowsAffected);
     }
 
-    [HttpPost]
+    [HttpPost("{larpakeId}/sections")]
+    [RequiresPermissions(Permissions.CreateLarpake)]
+    public async Task<IActionResult> CreateSection(long larpakeId, [FromBody] LarpakeSectionPostDto dto)
+    {
+        var record = LarpakeSection.From(dto, larpakeId);
+        var result = await _db.InsertSection(record);
+        return result.MatchToResponse(
+            ok: CreatedId,
+            error: FromError);
+    }
 
+    [HttpPut("{larpakeId}/sections")]
+    [RequiresPermissions(Permissions.CreateLarpake)]
+    public async Task<IActionResult> UpdateSection(long larpakeId, [FromBody] LarpakeSectionPutDto dto)
+    {
+        var record = LarpakeSection.From(dto, larpakeId);
+        var result = await _db.UpdateSection(record);
+        return result.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError);
+    }
 
-
-
-
+    [HttpDelete("sections/{sectionId}")]
+    [RequiresPermissions(Permissions.DeleteLarpake)]
+    public async Task<IActionResult> DeleteSection(long sectionId)
+    {
+        int rowsAffected = await _db.DeleteSection(sectionId);
+        return OkRowsAffected(rowsAffected);
+    }
 }
