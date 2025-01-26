@@ -1,15 +1,15 @@
-DROP FUNCTION IF EXISTS CalculateUsersLarpakeAverageUserPoints;
-CREATE FUNCTION CalculateUsersLarpakeAverageUserPoints(in_user_id UUID)
+DROP FUNCTION IF EXISTS GetLarpakeAverageByUser;
+CREATE FUNCTION GetLarpakeAverageByUser(in_user_id UUID)
 RETURNS TABLE(larpake_id BIGINT, average_points INT) AS $$
 BEGIN
 -- Get all completed attendances -> Group by user and larpake -> Sum By User -> Group By Larpake -> Get average
 RETURN QUERY (
     SELECT
-        out_larpake_id AS larpake_id,
-        CEIL(AVG(total_user_points))::NUMERIC::INT AS average
+        user_points.larpake_id,
+        CEIL(AVG(user_points.total_user_points))::NUMERIC::INT AS average_points
     FROM (
         SELECT
-            s.larpake_id AS out_larpake_id,
+            s.larpake_id,
             SUM(points) AS total_user_points
         FROM larpake_events e
             LEFT JOIN attendances a
@@ -20,6 +20,6 @@ RETURN QUERY (
             AND s.larpake_id IN (SELECT  getuserlarpakkeet(in_user_id))
         GROUP BY s.larpake_id, a.user_id
         ) AS user_points
-    GROUP BY out_larpake_id);
+    GROUP BY user_points.larpake_id);
 END;
 $$ LANGUAGE PLPGSQL

@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS GetGroupTotalsByUser;
-CREATE FUNCTION GetGroupTotalsByUser(
+DROP FUNCTION IF EXISTS GetGroupTotalByUser;
+CREATE FUNCTION GetGroupTotalByUser(
     in_user_id UUID)
 RETURNS TABLE (
     larpake_id BIGINT,
@@ -10,9 +10,9 @@ BEGIN
 -- Get groups user is in -> filter by completed -> group by group id -> get points sum
 RETURN QUERY (
     SELECT
-        s.larpake_id AS larpake_id,
+        s.larpake_id,
         m.group_id AS group_id,
-        SUM(e.points) AS points
+        SUM(e.points)::INT AS points
     FROM attendances a
         LEFT JOIN larpake_events e
             ON a.larpake_event_id = e.id
@@ -22,9 +22,9 @@ RETURN QUERY (
             ON a.user_id = m.user_id
     WHERE a.completion_id IS NOT NULL
         AND m.group_id IN (
-            SELECT group_id FROM freshman_group_members
+            SELECT fgm.group_id FROM freshman_group_members fgm
             WHERE a.user_id = in_user_id
         )
-    GROUP BY m.group_id);
+    GROUP BY m.group_id, s.larpake_id);
 END;
 $$ LANGUAGE PLPGSQL

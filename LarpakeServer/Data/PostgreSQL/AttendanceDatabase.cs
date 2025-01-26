@@ -95,10 +95,10 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
     public async Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance)
     {
-        return await RequestAttendanceKeyRetried(attendance, 5);
+        return await GetAttendanceKeyRetried(attendance, 5);
     }
 
-    private async Task<Result<AttendanceKey>> RequestAttendanceKeyRetried(Attendance attendance, int retriesLeft = 0)
+    private async Task<Result<AttendanceKey>> GetAttendanceKeyRetried(Attendance attendance, int retriesLeft = 0)
     {
         AttendanceKey key = _keyService.GenerateKey();
         attendance.QrCodeKey = key.QrCodeKey;
@@ -109,6 +109,25 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             /* Insert new 
              */
             using var connection = GetConnection();
+            bool canAttend = await connection.ExecuteScalarAsync<bool>($"""
+                SELECT EXISTS(SELECT 1 FROM larpake_events e
+                    LEFT JOIN larpake_sections s
+                        ON e.larpake_section_id = s.id
+                    LEFT JOIN freshman_groups g
+                        ON s.larpake_id = g.larpake_id
+                    LEFT JOIN freshman_group_members m 
+                        ON g.id = m.group_id
+                WHERE e.id = @{nameof(attendance.LarpakeEventId)}
+                    AND m.user_id = @{nameof(attendance.UserId)});
+                """, attendance);
+
+            if (canAttend is false)
+            {
+                return Error.BadRequest("User must be member of a group that is taking " +
+                    "part in same larpake the event is found on.");
+            }
+
+
             key = await connection.QueryFirstAsync<AttendanceKey>($"""
                 INSERT INTO attendances (
                     user_id, 
@@ -141,7 +160,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     {
                         Logger.LogInformation("QrCodeKey conflict for {hash}, retrying ({count} left).", 
                             attendance.GetHashCode(), retriesLeft);
-                        return await RequestAttendanceKeyRetried(attendance, retriesLeft - 1);
+                        return await GetAttendanceKeyRetried(attendance, retriesLeft - 1);
                     }
                     return Error.Conflict("Key generating failed, retry with same parameters.");
                 default:

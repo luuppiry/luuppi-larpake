@@ -9,7 +9,7 @@ BEGIN
 RETURN QUERY (
     SELECT
         g.id AS group_id,
-        SUM(e.points) AS points
+        SUM(e.points)::INT AS points
     FROM freshman_groups g
         LEFT JOIN freshman_group_members m
             ON g.id = m.group_id

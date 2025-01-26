@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS GetUserTotalPoints;
-CREATE FUNCTION GetUserTotalPoints(in_user_id UUID)
+DROP FUNCTION IF EXISTS GetUserTotal;
+CREATE FUNCTION GetUserTotal(in_user_id UUID)
 RETURNS TABLE(larpake_id BIGINT, total_points INT) AS $$
 BEGIN
 RETURN QUERY (SELECT s.larpake_id,
-                           SUM(e.points) as points
+               SUM(e.points)::INT as total_points
                     FROM attendances a
                              LEFT JOIN larpake_events e
                                        ON a.larpake_event_id = e.id

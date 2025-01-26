@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS CalculateUsersLarpakeTotalUserPoints;
-CREATE FUNCTION CalculateUsersLarpakeTotalUserPoints(in_user_id UUID)
+DROP FUNCTION IF EXISTS GetLarpakeTotalByUser;
+CREATE FUNCTION GetLarpakeTotalByUser(in_user_id UUID)
 RETURNS TABLE(larpake_id BIGINT, total_points INT) AS $$
 BEGIN
 -- Get all completed attendances -> Group by user and larpake -> Sum By User -> Group By Larpake -> Sum to total

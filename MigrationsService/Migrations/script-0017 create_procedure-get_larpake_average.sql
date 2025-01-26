@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS CalculateLarpakeAverageUserPoints;
-CREATE FUNCTION CalculateLarpakeAverageUserPoints(in_larpake_id BIGINT)
+DROP FUNCTION IF EXISTS GetLarpakeAverage;
+CREATE FUNCTION GetLarpakeAverage(in_larpake_id BIGINT)
 RETURNS INTEGER AS $$
 BEGIN
 -- Get all completed event attendances -> Group by user -> Sum Points -> Get average
-RETURN (SELECT CEIL(AVG(user_points)) AS average
+RETURN (SELECT CEIL(AVG(user_points))::INT AS average
         FROM (SELECT SUM(e.points) AS user_points
               FROM attendances a
                    LEFT JOIN users u

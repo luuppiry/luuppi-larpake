@@ -1,13 +1,18 @@
-﻿namespace LarpakeServer.Services;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace LarpakeServer.Services;
 
 public class AttendanceKey
 {
+    public AttendanceKey() { }
+
+    [SetsRequiredMembers]
     public AttendanceKey(string key, DateTime invalidAt)
     {
         QrCodeKey = key;
         KeyInvalidAt = invalidAt;
     }
 
-    public string QrCodeKey { get; }
-    public DateTime KeyInvalidAt { get; }
+    public required string QrCodeKey { get; set; }
+    public required DateTime KeyInvalidAt { get; set; }
 }

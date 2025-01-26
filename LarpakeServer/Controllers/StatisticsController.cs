@@ -106,7 +106,7 @@ public class StatisticsController : ExtendedControllerBase
     {
         long? result = await _statisticsService.GetGroupPoints(groupId);
         return result is null
-            ? IdNotFound() : Ok(result);
+            ? IdNotFound() : OkData(result.Value);
     }
 
     [HttpGet("groups/leading")]

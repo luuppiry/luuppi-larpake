@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Extensions.Options;
+using System.Runtime.CompilerServices;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -21,7 +22,7 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
 
         using var connection = GetConnection();
         var records = await connection.QueryAsync<LarpakeAvgPoints>(
-            $"SELECT CalculateUsersLarpakeAverageUserPoints(@{nameof(userId)})", new { userId });
+            $"SELECT larpake_id, average_points FROM GetLarpakeAverageByUser(@{nameof(userId)});", new { userId });
         return records.ToArray();
     }
 
@@ -34,7 +35,7 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
 
         using var connection = GetConnection();
         var records = await connection.QueryAsync<LarpakeTotalPoints>(
-            $"SELECT CalculateUsersLarpakeTotalUserPoints(@{nameof(userId)})", new { userId });
+            $"SELECT larpake_id, total_points FROM GetLarpakeTotalByUser(@{nameof(userId)})", new { userId });
         return records.ToArray();
     }
 
@@ -44,14 +45,14 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
     {
         using var connection = GetConnection();
         return await connection.QueryFirstOrDefaultAsync<long?>(
-            $"SELECT CalculateLarpakeAverageUserPoints(@{nameof(larpakeId)});", new { larpakeId });
+            $"SELECT GetLarpakeAverage(@{nameof(larpakeId)});", new { larpakeId });
     }
 
     public async Task<long?> GetTotalPoints(long larpakeId)
     {
         using var connection = GetConnection();
         return await connection.QueryFirstOrDefaultAsync<long?>(
-            $"SELECT GetLarpakeTotalPoints({nameof(larpakeId)});", new { larpakeId });
+            $"SELECT GetLarpakeTotal(@{nameof(larpakeId)});", new { larpakeId });
     }
 
 
@@ -64,14 +65,14 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
 
         using var connection = GetConnection();
         var records = await connection.QueryAsync<LarpakeTotalPoints>(
-            $"SELECT GetUserTotalPoints({nameof(userId)});", new { userId });
+            $"SELECT larpake_id, total_points FROM GetUserTotal(@{nameof(userId)});", new { userId });
         return records.ToArray();
     }
 
-    public Task<long?> GetGroupPoints(long groupId)
+    public async Task<long?> GetGroupPoints(long groupId)
     {
         using var connection = GetConnection();
-        return connection.QueryFirstOrDefaultAsync<long?>(
+        return await connection.QueryFirstOrDefaultAsync<long?>(
             $"SELECT GetGroupTotal(@{nameof(groupId)});", new { groupId });
     }
 
@@ -79,7 +80,7 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
     {
         using var connection = GetConnection();
         var records = await connection.QueryAsync<GroupPoints>($"""
-            SELECT GetLeadingGroups(
+            SELECT group_id, points FROM GetLeadingGroups(
                 @{nameof(options.LarpakeId)},
                 @{nameof(options.PageSize)},
                 @{nameof(options.PageOffset)});
@@ -91,7 +92,7 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
     {
         using var connection = GetConnection();
         var records = await connection.QueryAsync<UserPoints>($"""
-            SELECT GetLeadingUsers(
+            SELECT user_id, points FROM GetLeadingUsers(
                 @{nameof(options.LarpakeId)},
                 @{nameof(options.PageSize)},
                 @{nameof(options.PageOffset)});
@@ -104,7 +105,7 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
     {
         using var connection = GetConnection();
         var records = await connection.QueryAsync<GroupTotalPoints>($"""
-            SELECT GetGroupTotalsByUser({nameof(userId)});
+            SELECT larpake_id, group_id, total_points FROM GetGroupTotalByUser(@{nameof(userId)});
             """, new { userId });
         return records.ToArray();
     }
