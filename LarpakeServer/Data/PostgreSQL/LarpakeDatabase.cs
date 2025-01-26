@@ -79,8 +79,6 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             OFFSET @{nameof(options.PageOffset)};
             """);
 
-        string s = query.ToString();
-
         using var connection = GetConnection();
         if (options.DoMinimize)
         {
@@ -161,9 +159,6 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             DELETE FROM larpakkeet WHERE id = @{nameof(larpakeId)};
             """, new { larpakeId });
     }
-
-
-
 
     public async Task<LarpakeSection[]> GetSections(long larpakeId, QueryOptions options)
     {

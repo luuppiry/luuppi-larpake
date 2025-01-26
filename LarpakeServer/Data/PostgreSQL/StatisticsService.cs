@@ -6,6 +6,76 @@ namespace LarpakeServer.Data.PostgreSQL;
 public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<StatisticsService> logger)
     : PostgresDb(connectionString, logger), IStatisticsService
 {
+    /* For complete SQL queries, see from base folder MigrationsService/Migrations/
+     */
+
+
+
+
+
+
+
+    public async Task<LarpakeAvgPoints[]> GetAttendendLarpakeAvgPoints(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            return [];
+        }
+
+        using var connection = GetConnection();
+        var records = await connection.QueryAsync<LarpakeAvgPoints>(
+            $"SELECT CalculateUsersLarpakeAverageUserPoints(@{nameof(userId)})", new { userId });
+        return records.ToArray();
+    }
+
+    public async Task<LarpakeTotalPoints[]> GetAttendendLarpakeTotalPoints(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            return [];
+        }
+
+        using var connection = GetConnection();
+        var records = await connection.QueryAsync<LarpakeTotalPoints>(
+            $"SELECT CalculateUsersLarpakeTotalUserPoints(@{nameof(userId)})", new { userId });
+        return records.ToArray();
+    }
+
+
+
+    public async Task<long?> GetAveragePoints(long larpakeId)
+    {
+        using var connection = GetConnection();
+        return await connection.QueryFirstOrDefaultAsync<long?>(
+            $"SELECT CalculateLarpakeAverageUserPoints(@{nameof(larpakeId)});", new { larpakeId });
+    }
+
+    public async Task<long?> GetTotalPoints(long larpakeId)
+    {
+        using var connection = GetConnection();
+        return await connection.QueryFirstOrDefaultAsync<long?>(
+            $"SELECT GetLarpakeTotalPoints({nameof(larpakeId)});", new { larpakeId });
+    }
+
+
+    public async Task<LarpakeTotalPoints[]> GetUserPoints(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            return [];
+        }
+
+        using var connection = GetConnection();
+        var records = await connection.QueryAsync<LarpakeTotalPoints>(
+            $"SELECT GetUserTotalPoints({nameof(userId)});", new { userId });
+        return records.ToArray();
+    }
+
+
+
+
+
+
     public Task<long?> GetFreshmanGroupPoints(long groupId)
     {
         using var connection = GetConnection();
@@ -23,6 +93,7 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
                 AND a.completion_id IS NOT NULL;
             """, new { groupId });
     }
+
     public async Task<GroupPoints[]> GetLeadingGroups(StatisticsQueryOptions options)
     {
         using var connection = GetConnection();
@@ -50,25 +121,7 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
 
         return records.ToArray();
     }
-    public async Task<long?> GetUserPoints(Guid userId)
-    {
-        if (userId == Guid.Empty)
-        {
-            return null;
-        }
 
-        using var connection = GetConnection();
-        return await connection.QueryFirstOrDefaultAsync<long?>($"""
-            SELECT 
-                SUM(e.points)
-            FROM attendances a
-                LEFT JOIN larpake_events e
-                    ON a.larpake_event_id = e.id
-            WHERE a.user_id = @{nameof(userId)}
-                AND a.completion_id IS NOT NULL;
-            """, new { userId });
-
-    }
     public async Task<long[]> GetLeadingUserPoints(StatisticsQueryOptions options)
     {
         using var connection = GetConnection();
@@ -119,51 +172,9 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
         return records.ToArray();
     }
 
-    public async Task<long> GetAveragePoints(long larpakeId)
-    {
-        using var connection = GetConnection();
-        return await connection.QueryFirstOrDefaultAsync<long>($"""
-            SELECT 
-                AVG(*)
-            FROM (
-                SELECT 
-                    SUM(e.points)
-                FROM attendances a
-                    LEFT JOIN users u
-                        ON a.user_id = u.id
-                    LEFT JOIN larpake_events
-                        ON a.larpake_event_id = e.id
-                    LEFT JOIN larpake_sections s
-                        ON e.section_id = s.id
-                WHERE a.completion_id IS NOT NULL
-                    AND s.larpake_id = @{nameof(larpakeId)}
-                GROUP BY a.user_id
-            );
-            """, new { larpakeId });
-    }
 
-    public async Task<long> GetTotalPoints(long larpakeId)
-    {
-        using var connection = GetConnection();
-        return await connection.QueryFirstOrDefaultAsync<long>($"""
-            SELECT 
-                SUM(*)
-            FROM (
-                SELECT 
-                    SUM(e.points)
-                FROM attendances a
-                    LEFT JOIN users u
-                        ON a.user_id = u.id
-                    LEFT JOIN larpake_events
-                        ON a.larpake_event_id = e.id
-                    LEFT JOIN larpake_sections s
-                        ON e.section_id = s.id
-                WHERE a.completion_id IS NOT NULL
-                    AND s.larpake_id = @{nameof(larpakeId)}
-                GROUP BY a.user_id
-            );
-            """, new { larpakeId });
-    }
+
+
 
 
 }

@@ -26,43 +26,46 @@ public class StatisticsController : ExtendedControllerBase
         _groupDb = groupDb;
     }
 
-    [HttpGet("users/points/average")]
-    public async Task<IActionResult> GetAllAverage()
+    [HttpGet("larpakkeet/own/points/averages")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetAllAttendedLarpakeAverages()
     {
-        int? startYear = GetRequestUserStartYear();
-        if (startYear is null)
-        {
-            return Unauthorized("User start year required.");
-        }
-        return await GetAllAverage(startYear.Value);
+        Guid userId = GetRequestUserId();
+        var records = await _statisticsService.GetAttendendLarpakeAvgPoints(userId);
+        return Ok(records);
     }
     
     [HttpGet("larpakkeet/{larpakeId}/points/average")]
     [RequiresPermissions(Permissions.ReadStatistics)]
     public async Task<IActionResult> GetAllAverage(long larpakeId)
     {
-        long points = await _statisticsService.GetAveragePoints(larpakeId);
-        return Ok(new { Points = points });
+        long? points = await _statisticsService.GetAveragePoints(larpakeId);
+        if (points is null)
+        {
+            return IdNotFound();
+        }
+        return Ok(new { AvgPoints = points });
     }
 
-    [HttpGet("larpakkeet/points")]
-    public async Task<IActionResult> GetAllTotal()
+    [HttpGet("larpakkeet/own/points/totals")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetAllAttendedLarpakeTotals()
     {
-        // TODO: rethink permissions here
-        int? startYear = GetRequestUserStartYear();
-        if (startYear is null)
-        {
-            return Unauthorized("User start year required.");
-        }
-        return await GetAllTotal(startYear.Value);
+        Guid userId = GetRequestUserId();
+        var records = await _statisticsService.GetAttendendLarpakeTotalPoints(userId);
+        return Ok(records);
     }
 
     [HttpGet("larpakkeet/{larpakeId}/points")]
     [RequiresPermissions(Permissions.ReadStatistics)]
     public async Task<IActionResult> GetAllTotal(long larpakeId)
     {
-        long points = await _statisticsService.GetTotalPoints(larpakeId);
-        return Ok(new { Points = points });
+        long? points = await _statisticsService.GetTotalPoints(larpakeId);
+        if (points is null)
+        {
+            return IdNotFound();
+        }
+        return Ok(new { TotalPoints = points });
     }
 
 

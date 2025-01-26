@@ -156,7 +156,7 @@ public class StatisticsService(
         throw new NotImplementedException();
     }
 
-    Task<long> IStatisticsService.GetAveragePoints(long larpakeId)
+    Task<long?> IStatisticsService.GetAveragePoints(long larpakeId)
     {
         throw new NotImplementedException();
     }
