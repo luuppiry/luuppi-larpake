@@ -1,8 +1,7 @@
-DROP FUNCTION GetUserTotalPoints;
+DROP FUNCTION IF EXISTS GetUserTotalPoints;
 CREATE FUNCTION GetUserTotalPoints(in_user_id UUID)
-RETURNS TABLE(larpake_id BIGINT, points INT) AS $$
+RETURNS TABLE(larpake_id BIGINT, total_points INT) AS $$
 BEGIN
--- Get all completed attendances -> Group by user and larpake -> Sum By User -> Group By Larpake -> Get average
 RETURN QUERY (SELECT s.larpake_id,
                            SUM(e.points) as points
                     FROM attendances a

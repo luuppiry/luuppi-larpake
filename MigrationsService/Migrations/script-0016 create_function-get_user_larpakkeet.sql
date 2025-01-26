@@ -1,4 +1,4 @@
-DROP FUNCTION GetUserLarpakkeet;
+DROP FUNCTION IF EXISTS GetUserLarpakkeet;
 CREATE FUNCTION GetUserLarpakkeet(in_user_id UUID)
 RETURNS TABLE (larpake_id BIGINT) AS $$
 BEGIN

@@ -10,15 +10,8 @@ public interface IStatisticsService
     Task<long?> GetTotalPoints(long larpakeId);
     Task<long?> GetAveragePoints(long larpakeId);
     Task<LarpakeTotalPoints[]> GetUserPoints(Guid userId);
-
-
-
-
-    Task<UserPoints[]> GetLeadingUsers(StatisticsQueryOptions options);
-    Task<long[]> GetLeadingUserPoints(StatisticsQueryOptions options);
-    
-    Task<long?> GetFreshmanGroupPoints(long groupId);
     Task<GroupPoints[]> GetLeadingGroups(StatisticsQueryOptions options);
-
-
+    Task<UserPoints[]> GetLeadingUsers(StatisticsQueryOptions options);
+    Task<long?> GetGroupPoints(long groupId);
+    Task<GroupTotalPoints[]> GetGroupPoints(Guid userId);
 }

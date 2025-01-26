@@ -38,6 +38,12 @@ public class ExtendedControllerBase : ControllerBase
         return Created(resourceUrl, new { Id = id });
     }
 
+
+    protected ObjectResult OkData<T>(T Data)
+    {
+        return Ok(new { Data });
+    }
+
     protected ObjectResult CreatedId(Guid id)
     {
         string? resourceUrl = $"{Request.Path.Value}/{id}";

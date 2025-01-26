@@ -1,4 +1,4 @@
-DROP FUNCTION CalculateUsersLarpakeTotalUserPoints;
+DROP FUNCTION IF EXISTS CalculateUsersLarpakeTotalUserPoints;
 CREATE FUNCTION CalculateUsersLarpakeTotalUserPoints(in_user_id UUID)
 RETURNS TABLE(larpake_id BIGINT, total_points INT) AS $$
 BEGIN

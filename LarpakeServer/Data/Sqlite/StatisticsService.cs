@@ -11,7 +11,7 @@ public class StatisticsService(
         OrganizationEventDatabase eventDb)
     : SqliteDbBase(connectionString, userDb, groupDb, eventDb), IStatisticsService
 {
-    public async Task<long?> GetFreshmanGroupPoints(long groupId)
+    public async Task<long?> GetGroupPoints(long groupId)
     {
         using var connection = await GetConnection();
         return await connection.QueryFirstOrDefaultAsync<long?>($"""
@@ -151,12 +151,34 @@ public class StatisticsService(
 
     protected override Task InitializeAsync(SqliteConnection connection) => Task.CompletedTask;
 
-    Task<long> IStatisticsService.GetTotalPoints(long larpakeId)
+
+
+    Task<long?> IStatisticsService.GetAveragePoints(long larpakeId)
     {
         throw new NotImplementedException();
     }
 
-    Task<long?> IStatisticsService.GetAveragePoints(long larpakeId)
+    Task<LarpakeAvgPoints[]> IStatisticsService.GetAttendendLarpakeAvgPoints(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<LarpakeTotalPoints[]> IStatisticsService.GetAttendendLarpakeTotalPoints(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<long?> IStatisticsService.GetTotalPoints(long larpakeId)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<LarpakeTotalPoints[]> IStatisticsService.GetUserPoints(Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<GroupTotalPoints[]> IStatisticsService.GetGroupPoints(Guid userId)
     {
         throw new NotImplementedException();
     }

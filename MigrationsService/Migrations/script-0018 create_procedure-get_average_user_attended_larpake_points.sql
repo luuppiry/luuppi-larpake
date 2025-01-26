@@ -1,4 +1,4 @@
-DROP FUNCTION CalculateUsersLarpakeAverageUserPoints;
+DROP FUNCTION IF EXISTS CalculateUsersLarpakeAverageUserPoints;
 CREATE FUNCTION CalculateUsersLarpakeAverageUserPoints(in_user_id UUID)
 RETURNS TABLE(larpake_id BIGINT, average_points INT) AS $$
 BEGIN

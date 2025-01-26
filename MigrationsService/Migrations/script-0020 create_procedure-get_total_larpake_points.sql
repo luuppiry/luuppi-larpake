@@ -1,4 +1,4 @@
-DROP FUNCTION GetLarpakeTotalPoints;
+DROP FUNCTION IF EXISTS GetLarpakeTotalPoints;
 CREATE FUNCTION GetLarpakeTotalPoints(in_larpake_id BIGINT)
 RETURNS INT AS $$
 BEGIN

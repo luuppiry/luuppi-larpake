@@ -1,4 +1,4 @@
-DROP FUNCTION CalculateLarpakeAverageUserPoints;
+DROP FUNCTION IF EXISTS CalculateLarpakeAverageUserPoints;
 CREATE FUNCTION CalculateLarpakeAverageUserPoints(in_larpake_id BIGINT)
 RETURNS INTEGER AS $$
 BEGIN
