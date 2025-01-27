@@ -1,10 +1,11 @@
-﻿using LarpakeServer.Models.Localizations;
+﻿using LarpakeServer.Models.DatabaseModels.Metadata;
+using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 
 namespace LarpakeServer.Models.DatabaseModels;
 
-public class LarpakeEvent
+public class LarpakeEvent : ILocalized<LarpakeEventLocalization>
 {
     public required long Id { get; set; }
     public required long LarpakeSectionId { get; set; }
@@ -13,7 +14,6 @@ public class LarpakeEvent
     public DateTime? CancelledAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public List<Guid>? ReferencedOrganizationEventIds { get; set; }
     public required List<LarpakeEventLocalization> TextData { get; set; }
     internal LarpakeEventLocalization DefaultLocalization => GetDefaultLocalization();
 

@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
 
@@ -16,17 +17,18 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
              SELECT 
                 e.id, 
                 e.larpake_section_id,
-                e.title,
-                e.body,
                 e.points,
                 e.ordering_weight_number,
                 e.created_at,
                 e.updated_at,
                 e.cancelled_at,
-                map.organization_event_id
+                loc.title,
+                loc.body,
+                loc.language_code,
+                loc.larpake_event_id,
             FROM larpake_events e
-                LEFT JOIN event_map map
-                    ON e.id = map.larpake_event_id
+                LEFT JOIN larpake_event_localizations loc
+                    ON e.id = loc.larpake_event_id
             """);
 
         bool requireSections = options.LarpakeId is not null || options.UserId is not null;
@@ -79,43 +81,38 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
             OFFSET @{nameof(options.PageOffset)};
             """);
 
-        Dictionary<long, LarpakeEvent> result = [];
-
         using var connection = GetConnection();
-        var records = await connection.QueryAsync<LarpakeEvent, Guid?, LarpakeEvent>(query.ToString(), 
-            (lEvent, oEventId) =>
-            {
-                LarpakeEvent value = result.GetOrAdd(lEvent.Id, lEvent)!;
-                if (oEventId.HasValue)
-                {
-                    value.ReferencedOrganizationEventIds ??= [];
-                    value.ReferencedOrganizationEventIds.Add(oEventId.Value);
-                }
-                return value;
-            },
+        var records = await connection.QueryLocalizedAsync<LarpakeEvent, LarpakeEventLocalization>(
+            query.ToString(),
             options,
-            splitOn: "organization_event_id");
-        return records.ToArray();
+            splitOn: "title");
+
+        return records.Values.ToArray();
     }
 
-    public Task<LarpakeEvent?> GetEvent(long id)
+    public async Task<LarpakeEvent?> GetEvent(long id)
     {
-        using var connection = GetConnection();
-        return connection.QueryFirstOrDefaultAsync<LarpakeEvent>($"""
+        using NpgsqlConnection connection = GetConnection();
+        return await connection.QueryFirstOrDefaultLocalizedAsync<LarpakeEvent, LarpakeEventLocalization>($"""
             SELECT 
-                id, 
-                larpake_section_id,
-                title,
-                body,
-                points,
-                ordering_weight_number,
-                created_at,
-                updated_at,
-                cancelled_at
-            FROM larpake_events 
-            WHERE id = @{nameof(id)} 
-            LIMIT 1;
-            """, new { id });
+                e.id, 
+                e.larpake_section_id,
+                e.points,
+                e.ordering_weight_number,
+                e.created_at,
+                e.updated_at,
+                e.cancelled_at,
+                l.title,
+                l.body
+                l.language_code
+                l.larpake_event_id
+            FROM larpake_events e
+                LEFT JOIN larpake_event_localizations loc
+                    ON e.id = loc.larpake_event_id
+                WHERE id = @{nameof(id)};
+            """,
+            new { id },
+            splitOn: "title");
     }
 
     public async Task<Result<long>> Insert(LarpakeEvent record)
@@ -123,25 +120,33 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
         try
         {
             using var connection = GetConnection();
-            return await connection.ExecuteScalarAsync<long>($"""
-            INSERT INTO larpake_events (
-                larpake_section_id, 
-                title, 
-                body,
-                points, 
-                ordering_weight_number,
-                cancelled_at
-                ) 
-            VALUES (
-                @{nameof(record.LarpakeSectionId)},
-                @{nameof(record.Title)},
-                @{nameof(record.Body)},
-                @{nameof(record.Points)},
-                @{nameof(record.OrderingWeightNumber)},
-                NULL
-            )
-            RETURNING id;
-            """, record);
+            using var transaction = await connection.BeginTransactionAsync();
+
+            LarpakeEventLocalization def = record.DefaultLocalization;
+            long id = await connection.ExecuteScalarAsync<long>($"""
+                SELECT InsertLarpakeEvent(
+                    @{nameof(record.LarpakeSectionId)},
+                    @{nameof(record.Points)},
+                    @{nameof(record.OrderingWeightNumber)},
+                    @{nameof(def.Title)},
+                    @{nameof(def.Body)},
+                    @{nameof(def.LanguageCode)},
+                );
+                """, new 
+            { 
+                record.LarpakeSectionId,
+                record.Points,
+                record.OrderingWeightNumber,
+                def.Title,
+                def.Body,
+                def.LanguageCode
+            });
+
+            await InsertLocalizations(connection, id, 
+                record.TextData.Where(x => x.LanguageCode != def.LanguageCode));
+
+            await transaction.CommitAsync();
+            return id;
         }
         catch (PostgresException ex)
         {
@@ -154,16 +159,28 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
     public async Task<Result<int>> Update(LarpakeEvent record)
     {
         using var connection = GetConnection();
-        return await connection.ExecuteAsync($"""
+        using var transaction = await connection.BeginTransactionAsync();
+
+        int rowsAffected = await connection.ExecuteAsync($"""
             UPDATE larpake_events 
             SET
-                title = @{nameof(record.Title)},
-                body = @{nameof(record.Body)}
                 points = @{nameof(record.Points)},
                 ordering_weight_number = @{nameof(record.OrderingWeightNumber)},
                 updated_at = NOW()
             WHERE id = @{nameof(record.Id)};
             """, record);
+
+        rowsAffected += await connection.ExecuteAsync($"""
+            UPDATE larpake_event_localizations
+            SET
+                title = @{nameof(LarpakeEventLocalization.Title)},
+                body = @{nameof(LarpakeEventLocalization.Body)}
+            WHERE larpake_event_id = @{nameof(record.Id)}
+                AND language_id = GetLanguageId(@{nameof(LarpakeEventLocalization.LanguageCode)});
+            """, record.TextData.Select(x => new { x.Title, x.Body, record.Id, x.LanguageCode }));
+
+        await transaction.CommitAsync();
+        return rowsAffected;
     }
 
     public async Task<Result> SyncOrganizationEvent(long larpakeEventId, long organizationEventId)
@@ -225,4 +242,32 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
             """, new { id });
         return records.ToArray();
     }
+
+
+    private static async Task InsertLocalizations(
+        NpgsqlConnection connection, long eventId,
+        IEnumerable<LarpakeEventLocalization> localizations)
+    {
+        await connection.ExecuteAsync($"""
+            INSERT INTO larpake_event_localizations (
+                larpake_event_id,
+                title,
+                body,
+                language_code
+            )
+            VALUES (
+                @{nameof(eventId)},
+                @{nameof(LarpakeEventLocalization.Title)},
+                @{nameof(LarpakeEventLocalization.Body)},
+                @{nameof(LarpakeEventLocalization.LanguageCode)}
+            );
+            """, localizations.Select(x => new
+            {
+                eventId,
+                x.Title,
+                x.Body,
+                x.LanguageCode
+            }));
+    }
+
 }

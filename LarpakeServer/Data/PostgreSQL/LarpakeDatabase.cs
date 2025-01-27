@@ -61,20 +61,15 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
         using var connection = GetConnection();
 
         // get larpakkeet
-        Dictionary<long, Larpake> larpakkeet = [];
-        await connection.QueryAsync<Larpake, LarpakeLocalization, Larpake>(
-            larpakeQuery.ToString(),
-            (larpake, text) => Mapper.MapLocalized(larpake, text, ref larpakkeet),
-            options,
-            splitOn: "larpake_id");
+        Dictionary<long, Larpake> larpakkeet = await connection.QueryLocalizedAsync<Larpake, LarpakeLocalization>(
+            larpakeQuery.ToString(), options, splitOn: "larpake_id");
 
         if (options.DoMinimize)
         {
             return larpakkeet.Values.ToArray();
         }
 
-        Dictionary<long, LarpakeSection> sections = [];
-        await connection.QueryAsync<LarpakeSection, LarpakeSectionLocalization, LarpakeSection>($"""
+        Dictionary<long, LarpakeSection> sections = await connection.QueryLocalizedAsync<LarpakeSection, LarpakeSectionLocalization>($"""
             SELECT 
                 s.id,
                 s.larpake_id,
@@ -89,9 +84,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                     ON s.id = sl.larpake_section_id
             WHERE s.larpake_id IN @{nameof(larpakkeet.Keys)};
             """,
-            (section, sectionLoc) => Mapper.MapLocalized(section, sectionLoc, ref sections),
-            options,
-            splitOn: "larpake_section_id");
+            options, splitOn: "larpake_section_id");
 
 
         Dictionary<long, List<LarpakeSection>> sectionByLarpake =
@@ -114,17 +107,19 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     public async Task<Larpake?> GetLarpake(long larpakeId)
     {
         using var connection = GetConnection();
-        return await connection.QueryFirstOrDefaultAsync<Larpake>($"""
+        return await connection.QueryFirstOrDefaultLocalizedAsync<Larpake, LarpakeLocalization>($"""
             SELECT 
-                id, 
-                title,
-                year,
-                description,
-                created_at,
-                updated_at
-            FROM larpakkeet 
-            WHERE id = @{nameof(larpakeId)} 
-            LIMIT 1;
+                l.id, 
+                l.year,
+                l.description,
+                l.created_at,
+                l.updated_at
+                ll.title,
+                ll.description,
+            FROM larpakkeet l
+                LEFT JOIN larpake_localizations ll
+                    ON l.id = ll.larpake_id
+            WHERE l.id = @{nameof(larpakeId)};
             """, new { larpakeId });
     }
 
@@ -144,7 +139,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             """, new { def.Title, record.Year, def.Description, def.LanguageCode });
 
         // Insert rest of the localizations, filter default away
-        await InsertLarpakeLocalizations(connection, id, 
+        await InsertLarpakeLocalizations(connection, id,
             record.TextData.Where(x => x.LanguageCode != def.LanguageCode));
 
         await transaction.CommitAsync();
@@ -191,39 +186,35 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     {
         using var connection = GetConnection();
 
-        Dictionary<long, LarpakeSection> sections = [];
-        await connection.QueryAsync<LarpakeSection, LarpakeSectionLocalization, LarpakeSection>($"""
-            SELECT 
-                id, 
-                larpake_id,
-                title,
-                ordering_weight_number,
-                created_at,
-                updated_at
-            FROM larpake_sections 
-            WHERE 
-                larpake_id = @{nameof(larpakeId)}
-            ORDER BY ordering_weight_number ASC, id ASC
-            LIMIT @{nameof(options.PageSize)} 
-            OFFSET @{nameof(options.PageOffset)};
-            """,
-            (section, text) => Mapper.MapLocalized(section, text, ref sections),
-            new
-            {
-                larpakeId,
-                options.PageSize,
-                options.PageOffset
-            });
-
+        Dictionary<long, LarpakeSection> sections =
+            await connection.QueryLocalizedAsync<LarpakeSection, LarpakeSectionLocalization>($"""
+                SELECT 
+                    id, 
+                    larpake_id,
+                    title,
+                    ordering_weight_number,
+                    created_at,
+                    updated_at
+                FROM larpake_sections 
+                WHERE 
+                    larpake_id = @{nameof(larpakeId)}
+                ORDER BY ordering_weight_number ASC, id ASC
+                LIMIT @{nameof(options.PageSize)} 
+                OFFSET @{nameof(options.PageOffset)};
+                """,
+                new
+                {
+                    larpakeId,
+                    options.PageSize,
+                    options.PageOffset
+                });
         return sections.Values.ToArray();
     }
 
     public async Task<LarpakeSection?> GetSection(long sectionId)
     {
         using var connection = GetConnection();
-
-        LarpakeSection? result = null;
-        await connection.QueryAsync<LarpakeSection, LarpakeSectionLocalization, LarpakeSection>($"""
+        LarpakeSection? result = await connection.QueryFirstOrDefaultLocalizedAsync<LarpakeSection, LarpakeSectionLocalization>($"""
             SELECT 
                 s.id,
                 s.larpake_id,
@@ -239,7 +230,6 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             WHERE id = @{nameof(sectionId)} 
             LIMIT 1;
             """,
-            (section, text) => Mapper.MapSingleLocalized(section, text, ref result),
             new { sectionId });
         return result;
     }
@@ -327,7 +317,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
 
 
 
-    private async Task InsertLarpakeLocalizations(NpgsqlConnection connection, long larpakeId, IEnumerable<LarpakeLocalization> loc)
+    private static async Task InsertLarpakeLocalizations(NpgsqlConnection connection, long larpakeId, IEnumerable<LarpakeLocalization> loc)
     {
         var records = loc.Select(x => new { larpakeId, x.LanguageCode, x.Title, x.Description });
         await connection.ExecuteAsync($"""
@@ -346,7 +336,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     }
 
 
-    private async Task InsertSectionLocalizations(NpgsqlConnection connection, long sectionId, IEnumerable<LarpakeSectionLocalization> loc)
+    private static async Task InsertSectionLocalizations(NpgsqlConnection connection, long sectionId, IEnumerable<LarpakeSectionLocalization> loc)
     {
         var records = loc.Select(x => new { sectionId, x.LanguageCode, x.Title });
         await connection.ExecuteAsync($"""

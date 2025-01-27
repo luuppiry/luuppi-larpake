@@ -1,17 +1,18 @@
-﻿using LarpakeServer.Models.Localizations;
+﻿using LarpakeServer.Models.DatabaseModels.Metadata;
+using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
-using System.ComponentModel.DataAnnotations;
 
 namespace LarpakeServer.Models.DatabaseModels;
 
-public class OrganizationEvent
+public class OrganizationEvent : ILocalized<OrganizationEventLocalization>
 {
     public required long Id { get; set; }
 
     public required DateTime StartsAt { get; set; }
     public DateTime? EndsAt { get; set; } = null;
-    
+    public required string Location { get; set; }
+
     // Metadata
     public Guid CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -28,6 +29,7 @@ public class OrganizationEvent
         return new OrganizationEvent
         {
             Id = id,
+            Location = dto.Location,
             TextData = dto.TextData.ToList(),
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,
@@ -40,6 +42,7 @@ public class OrganizationEvent
         return new OrganizationEvent
         {
             Id = Constants.NullId,
+            Location = dto.Location,
             TextData = dto.TextData.ToList(),
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,

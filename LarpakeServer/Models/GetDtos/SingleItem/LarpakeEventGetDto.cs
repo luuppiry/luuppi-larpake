@@ -12,7 +12,6 @@ public class LarpakeEventGetDto
     public DateTime? CancelledAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public List<Guid>? ReferencedOrganizationEventIds { get; set; }
     public required List<LarpakeEventLocalization> TextData { get; set; }
 
 
@@ -29,7 +28,6 @@ public class LarpakeEventGetDto
             CancelledAt = record.CancelledAt,
             CreatedAt = record.CreatedAt,
             UpdatedAt = record.UpdatedAt,
-            ReferencedOrganizationEventIds = record.ReferencedOrganizationEventIds
         };
     }
 }

@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
 
@@ -14,20 +15,24 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
 
         query.AppendLine($"""
             SELECT 
-                id, 
-                title,
-                body,
-                starts_at,
-                ends_at,
-                location,
-                image_url,
-                website_url,
-                created_by,
-                created_at,
-                updated_by,
-                updated_at,
-                cancelled_at
-            FROM organization_events
+                e.id, 
+                e.starts_at,
+                e.ends_at,
+                e.location,
+                e.created_by,
+                e.created_at,
+                e.updated_by,
+                e.updated_at,
+                e.cancelled_at
+                loc.title,
+                loc.body,
+                loc.image_url,
+                loc.website_url,
+                loc.language_code,
+                loc.organization_event_id
+            FROM organization_events e
+                LEFT JOIN organization_event_localizations loc
+                    ON e.id = loc.organization_event_id
             """);
 
         query.AppendConditionLine("cancelled_at IS NULL");
@@ -44,7 +49,11 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
 
         // If event title like string
         query.IfNotNull(options.Title).AppendConditionLine($"""
-            title ILIKE %@{nameof(options.Title)}%
+            e.id IN (
+                SELECT organization_event_id
+                FROM organization_event_localizations
+                WHERE title ILIKE '%' || @{nameof(options.Title)} || '%'
+            )
             """);
 
         query.AppendLine($"""
@@ -54,30 +63,35 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
             """);
 
         using var connection = GetConnection();
-        var records = await connection.QueryAsync<OrganizationEvent>(query.ToString(), options);
-        return records.ToArray();
+        var records = await connection.QueryLocalizedAsync<OrganizationEvent, OrganizationEventLocalization>(
+            query.ToString(), options, splitOn: "title");
+        return records.Values.ToArray();
     }
 
     public Task<OrganizationEvent?> Get(long id)
     {
         using var connection = GetConnection();
-        return connection.QueryFirstOrDefaultAsync<OrganizationEvent>($"""
+        return connection.QueryFirstOrDefaultLocalizedAsync<OrganizationEvent, OrganizationEventLocalization>($"""
             SELECT 
-                id, 
-                title,
-                body,
-                starts_at,
-                ends_at,
-                location,
-                image_url,
-                website_url,
-                created_by,
-                created_at,
-                updated_by,
-                updated_at,
-                cancelled_at
-            FROM organization_events 
-            WHERE id = @id LIMIT 1;
+                e.id, 
+                e.starts_at,
+                e.ends_at,
+                e.location,
+                e.created_by,
+                e.created_at,
+                e.updated_by,
+                e.updated_at,
+                e.cancelled_at,
+                loc.title,
+                loc.body,
+                loc.image_url,
+                loc.website_url,
+                loc.language_code,
+                loc.organization_event_id
+            FROM organization_events e
+                LEFT JOIN organization_event_localizations loc
+                    ON e.id = loc.organization_event_id
+            WHERE id = @id;
             """, new { id });
     }
 
@@ -86,31 +100,27 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
         try
         {
             using var connection = GetConnection();
-            return await connection.QuerySingleAsync<long>($"""
-                INSERT INTO organization_events (
-                    title,
-                    body,
-                    starts_at,
-                    ends_at,
-                    location,
-                    image_url,
-                    website_url,
-                    created_by,
-                    updated_by
-                ) 
-                VALUES (
-                    @{nameof(OrganizationEvent.Title)},
-                    @{nameof(OrganizationEvent.Body)},
-                    @{nameof(OrganizationEvent.StartsAt)},
-                    @{nameof(OrganizationEvent.EndsAt)},
-                    @{nameof(OrganizationEvent.Location)},
-                    @{nameof(OrganizationEvent.ImageUrl)},
-                    @{nameof(OrganizationEvent.WebsiteUrl)},
-                    @{nameof(OrganizationEvent.CreatedBy)},
-                    @{nameof(OrganizationEvent.CreatedBy)}
-                ) RETURNING id;
+            using var transaction = await connection.BeginTransactionAsync();
+
+            OrganizationEventLocalization def = record.DefaultLocalization;
+            long id = await connection.QuerySingleAsync<long>($"""
+                SELECT InsertOrganizationEvent(
+                    @{nameof(def.Title)},
+                    @{nameof(def.Body)},
+                    @{nameof(record.StartsAt)},
+                    @{nameof(record.EndsAt)},
+                    @{nameof(record.Location)},
+                    @{nameof(record.CreatedBy)},
+                    @{nameof(def.WebsiteUrl)},
+                    @{nameof(def.ImageUrl)},
+                    @{nameof(def.LanguageCode)});
                 """, record);
 
+            await InsertLocalizations(connection, id,
+                record.TextData.Where(x => x.LanguageCode != def.LanguageCode));
+
+            await transaction.CommitAsync();
+            return id;
         }
         catch (Exception e)
         {
@@ -120,25 +130,42 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
         }
     }
 
+
+
     public async Task<Result<int>> Update(OrganizationEvent record)
     {
         try
         {
             using var connection = GetConnection();
-            return await connection.ExecuteAsync($"""
+            using var transaction = await connection.BeginTransactionAsync();
+
+            int rowsAffected = await connection.ExecuteAsync($"""
                 UPDATE organization_events 
-                SET
-                    title = @{nameof(OrganizationEvent.Title)},
-                    body = @{nameof(OrganizationEvent.Body)},
-                    starts_at = @{nameof(OrganizationEvent.StartsAt)},
-                    ends_at = @{nameof(OrganizationEvent.EndsAt)},
-                    location = @{nameof(OrganizationEvent.Location)},
-                    image_url = @{nameof(OrganizationEvent.ImageUrl)},
-                    website_url = @{nameof(OrganizationEvent.WebsiteUrl)},
-                    updated_by = @{nameof(OrganizationEvent.UpdatedBy)}
-                )
-                WHERE id = @{nameof(OrganizationEvent.Id)};
+                SET 
+                    starts_at = @{nameof(record.StartsAt)},
+                    ends_at = @{nameof(record.EndsAt)},
+                    location = @{nameof(record.Location)},
+                    updated_at = NOW(),
+                    updated_by = @{nameof(record.UpdatedBy)}
+                WHERE 
+                    id = @{nameof(record.Id)};
                 """, record);
+
+            rowsAffected += await connection.ExecuteAsync($"""
+                UPDATE organization_event_localizations
+                SET
+                    title = @{nameof(OrganizationEventLocalization.Title)},
+                    body = @{nameof(OrganizationEventLocalization.Body)},
+                    website_url = @{nameof(OrganizationEventLocalization.WebsiteUrl)},
+                    image_url = @{nameof(OrganizationEventLocalization.ImageUrl)}
+                WHERE 
+                    organization_event_id = @{nameof(record.Id)}
+                        AND language_id = GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)});
+                """, record.TextData.Select(
+                        x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl }));
+
+            await transaction.CommitAsync();
+            return rowsAffected;
         }
         catch (PostgresException ex)
         {
@@ -173,5 +200,30 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
             DELETE FROM organization_events 
             WHERE id = @{nameof(eventId)};
             """, new { eventId });
+    }
+
+
+
+
+    private static async Task InsertLocalizations(NpgsqlConnection connection, long eventId, IEnumerable<OrganizationEventLocalization> loc)
+    {
+        await connection.ExecuteAsync($"""
+            INSERT INTO organization_event_localizations (
+                organization_event_id,
+                title,
+                body,
+                image_url,
+                website_url,
+                language_code
+            )
+            VALUES (
+                @{nameof(eventId)}
+                @{nameof(OrganizationEventLocalization.Title)},
+                @{nameof(OrganizationEventLocalization.Body)},
+                @{nameof(OrganizationEventLocalization.ImageUrl)},
+                @{nameof(OrganizationEventLocalization.WebsiteUrl)},
+                (SELECT GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)}))
+            );
+            """, loc.Select(x => new { eventId, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.LanguageCode }));
     }
 }
