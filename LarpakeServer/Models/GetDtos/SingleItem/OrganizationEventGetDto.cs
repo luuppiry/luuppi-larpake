@@ -4,8 +4,9 @@ namespace LarpakeServer.Models.GetDtos.SingleItem;
 
 public class OrganizationEventGetDto
 {
-    public class Localized
+    public class Localization : ILocalization
     {
+        public string Lang => Constants.LangDefault;
         public required string Language { get; set; }
         public required string Title { get; set; }
         public string Body { get; set; } = string.Empty;
@@ -15,7 +16,7 @@ public class OrganizationEventGetDto
     }
 
     public required long Id { get; set; }
-    public required Localized[] TextData { get; set; }
+    public required Localization[] TextData { get; set; }
     public required DateTime StartTimeUtc { get; set; }
     public DateTime? EndTimeUtc { get; set; } = null;
     public DateTime CreatedAt { get; set; }
@@ -28,7 +29,7 @@ public class OrganizationEventGetDto
         {
             Id = record.Id,
             TextData = [
-                new Localized
+                new Localization
                 {
                     Language = Constants.LangDefault,
                     Title = record.Title,

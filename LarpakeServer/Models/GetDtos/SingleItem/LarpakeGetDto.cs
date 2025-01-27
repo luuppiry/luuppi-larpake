@@ -4,15 +4,15 @@ namespace LarpakeServer.Models.GetDtos.SingleItem;
 
 public class LarpakeGetDto
 {
-    public class Localized
+    public class Localization : ILocalization
     {
-        public string Lang => "fi";
+        public string Lang => Constants.LangDefault;
         public required string Title { get; set; }
         public string? Description { get; set; }
     }
 
     public required long Id { get; set; }
-    public required Localized[] TextData { get; set; }
+    public required Localization[] TextData { get; set; }
     public int? Year { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -24,7 +24,7 @@ public class LarpakeGetDto
         {
             Id = larpake.Id,
             TextData = [
-                new Localized
+                new Localization
             {
                 Title = larpake.Title,
                 Description = larpake.Description,
