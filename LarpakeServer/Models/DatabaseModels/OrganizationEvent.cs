@@ -1,18 +1,16 @@
-﻿using LarpakeServer.Models.PostDtos;
+﻿using LarpakeServer.Models.Localizations;
+using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
+using System.ComponentModel.DataAnnotations;
 
 namespace LarpakeServer.Models.DatabaseModels;
 
 public class OrganizationEvent
 {
     public required long Id { get; set; }
-    public required string Title { get; set; }
-    public string Body { get; set; } = string.Empty;
+
     public required DateTime StartsAt { get; set; }
     public DateTime? EndsAt { get; set; } = null;
-    public string Location { get; set; } = string.Empty;
-    public string? WebsiteUrl { get; set; } = null;
-    public string? ImageUrl { get; set; } = null;
     
     // Metadata
     public Guid CreatedBy { get; set; }
@@ -21,23 +19,19 @@ public class OrganizationEvent
     public DateTime UpdatedAt { get; set; }
     public DateTime? CancelledAt { get; set; } = null;
     public bool IsDeleted => CancelledAt is not null;
+    public required List<OrganizationEventLocalization> TextData { get; set; }
+    internal OrganizationEventLocalization DefaultLocalization => GetDefaultLocalization();
 
 
-    public static OrganizationEvent MapFrom(EventPutDto dto, long id, Guid modifyingUser)
+    public static OrganizationEvent MapFrom(OrganizationEventPutDto dto, long id, Guid modifyingUser)
     {
         return new OrganizationEvent
         {
             Id = id,
-            Title = dto.Title,
-            Body = dto.Body,
+            TextData = dto.TextData.ToList(),
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,
-            Location = dto.Location,
-            WebsiteUrl = dto.WebsiteUrl,
-            // TODO: ImageUrl = dto.ImageUrl,
             UpdatedBy = modifyingUser,
-            CancelledAt = null
-
         };
     }
 
@@ -46,16 +40,21 @@ public class OrganizationEvent
         return new OrganizationEvent
         {
             Id = Constants.NullId,
-            Title = dto.Title,
-            Body = dto.Body,
+            TextData = dto.TextData.ToList(),
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,
-            Location = dto.Location,
-            WebsiteUrl = dto.WebsiteUrl,
-            // TODO: ImageUrl = dto.Image?.Url,
             CreatedBy = modifyingUser,
             UpdatedBy = modifyingUser,
-            CancelledAt = null
         };
+    }
+
+    private OrganizationEventLocalization GetDefaultLocalization()
+    {
+        if (TextData is null || TextData.Count is 0)
+        {
+            throw new InvalidOperationException("No localization data found.");
+        }
+        return TextData.FirstOrDefault(
+            x => x.LanguageCode == Constants.LangDefault, TextData.First());
     }
 }

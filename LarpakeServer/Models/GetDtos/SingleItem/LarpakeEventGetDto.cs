@@ -1,19 +1,11 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.Localizations;
 
 namespace LarpakeServer.Models.GetDtos.SingleItem;
 
 public class LarpakeEventGetDto
 {
-    public class Localization : ILocalization
-    {
-        public string Lang => Constants.LangDefault;
-        public required string Title { get; set; }
-        public string? Body { get; set; }
-
-    }
-
     public required long Id { get; set; }
-    public required Localization[] TextData { get; set; }
     public required long LarpakeSectionId { get; set; }
     public required int Points { get; set; }
     public int OrderingWeightNumber { get; set; }
@@ -21,6 +13,7 @@ public class LarpakeEventGetDto
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public List<Guid>? ReferencedOrganizationEventIds { get; set; }
+    public required List<LarpakeEventLocalization> TextData { get; set; }
 
 
 
@@ -29,11 +22,7 @@ public class LarpakeEventGetDto
         return new LarpakeEventGetDto
         {
             Id = record.Id,
-            TextData = [new Localization
-            {
-                Title = record.Title,
-                Body = record.Body
-            }],
+            TextData = record.TextData,
             LarpakeSectionId = record.LarpakeSectionId,
             Points = record.Points,
             OrderingWeightNumber = record.OrderingWeightNumber,

@@ -68,7 +68,7 @@ public class OrganizationEventsController : ExtendedControllerBase
 
     [HttpPut("{eventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
-    public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] EventPutDto dto)
+    public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] OrganizationEventPutDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         var record = OrganizationEvent.MapFrom(dto, eventId, userId);

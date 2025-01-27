@@ -2,4 +2,4 @@
 
 namespace LarpakeServer.Models.PutDtos;
 
-public class EventPutDto : OrganizationEventPostDto;
+public class OrganizationEventPutDto : OrganizationEventPostDto;
