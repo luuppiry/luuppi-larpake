@@ -18,5 +18,12 @@ RETURNS INT AS $$
 BEGIN
 RETURN (SELECT id FROM languages WHERE code = in_lang_code LIMIT 1);
 END;
-$$ LANGUAGE PLPGSQL
+$$ LANGUAGE PLPGSQL;
 
+DROP FUNCTION IF EXISTS GetLanguageCode;
+CREATE FUNCTION GetLanguageCode(in_lang_id INT)
+RETURNS INT AS $$
+BEGIN
+RETURN (SELECT code FROM languages WHERE code = in_lang_id LIMIT 1);
+END;
+$$ LANGUAGE PLPGSQL;

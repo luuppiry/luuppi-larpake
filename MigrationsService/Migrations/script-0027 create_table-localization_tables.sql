@@ -8,7 +8,7 @@ CREATE TABLE larpake_localizations (
     title VARCHAR(80) NOT NULL,
     description TEXT,
     PRIMARY KEY (larpake_id, language_id),
-    FOREIGN KEY (larpake_id) REFERENCES larpakkeet(id),
+    FOREIGN KEY (larpake_id) REFERENCES larpakkeet(id) ON DELETE CASCADE,
     FOREIGN KEY (language_id) REFERENCES languages(id)
 );
 
@@ -18,7 +18,7 @@ CREATE TABLE larpake_section_localizations (
     language_id INT,
     title VARCHAR(80) NOT NULL,
     PRIMARY KEY (larpake_section_id, language_id),
-    FOREIGN KEY (larpake_section_id) REFERENCES larpake_sections(id),
+    FOREIGN KEY (larpake_section_id) REFERENCES larpake_sections(id) ON DELETE CASCADE,
     FOREIGN KEY (language_id) REFERENCES languages(id)
 );
 
@@ -29,7 +29,7 @@ CREATE TABLE larpake_event_localizations (
     title VARCHAR(80),
     body TEXT,
     PRIMARY KEY (larpake_event_id, language_id),
-    FOREIGN KEY (larpake_event_id) REFERENCES larpake_events(id),
+    FOREIGN KEY (larpake_event_id) REFERENCES larpake_events(id) ON DELETE CASCADE,
     FOREIGN KEY (language_id) REFERENCES languages(id)
 );
 
@@ -42,7 +42,7 @@ CREATE TABLE organization_event_localizations (
     website_url VARCHAR(150),
     image_url VARCHAR(150),
     PRIMARY KEY (organization_event_id, language_id),
-    FOREIGN KEY (organization_event_id) REFERENCES organization_events(id),
+    FOREIGN KEY (organization_event_id) REFERENCES organization_events(id) ON DELETE CASCADE,
     FOREIGN KEY (language_id) REFERENCES languages(id)
 );
 

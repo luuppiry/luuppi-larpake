@@ -1,10 +1,11 @@
-﻿using LarpakeServer.Models.Localizations;
+﻿using LarpakeServer.Models.DatabaseModels.Metadata;
+using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 
 namespace LarpakeServer.Models.DatabaseModels;
 
-public class LarpakeSection
+public class LarpakeSection : ILocalized<LarpakeSectionLocalization>
 {
     public required long Id { get; set; }
     public required long LarpakeId { get; set; }
