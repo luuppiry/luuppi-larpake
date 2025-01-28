@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.QueryOptions;
+﻿using LarpakeServer.Models.Localizations;
+using LarpakeServer.Models.QueryOptions;
 
 namespace TestDataGenerator.Generators;
 internal class LarpakeGenerator : IRunAll
@@ -25,16 +26,40 @@ internal class LarpakeGenerator : IRunAll
             new Larpake
             {
                 Id = -1,
-                Title="Kiasan seikkailu lärpäke",
                 Year = 2024,
-                Description = "Larpake 1 Description"
+                TextData = [
+                    new LarpakeLocalization
+                    {
+                        LanguageCode = "fi",
+                        Title = "Kiasan seikkailu lärpäke",
+                        Description = "Larpake 1 Description"
+                    },
+                    new LarpakeLocalization
+                    {
+                        LanguageCode = "en",
+                        Title = "Kiasan adventure lärpäke",
+                        Description = "Larpake 1 Description"
+                    }
+            ]
             },
             new Larpake
             {
                 Id = -1,
-                Title="Lärpäke 2025",
                 Year = 2025,
-                Description = "Everything fun for fuksis."
+                TextData = [
+                    new LarpakeLocalization
+                    {
+                        LanguageCode = "fi",
+                        Title = "Fuksien lärpäke 2025",
+                        Description = "Kaikki hauska fuksiksille."
+                    },
+                    new LarpakeLocalization
+                    {
+                        LanguageCode = "en",
+                        Title = "Fuksi lärpäke 2025",
+                        Description = "Everything fun for fuksis."
+                    }
+                ]
             }];
 
         foreach (var larpake in larpakes)
@@ -61,26 +86,58 @@ internal class LarpakeGenerator : IRunAll
             new() {
                 Id = -1,
                 LarpakeId = 1,
-                Title = "Fuksi touhuilee",
                 OrderingWeightNumber = 1,
+                TextData = [
+                    new LarpakeSectionLocalization
+                    {
+                        LanguageCode = "fi",
+                        Title = "Fuksi touhuilee",
+                    },
+                    new LarpakeSectionLocalization
+                    {
+                        LanguageCode = "en",
+                        Title = "Fuksi fucking around",
+                    }
+                ]
             },
             new() {
                 Id = -1,
                 LarpakeId = 1,
-                Title = "Tanpereella",
                 OrderingWeightNumber = 2,
+                TextData = [
+                    new LarpakeSectionLocalization
+                    {
+                        LanguageCode = "fi",
+                        Title = "Tampereella",
+                    },
+                    new LarpakeSectionLocalization
+                    {
+                        LanguageCode = "en",
+                        Title = "In Tammerfors",
+                    }
+                ]
             },
             new() {
                 Id = -1,
                 LarpakeId = 2,
-                Title = "Section 1",
                 OrderingWeightNumber = 1,
+                TextData = [
+                    new LarpakeSectionLocalization
+                    {
+                        LanguageCode = "fi",
+                        Title = "Fuksi touhuilee",
+                    }]
             },
             new() {
                 Id = -1,
                 LarpakeId = 2,
-                Title = "Section 2",
                 OrderingWeightNumber = 2,
+                TextData = [
+                    new LarpakeSectionLocalization
+                    {
+                        LanguageCode = "en",
+                        Title = "Hello fresh!"
+                    }]
             }
         ];
 

@@ -1,4 +1,6 @@
-﻿namespace TestDataGenerator.Generators;
+﻿using LarpakeServer.Models.Localizations;
+
+namespace TestDataGenerator.Generators;
 internal class LarpakeEventsGenerator : IRunAll
 {
     private readonly ILarpakeEventDatabase _db;
@@ -23,8 +25,24 @@ internal class LarpakeEventsGenerator : IRunAll
 
         List<LarpakeEvent> events = new Faker<LarpakeEvent>()
             .UseSeed(App.Seed)
-            .RuleFor(x => x.Title, f => f.Music.Random.Word())
-            .RuleFor(x => x.Body, f => f.Lorem.Paragraph())
+            .RuleFor(x => x.TextData, x => 
+            {
+
+                return [
+                    new LarpakeEventLocalization
+                    {
+                        LanguageCode = "fi",
+                        Title = x.Lorem.Sentence(),
+                        Body = x.Lorem.Paragraph()
+                    },
+                    new LarpakeEventLocalization
+                    {
+                        LanguageCode = "en",
+                        Title = x.Lorem.Sentence(),
+                        Body = x.Lorem.Paragraph()
+                    }
+                    ];
+            })
             .RuleFor(x => x.LarpakeSectionId, f => f.PickRandom(validSections))
             .RuleFor(x => x.Points, f => f.PickRandom(validSections))
             .Generate(30);

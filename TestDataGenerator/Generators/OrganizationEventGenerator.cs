@@ -3,16 +3,13 @@ internal class OrganizationEventGenerator : IRunAll
 {
     private readonly IOrganizationEventDatabase _db;
     private readonly IUserDatabase _userDb;
-    private readonly ILarpakeEventDatabase _larpakeEventDb;
 
     public OrganizationEventGenerator(
-        IOrganizationEventDatabase db, 
-        IUserDatabase userDb,
-        ILarpakeEventDatabase larpakeEventDb)
+        IOrganizationEventDatabase db,
+        IUserDatabase userDb)
     {
         _db = db;
         _userDb = userDb;
-        _larpakeEventDb = larpakeEventDb;
     }
 
     public async Task GenerateOrganizationEvents()
@@ -27,17 +24,35 @@ internal class OrganizationEventGenerator : IRunAll
         DateTime refDate = new(2025, 1, 1);
 
         Console.WriteLine("Generating organization events.");
-        
+
         var users = await _userDb.Get(new UserQueryOptions { PageOffset = 0, PageSize = 20 });
 
         List<OrganizationEvent> events = new Faker<OrganizationEvent>()
             .UseSeed(App.Seed)
-            .RuleFor(x => x.Title, f => f.Database.Random.Word())
-            .RuleFor(x => x.Body, f => f.Lorem.Paragraph())
+            .RuleFor(x => x.TextData, f =>
+            {
+                return [
+                        new()
+                    {
+                        LanguageCode = "fi",
+                        Title = f.Lorem.Sentence(),
+                        Body = f.Lorem.Paragraph(),
+                        WebsiteUrl = f.Internet.Url(),
+                        ImageUrl = "https://images.alko.fi/images/cs_srgb,f_auto,t_medium/cdn/319027/gambina-muovipullo.jpg"
+
+                    },
+                    new()
+                    {
+                        LanguageCode = "en",
+                        Title = f.Lorem.Sentence(),
+                        Body = f.Lorem.Paragraph(),
+                        WebsiteUrl = f.Internet.Url(),
+                        ImageUrl = f.Image.PicsumUrl()
+                    }
+                    ];
+            })
             .RuleFor(x => x.StartsAt, f => f.Date.Future(refDate: refDate))
             .RuleFor(x => x.Location, f => f.Address.StreetAddress())
-            .RuleFor(x => x.WebsiteUrl, f => f.Internet.Url())
-            .RuleFor(x => x.ImageUrl, f => "https://images.alko.fi/images/cs_srgb,f_auto,t_medium/cdn/319027/gambina-muovipullo.jpg")
             .RuleFor(x => x.CreatedBy, f => f.PickRandom(users).Id)
             .RuleFor(x => x.UpdatedBy, f => f.PickRandom(users).Id)
             .Generate(30);

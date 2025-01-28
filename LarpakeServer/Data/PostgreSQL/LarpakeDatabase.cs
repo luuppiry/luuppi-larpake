@@ -126,6 +126,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     public async Task<Result<long>> InsertLarpake(Larpake record)
     {
         using var connection = GetConnection();
+        connection.Open();
         using var transaction = connection.BeginTransaction();
 
         // Insert the larpake and default localization
