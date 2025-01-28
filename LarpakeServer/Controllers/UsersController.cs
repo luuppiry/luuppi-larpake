@@ -148,6 +148,25 @@ public class UsersController : ExtendedControllerBase
     }
 
 
+    [HttpDelete("own/permissions")]
+    public async Task<IActionResult> RevokeOwnPermissions()
+    {
+        /* Because user is making the request, he should exit in database.
+         * Otherwise user is deleted and token still exists sometime.
+         */
+        Guid userId = GetRequestUserId();
+        Result<int> rowsAffected = await _db.SetPermissions(userId, Permissions.None);
+        
+        _logger.IfTrue(rowsAffected).LogInformation("User {id} revoked own permissions.", userId);
+        _logger.IfFalse(rowsAffected).LogError("Failed to revoke permissions for user {id}.", userId);
+
+        return rowsAffected.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError
+        );
+    }
+
+
 
     [HttpDelete("{userId}")]
     [RequiresPermissions(Permissions.DeleteUser)]
