@@ -1,6 +1,4 @@
 -- Run in transaction to
-BEGIN;
-
 
 -- Insert larpake
 DROP FUNCTION IF EXISTS InsertLarpake;
@@ -138,4 +136,3 @@ $$ LANGUAGE plpgsql;
 
 
 
-COMMIT;

@@ -1,5 +1,4 @@
 -- Create static language table
-BEGIN;
 
 CREATE TABLE languages (
     id SERIAL,
@@ -30,4 +29,3 @@ RETURN (SELECT code FROM languages WHERE id = in_lang_id LIMIT 1);
 END;
 $$ LANGUAGE PLPGSQL;
 
-END;

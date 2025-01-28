@@ -69,34 +69,31 @@ internal class QueryExecutionService
 
         using var connection = new NpgsqlConnection(_connectionString);
         connection.Open();
+        using var transaction = connection.BeginTransaction();
+
         try
         {
-            using (var transaction = connection.BeginTransaction())
+            _logger.LogInformation("Starting migrations.");
+            // Run migration
+            foreach (var migration in newMigrations)
             {
-                _logger.LogInformation("Starting migrations.");
-                // Run migration
-                foreach (var migration in newMigrations)
-                {
-                    MigrateEmbedded(connection, migration.FileName);
-                }
-
-                // Add ready migrations to database
-                SaveReadyMigrations(connection, newMigrations);
-                foreach (var migration in newMigrations)
-                {
-                    if (ReadyMigrations.TryAdd(migration.SequenceId, migration) is false)
-                    {
-                        throw new MigrationsFailedException(migration.FileName,
-                            "Failed to add migration to ready migrations.");
-                    }
-                }
-
-                // Commit
-                transaction.Commit();
-
-                _logger.LogInformation("Completed all {count} migrations.", newMigrations.Length);
-
+                MigrateEmbedded(connection, migration.FileName);
             }
+
+            // Add ready migrations to database
+            SaveReadyMigrations(connection, newMigrations);
+
+            foreach (var migration in newMigrations)
+            {
+                if (ReadyMigrations.TryAdd(migration.SequenceId, migration) is false)
+                {
+                    throw new MigrationsFailedException(migration.FileName,
+                        "Failed to add migration to ready migrations.");
+                }
+            }
+            _logger.LogInformation("Completed all {count} migrations.", newMigrations.Length);
+
+            transaction.Commit();
         }
         catch (MigrationsFailedException)
         {

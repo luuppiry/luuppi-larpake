@@ -1,5 +1,6 @@
 -- Remove all keys that are invalidated over 5 days ago
 -- Remove all not completed entries with no keys
+DROP FUNCTION IF EXISTS CleanAttendanceKeys;
 CREATE FUNCTION CleanAttendanceKeys()
 RETURNS INTEGER AS $$
 DECLARE

@@ -1,4 +1,3 @@
-BEGIN;
 -- Use transaction because of multiple tables
 
 -- Larpake localizations
@@ -46,4 +45,3 @@ CREATE TABLE organization_event_localizations (
     FOREIGN KEY (language_id) REFERENCES languages(id)
 );
 
-COMMIT;

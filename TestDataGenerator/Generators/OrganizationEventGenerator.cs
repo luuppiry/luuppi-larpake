@@ -35,7 +35,7 @@ internal class OrganizationEventGenerator : IRunAll
                         new()
                     {
                         LanguageCode = "fi",
-                        Title = f.Lorem.Sentence(),
+                        Title = f.Vehicle.Manufacturer(),
                         Body = f.Lorem.Paragraph(),
                         WebsiteUrl = f.Internet.Url(),
                         ImageUrl = "https://images.alko.fi/images/cs_srgb,f_auto,t_medium/cdn/319027/gambina-muovipullo.jpg"
@@ -44,7 +44,7 @@ internal class OrganizationEventGenerator : IRunAll
                     new()
                     {
                         LanguageCode = "en",
-                        Title = f.Lorem.Sentence(),
+                        Title = f.Company.CompanyName(),
                         Body = f.Lorem.Paragraph(),
                         WebsiteUrl = f.Internet.Url(),
                         ImageUrl = f.Image.PicsumUrl()

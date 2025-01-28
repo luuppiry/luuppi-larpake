@@ -2,6 +2,7 @@
 -- Add signature if one found
 -- Randomizer efficiency should not be problem,
 -- because user should have 5 signature max
+DROP FUNCTION IF EXISTS FillSignatureKeys;
 CREATE FUNCTION FillSignatureKeys()
 RETURNS INTEGER AS $$
 DECLARE

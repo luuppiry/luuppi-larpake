@@ -1,6 +1,4 @@
 -- If anything fails, transaction fails
-BEGIN;
-
 -- Move larpake text values to localization table
 INSERT INTO larpake_localizations
 SELECT id,
@@ -52,4 +50,3 @@ ALTER TABLE organization_events
     DROP COLUMN website_url,
     DROP COLUMN image_url;
 
-COMMIT;

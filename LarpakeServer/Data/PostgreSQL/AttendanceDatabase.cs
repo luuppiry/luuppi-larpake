@@ -349,7 +349,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 UPDATE attendances
                 SET 
                     completion_id = @{nameof(completion.Id)},
-                    updated_at = NOW()
+                    updated_at = NOW(),
                     key_invalid_at = NOW()
                 WHERE user_id = @{nameof(completion.UserId)}
                     AND larpake_event_id = @{nameof(completion.EventId)};
