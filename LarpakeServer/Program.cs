@@ -1,8 +1,12 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
+using LarpakeServer.Services.Implementations;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Order matters with hosted services (first is executed first)
+builder.Services.AddHostedService<PermissionsStartupService>();
 
 // Add services to the container.
 ConfigurationManager configuration = builder.Configuration;
@@ -46,5 +50,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

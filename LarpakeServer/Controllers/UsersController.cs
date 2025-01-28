@@ -89,18 +89,24 @@ public class UsersController : ExtendedControllerBase
          * - Request author must also have at least same permissions to be updated. 
          * - User cannot change their own permissions.
          */
-
+        
         if (targetId == Guid.Empty)
         {
             return BadRequest("UserId must be provided.");
         }
 
-        // Validate user is not changing own permissions
+
+        // Validate user is not changing own permissions or setting higher than admin
         Guid authorId = GetRequestUserId();
         if (targetId == authorId)
         {
             _logger.LogInformation("User {id} tried to change own permissions.", targetId);
             return BadRequest("Cannot change own permissions.");
+        }
+        if (dto.Permissions.IsMoreThan(Permissions.Admin))
+        {
+            _logger.LogInformation("User {id} tried to set permissions higher than admin.", targetId);
+            return BadRequest("Setting permissions higher than admin are forbidden in runtime.");
         }
 
         // Validate author exists

@@ -86,9 +86,15 @@ public static class ServiceExtensions
         services.AddSingleton<IClaimsReader, TokenService>();
         services.AddSingleton<AttendanceKeyService>();
 
+        // Key options parsing from appsettings.json
         AttendanceKeyOptions keyOptions = new();
-        configuration.GetSection("AttendanceKey").Bind(keyOptions);
+        configuration.GetSection(AttendanceKeyOptions.SectionName).Bind(keyOptions);
         services.AddSingleton(keyOptions);
+
+        // Permissions options parsing from appsettings.json
+        PermissionsOptions permissionsOptions = new();
+        configuration.GetSection(PermissionsOptions.SectionName).Bind(permissionsOptions);
+        services.AddSingleton(permissionsOptions);
     }
 
 }
