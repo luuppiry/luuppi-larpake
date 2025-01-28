@@ -24,8 +24,8 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                 e.cancelled_at,
                 loc.title,
                 loc.body,
-                loc.language_code,
-                loc.larpake_event_id,
+                GetLanguageCode(loc.language_id) AS language_code,
+                loc.larpake_event_id
             FROM larpake_events e
                 LEFT JOIN larpake_event_localizations loc
                     ON e.id = loc.larpake_event_id
@@ -76,11 +76,10 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
             """);
 
         query.AppendLine($"""
-            ORDER BY e.ordering_weight_number, e.title ASC
+            ORDER BY e.ordering_weight_number
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)};
             """);
-
         using var connection = GetConnection();
         var records = await connection.QueryLocalizedAsync<LarpakeEvent, LarpakeEventLocalization>(
             query.ToString(),

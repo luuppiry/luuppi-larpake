@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using Npgsql;
+using System.Diagnostics;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -18,7 +19,7 @@ internal static class Mapper
 
         return result;
     }
-    
+
     public static async Task<Dictionary<long, T>> QueryLocalizedAsync<T, U>(
         this NpgsqlConnection connection, string sql, object? param = null, string splitOn = "Id") 
         where T : ILocalized<U>

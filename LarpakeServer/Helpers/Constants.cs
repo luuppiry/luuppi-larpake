@@ -9,8 +9,8 @@ public class Constants
     public const string StartYearFieldName = "start_year";
 
     #region LOCALIZATION
-    public const string LangFin = "fin";
-    public const string LangEng = "eng";
+    public const string LangFin = "fi";
+    public const string LangEng = "en";
     public const string LangDefault = LangFin;
     #endregion LOCALIZATION
 

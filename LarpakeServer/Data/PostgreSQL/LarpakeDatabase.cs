@@ -21,7 +21,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 l.created_at,
                 l.updated_at,
                 ll.larpake_id,
-                GetLanguageCode(sl.language_id) AS languge_code,
+                GetLanguageCode(ll.language_id) AS languge_code,
                 ll.title,
                 ll.description
             FROM larpakkeet l
@@ -77,14 +77,14 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 s.created_at,
                 s.updated_at,
                 sl.larpake_section_id,
-                GetLanguageCode(sl.language_id) AS languge_code
-                sl.title,
+                GetLanguageCode(sl.language_id) AS languge_code,
+                sl.title
             FROM larpake_sections s
                 LEFT JOIN larpake_section_localizations sl
                     ON s.id = sl.larpake_section_id
-            WHERE s.larpake_id IN @{nameof(larpakkeet.Keys)};
+            WHERE s.larpake_id = ANY(@Keys);
             """,
-            options, splitOn: "larpake_section_id");
+            new { Keys = larpakkeet.Keys.ToArray() }, splitOn: "larpake_section_id");
 
 
         Dictionary<long, List<LarpakeSection>> sectionByLarpake =
@@ -111,16 +111,16 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             SELECT 
                 l.id, 
                 l.year,
-                l.description,
                 l.created_at,
-                l.updated_at
+                l.updated_at,
                 ll.title,
-                ll.description,
+                ll.description
             FROM larpakkeet l
                 LEFT JOIN larpake_localizations ll
                     ON l.id = ll.larpake_id
             WHERE l.id = @{nameof(larpakeId)};
-            """, new { larpakeId });
+            """, new { larpakeId },
+            splitOn: "title");
     }
 
     public async Task<Result<long>> InsertLarpake(Larpake record)
@@ -189,13 +189,17 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
         Dictionary<long, LarpakeSection> sections =
             await connection.QueryLocalizedAsync<LarpakeSection, LarpakeSectionLocalization>($"""
                 SELECT 
-                    id, 
-                    larpake_id,
-                    title,
-                    ordering_weight_number,
-                    created_at,
-                    updated_at
-                FROM larpake_sections 
+                    s.id, 
+                    s.larpake_id,
+                    s.ordering_weight_number,
+                    s.created_at,
+                    s.updated_at,
+                    l.title,
+                    GetLanguageCode(l.language_id) AS language_code,
+                    l.larpake_section_id
+                FROM larpake_sections s
+                    LEFT JOIN larpake_section_localizations l
+                        ON s.id = l.larpake_section_id
                 WHERE 
                     larpake_id = @{nameof(larpakeId)}
                 ORDER BY ordering_weight_number ASC, id ASC
@@ -207,7 +211,8 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                     larpakeId,
                     options.PageSize,
                     options.PageOffset
-                });
+                },
+                splitOn: "title");
         return sections.Values.ToArray();
     }
 

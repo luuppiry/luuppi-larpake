@@ -23,12 +23,12 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 e.created_at,
                 e.updated_by,
                 e.updated_at,
-                e.cancelled_at
+                e.cancelled_at,
                 loc.title,
                 loc.body,
                 loc.image_url,
                 loc.website_url,
-                loc.language_code,
+                GetLanguageCode(loc.language_id) AS language_code,
                 loc.organization_event_id
             FROM organization_events e
                 LEFT JOIN organization_event_localizations loc
