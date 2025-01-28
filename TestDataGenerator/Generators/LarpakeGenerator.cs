@@ -12,7 +12,7 @@ internal class LarpakeGenerator : IRunAll
 
     public async Task CreateLarpakkeet()
     {
-        var records = await _db.GetLarpakkeet(new QueryOptions() { PageOffset = 0, PageSize = 1 });
+        var records = await _db.GetLarpakkeet(new LarpakeQueryOptions() { PageOffset = 0, PageSize = 1 });
         if (records.Length is not 0)
         {
             Console.WriteLine("Larpakkeet already generated.");
@@ -47,8 +47,8 @@ internal class LarpakeGenerator : IRunAll
 
     public async Task CreateSections()
     {
-        var records = await _db.GetSections(new QueryOptions() { PageOffset = 0, PageSize = 1 });
-        if (records.Length is not 0)
+        var records = await _db.GetLarpakkeet(new LarpakeQueryOptions() { PageOffset = 0, PageSize = 1, DoMinimize = false });
+        if (records.FirstOrDefault()?.Sections?.Count > 0)
         {
             Console.WriteLine("Sections already generated.");
             return;

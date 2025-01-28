@@ -97,7 +97,6 @@ internal class AttendancesGenerator : IRunAll
                 EventId = a.LarpakeEventId,
                 UserId = a.UserId,
                 SignerId = faker.PickRandom(tutors).Id,
-                SignatureId = faker.PickRandom(signatures).Id.OrNull(faker, 0.25f),
             };
 
             await _db.Complete(completion);

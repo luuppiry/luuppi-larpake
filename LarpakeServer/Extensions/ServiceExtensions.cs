@@ -1,15 +1,13 @@
-﻿using Sqlite = LarpakeServer.Data.Sqlite;
-using Postgres = LarpakeServer.Data.PostgreSQL;
-using LarpakeServer.Data;
+﻿using LarpakeServer.Data;
 using LarpakeServer.Data.TypeHandlers;
 using LarpakeServer.Identity;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
-using static LarpakeServer.Services.AttendanceKeyService;
+using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using LarpakeServer.Services.Options;
+using Postgres = LarpakeServer.Data.PostgreSQL;
 
 namespace LarpakeServer.Extensions;
 
@@ -51,29 +49,7 @@ public static class ServiceExtensions
     }
 
 
-    public static void AddSqliteDatabases(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddSingleton(new SqliteConnectionString(configuration.GetConnectionString("Sqlite")!));
-        SqlMapper.AddTypeHandler(new GuidTypeHandler());
-        SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
-
-        services.AddSingleton<IOrganizationEventDatabase, Sqlite.OrganizationEventDatabase>();
-        services.AddSingleton<Sqlite.OrganizationEventDatabase>();
-        services.AddSingleton<IUserDatabase, Sqlite.UserDatabase>();
-        services.AddSingleton<Sqlite.UserDatabase>();
-        services.AddSingleton<IFreshmanGroupDatabase, Sqlite.FreshmanGroupDatabase>();
-        services.AddSingleton<Sqlite.FreshmanGroupDatabase>();
-        services.AddSingleton<IAttendanceDatabase, Sqlite.AttendanceDatabase>();
-        services.AddSingleton<Sqlite.AttendanceDatabase>();
-        services.AddSingleton<ISignatureDatabase, Sqlite.SignatureDatabase>();
-        services.AddSingleton<Sqlite.SignatureDatabase>();
-        services.AddSingleton<IRefreshTokenDatabase, Sqlite.RefreshTokenDatabase>();
-        services.AddSingleton<Sqlite.RefreshTokenDatabase>();
-        services.AddSingleton<ILarpakeDatabase, Sqlite.LarpakeDatabase>();
-        services.AddSingleton<Sqlite.LarpakeDatabase>();
-        services.AddSingleton<ILarpakeEventDatabase, Sqlite.LarpakeEventDatabase>();
-        services.AddSingleton<Sqlite.LarpakeEventDatabase>();
-    }
+    
 
     public static void AddPostgresDatabases(this IServiceCollection services, IConfiguration configuration)
     {

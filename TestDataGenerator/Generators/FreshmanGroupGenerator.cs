@@ -15,7 +15,7 @@ internal class FreshmanGroupGenerator : IRunAll
 
     public async Task GenerateGroups()
     {
-        var larpakkeet = await _larpakeDb.GetLarpakkeet(new QueryOptions { PageOffset = 0, PageSize = 10 });
+        var larpakkeet = await _larpakeDb.GetLarpakkeet(new LarpakeQueryOptions { PageOffset = 0, PageSize = 10 });
         var larpakeIds = larpakkeet.Select(x => x.Id).ToArray();
 
         var records = await _db.GetGroupsMinimized(new FreshmanGroupQueryOptions { PageOffset = 0, PageSize = 1 });

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LarpakeServer.Models.Localizations;
+using System.ComponentModel.DataAnnotations;
 
 namespace LarpakeServer.Models.PostDtos;
 
@@ -8,11 +9,8 @@ public class LarpakeEventPostDto
     public required long LarpakeSectionId { get; set; }
 
     [Required]
-    [Length(5, Constants.MaxLarpakeEventTitleLength)]
-    public required string Title { get; set; }
-
-    [MaxLength(Constants.MaxLarpakeEventBodyLength)]
-    public string? Body { get; set; }
+    [MinLength(1)]
+    public required LarpakeEventLocalization[] TextData { get; set; }
 
     [Required]
     [Range(1, Constants.MaxPointsPerLarpakeEvent)]
