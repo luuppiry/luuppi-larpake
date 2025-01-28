@@ -108,14 +108,25 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 SELECT InsertOrganizationEvent(
                     @{nameof(def.Title)},
                     @{nameof(def.Body)},
-                    @{nameof(record.StartsAt)},
-                    @{nameof(record.EndsAt)},
+                    CAST(@{nameof(record.StartsAt)} AS TIMESTAMPTZ),
+                    CAST(@{nameof(record.EndsAt)} AS TIMESTAMPTZ),
                     @{nameof(record.Location)},
                     @{nameof(record.CreatedBy)},
                     @{nameof(def.WebsiteUrl)},
                     @{nameof(def.ImageUrl)},
                     @{nameof(def.LanguageCode)});
-                """, record);
+                """, new
+            {
+                def.Title,
+                def.Body,
+                record.StartsAt,
+                record.EndsAt,
+                record.Location,
+                record.CreatedBy,
+                def.WebsiteUrl,
+                def.ImageUrl,
+                def.LanguageCode
+            });
 
             await InsertLocalizations(connection, id,
                 record.TextData.Where(x => x.LanguageCode != def.LanguageCode));
@@ -215,10 +226,10 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 body,
                 image_url,
                 website_url,
-                language_code
+                language_id
             )
             VALUES (
-                @{nameof(eventId)}
+                @{nameof(eventId)},
                 @{nameof(OrganizationEventLocalization.Title)},
                 @{nameof(OrganizationEventLocalization.Body)},
                 @{nameof(OrganizationEventLocalization.ImageUrl)},

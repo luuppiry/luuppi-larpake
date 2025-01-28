@@ -92,15 +92,15 @@ $$ LANGUAGE plpgsql;
 -- Insert organization event section
 DROP FUNCTION IF EXISTS InsertOrganizationEvent;
 CREATE FUNCTION InsertOrganizationEvent(
-    in_title VARCHAR(80),
+    in_title TEXT,
     in_body TEXT,
     in_starts_at TIMESTAMPTZ,
     in_ends_at TIMESTAMPTZ,
-    in_location VARCHAR(100),
+    in_location TEXT,
     in_created_by UUID,
-    in_website_url VARCHAR(150),
-    in_image_url VARCHAR(150),
-    in_language_code INT)
+    in_website_url TEXT,
+    in_image_url TEXT,
+    in_language_code VARCHAR(10))
     RETURNS BIGINT AS
 $$
 DECLARE
