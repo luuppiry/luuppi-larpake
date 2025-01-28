@@ -100,10 +100,11 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
         try
         {
             using var connection = GetConnection();
+            await connection.OpenAsync();
             using var transaction = await connection.BeginTransactionAsync();
 
             OrganizationEventLocalization def = record.DefaultLocalization;
-            long id = await connection.QuerySingleAsync<long>($"""
+            long id = await connection.ExecuteScalarAsync<long>($"""
                 SELECT InsertOrganizationEvent(
                     @{nameof(def.Title)},
                     @{nameof(def.Body)},

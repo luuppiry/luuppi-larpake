@@ -72,8 +72,8 @@ internal class LarpakeGenerator : IRunAll
 
     public async Task CreateSections()
     {
-        var records = await _db.GetLarpakkeet(new LarpakeQueryOptions() { PageOffset = 0, PageSize = 1, DoMinimize = false });
-        if (records.FirstOrDefault()?.Sections?.Count > 0)
+        var records = await _db.GetLarpakkeet(new LarpakeQueryOptions() { PageOffset = 0, PageSize = 20, DoMinimize = false });
+        if (records.Any(x => x.Sections?.Count > 0))
         {
             Console.WriteLine("Sections already generated.");
             return;

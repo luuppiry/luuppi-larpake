@@ -4,10 +4,12 @@ namespace TestDataGenerator.Generators;
 internal class LarpakeEventsGenerator : IRunAll
 {
     private readonly ILarpakeEventDatabase _db;
+    private readonly ILarpakeDatabase _larpakeDb;
 
-    public LarpakeEventsGenerator(ILarpakeEventDatabase db)
+    public LarpakeEventsGenerator(ILarpakeEventDatabase db, ILarpakeDatabase larpakeDb)
     {
         _db = db;
+        _larpakeDb = larpakeDb;
     }
 
     public async Task CreateEvents()
@@ -21,7 +23,9 @@ internal class LarpakeEventsGenerator : IRunAll
 
         Console.WriteLine("Generating larpake events.");
 
-        int[] validSections = Enumerable.Range(1, 4).ToArray();
+        var larpakkeet = await _larpakeDb.GetLarpakkeet(new LarpakeQueryOptions { PageOffset = 0, PageSize = 20, DoMinimize = false });
+        long[] validSections = larpakkeet.Where(x=> x.Sections is not null).SelectMany(x => x.Sections!).Select(x => x.Id).ToArray();
+        var validPoints = Enumerable.Range(1, 20).ToArray();
 
         List<LarpakeEvent> events = new Faker<LarpakeEvent>()
             .UseSeed(App.Seed)
@@ -44,7 +48,7 @@ internal class LarpakeEventsGenerator : IRunAll
                     ];
             })
             .RuleFor(x => x.LarpakeSectionId, f => f.PickRandom(validSections))
-            .RuleFor(x => x.Points, f => f.PickRandom(validSections))
+            .RuleFor(x => x.Points, f => f.PickRandom(validPoints))
             .Generate(30);
 
         events[4].CancelledAt = new DateTime(2025, 1, 3);

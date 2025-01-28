@@ -251,6 +251,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             var def = section.DefaultLocalization;
 
             using var connection = GetConnection();
+            await connection.OpenAsync();
             using var transaction = await connection.BeginTransactionAsync();
 
             long id = await connection.ExecuteScalarAsync<long>($"""
@@ -267,7 +268,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 def.LanguageCode
             });
 
-            await InsertSectionLocalizations(connection, id, section.TextData);
+            await InsertSectionLocalizations(connection, id, section.TextData.Where(x => x.LanguageCode != def.LanguageCode));
             await transaction.CommitAsync();
             return id;
 
@@ -286,6 +287,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     public async Task<Result<int>> UpdateSection(LarpakeSection record)
     {
         using var connection = GetConnection();
+        await connection.OpenAsync();
         using var transaction = await connection.BeginTransactionAsync();
 
         int rowsAffected = await connection.ExecuteAsync($"""

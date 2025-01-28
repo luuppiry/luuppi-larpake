@@ -119,6 +119,7 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
         try
         {
             using var connection = GetConnection();
+            await connection.OpenAsync();
             using var transaction = await connection.BeginTransactionAsync();
 
             LarpakeEventLocalization def = record.DefaultLocalization;
@@ -129,7 +130,7 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                     @{nameof(record.OrderingWeightNumber)},
                     @{nameof(def.Title)},
                     @{nameof(def.Body)},
-                    @{nameof(def.LanguageCode)},
+                    @{nameof(def.LanguageCode)}
                 );
                 """, new 
             { 
@@ -158,6 +159,7 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
     public async Task<Result<int>> Update(LarpakeEvent record)
     {
         using var connection = GetConnection();
+        await connection.OpenAsync();
         using var transaction = await connection.BeginTransactionAsync();
 
         int rowsAffected = await connection.ExecuteAsync($"""
@@ -252,13 +254,13 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                 larpake_event_id,
                 title,
                 body,
-                language_code
+                language_id
             )
             VALUES (
                 @{nameof(eventId)},
                 @{nameof(LarpakeEventLocalization.Title)},
                 @{nameof(LarpakeEventLocalization.Body)},
-                @{nameof(LarpakeEventLocalization.LanguageCode)}
+                (SELECT GetLanguageId(@{nameof(LarpakeEventLocalization.LanguageCode)}))
             );
             """, localizations.Select(x => new
             {
