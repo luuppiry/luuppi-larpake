@@ -32,7 +32,8 @@ public class LarpakkeetController : ExtendedControllerBase
          * Actually you can add as many wildcards in the search as you want
          */
 
-        if (GetRequestPermissions().Has(Permissions.Admin) is false)
+        bool isLimitedSearch = GetRequestPermissions().Has(Permissions.Admin) is false;
+        if (isLimitedSearch)
         {
             options.Title = null;
         }
@@ -40,6 +41,10 @@ public class LarpakkeetController : ExtendedControllerBase
         var records = await _db.GetLarpakkeet(options);
         var result = LarpakkeetGetDto.MapFrom(records);
         result.SetNextPaginationPage(options);
+        if (isLimitedSearch)
+        {
+            result.Details.Add("Search limited outside search by title.");
+        }
         return Ok(result);
     }
 
@@ -62,14 +67,12 @@ public class LarpakkeetController : ExtendedControllerBase
     public async Task<IActionResult> Get(long larpakeId)
     {
         var record = await _db.GetLarpake(larpakeId);
-        if (record is null)
-        {
-            return IdNotFound();
-        }
-        return Ok(record);
+        return record is null 
+            ? IdNotFound() : Ok(record);
     }
 
     [HttpGet("{larpakeId}/sections")]
+    [RequiresPermissions(Permissions.ReadAllData)]
     public async Task<IActionResult> GetSections(long larpakeId, [FromQuery] QueryOptions options)
     {
         LarpakeSection[] sections = await _db.GetSections(larpakeId, options);
@@ -79,7 +82,6 @@ public class LarpakkeetController : ExtendedControllerBase
         };
         result.SetNextPaginationPage(options);
         return Ok(result);
-
     }
 
 

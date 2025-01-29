@@ -91,6 +91,9 @@ public class AttendancesController : ExtendedControllerBase
             return BadRequest("Invalid key length.");
         }
 
+        /* Database should here handle validation 
+         * - user cannot sign their own attendance.
+         */
         Guid signerId = GetRequestUserId();
         var completed = await _db.CompletedKeyed(new KeyedCompletionMetadata
         {
@@ -113,12 +116,21 @@ public class AttendancesController : ExtendedControllerBase
     [RequiresPermissions(Permissions.CompleteAttendance)]
     public async Task<IActionResult> Complete([FromBody] CompletionPutDto dto)
     {
+        /* User cannot sign their own attendance.
+         */
         Guid signerId = _claimsReader.ReadAuthorizedUserId(Request);
+        if (dto.UserId == signerId)
+        {
+            return BadRequest("User cannot sign their own attendance.");
+        }
+        
         var record = CompletionMetadata.From(dto, signerId);
         
         Result<AttendedCreated> completed = await _db.Complete(record);
         if (completed)
         {
+            _logger.LogInformation("User {user} completed event {event}.", dto.UserId, dto.EventId);
+
             _messageService.SendAttendanceCompletedMessage((AttendedCreated)completed);
             return CreatedId(((AttendedCreated)completed).CompletionId);
         }
@@ -129,7 +141,13 @@ public class AttendancesController : ExtendedControllerBase
     [RequiresPermissions(Permissions.DeleteAttendance)]
     public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
+        
         Result<int> result = await _db.Uncomplete(dto.UserId, dto.EventId);
+
+        _logger.IfPositive((int)result)
+            .LogInformation("{admin} deleted attendance for user {user} and event {event}.",
+                GetRequestUserId(), dto.UserId, dto.EventId);
+
         return result.MatchToResponse(
             ok: OkRowsAffected,
             error: FromError);
@@ -137,7 +155,7 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("clean")]
     [RequiresPermissions(Permissions.Sudo)]
-    public async Task<IActionResult> Clean()
+    public async Task<IActionResult> CleanInvalidEntries()
     {
         int rowsAffected = await _db.Clean();
 

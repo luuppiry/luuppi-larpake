@@ -30,7 +30,7 @@ public class SignaturesController : ExtendedControllerBase
 
 
     [HttpGet]
-    [RequiresPermissions(Permissions.CommonRead)]
+    [RequiresPermissions(Permissions.CreateSignature)]
     public async Task<IActionResult> GetSignatures([FromQuery] SignatureQueryOptions options)
     {
         var records = await _db.Get(options);
@@ -48,7 +48,8 @@ public class SignaturesController : ExtendedControllerBase
         {
             return NotFound();
         }
-        return Ok(SignatureGetDto.From(record));
+        SignatureGetDto result = SignatureGetDto.From(record);
+        return Ok(result);
     }
 
 

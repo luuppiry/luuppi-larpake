@@ -4,6 +4,8 @@ namespace LarpakeServer.Models.QueryOptions;
 
 public class EventQueryOptions : QueryOptions
 {
+    /* Title search is limited to admins only */
+
     public DateTime? Before { get; set; } = null;
     public DateTime? After { get; set; } = null;
 

@@ -194,7 +194,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             using var connection = GetConnection();
             using var transaction = await connection.BeginTransactionAsync();
 
-            // Get attendance 
+            // Get attendance, Note that signer cannot get attendance with same userId as signerId 
             var attendance = await connection.QueryFirstOrDefaultAsync<Attendance>($"""
                 UPDATE attendances
                     SET 
@@ -202,11 +202,12 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                         updated_at = NOW()
                 WHERE qr_code_key = @{nameof(completion.Key)}
                     AND key_invalid_at > NOW()
+                    AND user_id <> @{nameof(completion.SignerId)}
                 RETURNING
                     user_id,
                     larpake_event_id,
                     completion_id;
-                """);
+                """, completion);
 
             if (attendance is null)
             {

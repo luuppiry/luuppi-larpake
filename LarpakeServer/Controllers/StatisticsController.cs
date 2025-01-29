@@ -36,11 +36,8 @@ public class StatisticsController : ExtendedControllerBase
     public async Task<IActionResult> GetAllAverage(long larpakeId)
     {
         long? points = await _statisticsService.GetAveragePoints(larpakeId);
-        if (points is null)
-        {
-            return IdNotFound();
-        }
-        return OkData(points);
+        return points is null 
+            ? IdNotFound() : OkData(points);
     }
 
     [HttpGet("larpakkeet/own/points/total")]

@@ -45,11 +45,7 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> GetUser(Guid userId)
     {
         var record = await _db.Get(userId);
-        if (record is null)
-        {
-            return NotFound();
-        }
-        return Ok(record);
+        return record is null ? NotFound() : Ok(record);
     }
 
 

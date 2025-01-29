@@ -33,9 +33,16 @@ public class GroupsController : ExtendedControllerBase
     {
         /* User can here only see their own groups,
          * and members in those groups.
+         * 
+         * Searching by group name is limited to admin and up.
          */
         options.ContainsUser = GetRequestUserId();
         options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
+
+        if (GetRequestPermissions().Has(Permissions.Admin))
+        {
+            options.GroupName = null;
+        }
 
         FreshmanGroupsGetDto groups = await GetResultGroups(options);
         return Ok(groups);
@@ -71,11 +78,8 @@ public class GroupsController : ExtendedControllerBase
     public async Task<IActionResult> GetMembers(long groupId)
     {
         var record = await _db.GetMembers(groupId);
-        if (record is null)
-        {
-            return IdNotFound();
-        }
-        return Ok(new { Members = record });
+        return record is null 
+            ? IdNotFound() : Ok(new { Members = record });
     }
 
     [HttpPost]
@@ -87,8 +91,7 @@ public class GroupsController : ExtendedControllerBase
 
         return result.MatchToResponse(
             ok: CreatedId,
-            error: FromError
-        );
+            error: FromError);
     }
 
     [HttpPost("{groupId}/members")]
@@ -126,8 +129,7 @@ public class GroupsController : ExtendedControllerBase
         Result<int> result = await _db.InsertHiddenMembers(groupId, members.MemberIds);
         return result.MatchToResponse(
             ok: OkRowsAffected,
-            error: FromError
-        );
+            error: FromError);
     }
 
     [HttpPut("{groupId}")]
@@ -148,8 +150,7 @@ public class GroupsController : ExtendedControllerBase
         Result<int> result = await _db.Update(record);
         return result.MatchToResponse(
             ok: OkRowsAffected,
-            error: FromError
-        );
+            error: FromError);
     }
 
     [HttpDelete("{groupId}/members")]
@@ -186,8 +187,6 @@ public class GroupsController : ExtendedControllerBase
       
         return OkRowsAffected(result);
     }
-
-
 
 
     private async Task<Result> RequireMemberOrAdmin(long groupId)

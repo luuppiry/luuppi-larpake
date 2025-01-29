@@ -12,7 +12,7 @@ namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/org-events")]
 public class OrganizationEventsController : ExtendedControllerBase
 {
     readonly IOrganizationEventDatabase _db;
@@ -29,6 +29,11 @@ public class OrganizationEventsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetEvents([FromQuery] EventQueryOptions options)
     {
+        if (GetRequestPermissions().Has(Permissions.Admin) is false)
+        {
+            options.Title = null;
+        }
+
         var records = await _db.Get(options);
         var result = OrganizationEventsGetDto.MapFrom(records);
 

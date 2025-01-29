@@ -9,6 +9,7 @@ using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api")]
 public class AuthenticationController : ExtendedControllerBase
@@ -49,6 +50,7 @@ public class AuthenticationController : ExtendedControllerBase
 
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest dto)
     {
         // TODO: Validate request and user
@@ -79,7 +81,7 @@ public class AuthenticationController : ExtendedControllerBase
         return await SaveToken(user, tokens, Guid.Empty);
     }
 
-
+    [AllowAnonymous]
     [HttpPost("token/refresh")]
     public async Task<IActionResult> Refresh([FromBody] TokenPostDto dto)
     {
@@ -133,12 +135,20 @@ public class AuthenticationController : ExtendedControllerBase
     }
 
 
-    [Authorize]
     [HttpPost("token/invalidate")]
     public async Task<IActionResult> InvalidateTokens()
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         int rowsAffected = await _refreshTokenDb.RevokeUserTokens(userId);
+        return OkRowsAffected(rowsAffected);
+    }
+
+
+    [HttpPost("token/invalidate/{tokenFamily}")]
+    [RequiresPermissions(Permissions.Admin)]
+    public async Task<IActionResult> InvalidateTokenFamily(Guid tokenFamily)
+    {
+        int rowsAffected = await _refreshTokenDb.RevokeFamily(tokenFamily);
         return OkRowsAffected(rowsAffected);
     }
 
@@ -159,11 +169,8 @@ public class AuthenticationController : ExtendedControllerBase
             TokenFamily = tokenFamily
         });
 
-        if (result.IsError)
-        {
-            return FromError(result);
-        }
-        return Ok(tokens);
+        return result.IsOk
+            ? Ok(tokens) : FromError(result);
     }
 }
 
