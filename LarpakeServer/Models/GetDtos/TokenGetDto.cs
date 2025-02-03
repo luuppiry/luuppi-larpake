@@ -1,4 +1,4 @@
-﻿namespace LarpakeServer.Models.GetDtos.SingleItem;
+﻿namespace LarpakeServer.Models.GetDtos;
 
 public class TokenGetDto
 {

@@ -1,10 +1,11 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 
-namespace LarpakeServer.Models.GetDtos.SingleItem;
+namespace LarpakeServer.Models.GetDtos;
 
-public class FreshmanGroupGetDto : FreshmanGroup
+public class FreshmanGroupGetDto : FreshmanGroup, IMappable<FreshmanGroup, FreshmanGroupGetDto>
 {
-    internal static FreshmanGroupGetDto From(FreshmanGroup group)
+    public static FreshmanGroupGetDto From(FreshmanGroup group)
     {
         return new FreshmanGroupGetDto
         {

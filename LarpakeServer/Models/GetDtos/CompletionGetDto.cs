@@ -1,8 +1,9 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 
-namespace LarpakeServer.Models.GetDtos.SingleItem;
+namespace LarpakeServer.Models.GetDtos;
 
-public class AttendanceCompletionGetDto
+public class CompletionGetDto : IMappable<Completion, CompletionGetDto>
 {
     public required Guid Id { get; set; }
     public required Guid SignerId { get; set; }
@@ -11,9 +12,9 @@ public class AttendanceCompletionGetDto
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    internal static AttendanceCompletionGetDto From(Completion completion)
+    public static CompletionGetDto From(Completion completion)
     {
-        return new AttendanceCompletionGetDto
+        return new CompletionGetDto
         {
             Id = completion.Id,
             SignerId = completion.SignerId,

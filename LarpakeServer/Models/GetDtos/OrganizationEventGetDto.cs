@@ -1,9 +1,10 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.Localizations;
 
-namespace LarpakeServer.Models.GetDtos.SingleItem;
+namespace LarpakeServer.Models.GetDtos;
 
-public class OrganizationEventGetDto
+public class OrganizationEventGetDto : IMappable<OrganizationEvent, OrganizationEventGetDto>
 {
     public required long Id { get; set; }
     public required DateTime StartTimeUtc { get; set; }
@@ -13,7 +14,7 @@ public class OrganizationEventGetDto
     public SoftDeletionInfo? CancellationInfo { get; set; } = null;
     public required List<OrganizationEventLocalization> TextData { get; set; }
 
-    internal static OrganizationEventGetDto From(OrganizationEvent record)
+    public static OrganizationEventGetDto From(OrganizationEvent record)
     {
         return new OrganizationEventGetDto
         {

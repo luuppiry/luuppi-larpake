@@ -1,6 +1,6 @@
 ﻿using LarpakeServer.Services;
 
-namespace LarpakeServer.Models.GetDtos.SingleItem;
+namespace LarpakeServer.Models.GetDtos;
 
 public class AttendanceKeyGetDto
 {

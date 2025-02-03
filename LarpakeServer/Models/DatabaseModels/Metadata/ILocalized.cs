@@ -1,6 +1,4 @@
-﻿using LarpakeServer.Models.Localizations;
-
-namespace LarpakeServer.Models.DatabaseModels.Metadata;
+﻿namespace LarpakeServer.Models.DatabaseModels.Metadata;
 
 internal interface ILocalized<T>
 {

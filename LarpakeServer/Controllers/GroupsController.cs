@@ -2,11 +2,11 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos.MultipleItems;
-using LarpakeServer.Models.GetDtos.SingleItem;
+using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using FreshmanGroups = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.FreshmanGroupGetDto>;
 
 namespace LarpakeServer.Controllers;
 
@@ -44,7 +44,7 @@ public class GroupsController : ExtendedControllerBase
             options.GroupName = null;
         }
 
-        FreshmanGroupsGetDto groups = await GetResultGroups(options);
+        FreshmanGroups groups = await GetResultGroups(options);
         return Ok(groups);
     }
 
@@ -56,7 +56,7 @@ public class GroupsController : ExtendedControllerBase
          */
         options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
 
-        FreshmanGroupsGetDto groups = await GetResultGroups(options);
+        FreshmanGroups groups = await GetResultGroups(options);
         return Ok(groups);
     }
 
@@ -214,11 +214,11 @@ public class GroupsController : ExtendedControllerBase
         return Result.Ok;
     }
 
-    private async Task<FreshmanGroupsGetDto> GetResultGroups(FreshmanGroupQueryOptions options)
+    private async Task<FreshmanGroups> GetResultGroups(FreshmanGroupQueryOptions options)
     {
         var records = await _db.GetGroups(options);
-        var result = FreshmanGroupsGetDto.MapFrom(records);
-        result.SetNextPaginationPage(options);
+        var result = FreshmanGroups.MapFrom(records)
+            .AppendPaging(options);
         return result;
     }
 }

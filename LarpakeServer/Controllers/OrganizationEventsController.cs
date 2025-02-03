@@ -2,8 +2,8 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos.MultipleItems;
-using LarpakeServer.Models.GetDtos.SingleItem;
+using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
@@ -35,9 +35,12 @@ public class OrganizationEventsController : ExtendedControllerBase
         }
 
         var records = await _db.Get(options);
-        var result = OrganizationEventsGetDto.MapFrom(records);
 
-        result.SetNextPaginationPage(options);
+        // Map to result
+        var result = QueryDataGetDto<OrganizationEventGetDto>
+            .MapFrom(records)
+            .AppendPaging(options);
+
         return Ok(result);
     }
 

@@ -4,12 +4,13 @@ using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
-using LarpakeServer.Models.GetDtos.MultipleItems;
-using LarpakeServer.Models.GetDtos.SingleItem;
+using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Options;
+using AttendanceGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.AttendanceGetDto>;
+
 
 namespace LarpakeServer.Controllers;
 
@@ -50,7 +51,7 @@ public class AttendancesController : ExtendedControllerBase
         }
 
         var records = await _db.Get(options);
-        var result = AttendancesGetDto.MapFrom(records);
+        var result = AttendanceGetDto.MapFrom(records);
         result.SetNextPaginationPage(options);
         if (readSelfOnly)
         {

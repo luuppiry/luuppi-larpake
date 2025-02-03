@@ -1,10 +1,11 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.Localizations;
 using System.ComponentModel.DataAnnotations;
 
-namespace LarpakeServer.Models.GetDtos.SingleItem;
+namespace LarpakeServer.Models.GetDtos;
 
-public class LarpakeGetDto
+public class LarpakeGetDto : IMappable<Larpake, LarpakeGetDto>
 {
     public required long Id { get; set; }
     public int? Year { get; set; } = null;

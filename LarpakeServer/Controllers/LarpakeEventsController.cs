@@ -2,8 +2,8 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos.MultipleItems;
-using LarpakeServer.Models.GetDtos.SingleItem;
+using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
@@ -39,8 +39,12 @@ public class LarpakeEventsController : ExtendedControllerBase
         }
 
         var records = await _db.GetEvents(options);
-        var result = LarpakeEventsGetDto.MapFrom(records);
-        result.SetNextPaginationPage(options);
+
+        // Map to result
+        var result = QueryDataGetDto<LarpakeEventGetDto>
+            .MapFrom(records)
+            .AppendPaging(options);
+
         if (isSelfOnly)
         {
             result.Details.Add("Read limited to attended larpakkeet only.");

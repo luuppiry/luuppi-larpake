@@ -1,7 +1,8 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
-using LarpakeServer.Models.GetDtos.MultipleItems;
+using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 
@@ -34,8 +35,12 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> GetUsers([FromQuery] UserQueryOptions options)
     {
         var records = await _db.Get(options);
-        var result = UsersGetDto.MapFrom(records);
-        result.SetNextPaginationPage(options);
+
+        // Map to result
+        var result = QueryDataGetDto<UserGetDto>
+            .MapFrom(records)
+            .AppendPaging(options);
+        
         return Ok(result);
     }
 

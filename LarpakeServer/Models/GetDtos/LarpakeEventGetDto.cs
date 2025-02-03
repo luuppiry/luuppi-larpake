@@ -1,9 +1,10 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.Localizations;
 
-namespace LarpakeServer.Models.GetDtos.SingleItem;
+namespace LarpakeServer.Models.GetDtos;
 
-public class LarpakeEventGetDto
+public class LarpakeEventGetDto : IMappable<LarpakeEvent, LarpakeEventGetDto>
 {
     public required long Id { get; set; }
     public required long LarpakeSectionId { get; set; }
@@ -16,7 +17,7 @@ public class LarpakeEventGetDto
 
 
 
-    internal static LarpakeEventGetDto From(LarpakeEvent record)
+    public static LarpakeEventGetDto From(LarpakeEvent record)
     {
         return new LarpakeEventGetDto
         {

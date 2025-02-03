@@ -1,10 +1,9 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
-using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos.MultipleItems;
-using LarpakeServer.Models.GetDtos.SingleItem;
+using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.QueryOptions;
 
@@ -34,8 +33,12 @@ public class SignaturesController : ExtendedControllerBase
     public async Task<IActionResult> GetSignatures([FromQuery] SignatureQueryOptions options)
     {
         var records = await _db.Get(options);
-        var result = SignaturesGetDto.MapFrom(records);
-        result.SetNextPaginationPage(options);
+
+        // Map to result
+        var result = QueryDataGetDto<SignatureGetDto>
+            .MapFrom(records)
+            .AppendPaging(options);
+
         return Ok(result);
     }
 

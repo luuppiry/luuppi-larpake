@@ -2,7 +2,7 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos.SingleItem;
+using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.RateLimiting;
@@ -158,8 +158,6 @@ public class AuthenticationController : ExtendedControllerBase
 
         _logger.LogInformation("Refreshed tokens for user {id}.", user.Id);
 
-        // TODO: Set refresh token to http only cookie
-
         // Finish by saving refresh token
         return await SaveToken(user, newTokens, validation.TokenFamily.Value);
     }
@@ -217,7 +215,7 @@ public class AuthenticationController : ExtendedControllerBase
 
         // Return result
         TokenInfo tokenInfo = new(
-            Message: "Token headers updated.",
+            Message: "Refresh token cookie set, access token in body.",
             AccessToken: tokens.AccessToken,
             AccessTokenExpiresAt: tokens.AccessTokenExpiresAt.Value,
             RefreshTokenExpiresAt: tokens.RefreshTokenExpiresAt.Value);

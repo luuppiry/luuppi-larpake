@@ -1,7 +1,7 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos.MultipleItems;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Controllers;
@@ -83,7 +83,11 @@ public class StatisticsController : ExtendedControllerBase
     public async Task<IActionResult> GetLeadingUsers([FromQuery] StatisticsQueryOptions options)
     {
         UserPoints[] records = await _statisticsService.GetLeadingUsers(options);
-        return Ok(new LeadersGetDto<UserPoints>(records, options));
+
+        var result = QueryDataGetDto<UserPoints>.MapFrom(records)
+            .AppendPaging(options);
+
+        return Ok(result);
     }
 
 
@@ -111,7 +115,11 @@ public class StatisticsController : ExtendedControllerBase
     public async Task<IActionResult> GetLeadingFreshmanGroups([FromQuery] StatisticsQueryOptions options)
     {
         GroupPoints[] records = await _statisticsService.GetLeadingGroups(options);
-        return Ok(new LeadersGetDto<GroupPoints>(records, options));
+
+        var result = QueryDataGetDto<GroupPoints>.MapFrom(records)
+            .AppendPaging(options);
+
+        return Ok(result);
     }
 
 }

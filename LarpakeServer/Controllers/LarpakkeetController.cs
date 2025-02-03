@@ -2,10 +2,12 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos.MultipleItems;
+using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeSectionsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.DatabaseModels.LarpakeSection>;
 
 namespace LarpakeServer.Controllers;
 
@@ -39,8 +41,12 @@ public class LarpakkeetController : ExtendedControllerBase
         }
 
         var records = await _db.GetLarpakkeet(options);
-        var result = LarpakkeetGetDto.MapFrom(records);
-        result.SetNextPaginationPage(options);
+
+        // Map to result
+        var result = QueryDataGetDto<LarpakeGetDto>
+            .MapFrom(records)
+            .AppendPaging(options);
+        
         if (isLimitedSearch)
         {
             result.Details.Add("Search limited outside search by title.");
@@ -76,10 +82,7 @@ public class LarpakkeetController : ExtendedControllerBase
     public async Task<IActionResult> GetSections(long larpakeId, [FromQuery] QueryOptions options)
     {
         LarpakeSection[] sections = await _db.GetSections(larpakeId, options);
-        var result = new LarpakeSectionsGetDto
-        {
-            Sections = sections
-        };
+        var result = LarpakeSectionsGetDto.MapFrom(sections);
         result.SetNextPaginationPage(options);
         return Ok(result);
     }
