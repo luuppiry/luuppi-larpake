@@ -21,6 +21,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddServices(configuration);
 builder.Services.AddPostgresDatabases(configuration);
 builder.Services.ConfigureCors();
+builder.Services.AddRateLimiters(configuration);
 
 builder.Services.AddRouting(options =>
 {
@@ -43,6 +44,7 @@ if (app.Environment.IsDevelopment())
 
 // TODO: Add exception handling middleware
 
+app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
 

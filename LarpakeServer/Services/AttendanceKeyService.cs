@@ -1,4 +1,5 @@
 ﻿using LarpakeServer.Services.Options;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 
 namespace LarpakeServer.Services;
@@ -7,9 +8,9 @@ public class AttendanceKeyService
 {
     readonly AttendanceKeyOptions _options;
 
-    public AttendanceKeyService(AttendanceKeyOptions options)
+    public AttendanceKeyService(IOptions<AttendanceKeyOptions> options)
     {
-        _options = options;
+        _options = options.Value;
     }
 
     public AttendanceKey GenerateKey()

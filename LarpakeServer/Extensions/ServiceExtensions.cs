@@ -5,8 +5,11 @@ using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Threading.RateLimiting;
 using Postgres = LarpakeServer.Data.PostgreSQL;
 
 namespace LarpakeServer.Extensions;
@@ -25,6 +28,42 @@ public static class ServiceExtensions
             });
         });
     }
+
+    public static void AddRateLimiters(this IServiceCollection services, IConfiguration configuration)
+    {
+        // Get configuration and validate
+        RateLimitingOptions rateLimitingOptions = new() { Authentication = new(), General = new() };
+        configuration.GetSection(RateLimitingOptions.SectionName).Bind(rateLimitingOptions);
+
+        Guard.ThrowIfNegative(rateLimitingOptions.Authentication.PeriodSeconds);
+        Guard.ThrowIfNegative(rateLimitingOptions.Authentication.MaxRequests);
+        Guard.ThrowIfNegative(rateLimitingOptions.General.PeriodSeconds);
+        Guard.ThrowIfNegative(rateLimitingOptions.General.MaxRequests);
+
+
+        services.AddRateLimiter(config =>
+            config.AddFixedWindowLimiter(RateLimitingOptions.GeneralPolicyName, options =>
+            {
+                var optionsSection = rateLimitingOptions.General;
+                
+                options.PermitLimit = optionsSection.MaxRequests;
+                options.Window = TimeSpan.FromSeconds(optionsSection.PeriodSeconds);
+                options.QueueLimit = 0;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            }));
+
+        services.AddRateLimiter(config =>
+            config.AddFixedWindowLimiter(RateLimitingOptions.AuthPolicyName, options =>
+            {
+                var optionsSection = rateLimitingOptions.Authentication;
+
+                options.PermitLimit = optionsSection.MaxRequests;
+                options.Window = TimeSpan.FromSeconds(optionsSection.PeriodSeconds);
+                options.QueueLimit = 0;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            }));
+    }
+
 
     public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
     {
@@ -49,7 +88,7 @@ public static class ServiceExtensions
     }
 
 
-    
+
 
     public static void AddPostgresDatabases(this IServiceCollection services, IConfiguration configuration)
     {
@@ -86,15 +125,18 @@ public static class ServiceExtensions
         services.AddSingleton<IClaimsReader, TokenService>();
         services.AddSingleton<AttendanceKeyService>();
 
+
+
+
         // Key options parsing from appsettings.json
-        AttendanceKeyOptions keyOptions = new();
-        configuration.GetSection(AttendanceKeyOptions.SectionName).Bind(keyOptions);
-        services.AddSingleton(keyOptions);
+        services.AddOptions<AttendanceKeyOptions>()
+            .BindConfiguration(AttendanceKeyOptions.SectionName);
 
         // Permissions options parsing from appsettings.json
-        PermissionsOptions permissionsOptions = new();
-        configuration.GetSection(PermissionsOptions.SectionName).Bind(permissionsOptions);
-        services.AddSingleton(permissionsOptions);
+        services.AddOptions<PermissionsOptions>()
+            .BindConfiguration(PermissionsOptions.SectionName);
+
+
     }
 
 }

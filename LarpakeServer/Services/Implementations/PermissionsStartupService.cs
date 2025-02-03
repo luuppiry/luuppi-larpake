@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Identity;
+using Microsoft.Extensions.Options;
 
 namespace LarpakeServer.Services.Implementations;
 
@@ -10,11 +11,11 @@ public class PermissionsStartupService : IHostedService
     readonly ILogger<PermissionsStartupService> _logger;
 
     public PermissionsStartupService(
-        PermissionsOptions options,
+        IOptions<PermissionsOptions> options,
         IUserDatabase database,
         ILogger<PermissionsStartupService> logger)
     {
-        _options = options;
+        _options = options.Value;
         _database = database;
         _logger = logger;
     }
