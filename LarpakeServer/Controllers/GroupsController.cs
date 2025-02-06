@@ -114,19 +114,18 @@ public class GroupsController : ExtendedControllerBase
         );
     }
 
-    [HttpPost("{groupId}/members/hidden")]
-    [RequiresPermissions(Permissions.EditGroup | Permissions.SeeHiddenMembers)]
-    public async Task<IActionResult> AddHiddenMembers(long groupId, GroupMemberIdCollection members)
+    [HttpPost("{groupId}/members/non-competing")]
+    [RequiresPermissions(Permissions.EditGroup | Permissions.Admin)]
+    public async Task<IActionResult> AddNonCompetingMembers(long groupId, NonCompetingMemberIdCollection members)
     {
-        Result validation = await RequireMemberOrAdmin(groupId);
-        if (validation.IsError)
+        bool canAddHidden = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
+        if (canAddHidden is false && members.Members.Any(x => x.IsHidden))
         {
-            Guid userId = GetRequestUserId();
-            _logger.LogInformation("Insufficent permissions for {userId} to add hidden members to group {groupId}.", 
-                userId, groupId);
-            return FromError(validation);
+            Error e = Error.BadRequest("Permission to see hidden members required to add one.");
+            return FromError(e);
         }
-        Result<int> result = await _db.InsertHiddenMembers(groupId, members.MemberIds);
+
+        Result<int> result = await _db.InsertNonCompeting(groupId, members.Members);
         return result.MatchToResponse(
             ok: OkRowsAffected,
             error: FromError);
@@ -187,6 +186,8 @@ public class GroupsController : ExtendedControllerBase
       
         return OkRowsAffected(result);
     }
+
+
 
 
     private async Task<Result> RequireMemberOrAdmin(long groupId)
