@@ -4,6 +4,7 @@ using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace LarpakeServer.Data.PostgreSQL;
@@ -11,14 +12,17 @@ namespace LarpakeServer.Data.PostgreSQL;
 public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 {
     readonly AttendanceKeyService _keyService;
+    readonly GuidRetryPolicyOptions _retryPolicy;
 
     public AttendanceDatabase(
         NpgsqlConnectionString connectionString,
         ILogger<AttendanceDatabase> logger,
-        AttendanceKeyService keyService)
-        : base (connectionString, logger)
+        AttendanceKeyService keyService,
+        IOptions<GuidRetryPolicyOptions> retryPolicy)
+        : base(connectionString, logger)
     {
         _keyService = keyService;
+        _retryPolicy = retryPolicy.Value;
     }
 
 
@@ -55,7 +59,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         query.IfNotNull(options.After).AppendConditionLine($"""
             a.created_at >= @{nameof(options.After)} 
             """);
-        
+
         // Attendance created before specific date
         query.IfNotNull(options.Before).AppendConditionLine($"""
             a.created_at <= @{nameof(options.After)} 
@@ -65,7 +69,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         query.IfNotNull(options.CompletedAfter).AppendConditionLine($"""
             c.completed_at >= @{nameof(options.After)} 
             """);
-        
+
         // Completed before specific date
         query.IfNotNull(options.CompletedBefore).AppendConditionLine($"""
             c.completed_at <= @{nameof(options.After)} 
@@ -79,7 +83,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
         using var connection = GetConnection();
         var records = await connection.QueryAsync<Attendance, Completion, Attendance>(
-            query.ToString(), 
+            query.ToString(),
             (attendance, completion) =>
             {
                 attendance.Completion = completion;
@@ -95,21 +99,24 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
     public async Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance)
     {
-        return await GetAttendanceKeyRetried(attendance, 5);
-    }
+        /* This method is retries, because key generation conflict might appear.
+         * (conflict is very unlikely to happen) because 33^6 or 33^8 is a big number 
+         * 
+         * - Validates user is taking part in Larpake
+         * - Generates key if key is not already generated
+         * - If key already exists refreshes invalidation date and returns existing key
+         */
 
-    private async Task<Result<AttendanceKey>> GetAttendanceKeyRetried(Attendance attendance, int retriesLeft = 0)
-    {
-        AttendanceKey key = _keyService.GenerateKey();
-        attendance.QrCodeKey = key.QrCodeKey;
-        attendance.KeyInvalidAt = key.KeyInvalidAt;
-
-        try
+        for (int retriesLeft = _retryPolicy.MaxRetries; retriesLeft > 0; retriesLeft--)
         {
-            /* Insert new 
-             */
-            using var connection = GetConnection();
-            bool canAttend = await connection.ExecuteScalarAsync<bool>($"""
+            AttendanceKey key = _keyService.GenerateKey();
+            attendance.QrCodeKey = key.QrCodeKey;
+            attendance.KeyInvalidAt = key.KeyInvalidAt;
+
+            try
+            {
+                using var connection = GetConnection();
+                bool canAttend = await connection.ExecuteScalarAsync<bool>($"""
                 SELECT EXISTS(SELECT 1 FROM larpake_events e
                     LEFT JOIN larpake_sections s
                         ON e.larpake_section_id = s.id
@@ -121,14 +128,13 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     AND m.user_id = @{nameof(attendance.UserId)});
                 """, attendance);
 
-            if (canAttend is false)
-            {
-                return Error.BadRequest("User must be member of a group that is taking " +
-                    "part in same larpake the event is found on.");
-            }
+                if (canAttend is false)
+                {
+                    return Error.BadRequest("User must be member of a group that is taking " +
+                        "part in same larpake the event is found on.");
+                }
 
-
-            key = await connection.QueryFirstAsync<AttendanceKey>($"""
+                key = await connection.QueryFirstAsync<AttendanceKey>($"""
                 INSERT INTO attendances (
                     user_id, 
                     larpake_event_id,
@@ -149,26 +155,24 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                         key_invalid_at = @{nameof(attendance.KeyInvalidAt)}
                 RETURNING qr_code_key, key_invalid_at;
                 """, attendance);
-            return key;
-        }
-        catch (PostgresException ex) when (ex.SqlState is PostgresError.UniqueViolation)
-        {
-            switch (ex.SqlState)
+                return key;
+            }
+            catch (PostgresException ex) when (ex.SqlState is PostgresError.UniqueViolation)
             {
-                case PostgresError.UniqueViolation:
-                    if (retriesLeft > 0)
-                    {
-                        Logger.LogInformation("QrCodeKey conflict for {hash}, retrying ({count} left).", 
-                            attendance.GetHashCode(), retriesLeft);
-                        return await GetAttendanceKeyRetried(attendance, retriesLeft - 1);
-                    }
-                    return Error.Conflict("Key generating failed, retry with same parameters.");
-                default:
-                    // TODO: Handle exception
-                    Logger.LogError(ex, "Failed to insert uncompleted attendance");
-                    throw;
+
+                Logger.LogInformation("QrCodeKey conflict for {hash}, retrying ({count} left).",
+                    attendance.GetHashCode(), retriesLeft);
+                continue;
+
+            }
+            catch (Exception ex)
+            {
+                // TODO: Handle exception
+                Logger.LogError(ex, "Failed to insert uncompleted attendance");
+                throw;
             }
         }
+        return Error.Conflict("Key generation failed, retry with same parameters.");
     }
 
 
@@ -218,7 +222,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             {
                 transaction.Commit();
                 return DataError.AlreadyExistsNoError(
-                    attendance.CompletionId.Value, 
+                    attendance.CompletionId.Value,
                     nameof(AttendedCreated.CompletionId),
                     $"Attendance is already completed, completion id in response body.");
             }
@@ -326,7 +330,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
 
             completion.Id = Guid.CreateVersion7();
-            
+
             await connection.ExecuteAsync($"""
                 INSERT INTO completions (
                     id,
@@ -360,7 +364,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             {
                 CompletionId = completion.Id,
                 LarpakeEventId = completion.EventId,
-                UserId= completion.UserId
+                UserId = completion.UserId
             };
         }
         catch (PostgresException ex)

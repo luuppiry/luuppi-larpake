@@ -1,4 +1,4 @@
-using LarpakeServer.Extensions;
+using LarpakeServer;
 using LarpakeServer.Identity;
 using LarpakeServer.Services.Implementations;
 using Scalar.AspNetCore;

@@ -1,4 +1,4 @@
-﻿using LarpakeServer.Extensions;
+﻿using LarpakeServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

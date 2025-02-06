@@ -1,20 +1,20 @@
 ﻿using LarpakeServer.Data;
+using LarpakeServer.Data.Helpers;
 using LarpakeServer.Data.TypeHandlers;
 using LarpakeServer.Identity;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.RateLimiting;
 using Postgres = LarpakeServer.Data.PostgreSQL;
 
-namespace LarpakeServer.Extensions;
+namespace LarpakeServer;
 
-public static class ServiceExtensions
+public static class ServiceInjections
 {
     public static void ConfigureCors(this IServiceCollection services)
     {
@@ -45,7 +45,7 @@ public static class ServiceExtensions
             config.AddFixedWindowLimiter(RateLimitingOptions.GeneralPolicyName, options =>
             {
                 var optionsSection = rateLimitingOptions.General;
-                
+
                 options.PermitLimit = optionsSection.MaxRequests;
                 options.Window = TimeSpan.FromSeconds(optionsSection.PeriodSeconds);
                 options.QueueLimit = 0;
@@ -63,7 +63,6 @@ public static class ServiceExtensions
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
             }));
     }
-
 
     public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
     {
@@ -136,6 +135,8 @@ public static class ServiceExtensions
         services.AddOptions<PermissionsOptions>()
             .BindConfiguration(PermissionsOptions.SectionName);
 
+        services.AddOptions<GuidRetryPolicyOptions>()
+            .BindConfiguration(GuidRetryPolicyOptions.SectionName);
 
     }
 
