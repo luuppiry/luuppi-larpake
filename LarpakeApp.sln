@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDataGenerator", "TestDa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MigrationsService", "MigrationsService\MigrationsService.csproj", "{5458BA51-4FED-45ED-BA26-1C147B8A3F75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntraAuthenticationService", "AuthService\EntraAuthenticationService.csproj", "{9586C475-D19B-46F7-8862-45E23AFC9F91}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,10 +33,6 @@ Global
 		{5458BA51-4FED-45ED-BA26-1C147B8A3F75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5458BA51-4FED-45ED-BA26-1C147B8A3F75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5458BA51-4FED-45ED-BA26-1C147B8A3F75}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9586C475-D19B-46F7-8862-45E23AFC9F91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9586C475-D19B-46F7-8862-45E23AFC9F91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9586C475-D19B-46F7-8862-45E23AFC9F91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9586C475-D19B-46F7-8862-45E23AFC9F91}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
