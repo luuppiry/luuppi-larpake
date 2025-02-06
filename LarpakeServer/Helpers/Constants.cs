@@ -29,4 +29,9 @@ public class Constants
     #endregion LARPAKE_EVENT
 
 
+    public class Auth
+    {
+        public const string EntraIdScheme = "EntraIdBearer";
+        public const string LarpakeIdScheme = "LarpakeIdBearer";
+    }
 }

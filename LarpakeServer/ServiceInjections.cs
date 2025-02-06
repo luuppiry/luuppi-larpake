@@ -2,9 +2,11 @@
 using LarpakeServer.Data.Helpers;
 using LarpakeServer.Data.TypeHandlers;
 using LarpakeServer.Identity;
+using LarpakeServer.Identity.EntraId;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
 using LarpakeServer.Services.Options;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
@@ -64,26 +66,15 @@ public static class ServiceInjections
             }));
     }
 
-    public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
+    public static void AddAuthenticationServices(this IServiceCollection services, IConfiguration configuration)
     {
         // This prevents 'sub' claim to be mapped incorrectly
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new()
-                {
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!)),
-                    ValidIssuer = configuration["Jwt:Issuer"],
-                    ValidAudience = configuration["Jwt:Audience"],
-                    ValidateIssuerSigningKey = true,
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                };
-            });
+        // Larpake id scheme is used by default
+        services.AddAuthentication(Constants.Auth.LarpakeIdScheme)
+            .AddJwt(Constants.Auth.LarpakeIdScheme, configuration)
+            .AddEntraAuthenticationService(Constants.Auth.EntraIdScheme, configuration);
     }
 
 
@@ -137,7 +128,24 @@ public static class ServiceInjections
 
         services.AddOptions<ConflictRetryPolicyOptions>()
             .BindConfiguration(ConflictRetryPolicyOptions.SectionName);
-
     }
 
+
+    private static AuthenticationBuilder AddJwt(this AuthenticationBuilder builder, string authenticationScheme, IConfiguration configuration)
+    {
+        return builder.AddJwtBearer(authenticationScheme, options =>
+        {
+            options.TokenValidationParameters = new()
+            {
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!)),
+                ValidIssuer = configuration["Jwt:Issuer"],
+                ValidAudience = configuration["Jwt:Audience"],
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+            };
+        });
+    }
 }

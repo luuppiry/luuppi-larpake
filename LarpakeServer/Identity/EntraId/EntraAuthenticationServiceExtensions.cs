@@ -1,17 +1,15 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.Identity.Web;
 
 namespace LarpakeServer.Identity.EntraId;
 
 public static class EntraAuthenticationServiceExtensions
 {
-    public static IServiceCollection AddEntraAuthenticationService(
-        this IServiceCollection services, IConfiguration config)
+    public static AuthenticationBuilder AddEntraAuthenticationService(
+        this AuthenticationBuilder builder, string authenticationScheme, IConfiguration configuration)
     {
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(
-                config.GetSection(EntraIdOptions.SectionName));
-
-        return services;
+        builder.AddMicrosoftIdentityWebApi(configuration.GetSection(EntraIdOptions.SectionName), authenticationScheme);
+        return builder;
     }
 }
     

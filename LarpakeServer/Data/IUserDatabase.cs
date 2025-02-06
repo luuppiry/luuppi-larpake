@@ -8,6 +8,7 @@ public interface IUserDatabase
 {
     Task<User[]> Get(UserQueryOptions options);
     Task<User?> Get(Guid id);
+    Task<User?> GetUserByEntraId(Guid entraId);
     Task<Result<Guid>> Insert(User record);
     Task<Result<int>> Update(User record);
     Task<Result<int>> SetPermissions(Guid id, Permissions permissions);

@@ -12,7 +12,6 @@ using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 [EnableRateLimiting(RateLimitingOptions.AuthPolicyName)]
@@ -22,7 +21,7 @@ public class AuthenticationController : ExtendedControllerBase
     readonly IUserDatabase _userDb;
     readonly IRefreshTokenDatabase _refreshTokenDb;
     const string RefreshTokenCookieName = "__Secure-refreshToken";
-    
+
     record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt);
 
 
@@ -38,34 +37,45 @@ public class AuthenticationController : ExtendedControllerBase
         _refreshTokenDb = refreshTokenDb;
     }
 
-
-    
-
-
-    [HttpPost("sign-up")]
-    [AllowAnonymous]
-    public async Task<IActionResult> CreateUser([FromBody] UserPostDto dto)
+    [Authorize(AuthenticationSchemes = Constants.Auth.EntraIdScheme)]
+    [HttpPost("login")]
+    public async Task<IActionResult> Login()
     {
-        // TODO: This should be handled differently when I know how
-        // TODO: Remove this, user comes from luuppi server and should be handled in login
+        Guid entraId = ReadEntraId();
 
-        var record = DbUser.MapFrom(dto);
-        Result<Guid> result = await _userDb.Insert(record);
-        if (result)
+        // Check if user exists in database
+        DbUser? user = await _userDb.GetUserByEntraId(entraId);
+        if (user is null)
         {
-            _logger.LogInformation("Created new user {id}", (Guid)result);
-            return CreatedId((Guid)result);
+            // User is new and must be created first
+            Result<DbUser> createdUser = await SetupNewUser();
+            if (createdUser.IsError)
+            {
+                return FromError(createdUser);
+            }
+            
+            _logger.LogInformation("Created user {userId}.", ((DbUser)createdUser).Id);
+
+            user = (DbUser)createdUser;
         }
-        return FromError(result);
+
+        // Generate tokens as normal
+        TokenGetDto tokens = _tokenService.GenerateTokens(user);
+
+        _logger.LogInformation("User {id} logged in.", user.Id);
+
+        return await SaveToken(user, tokens, Guid.Empty);
     }
 
 
 
-    [HttpPost("login")]
-    [AllowAnonymous]
+
+#if DEBUG
+    [AllowAnonymous]    
+    [HttpPost("login/dummy")]
     public async Task<IActionResult> Login([FromBody] LoginRequest dto)
     {
-        // TODO: Validate request and user
+        // TODO: Remove this method in production
 
         if (dto.UserId == Guid.Empty)
         {
@@ -92,8 +102,9 @@ public class AuthenticationController : ExtendedControllerBase
         // Finish by saving refresh token
         return await SaveToken(user, tokens, Guid.Empty);
     }
+#endif
 
-    [AllowAnonymous]
+    [AllowAnonymous]    // Authentication is handled inside the method
     [HttpPost("token/refresh")]
     public async Task<IActionResult> Refresh()
     {
@@ -163,6 +174,7 @@ public class AuthenticationController : ExtendedControllerBase
     }
 
 
+    [Authorize]
     [DisableRateLimiting]
     [HttpPost("token/invalidate")]
     public async Task<IActionResult> InvalidateTokens()
@@ -172,6 +184,7 @@ public class AuthenticationController : ExtendedControllerBase
         return OkRowsAffected(rowsAffected);
     }
 
+    [Authorize]
     [DisableRateLimiting]
     [HttpPost("token/invalidate/{tokenFamily}")]
     [RequiresPermissions(Permissions.Admin)]
@@ -219,7 +232,7 @@ public class AuthenticationController : ExtendedControllerBase
             AccessToken: tokens.AccessToken,
             AccessTokenExpiresAt: tokens.AccessTokenExpiresAt.Value,
             RefreshTokenExpiresAt: tokens.RefreshTokenExpiresAt.Value);
-        
+
         return Ok(tokenInfo);
     }
 
@@ -242,6 +255,18 @@ public class AuthenticationController : ExtendedControllerBase
             });
 
         return Task.FromResult(Result.Ok);
+    }
+
+
+
+    private Guid ReadEntraId()
+    {
+        throw new NotImplementedException();
+    }
+
+    private Task<Result<DbUser>> SetupNewUser()
+    {
+        throw new NotImplementedException();
     }
 }
 

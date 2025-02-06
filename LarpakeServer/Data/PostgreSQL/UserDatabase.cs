@@ -128,4 +128,9 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
             DELETE FROM users WHERE id = @{nameof(id)};
             """, new { id });
     }
+
+    public Task<User?> GetUserByEntraId(Guid entraId)
+    {
+        throw new NotImplementedException();
+    }
 }
