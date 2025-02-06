@@ -3,7 +3,7 @@ CREATE FUNCTION CanUserAttendLarpakeEvent(
     in_user_id UUID,
     in_larpake_event_id BIGINT
 )
-    RETURNS BOOL AS
+    RETURNS BOOLEAN AS
 $$
 BEGIN
     RETURN (SELECT EXISTS(SELECT 1
