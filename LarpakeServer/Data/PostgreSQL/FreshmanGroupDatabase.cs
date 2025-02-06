@@ -95,8 +95,6 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
             OFFSET @{nameof(options.PageOffset)}
             """);
         
-        string q = query.ToString();
-
         using var connection = GetConnection();
         var minimized = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
         return minimized.ToArray();
@@ -312,10 +310,4 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
             """,
             new { id, members });
     }
-
-   
-
-
-
-  
 }

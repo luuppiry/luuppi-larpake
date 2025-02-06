@@ -156,21 +156,27 @@ public class GroupsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.EditGroup)]
     public async Task<IActionResult> DeleteMembers(long groupId, [FromBody] GroupMemberIdCollection members)
     {
+        Guid authorId = GetRequestUserId();
+
+        // Validate user has permissions to delete in this group
         Result isValid = await RequireMemberOrAdmin(groupId);
         if (isValid.IsError)
         {
-            Guid userId = GetRequestUserId();
             _logger.LogInformation("Insufficent permissions for {userId} to delete members from group {groupId}.",
-                userId, groupId);
+                authorId, groupId);
             return FromError(isValid);
         }
 
+        // Delete members
         int result = await _db.DeleteMembers(groupId, members.MemberIds);
-
-        _logger.IfPositive(result)
-            .LogInformation("Removed members {members} from group {groupId} by {userId}.",
-                members.MemberIds, groupId, GetRequestUserId());
-
+        if (result > 0)
+        {
+            foreach (var memberId in members.MemberIds)
+            {
+                _logger.LogInformation("Removed member {memberId} from group {groupId} by {userId}.",
+                    memberId, groupId, authorId);
+            }
+        }
         return OkRowsAffected(result);
     }
 
