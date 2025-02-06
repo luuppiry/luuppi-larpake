@@ -6,7 +6,6 @@ using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using SQLitePCL;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -96,8 +95,6 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         return records.ToArray();
     }
 
-
-
     public async Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance)
     {
         /* Attendance can be created if all true:
@@ -179,8 +176,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         }
         return Error.Conflict("Key generation failed, retry with same parameters.");
     }
-
-
+    
     public async Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion)
     {
         /* Requirements to successfully complete:
