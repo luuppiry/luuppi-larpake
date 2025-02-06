@@ -135,8 +135,8 @@ public static class ServiceInjections
         services.AddOptions<PermissionsOptions>()
             .BindConfiguration(PermissionsOptions.SectionName);
 
-        services.AddOptions<GuidRetryPolicyOptions>()
-            .BindConfiguration(GuidRetryPolicyOptions.SectionName);
+        services.AddOptions<ConflictRetryPolicyOptions>()
+            .BindConfiguration(ConflictRetryPolicyOptions.SectionName);
 
     }
 

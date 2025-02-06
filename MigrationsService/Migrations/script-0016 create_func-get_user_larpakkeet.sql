@@ -2,7 +2,8 @@ DROP FUNCTION IF EXISTS GetUserLarpakkeet;
 CREATE FUNCTION GetUserLarpakkeet(in_user_id UUID)
 RETURNS TABLE (larpake_id BIGINT) AS $$
 BEGIN
--- Get all completed event attendances -> Group by user -> Sum Points -> Get average
+-- Gets all larpake ids that user is currently attending as a group member
+-- Includes larpakkeet where is a tutor
 RETURN QUERY (
     SELECT g.larpake_id FROM larpakkeet l
         LEFT JOIN freshman_groups g

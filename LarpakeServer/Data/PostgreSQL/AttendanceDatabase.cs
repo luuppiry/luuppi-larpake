@@ -12,13 +12,13 @@ namespace LarpakeServer.Data.PostgreSQL;
 public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 {
     readonly AttendanceKeyService _keyService;
-    readonly GuidRetryPolicyOptions _retryPolicy;
+    readonly ConflictRetryPolicyOptions _retryPolicy;
 
     public AttendanceDatabase(
         NpgsqlConnectionString connectionString,
         ILogger<AttendanceDatabase> logger,
         AttendanceKeyService keyService,
-        IOptions<GuidRetryPolicyOptions> retryPolicy)
+        IOptions<ConflictRetryPolicyOptions> retryPolicy)
         : base(connectionString, logger)
     {
         _keyService = keyService;
@@ -178,6 +178,13 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
     public async Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion)
     {
+        /* Requirements to successfully complete:
+         * - Key and exits
+         * - Key is not expired
+         * - Signer must also attend same Larpake
+         * - Signer is not same as completion user
+         */
+
         if (string.IsNullOrWhiteSpace(completion.Key))
         {
             return Error.BadRequest("Key cannot be null or empty.");
@@ -190,10 +197,11 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
         try
         {
-            /* Doing this in transaction to ensure that key 
-             * is only invalidated if failed to complete
-             * - Key is not deleted, because we don't want same key used immidiately
-             * - Key is deleted after cooldown period (like 5 days)
+            /* About key invalidation:
+             * - Doing this in transaction to ensure that the key is only 
+             *      invalidated if successfully completed
+             * - Key is not deleted, because we don't want same key used immidiately.
+             * - Key should be deleted after cooldown period (like 5 days).
              */
             using var connection = GetConnection();
             using var transaction = await connection.BeginTransactionAsync();
@@ -225,6 +233,16 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     attendance.CompletionId.Value,
                     nameof(AttendedCreated.CompletionId),
                     $"Attendance is already completed, completion id in response body.");
+            }
+
+            // Validate signer is in same Larpake
+            bool isSignerValid = await connection.ExecuteScalarAsync<bool>($"""
+                SELECT CanUserAttendLarpakeEvent({nameof(completion.SignerId)}, {attendance.LarpakeEventId});
+                """, new { completion.SignerId, attendance.LarpakeEventId });
+
+            if (isSignerValid is false)
+            {
+                return Error.BadRequest("Signer must attend larpake event is part of.");
             }
 
             var record = new Completion
@@ -285,6 +303,12 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
     public async Task<Result<AttendedCreated>> Complete(CompletionMetadata completion)
     {
+        /* Requirements to successfully complete:
+         * - User, Signer and event exists
+         * - Attendance is created with given userId and eventId
+         * - Event is not already completed (if completed -> returns completed id, no error)
+         */
+
         if (completion.UserId == Guid.Empty)
         {
             return Error.BadRequest("UserId cannot be null.");
@@ -302,8 +326,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         {
             using var connection = GetConnection();
 
-            /* This query inserts completion only if
-             * attendance with userId and eventId exists
+            /* This query inserts completion only if attendance with userId and eventId exists
+             * - This method does not check if signer attends the larpake event is part of
              */
 
             var (oldId, oldExists) = await connection.QueryFirstOrDefaultAsync<(Guid? Id, bool Exists)>($"""
