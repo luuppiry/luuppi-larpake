@@ -10,6 +10,7 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
     : PostgresDb(connectionString, logger), IFreshmanGroupDatabase
 {
     record struct InsertModel(long Id, Guid UserId);
+    record struct InsertModel2(long Id, Guid UserId, bool IsHidden);
 
 
     public async Task<FreshmanGroup[]> GetGroups(FreshmanGroupQueryOptions options)
@@ -94,8 +95,6 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
             OFFSET @{nameof(options.PageOffset)}
             """);
         
-        string q = query.ToString();
-
         using var connection = GetConnection();
         var minimized = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
         return minimized.ToArray();
@@ -192,15 +191,74 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
         }
     }
 
-    public Task<Result<int>> InsertHiddenMembers(long groupId, Guid[] members)
+
+    public async Task<Result<int>> InsertMembers(long groupId, Guid[] members)
     {
-        return InsertMembers(groupId, members, isHidden: true);
+        var records = members
+            .Distinct()
+            .Select(x => new InsertModel(groupId, x))
+            .ToArray();
+
+        using var connection = GetConnection();
+        try
+        {
+            return await connection.ExecuteAsync($"""
+                INSERT INTO freshman_group_members (
+                    group_id,
+                    user_id
+                )
+                VALUES (
+                    @{nameof(InsertModel.Id)},
+                    @{nameof(InsertModel.UserId)},
+                )
+                ON CONFLICT DO NOTHING;
+                """,
+                records);
+        }
+        catch (NpgsqlException ex)
+        {
+            // TODO: Handle error "when (e.SqlState == "23505")"
+            Logger.LogError(ex, "Failed to insert members");
+            throw;
+        }
     }
 
-    public Task<Result<int>> InsertMembers(long groupId, Guid[] members)
+
+    public async Task<Result<int>> InsertNonCompeting(long groupId, NonCompetingMember[] members)
     {
-        return InsertMembers(groupId, members, isHidden: false);
+        var records = members
+            .DistinctBy(x => x.UserId)
+            .Select(x => new InsertModel2(groupId, x.UserId, x.IsHidden))
+            .ToArray();
+
+        try
+        {
+            using var connection = GetConnection();
+            return await connection.ExecuteAsync($"""
+            INSERT INTO freshman_group_members (
+                group_id,
+                user_id,
+                is_hidden,
+                is_competing
+            )
+            VALUES (
+                @{nameof(InsertModel2.Id)},
+                @{nameof(InsertModel2.UserId)},
+                @{nameof(InsertModel2.IsHidden)}
+                FALSE
+            )
+            ON CONFLICT DO NOTHING;
+            """,
+                records);
+        }
+        catch (NpgsqlException ex)
+        {
+            // TODO: Handle error "when (e.SqlState == "23505")"
+            Logger.LogError(ex, "Failed to insert non competing members");
+            throw;
+        }
     }
+
 
     public async Task<Result<int>> Update(FreshmanGroup record)
     {
@@ -251,38 +309,5 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
                 AND user_id IN (@{nameof(members)});
             """,
             new { id, members });
-    }
-
-
-    private async Task<Result<int>> InsertMembers(long groupId, Guid[] members, bool isHidden)
-    {
-        var records = members
-            .Distinct()
-            .Select(x => new InsertModel(groupId, x));
-
-        using var connection = GetConnection();
-        try
-        {
-            return await connection.ExecuteAsync($"""
-                INSERT INTO freshman_group_members (
-                    group_id,
-                    user_id,
-                    is_hidden
-                )
-                VALUES (
-                    @{nameof(InsertModel.Id)},
-                    @{nameof(InsertModel.UserId)},
-                    {(isHidden ? "TRUE" : "FALSE")}
-                )
-                ON CONFLICT DO NOTHING;
-                """,
-                records);
-        }
-        catch (NpgsqlException e)
-        {
-            // TODO: Handle error "when (e.SqlState == "23505")"
-            Logger.LogError("Failed to insert hidden members: {ex}", e.Message);
-            throw;
-        }
     }
 }

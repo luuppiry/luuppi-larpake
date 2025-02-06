@@ -95,14 +95,16 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         return records.ToArray();
     }
 
-
-
     public async Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance)
     {
-        /* This method is retries, because key generation conflict might appear.
-         * (conflict is very unlikely to happen) because 33^6 or 33^8 is a big number 
-         * 
-         * - Validates user is taking part in Larpake
+        /* Attendance can be created if all true:
+         * - User exists
+         * - User is participating in this Lärpäke
+         * - User's is_competing == true
+         */
+
+        /* Action is Retried
+         * - key generation conflict might appear (very unlikely, 33^6 and 33^8 are big numbers).
          * - Generates key if key is not already generated
          * - If key already exists refreshes invalidation date and returns existing key
          */
@@ -125,13 +127,13 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     LEFT JOIN freshman_group_members m 
                         ON g.id = m.group_id
                 WHERE e.id = @{nameof(attendance.LarpakeEventId)}
-                    AND m.user_id = @{nameof(attendance.UserId)});
+                    AND m.user_id = @{nameof(attendance.UserId)}
+                    AND m.is_competing = TRUE);
                 """, attendance);
 
                 if (canAttend is false)
                 {
-                    return Error.BadRequest("User must be member of a group that is taking " +
-                        "part in same larpake the event is found on.");
+                    return Error.BadRequest("User must be member of a group that is participating the larpake and not competing.");
                 }
 
                 key = await connection.QueryFirstAsync<AttendanceKey>($"""
@@ -174,8 +176,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         }
         return Error.Conflict("Key generation failed, retry with same parameters.");
     }
-
-
+    
     public async Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion)
     {
         /* Requirements to successfully complete:
@@ -183,6 +184,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
          * - Key is not expired
          * - Signer must also attend same Larpake
          * - Signer is not same as completion user
+         * - Signer is with is_competing == FALSE status
          */
 
         if (string.IsNullOrWhiteSpace(completion.Key))
@@ -193,7 +195,6 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         {
             return Error.BadRequest("SignerId cannot be null.");
         }
-
 
         try
         {
@@ -235,9 +236,9 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     $"Attendance is already completed, completion id in response body.");
             }
 
-            // Validate signer is in same Larpake
+            // Validate signer is in same Larpake and is not competing
             bool isSignerValid = await connection.ExecuteScalarAsync<bool>($"""
-                SELECT CanUserAttendLarpakeEvent({nameof(completion.SignerId)}, {attendance.LarpakeEventId});
+                SELECT CanUserSignAttendance({nameof(completion.SignerId)}, {attendance.LarpakeEventId});
                 """, new { completion.SignerId, attendance.LarpakeEventId });
 
             if (isSignerValid is false)
@@ -284,14 +285,16 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 """, new { record.Id, completion.Key });
 
             await transaction.CommitAsync();
+
+            Logger.LogInformation("User {userId} completed event {eventId}.",
+                attendance.UserId, attendance.LarpakeEventId);
+
             return new AttendedCreated
             {
                 CompletionId = record.Id,
                 LarpakeEventId = attendance.LarpakeEventId,
                 UserId = attendance.UserId
             };
-
-
         }
         catch (PostgresException ex)
         {
@@ -304,8 +307,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
     public async Task<Result<AttendedCreated>> Complete(CompletionMetadata completion)
     {
         /* Requirements to successfully complete:
-         * - User, Signer and event exists
-         * - Attendance is created with given userId and eventId
+         * - User, Signer and Event exists
+         * - Attendance is already created with given userId and eventId (This prevents invalid attendances from users e.g. no competing)
          * - Event is not already completed (if completed -> returns completed id, no error)
          */
 
@@ -383,6 +386,9 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 WHERE user_id = @{nameof(completion.UserId)}
                     AND larpake_event_id = @{nameof(completion.EventId)};
                 """, completion);
+
+            Logger.LogInformation("User {userId} completed event {eventId}.", 
+                completion.UserId, completion.EventId);
 
             return new AttendedCreated
             {

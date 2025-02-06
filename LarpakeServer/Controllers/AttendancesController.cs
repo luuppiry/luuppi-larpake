@@ -114,7 +114,7 @@ public class AttendancesController : ExtendedControllerBase
 
 
     [HttpPost("complete")]
-    [RequiresPermissions(Permissions.CompleteAttendance)]
+    [RequiresPermissions(Permissions.Admin)]
     public async Task<IActionResult> Complete([FromBody] CompletionPutDto dto)
     {
         /* User cannot sign their own attendance.

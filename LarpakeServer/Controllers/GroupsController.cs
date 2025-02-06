@@ -114,19 +114,18 @@ public class GroupsController : ExtendedControllerBase
         );
     }
 
-    [HttpPost("{groupId}/members/hidden")]
-    [RequiresPermissions(Permissions.EditGroup | Permissions.SeeHiddenMembers)]
-    public async Task<IActionResult> AddHiddenMembers(long groupId, GroupMemberIdCollection members)
+    [HttpPost("{groupId}/members/non-competing")]
+    [RequiresPermissions(Permissions.EditGroup | Permissions.Admin)]
+    public async Task<IActionResult> AddNonCompetingMembers(long groupId, NonCompetingMemberIdCollection members)
     {
-        Result validation = await RequireMemberOrAdmin(groupId);
-        if (validation.IsError)
+        bool canAddHidden = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
+        if (canAddHidden is false && members.Members.Any(x => x.IsHidden))
         {
-            Guid userId = GetRequestUserId();
-            _logger.LogInformation("Insufficent permissions for {userId} to add hidden members to group {groupId}.", 
-                userId, groupId);
-            return FromError(validation);
+            Error e = Error.BadRequest("Permission to see hidden members required to add one.");
+            return FromError(e);
         }
-        Result<int> result = await _db.InsertHiddenMembers(groupId, members.MemberIds);
+
+        Result<int> result = await _db.InsertNonCompeting(groupId, members.Members);
         return result.MatchToResponse(
             ok: OkRowsAffected,
             error: FromError);
@@ -157,21 +156,27 @@ public class GroupsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.EditGroup)]
     public async Task<IActionResult> DeleteMembers(long groupId, [FromBody] GroupMemberIdCollection members)
     {
+        Guid authorId = GetRequestUserId();
+
+        // Validate user has permissions to delete in this group
         Result isValid = await RequireMemberOrAdmin(groupId);
         if (isValid.IsError)
         {
-            Guid userId = GetRequestUserId();
             _logger.LogInformation("Insufficent permissions for {userId} to delete members from group {groupId}.",
-                userId, groupId);
+                authorId, groupId);
             return FromError(isValid);
         }
 
+        // Delete members
         int result = await _db.DeleteMembers(groupId, members.MemberIds);
-
-        _logger.IfPositive(result)
-            .LogInformation("Removed members {members} from group {groupId} by {userId}.",
-                members.MemberIds, groupId, GetRequestUserId());
-
+        if (result > 0)
+        {
+            foreach (var memberId in members.MemberIds)
+            {
+                _logger.LogInformation("Removed member {memberId} from group {groupId} by {userId}.",
+                    memberId, groupId, authorId);
+            }
+        }
         return OkRowsAffected(result);
     }
 
@@ -187,6 +192,8 @@ public class GroupsController : ExtendedControllerBase
       
         return OkRowsAffected(result);
     }
+
+
 
 
     private async Task<Result> RequireMemberOrAdmin(long groupId)
