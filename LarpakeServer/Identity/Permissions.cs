@@ -48,7 +48,7 @@ public enum Permissions : int
     CreateGroupEvent = 1 << 6,
 
     /// <summary>
-    /// User can read common data from any year.
+    /// User can read common data from any larpake.
     /// </summary>
     ReadAllData = 1 << 7,
 
@@ -183,7 +183,7 @@ public enum Permissions : int
     /// Also has all the permissions of User.
     /// </summary>
     Tutor = Freshman | CompleteAttendance | CreateSignature
-        | AddGroupMembers | CreateGroupEvent,
+        | AddGroupMembers | CreateGroupEvent | ReadAllData,
 
     /// <summary>
     /// Permission allows to create, update and delete any event
