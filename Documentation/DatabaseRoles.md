@@ -123,3 +123,22 @@ For Example Migrations Client Connection Would Be
 ```
 Host=localhost; Port=5432; Database=larpake_dev; Username=migrations_user; Password='migrations_pwd';
 ```
+
+### Using Connection Strings
+
+In development environment you can put your connections strings into `appsettings.Development.json` file. This file should be stored in the same folder as appsettings.json files, which every runnable C# project has. DO NOT PUT your connections strings into `appsettings.json`, USE ONLY `appsettings.Development.json` files which are not tracked by source control.
+
+appsettings.Development.json
+
+```json
+{
+    "ConnectionStrings": {
+        "Default": "<your-connection-string-here>"
+    }
+}
+```
+
+-   This is minimal example of appsettings file.
+-   Note that all values that are filled with `"--value-here--` should be filled in your `appsettings.Development.json`.
+-   If you cannot find your `appsettings.Development.json`, you must create on.
+-   In production, secrets like connection strings should be stored securely.
