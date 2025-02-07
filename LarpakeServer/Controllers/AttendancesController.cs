@@ -9,6 +9,7 @@ using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Options;
+using Microsoft.Extensions.Options;
 using AttendanceGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.AttendanceGetDto>;
 
 
@@ -27,12 +28,12 @@ public class AttendancesController : ExtendedControllerBase
         IAttendanceDatabase db,
         CompletionMessageService messageService,
         IClaimsReader claimsReader,
-        AttendanceKeyOptions keyOptions,
+        IOptions<AttendanceKeyOptions> keyOptions,
         ILogger<AttendancesController> logger) : base(claimsReader, logger)
     {
         _db = db;
         _messageService = messageService;
-        _keyOptions = keyOptions;
+        _keyOptions = keyOptions.Value;
     }
 
 
