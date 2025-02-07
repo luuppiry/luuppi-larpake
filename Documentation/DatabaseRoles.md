@@ -45,33 +45,81 @@ Now you can connect to created database by using command below. Note that my dat
 New PostgreSQL user is created with command below.
 
 ```sql
-CREATE USER <user_name>;
+CREATE USER <user_name> WITH PASSWORD '<password>';
 ```
 
 ### Larpake server User Permissions
 
 -   This connection string is used to access all tables and their sequence tables
--   Any name can be chosen for created user, I use `server_user`
+-   Any name can be chosen for created user, I use `api_user`
+-   In production environment stronger passwords should be used
 
 Create User
 
 ```sql
-CREATE USER server_user;
+CREATE USER api_user WITH PASSWORD 'api_pwd';
 ```
 
 Give Permissions To Connect To Database
 
 ```sql
-GRANT CONNECT ON DATABASE larpake_server TO server_user;
+GRANT CONNECT ON DATABASE larpake_dev TO api_user;
+```
+
+Give Permissions To All Tables
+
+```sql
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO api_user;
+```
+
+Give Permissions To All Sequences
+
+```sql
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO api_user;
 ```
 
 ### Admin/Migrations User Permissions
 
 -   This connection string should have access to create/edit tables and stored procedures
--   Any name can be chosen for created user, I use `migrations_service`
+-   Any name can be chosen for created user, I use `migrations_user`
+-   In production environment stronger passwords should be used
 
-### Create user
+Create user
+
+```sql
+CREATE USER migrations_user WITH PASSWORD 'migrations_pwd';
+```
+
+Give Permissions To Manage Database
+
+```sql
+GRANT CREATE ON DATABASE larpake_dev TO migrations_user;
+```
+
+Give permissions
+
+```sql
+GRANT CREATE, USAGE ON SCHEMA public TO migrations_user;
+```
+
+## Create Connection Strings
+
+Required permissions should now be set. Connections strings consist of server information and user information.
+
+Connection string template:
 
 ```
-CREATE USER
+Host=<server_ip>; Port=<port>; Database=<db_name>; Username=<username>; Password=<password>
+```
+
+For Example Api Client Connection Would Be
+
+```
+Host=localhost; Port=5432; Database=larpake_dev; Username=api_user; Password='api_pwd';
+```
+
+For Example Migrations Client Connection Would Be
+
+```
+Host=localhost; Port=5432; Database=larpake_dev; Username=migrations_user; Password='migrations_pwd';
 ```
