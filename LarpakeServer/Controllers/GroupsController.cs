@@ -16,10 +16,10 @@ namespace LarpakeServer.Controllers;
 [Route("api/[controller]")]
 public class GroupsController : ExtendedControllerBase
 {
-    readonly IFreshmanGroupDatabase _db;
+    readonly IGroupDatabase _db;
 
     public GroupsController(
-        IFreshmanGroupDatabase db,
+        IGroupDatabase db,
         ILogger<GroupsController> logger,
         IClaimsReader claimsReader) : base(claimsReader, logger)
     {

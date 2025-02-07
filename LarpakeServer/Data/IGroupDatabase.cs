@@ -4,10 +4,8 @@ using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Data;
 
-public interface IFreshmanGroupDatabase
+public interface IGroupDatabase
 {
-    
-
     Task<FreshmanGroup[]> GetGroups(FreshmanGroupQueryOptions options);
     Task<FreshmanGroup[]> GetGroupsMinimized(FreshmanGroupQueryOptions options);
     Task<FreshmanGroup?> GetGroup(long id);
@@ -18,4 +16,7 @@ public interface IFreshmanGroupDatabase
     Task<Result<int>> Update(FreshmanGroup record);
     Task<int> Delete(long id);
     Task<int> DeleteMembers(long id, Guid[] members);
+    Task<Result<string>> GetInviteKey(long groupId);
+    Task<Result<int>> InsertMemberByInviteKey(string inviteKey, Guid userId);
+
 }
