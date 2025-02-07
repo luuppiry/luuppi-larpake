@@ -6,6 +6,7 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using System.ComponentModel.DataAnnotations;
 using FreshmanGroups = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.FreshmanGroupGetDto>;
 
 namespace LarpakeServer.Controllers;
@@ -17,13 +18,16 @@ namespace LarpakeServer.Controllers;
 public class GroupsController : ExtendedControllerBase
 {
     readonly IGroupDatabase _db;
+    readonly IUserDatabase _userDb;
 
     public GroupsController(
         IGroupDatabase db,
+        IUserDatabase userDb,
         ILogger<GroupsController> logger,
         IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
+        _userDb = userDb;
     }
 
 
@@ -82,6 +86,15 @@ public class GroupsController : ExtendedControllerBase
             ? IdNotFound() : Ok(new { Members = record });
     }
 
+    [HttpGet("{groupId}/invite")]
+    [RequiresPermissions(Permissions.EditGroup)]
+    public async Task<IActionResult> GetInviteKey(long groupId)
+    {
+        var key = await _db.GetInviteKey(groupId);
+        return key is null
+            ? IdNotFound() : Ok(new { InviteKey = key });
+    }
+
     [HttpPost]
     [RequiresPermissions(Permissions.CreateGroup)]
     public async Task<IActionResult> CreateGroup([FromBody] FreshmanGroupPostDto dto)
@@ -93,6 +106,40 @@ public class GroupsController : ExtendedControllerBase
             ok: CreatedId,
             error: FromError);
     }
+
+    [HttpPost("join/{key}")]    // No permissions required
+    public async Task<IActionResult> JoinByInvite([Required]string key)
+    {
+        // Anyone authenticated should be able to join
+        Guid userId = GetRequestUserId();
+
+        // Join
+        Result<int> joined = await _db.InsertMemberByInviteKey(key, userId);
+        if (joined.IsError)
+        {
+            _logger.LogInformation("User {userId} failed to join group by invite key {key}.", userId, key);
+            return FromError(joined);
+        }
+
+        // Joined successfully, give common read permissions
+        Result<int> permitted = await _userDb.AppendPermissions(userId, Permissions.CommonRead);
+        if (permitted.IsError)
+        {
+            _logger.LogError("User {userId} did not get common read after group join.", userId);
+
+            Error error = Error.InternalServerError($"""
+                Group joined successfully,
+                but failed to give common read permissions.
+                Contact system admin. 
+                """)
+                .WithInner((Error)permitted);
+
+            return FromError(error);
+        }
+        return OkRowsAffected(permitted);
+    }
+
+
 
     [HttpPost("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]

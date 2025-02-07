@@ -31,6 +31,11 @@ public class ExtendedControllerBase : ControllerBase
     {
         return Ok(new { RowsAffected = rowsAffected });
     }
+    
+    protected ObjectResult OkRowsAffected(Result<int> rowsAffected)
+    {
+        return Ok(new { RowsAffected = (int)rowsAffected });
+    }
 
     protected ObjectResult CreatedId(long id)
     {
