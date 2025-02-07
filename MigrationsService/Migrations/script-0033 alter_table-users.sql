@@ -1,5 +1,5 @@
-
--- Add new columns to support entra id auth
+-- Add new column to support entra id auth
 ALTER TABLE users
-    ADD COLUMN entra_user_id UUID UNIQUE,
-    ADD COLUMN username VARCHAR(100) UNIQUE;
+    ADD COLUMN entra_id UUID,
+    ADD CONSTRAINT entra_id_unique_or_null UNIQUE (entra_id);
+
