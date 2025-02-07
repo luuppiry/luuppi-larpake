@@ -1,12 +1,9 @@
-﻿using Azure.Security.KeyVault.Certificates;
-using LarpakeServer.Data.Helpers;
+﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Npgsql;
-using SQLitePCL;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -389,5 +386,29 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             Logger.LogError(ex, "Error inserting member by invite key.");
             throw;
         }
+    }
+
+    public async Task<Result<string>> RefreshInviteKey(long groupId)
+    {
+        // Get group invite key or create new if null
+        string newKey = _keyService.GenerateKey();
+        using var connection = GetConnection();
+
+        // Get or update if null
+        string? key = await connection.ExecuteScalarAsync<string>($"""
+            UDPATE freshman_groups 
+            SET 
+                invite_key = @{nameof(newKey)},
+                updated_at = NOW(),
+                invite_key_changed_at = NOW()
+            WHERE id = @{nameof(groupId)}
+            RETURNING invite_key;
+            """, new { newKey });
+
+        if (key is null)
+        {
+            return Error.NotFound("Group not found.");
+        }
+        return key;
     }
 }

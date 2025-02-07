@@ -95,6 +95,16 @@ public class GroupsController : ExtendedControllerBase
             ? IdNotFound() : Ok(new { InviteKey = key });
     }
 
+    [HttpPost("{groupId}/invite/refresh")]
+    [RequiresPermissions(Permissions.EditGroup)]
+    public async Task<IActionResult> RefreshInviteKey(long groupId)
+    {
+        var key = await _db.RefreshInviteKey(groupId);
+        return key is null
+            ? IdNotFound() : Ok(new { InviteKey = key, Message = "Old invite keys revoked." });
+    }
+
+
     [HttpPost]
     [RequiresPermissions(Permissions.CreateGroup)]
     public async Task<IActionResult> CreateGroup([FromBody] FreshmanGroupPostDto dto)

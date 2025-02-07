@@ -18,5 +18,5 @@ public interface IGroupDatabase
     Task<int> DeleteMembers(long id, Guid[] members);
     Task<Result<string>> GetInviteKey(long groupId);
     Task<Result<int>> InsertMemberByInviteKey(string inviteKey, Guid userId);
-
+    Task<Result<string>> RefreshInviteKey(long groupId);
 }
