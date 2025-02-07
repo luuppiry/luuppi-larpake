@@ -49,7 +49,7 @@ public class UsersController : ExtendedControllerBase
     [RequiresPermissions(Permissions.ReadRawUserInfomation)]
     public async Task<IActionResult> GetUser(Guid userId)
     {
-        var record = await _db.Get(userId);
+        var record = await _db.GetByUserId(userId);
         return record is null ? NotFound() : Ok(record);
     }
 
@@ -111,7 +111,7 @@ public class UsersController : ExtendedControllerBase
         }
 
         // Validate author exists
-        DbUser? author = await _db.Get(authorId);
+        DbUser? author = await _db.GetByUserId(authorId);
 
         if (author is null)
         {
@@ -133,7 +133,7 @@ public class UsersController : ExtendedControllerBase
         }
 
         // Validate target exists
-        DbUser? target = await _db.Get(targetId);
+        DbUser? target = await _db.GetByUserId(targetId);
         if (target is null)
         {
             _logger.LogInformation("User {id} not found.", targetId);
@@ -206,7 +206,7 @@ public class UsersController : ExtendedControllerBase
             return Error.BadRequest("UserId must be provided.");
         }
 
-        DbUser? target = await _db.Get(targetId);
+        DbUser? target = await _db.GetByUserId(targetId);
         if (target is null)
         {
             return Error.NotFound("User not found.");

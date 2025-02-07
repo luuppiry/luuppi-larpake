@@ -44,11 +44,11 @@ public class AuthenticationController : ExtendedControllerBase
         Guid entraId = ReadEntraId();
 
         // Check if user exists in database
-        DbUser? user = await _userDb.GetUserByEntraId(entraId);
+        DbUser? user = await _userDb.GetByEntraId(entraId);
         if (user is null)
         {
             // User is new and must be created first
-            Result<DbUser> createdUser = await SetupNewUser();
+            Result<DbUser> createdUser = await SetupNewUser(entraId);
             if (createdUser.IsError)
             {
                 return FromError(createdUser);
@@ -85,7 +85,7 @@ public class AuthenticationController : ExtendedControllerBase
             });
         }
 
-        User? user = await _userDb.Get(dto.UserId);
+        DbUser? user = await _userDb.GetByUserId(dto.UserId);
         if (user is null)
         {
             return NotFound(new
@@ -104,7 +104,7 @@ public class AuthenticationController : ExtendedControllerBase
     }
 #endif
 
-    [AllowAnonymous]    // Authentication is handled inside the method
+    [AllowAnonymous]    // Authentication is handled inside the method, Anonymous is ok here.
     [HttpPost("token/refresh")]
     public async Task<IActionResult> Refresh()
     {
@@ -158,7 +158,7 @@ public class AuthenticationController : ExtendedControllerBase
 
 
         // Tokens are valid, generate new ones
-        DbUser? user = await _userDb.Get(userId.Value);
+        DbUser? user = await _userDb.GetByUserId(userId.Value);
         if (user is null)
         {
             return IdNotFound("User does not exist.");
@@ -261,12 +261,33 @@ public class AuthenticationController : ExtendedControllerBase
 
     private Guid ReadEntraId()
     {
+        // TODO: Implement this 
+        // Claims reader might also work here, if Guid is in same JWT field
         throw new NotImplementedException();
     }
 
-    private Task<Result<DbUser>> SetupNewUser()
+    private async Task<Result<DbUser>> SetupNewUser(Guid entraId)
     {
-        throw new NotImplementedException();
+        var user = new User
+        {
+            Id = Guid.Empty,
+            EntraId = entraId,
+            Permissions = Permissions.None,
+            StartYear = null
+        };
+
+        Result<Guid> userId = await _userDb.Insert(user);
+        if (userId.IsError)
+        {
+            return (Error)userId;
+        }
+
+        DbUser? result = await _userDb.GetByUserId((Guid)userId);
+        if (result is null)
+        {
+            return Error.InternalServerError("Failed to create user.");
+        }
+        return result;
     }
 }
 

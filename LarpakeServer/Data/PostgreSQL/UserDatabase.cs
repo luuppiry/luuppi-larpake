@@ -5,7 +5,8 @@ using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
-public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(connectionString), IUserDatabase
+public class UserDatabase(NpgsqlConnectionString connectionString) 
+    : PostgresDb(connectionString), IUserDatabase
 {
     public async Task<User[]> Get(UserQueryOptions options)
     {
@@ -47,7 +48,7 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
         return users.ToArray();
     }
 
-    public async Task<User?> Get(Guid id)
+    public async Task<User?> GetByUserId(Guid id)
     {
         using var connection = GetConnection();
         return await connection.QueryFirstOrDefaultAsync<User>($"""
@@ -63,6 +64,21 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
 
     }
 
+    public Task<User?> GetByEntraId(Guid entraId)
+    {
+        using var connection = GetConnection();
+        return connection.QueryFirstOrDefaultAsync<User>($"""
+            SELECT 
+                id,
+                permissions,
+                start_year,
+                created_at,
+                updated_at
+            FROM users 
+            WHERE entra_id = @{nameof(entraId)} LIMIT 1;
+            """, new { entraId });
+    }
+
     public async Task<Result<Guid>> Insert(User record)
     {
         /* UUID_v7 conflict is possible here,
@@ -75,11 +91,13 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
         await connection.ExecuteAsync($"""
             INSERT INTO users (
                 id,
-                start_year
+                start_year,
+                entra_id
             )
             VALUES (
                 @{nameof(User.Id)},
-                @{nameof(User.StartYear)}
+                @{nameof(User.StartYear)},
+                @{nameof(User.EntraId)}
             );
             """, record);
 
@@ -129,8 +147,5 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
             """, new { id });
     }
 
-    public Task<User?> GetUserByEntraId(Guid entraId)
-    {
-        throw new NotImplementedException();
-    }
+   
 }
