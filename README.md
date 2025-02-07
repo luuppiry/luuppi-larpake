@@ -13,25 +13,13 @@ Fuksilärpäke is traditional part of freshman year for students in Luuppi. Fres
 
 ## Getting started
 
-Read more step by step guide from [wiki](https://github.com/henrivain/Larpake/wiki/Setup)
+Instructions for running the project can be found on [Setup wiki](https://github.com/henrivain/Larpake/wiki/Setup) 
 
 ### Requirements
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 - [ASP.NET Core 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-
-### Steps
-
-1) Clone repository
-2) Go inside `LarpakeServer` -folder
-3) Fill `appsettings.json` with your data
-3) Run command
-```ps
-dotnet run build --launch-profile https
-```
-4) Server starts to run
-
-You can now view api endpoints and make requests in `https://localhost:7267/openapi`
+- [PostgreSQL 17 server](https://www.postgresql.org/download/)
 
 ## Technologies
 
