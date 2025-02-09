@@ -118,7 +118,7 @@ public class AuthenticationController : ExtendedControllerBase
         }
 
         // Validate refresh token
-        RefreshTokenValidationResult validation = await _refreshTokenDb.IsValid(refreshToken);
+        RefreshTokenValidationResult validation = await _refreshTokenDb.Validate(refreshToken);
         if (validation.IsValid is false)
         {
             return Unauthorized();
@@ -222,7 +222,6 @@ public class AuthenticationController : ExtendedControllerBase
 
         return Task.FromResult(Result.Ok);
     }
-
 
 
     private Guid ReadEntraId()

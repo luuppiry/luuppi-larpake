@@ -62,7 +62,7 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
         }
     }
 
-    public async Task<RefreshTokenValidationResult> IsValid(string refreshToken)
+    public async Task<RefreshTokenValidationResult> Validate(string refreshToken)
     {
         if (string.IsNullOrEmpty(refreshToken))
         {
@@ -101,7 +101,7 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
 
 
 
-    public async Task<RefreshTokenValidationResult> IsValid(string refreshToken, Guid userId)
+    public async Task<RefreshTokenValidationResult> Validate(string refreshToken, Guid userId)
     {
         // Get hash
         string hash = ComputeSHA256Hash(refreshToken);
