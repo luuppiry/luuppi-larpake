@@ -6,8 +6,6 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Primitives;
-using System.Security.Claims;
 using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
@@ -22,7 +20,7 @@ public class AuthenticationController : ExtendedControllerBase
     readonly IRefreshTokenDatabase _refreshTokenDb;
     const string RefreshTokenCookieName = "__Secure-refreshToken";
 
-    record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt);
+    record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt, string TokenType = "Bearer");
 
 
     public AuthenticationController(
@@ -68,8 +66,6 @@ public class AuthenticationController : ExtendedControllerBase
     }
 
 
-
-
 #if DEBUG
     [AllowAnonymous]    
     [HttpPost("login/dummy")]
@@ -109,56 +105,27 @@ public class AuthenticationController : ExtendedControllerBase
     public async Task<IActionResult> Refresh()
     {
         // Read headers and cookies to get tokens
-        if (Request.Headers.TryGetValue("Authorization", out StringValues accessTokenValue) is false)
-        {
-            return Unauthorized();
-        }
         if (Request.Cookies.TryGetValue(RefreshTokenCookieName, out string? refreshToken) is false)
         {
             return Unauthorized();
         }
 
         // Get tokens and validate not empty
-        string? accessToken = accessTokenValue;
-        if (string.IsNullOrEmpty(accessToken))
-        {
-            return Unauthorized();
-        }
+    
         if (string.IsNullOrEmpty(refreshToken))
         {
             return Unauthorized();
         }
 
-        // Validate expired access token 
-        if (_tokenService.ValidateAccessToken(accessToken, out ClaimsPrincipal? claims, false) is false)
-        {
-            return Unauthorized();
-        }
-
-        // Get user id from token
-        Guid? userId = _tokenService.GetUserId(claims);
-        DateTime? expires = _tokenService.GetTokenIssuedAt(claims);
-        if (userId is null || expires is null)
-        {
-            return Unauthorized();
-        }
-
-        // Check if possible refresh token must be expired
-        if (expires.Value.Add(_tokenService.RefreshTokenLifetime) < DateTime.UtcNow)
-        {
-            return Unauthorized();
-        }
-
         // Validate refresh token
-        var validation = await _refreshTokenDb.IsValid(userId.Value, refreshToken);
+        RefreshTokenValidationResult validation = await _refreshTokenDb.IsValid(refreshToken);
         if (validation.IsValid is false)
         {
             return Unauthorized();
         }
 
-
         // Tokens are valid, generate new ones
-        DbUser? user = await _userDb.GetByUserId(userId.Value);
+        DbUser? user = await _userDb.GetByUserId(validation.UserId.Value);
         if (user is null)
         {
             return IdNotFound("User does not exist.");
@@ -243,15 +210,14 @@ public class AuthenticationController : ExtendedControllerBase
         Guard.ThrowIfNull(context);
 
         // Write header
-        string controllerPath = ControllerContext.ActionDescriptor.ControllerName;
         context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken,
             new CookieOptions
             {
                 MaxAge = _tokenService.RefreshTokenLifetime,
                 Secure = true,
                 HttpOnly = true,
-                SameSite = SameSiteMode.Strict,
-                Path = controllerPath
+                SameSite = SameSiteMode.Strict
+                // TODO: Path if needed
             });
 
         return Task.FromResult(Result.Ok);
