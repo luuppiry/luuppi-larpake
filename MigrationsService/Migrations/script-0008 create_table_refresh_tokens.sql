@@ -1,6 +1,6 @@
 CREATE TABLE refresh_tokens (
     user_id UUID,
-    token VARCHAR(64),
+    token VARCHAR(64) UNIQUE,
     token_family UUID NOT NULL,
     invalid_at TIMESTAMPTZ NOT NULL,
     invalidated_at TIMESTAMPTZ,
