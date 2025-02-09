@@ -105,7 +105,7 @@ public class AuthenticationController : ExtendedControllerBase
 #endif
 
     [AllowAnonymous]    // Authentication is handled inside the method, Anonymous is ok here.
-    [HttpPost("token/refresh")]
+    [HttpGet("token/refresh")]
     public async Task<IActionResult> Refresh()
     {
         // Read headers and cookies to get tokens
