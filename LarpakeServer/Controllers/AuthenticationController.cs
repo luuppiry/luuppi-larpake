@@ -37,6 +37,8 @@ public class AuthenticationController : ExtendedControllerBase
 
     [Authorize(AuthenticationSchemes = Constants.Auth.EntraIdScheme)]
     [HttpPost("login")]
+    [ProducesResponseType(typeof(TokenInfo), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Login()
     {
         Guid entraId = ReadEntraId();
@@ -69,6 +71,8 @@ public class AuthenticationController : ExtendedControllerBase
 #if DEBUG
     [AllowAnonymous]    
     [HttpPost("login/dummy")]
+    [ProducesResponseType(typeof(TokenInfo), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Login([FromBody] LoginRequest dto)
     {
         // TODO: Remove this method in production
@@ -102,6 +106,8 @@ public class AuthenticationController : ExtendedControllerBase
 
     [AllowAnonymous]    // Authentication is handled inside the method, Anonymous is ok here.
     [HttpGet("token/refresh")]
+    [ProducesResponseType(typeof(TokenInfo), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Refresh()
     {
         // Read headers and cookies to get tokens
@@ -144,6 +150,7 @@ public class AuthenticationController : ExtendedControllerBase
     [Authorize]
     [DisableRateLimiting]
     [HttpPost("token/invalidate")]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> InvalidateTokens()
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
@@ -155,6 +162,7 @@ public class AuthenticationController : ExtendedControllerBase
     [DisableRateLimiting]
     [HttpPost("token/invalidate/{tokenFamily}")]
     [RequiresPermissions(Permissions.Admin)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> InvalidateTokenFamily(Guid tokenFamily)
     {
         int rowsAffected = await _refreshTokenDb.RevokeFamily(tokenFamily);

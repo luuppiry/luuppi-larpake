@@ -6,6 +6,14 @@ namespace LarpakeServer.Helpers;
 
 public class ExtendedControllerBase : ControllerBase
 {
+    protected record MessageResponse(string Message);
+    protected record MessageDetailsResponse(string Message, string? Details);
+    protected record struct RowsAffectedResponse(int RowsAffected);
+    protected record struct DataResponse<T>(T Data);
+    protected record struct LongIdResponse(long Id);
+    protected record struct GuidIdResponse(Guid Id);
+
+
     protected ILogger<ExtendedControllerBase> _logger;
     protected readonly IClaimsReader _claimsReader;
 
@@ -29,79 +37,64 @@ public class ExtendedControllerBase : ControllerBase
 
     protected ObjectResult OkRowsAffected(int rowsAffected)
     {
-        return Ok(new { RowsAffected = rowsAffected });
+        return Ok(new RowsAffectedResponse(rowsAffected));
     }
     
     protected ObjectResult OkRowsAffected(Result<int> rowsAffected)
     {
-        return Ok(new { RowsAffected = (int)rowsAffected });
+        return Ok(new RowsAffectedResponse((int)rowsAffected));
     }
 
     protected ObjectResult CreatedId(long id)
     {
         string? resourceUrl = $"{Request.Path.Value}/{id}";
-        return Created(resourceUrl, new { Id = id });
+        return Created(resourceUrl, new LongIdResponse(id));
     }
 
 
     protected ObjectResult OkData<T>(T Data)
     {
-        return Ok(new { Data });
+        return Ok(new DataResponse<T>(Data));
     }
 
     protected ObjectResult CreatedId(Guid id)
     {
         string? resourceUrl = $"{Request.Path.Value}/{id}";
-        return Created(resourceUrl, new { Id = id });
+        return Created(resourceUrl, new GuidIdResponse(id));
     }
 
     protected ObjectResult IdNotFound()
     {
-        return NotFound(new { Message = "Id not found." });
+        return NotFound(new MessageResponse("Id not found."));
     }
     
     protected ObjectResult IdNotFound(string message)
     {
-        return NotFound(new
-        {
-            Message = "Id not found.",
-            Details = message
-        });
+        return NotFound(new MessageDetailsResponse("Id not found.", message));
     }
 
     protected ObjectResult InvalidJWT(string message)
     {
-        return BadRequest(new
-        {
-            Message = "Invalid JWT token.",
-            Details = message
-        });
+        return BadRequest(new MessageDetailsResponse("Invalid JWT token.", message));
     }
 
     protected ObjectResult InternalServerError(string message)
     {
-        return StatusCode(500, new { Message = message });
+        return StatusCode(500, new MessageResponse(message));
     }
 
     protected ObjectResult BadRequest(string message, string? details = null)
     {
-        return StatusCode(400, new
-        {
-            Message = message,
-            Details = details
-        });
+        return StatusCode(400, new MessageDetailsResponse(message, details));
     }
 
     protected ObjectResult Unauthorized(string message)
     {
-        return Unauthorized(new
-        {
-            Message = message,
-        });
+        return Unauthorized(new MessageResponse(message));
     }
     protected ObjectResult BadRequest(string message)
     {
-        return NotFound(new { Message = message });
+        return BadRequest(new MessageResponse(message));
     }
 
 
@@ -123,8 +116,8 @@ public class ExtendedControllerBase : ControllerBase
         var (statusCode, message) = error;
         return StatusCode(statusCode, new { Message = message, Exception = error.Ex });
 #else
-        var (statusCode, message) = (Error)error;
-        return StatusCode(statusCode, message);
+        var (statusCode, message) = error;
+        return StatusCode(statusCode, new MessageResponse(message));
 #endif
     }
 }

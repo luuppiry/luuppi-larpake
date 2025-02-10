@@ -24,6 +24,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("larpakkeet/own/points/average")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(DataResponse<LarpakeAvgPoints[]>), 200)]
     public async Task<IActionResult> GetAllAttendedLarpakeAverages()
     {
         Guid userId = GetRequestUserId();
@@ -33,6 +34,8 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("larpakkeet/{larpakeId}/points/average")]
     [RequiresPermissions(Permissions.ReadStatistics)]
+    [ProducesResponseType(typeof(DataResponse<LarpakeAvgPoints[]>), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> GetAllAverage(long larpakeId)
     {
         long? points = await _statisticsService.GetAveragePoints(larpakeId);
@@ -42,6 +45,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("larpakkeet/own/points/total")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(DataResponse<LarpakeTotalPoints[]>), 200)]
     public async Task<IActionResult> GetAllAttendedLarpakeTotals()
     {
         Guid userId = GetRequestUserId();
@@ -51,6 +55,8 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("larpakkeet/{larpakeId}/points/total")]
     [RequiresPermissions(Permissions.ReadStatistics)]
+    [ProducesResponseType(typeof(DataResponse<long>), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> GetAllTotal(long larpakeId)
     {
         long? points = await _statisticsService.GetTotalPoints(larpakeId);
@@ -63,6 +69,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("users/own/points")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(DataResponse<LarpakeTotalPoints[]>), 200)]
     public async Task<IActionResult> GetUserTotal()
     {
         Guid userId = GetRequestUserId();
@@ -71,6 +78,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("users/{userId}/points")]
     [RequiresPermissions(Permissions.ReadStatistics)]
+    [ProducesResponseType(typeof(DataResponse<LarpakeTotalPoints[]>), 200)]
     public async Task<IActionResult> GetUserTotal(Guid userId)
     {
         LarpakeTotalPoints[] records = await _statisticsService.GetUserPoints(userId);
@@ -80,11 +88,12 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("users/leading")]
     [RequiresPermissions(Permissions.ReadStatistics)]
+    [ProducesResponseType(typeof(QueryDataGetDto<UserPoints>), 200)]
     public async Task<IActionResult> GetLeadingUsers([FromQuery] StatisticsQueryOptions options)
     {
         UserPoints[] records = await _statisticsService.GetLeadingUsers(options);
 
-        var result = QueryDataGetDto<UserPoints>.MapFrom(records)
+        QueryDataGetDto<UserPoints> result = QueryDataGetDto<UserPoints>.MapFrom(records)
             .AppendPaging(options);
 
         return Ok(result);
@@ -93,6 +102,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("groups/own/points")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(DataResponse<GroupTotalPoints[]>), 200)]
     public async Task<IActionResult> GetOwnGroupTotal()
     {
         Guid userId = GetRequestUserId();
@@ -103,6 +113,8 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("groups/{groupId}/points")]
     [RequiresPermissions(Permissions.ReadStatistics)]
+    [ProducesResponseType(typeof(DataResponse<long>), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> GetFreshmanGroupTotal(long groupId)
     {
         long? result = await _statisticsService.GetGroupPoints(groupId);
@@ -112,6 +124,7 @@ public class StatisticsController : ExtendedControllerBase
 
     [HttpGet("groups/leading")]
     [RequiresPermissions(Permissions.ReadStatistics)]
+    [ProducesResponseType(typeof(QueryDataGetDto<GroupPoints>), 200)]
     public async Task<IActionResult> GetLeadingFreshmanGroups([FromQuery] StatisticsQueryOptions options)
     {
         GroupPoints[] records = await _statisticsService.GetLeadingGroups(options);

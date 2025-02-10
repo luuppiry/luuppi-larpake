@@ -17,6 +17,10 @@ namespace LarpakeServer.Controllers;
 [Route("api/[controller]")]
 public class GroupsController : ExtendedControllerBase
 {
+    record struct InviteKeyResponse(string InviteKey);
+    record struct InviteKeyMsgResponse(string InviteKey, string Message);
+    record struct MembersResponse(Guid[] Members);
+
     readonly IGroupDatabase _db;
     readonly IUserDatabase _userDb;
 
@@ -33,6 +37,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet("own")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(FreshmanGroups), 200)]
     public async Task<IActionResult> GetOwnGroups([FromQuery] FreshmanGroupQueryOptions options)
     {
         /* User can here only see their own groups,
@@ -54,6 +59,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.Tutor)]
+    [ProducesResponseType(typeof(FreshmanGroups), 200)]
     public async Task<IActionResult> GetGroups([FromQuery] FreshmanGroupQueryOptions options)
     {
         /* Tutors can see all groups and members.
@@ -66,6 +72,8 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet("{groupId}")]
     [RequiresPermissions(Permissions.Tutor)]
+    [ProducesResponseType(typeof(FreshmanGroup), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> GetGroup(long groupId)
     {
         var record = await _db.GetGroup(groupId);
@@ -79,34 +87,43 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet("{groupId}/members")]
     [RequiresPermissions(Permissions.Tutor)]
+    [ProducesResponseType(typeof(MembersResponse), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> GetMembers(long groupId)
     {
-        var record = await _db.GetMembers(groupId);
-        return record is null 
-            ? IdNotFound() : Ok(new { Members = record });
+        var members = await _db.GetMembers(groupId);
+        return members is null 
+            ? IdNotFound() : Ok(new MembersResponse(members));
     }
 
     [HttpGet("{groupId}/invite")]
     [RequiresPermissions(Permissions.EditGroup)]
+    [ProducesResponseType(typeof(InviteKeyResponse), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> GetInviteKey(long groupId)
     {
         var key = await _db.GetInviteKey(groupId);
         return key is null
-            ? IdNotFound() : Ok(new { InviteKey = key });
+            ? IdNotFound() : Ok(new InviteKeyResponse((string)key));
     }
 
     [HttpPost("{groupId}/invite/refresh")]
     [RequiresPermissions(Permissions.EditGroup)]
+    [ProducesResponseType(typeof(MembersResponse), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> RefreshInviteKey(long groupId)
     {
         var key = await _db.RefreshInviteKey(groupId);
         return key is null
-            ? IdNotFound() : Ok(new { InviteKey = key, Message = "Old invite keys revoked." });
+            ? IdNotFound() 
+            : Ok(new InviteKeyMsgResponse((string)key, "Old invite keys revoked."));
     }
 
 
     [HttpPost]
     [RequiresPermissions(Permissions.CreateGroup)]
+    [ProducesResponseType(typeof(LongIdResponse), 201)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> CreateGroup([FromBody] FreshmanGroupPostDto dto)
     {
         var record = FreshmanGroup.MapFrom(dto);
@@ -118,6 +135,8 @@ public class GroupsController : ExtendedControllerBase
     }
 
     [HttpPost("join/{key}")]    // No permissions required
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> JoinByInvite([Required]string key)
     {
         // Anyone authenticated should be able to join
@@ -153,6 +172,8 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPost("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> AddMembers(long groupId, GroupMemberIdCollection members)
     {
         Result validation = await RequireMemberOrAdmin(groupId);
@@ -173,6 +194,8 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPost("{groupId}/members/non-competing")]
     [RequiresPermissions(Permissions.EditGroup | Permissions.Admin)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> AddNonCompetingMembers(long groupId, NonCompetingMemberIdCollection members)
     {
         bool canAddHidden = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
@@ -190,6 +213,8 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPut("{groupId}")]
     [RequiresPermissions(Permissions.EditGroup)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> UpdateGroup(long groupId, [FromBody] FreshmanGroupPutDto dto)
     {
         Result validation = await RequireMemberOrAdmin(groupId);
@@ -211,6 +236,8 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpDelete("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> DeleteMembers(long groupId, [FromBody] GroupMemberIdCollection members)
     {
         Guid authorId = GetRequestUserId();
@@ -239,6 +266,8 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpDelete("{groupId}")]
     [RequiresPermissions(Permissions.Admin)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> DeleteGroup(long groupId)
     {
         int result = await _db.Delete(groupId);
