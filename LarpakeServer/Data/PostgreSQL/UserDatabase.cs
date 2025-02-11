@@ -5,7 +5,8 @@ using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
-public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(connectionString), IUserDatabase
+public class UserDatabase(NpgsqlConnectionString connectionString) 
+    : PostgresDb(connectionString), IUserDatabase
 {
     public async Task<User[]> Get(UserQueryOptions options)
     {
@@ -47,7 +48,7 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
         return users.ToArray();
     }
 
-    public async Task<User?> Get(Guid id)
+    public async Task<User?> GetByUserId(Guid id)
     {
         using var connection = GetConnection();
         return await connection.QueryFirstOrDefaultAsync<User>($"""
@@ -63,6 +64,21 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
 
     }
 
+    public Task<User?> GetByEntraId(Guid entraId)
+    {
+        using var connection = GetConnection();
+        return connection.QueryFirstOrDefaultAsync<User>($"""
+            SELECT 
+                id,
+                permissions,
+                start_year,
+                created_at,
+                updated_at
+            FROM users 
+            WHERE entra_id = @{nameof(entraId)} LIMIT 1;
+            """, new { entraId });
+    }
+
     public async Task<Result<Guid>> Insert(User record)
     {
         /* UUID_v7 conflict is possible here,
@@ -75,11 +91,13 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
         await connection.ExecuteAsync($"""
             INSERT INTO users (
                 id,
-                start_year
+                start_year,
+                entra_id
             )
             VALUES (
                 @{nameof(User.Id)},
-                @{nameof(User.StartYear)}
+                @{nameof(User.StartYear)},
+                @{nameof(User.EntraId)}
             );
             """, record);
 
@@ -112,13 +130,50 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
         }
 
         using var connection = GetConnection();
-        return await connection.ExecuteAsync($"""
+        int rowsAffected = await connection.ExecuteAsync($"""
             UPDATE users
             SET
                 permissions = @{nameof(permissions)},
                 updated_at = NOW()
             WHERE id = @{nameof(id)};
             """, new { id, permissions });
+
+        Logger.IfPositive(rowsAffected)
+            .LogInformation("Set permissions {permissions} to user {id}.", permissions, id);
+
+        Logger.IfZero(rowsAffected)
+            .LogInformation("Cannot set permissions, user {id} not found.", id);
+
+        return rowsAffected;
+
+    }
+
+   
+
+    public async Task<Result<int>> AppendPermissions(Guid id, Permissions permissions)
+    {
+        if (id == Guid.Empty)
+        {
+            return Error.BadRequest("Id is required.");
+        }
+
+
+        using var connection = GetConnection();
+        int rowsAffected = await connection.ExecuteAsync($"""
+            UPDATE users
+            SET
+                permissions = permissions | @{nameof(permissions)},
+                updated_at = NOW()
+            WHERE id = @{nameof(id)};
+            """, new { id, permissions });
+
+        Logger.IfPositive(rowsAffected)
+            .LogInformation("Appended permissions {permissions} to user {id}.", permissions, id);
+
+        Logger.IfZero(rowsAffected)
+            .LogInformation("Cannot append permissions, user {id} not found.", id);
+
+        return rowsAffected;
     }
 
     public Task<int> Delete(Guid id)
@@ -127,10 +182,5 @@ public class UserDatabase(NpgsqlConnectionString connectionString) : PostgresDb(
         return connection.ExecuteAsync($"""
             DELETE FROM users WHERE id = @{nameof(id)};
             """, new { id });
-    }
-
-    public Task<User?> GetUserByEntraId(Guid entraId)
-    {
-        throw new NotImplementedException();
     }
 }

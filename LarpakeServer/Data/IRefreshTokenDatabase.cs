@@ -14,10 +14,17 @@ public interface IRefreshTokenDatabase
     /// <summary>
     /// Check if the refresh token is valid against the database.
     /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="refreshToken"></param>
-    /// <returns><see cref="RefreshTokenValidationResult"/> that represents succes or invalidation.</returns>
-    Task<RefreshTokenValidationResult> IsValid(Guid userId, string refreshToken);
+    /// <param name="userId">Token owner id.</param>
+    /// <param name="refreshToken">Unhashed refresh token</param>
+    /// <returns><see cref="RefreshTokenValidationResult"/> that represents success or invalidation.</returns>
+    Task<RefreshTokenValidationResult> Validate(string refreshToken, Guid userId);
+
+    /// <summary>
+    /// Check if the refresh token is valid against the database.
+    /// </summary>
+    /// <param name="refreshToken">Unhashed refresh token.</param>
+    /// <returns><see cref="RefreshTokenValidationResult"/> that represents success or invalidation.</returns>
+    Task<RefreshTokenValidationResult> Validate(string refreshToken);
 
     /// <summary>
     /// Revoke all tokens from specific token family (same refresh token chain).

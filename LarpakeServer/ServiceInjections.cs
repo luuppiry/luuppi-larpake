@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Data.Helpers;
+using LarpakeServer.Data.PostgreSQL;
 using LarpakeServer.Data.TypeHandlers;
 using LarpakeServer.Identity;
 using LarpakeServer.Identity.EntraId;
@@ -7,7 +8,6 @@ using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -82,7 +82,6 @@ public static class ServiceInjections
 
     public static void AddPostgresDatabases(this IServiceCollection services, IConfiguration configuration)
     {
-
         string connectionString = configuration.GetConnectionString("PostgreSQL")
             ?? configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("No connection string found.");
@@ -92,15 +91,15 @@ public static class ServiceInjections
         SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
         DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-        services.AddSingleton<IOrganizationEventDatabase, Postgres.OrganizationEventDatabase>();
-        services.AddSingleton<IUserDatabase, Postgres.UserDatabase>();
-        services.AddSingleton<IFreshmanGroupDatabase, Postgres.FreshmanGroupDatabase>();
-        services.AddSingleton<IAttendanceDatabase, Postgres.AttendanceDatabase>();
-        services.AddSingleton<ISignatureDatabase, Postgres.SignatureDatabase>();
-        services.AddSingleton<IRefreshTokenDatabase, Postgres.RefreshTokenDatabase>();
-        services.AddSingleton<ILarpakeDatabase, Postgres.LarpakeDatabase>();
-        services.AddSingleton<ILarpakeEventDatabase, Postgres.LarpakeEventDatabase>();
-        services.AddSingleton<IStatisticsService, Postgres.StatisticsService>();
+        services.AddSingleton<IOrganizationEventDatabase, OrganizationEventDatabase>();
+        services.AddSingleton<IUserDatabase, UserDatabase>();
+        services.AddSingleton<IGroupDatabase, GroupDatabase>();
+        services.AddSingleton<IAttendanceDatabase, AttendanceDatabase>();
+        services.AddSingleton<ISignatureDatabase, SignatureDatabase>();
+        services.AddSingleton<IRefreshTokenDatabase, RefreshTokenDatabase>();
+        services.AddSingleton<ILarpakeDatabase, LarpakeDatabase>();
+        services.AddSingleton<ILarpakeEventDatabase, LarpakeEventDatabase>();
+        services.AddSingleton<IStatisticsService, StatisticsService>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
@@ -114,9 +113,7 @@ public static class ServiceInjections
         services.AddSingleton<TokenService>();
         services.AddSingleton<IClaimsReader, TokenService>();
         services.AddSingleton<AttendanceKeyService>();
-
-
-
+        services.AddSingleton<InviteKeyService>();
 
         // Key options parsing from appsettings.json
         services.AddOptions<AttendanceKeyOptions>()
@@ -126,8 +123,13 @@ public static class ServiceInjections
         services.AddOptions<PermissionsOptions>()
             .BindConfiguration(PermissionsOptions.SectionName);
 
+        // Conflict retry policy options parsing from appsettings.json
         services.AddOptions<ConflictRetryPolicyOptions>()
             .BindConfiguration(ConflictRetryPolicyOptions.SectionName);
+
+        // Invite key options parsing from appsettings.json
+        services.AddOptions<InviteKeyOptions>()
+            .BindConfiguration(InviteKeyOptions.SectionName);
     }
 
 

@@ -10,7 +10,7 @@ using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Options;
 using Microsoft.Extensions.Options;
-using AttendanceGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.AttendanceGetDto>;
+using AttendancesGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.AttendanceGetDto>;
 
 
 namespace LarpakeServer.Controllers;
@@ -39,6 +39,7 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(AttendancesGetDto), 200)]
     public async Task<IActionResult> Get([FromQuery] AttendanceQueryOptions options)
     {
         /* Everyone can read their own attendances,
@@ -52,7 +53,7 @@ public class AttendancesController : ExtendedControllerBase
         }
 
         var records = await _db.Get(options);
-        var result = AttendanceGetDto.MapFrom(records);
+        AttendancesGetDto result = AttendancesGetDto.MapFrom(records);
         result.SetNextPaginationPage(options);
         if (readSelfOnly)
         {
@@ -65,6 +66,8 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("{eventId}")]
     [RequiresPermissions(Permissions.AttendEvent)]
+    [ProducesResponseType(typeof(AttendanceGetDto), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> GenerateAttendanceKey(long eventId)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
@@ -82,6 +85,8 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("{key}/complete")]
     [RequiresPermissions(Permissions.CompleteAttendance)]
+    [ProducesResponseType(typeof(GuidIdResponse), 201)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Complete(string key)
     {
         if (key.StartsWith(_keyOptions.Header) is false)
@@ -116,6 +121,8 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("complete")]
     [RequiresPermissions(Permissions.Admin)]
+    [ProducesResponseType(typeof(GuidIdResponse), 201)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Complete([FromBody] CompletionPutDto dto)
     {
         /* User cannot sign their own attendance.
@@ -141,6 +148,8 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("uncomplete")]
     [RequiresPermissions(Permissions.DeleteAttendance)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
         
@@ -157,6 +166,7 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("clean")]
     [RequiresPermissions(Permissions.Sudo)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> CleanInvalidEntries()
     {
         int rowsAffected = await _db.Clean();
