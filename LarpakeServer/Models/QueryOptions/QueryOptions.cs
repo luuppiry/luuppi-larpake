@@ -2,7 +2,7 @@
 
 namespace LarpakeServer.Models.QueryOptions;
 
-public abstract class QueryOptions
+public class QueryOptions
 {
     [Range(1, int.MaxValue)]
     public virtual int PageSize { get; set; } = 20;
@@ -14,6 +14,4 @@ public abstract class QueryOptions
     {
         return PageOffset + PageSize;
     }
-
-    public abstract bool HasNonNullValues();
 }

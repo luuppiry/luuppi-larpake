@@ -1,8 +1,7 @@
 ﻿using LarpakeServer.Data;
-using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Controllers;
@@ -14,59 +13,56 @@ namespace LarpakeServer.Controllers;
 public class StatisticsController : ExtendedControllerBase
 {
     readonly IStatisticsService _statisticsService;
-    readonly IFreshmanGroupDatabase _groupDb;
 
     public StatisticsController(
         IClaimsReader claimsReader,
         IStatisticsService statisticsService,
-        IFreshmanGroupDatabase groupDb,
         ILogger<ExtendedControllerBase> logger) : base(claimsReader, logger)
     {
         _statisticsService = statisticsService;
-        _groupDb = groupDb;
     }
 
-    [HttpGet("users/points/average")]
-    public async Task<IActionResult> GetAllAverage()
+    [HttpGet("larpakkeet/own/points/average")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetAllAttendedLarpakeAverages()
     {
-        int? startYear = GetRequestUserStartYear();
-        if (startYear is null)
-        {
-            return Unauthorized("User start year required.");
-        }
-        return await GetAllAverage(startYear.Value);
+        Guid userId = GetRequestUserId();
+        LarpakeAvgPoints[] records = await _statisticsService.GetAttendendLarpakeAvgPoints(userId);
+        return OkData(records);
     }
-    
-    [HttpGet("users/{year}/points/average")]
+
+    [HttpGet("larpakkeet/{larpakeId}/points/average")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetAllAverage(int year)
+    public async Task<IActionResult> GetAllAverage(long larpakeId)
     {
-        long points = await _statisticsService.GetAveragePoints(year);
-        return Ok(new { Points = points });
+        long? points = await _statisticsService.GetAveragePoints(larpakeId);
+        return points is null 
+            ? IdNotFound() : OkData(points);
     }
 
-    [HttpGet("users/points")]
-    public async Task<IActionResult> GetAllTotal()
+    [HttpGet("larpakkeet/own/points/total")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetAllAttendedLarpakeTotals()
     {
-        int? startYear = GetRequestUserStartYear();
-        if (startYear is null)
-        {
-            return Unauthorized("User start year required.");
-        }
-        return await GetAllTotal(startYear.Value);
+        Guid userId = GetRequestUserId();
+        LarpakeTotalPoints[] records = await _statisticsService.GetAttendendLarpakeTotalPoints(userId);
+        return OkData(records);
     }
 
-    [HttpGet("users/{year}/points")]
+    [HttpGet("larpakkeet/{larpakeId}/points/total")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetAllTotal(int year)
+    public async Task<IActionResult> GetAllTotal(long larpakeId)
     {
-        long points = await _statisticsService.GetTotalPoints(year);
-        return Ok(new { Points = points });
+        long? points = await _statisticsService.GetTotalPoints(larpakeId);
+        if (points is null)
+        {
+            return IdNotFound();
+        }
+        return OkData(points);
     }
 
-
-
-    [HttpGet("users/self/points")]
+    [HttpGet("users/own/points")]
+    [RequiresPermissions(Permissions.CommonRead)]
     public async Task<IActionResult> GetUserTotal()
     {
         Guid userId = GetRequestUserId();
@@ -77,59 +73,53 @@ public class StatisticsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.ReadStatistics)]
     public async Task<IActionResult> GetUserTotal(Guid userId)
     {
-        long? points = await _statisticsService.GetUserPoints(userId);
-        return points is null
-            ? IdNotFound() : Ok(new { Points = points });
+        LarpakeTotalPoints[] records = await _statisticsService.GetUserPoints(userId);
+        return OkData(records);
     }
 
-    [HttpGet("users/leading/points")]
-    [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetLeadingUserPoints([FromQuery] QueryOptions options)
-    {
-        long[] records = await _statisticsService.GetLeadingUserPoints(options);
-        return Ok(new LeadersGetDto<long>(records, options));
-    }
 
     [HttpGet("users/leading")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetLeadingUsers([FromQuery] QueryOptions options)
+    public async Task<IActionResult> GetLeadingUsers([FromQuery] StatisticsQueryOptions options)
     {
-        var records = await _statisticsService.GetLeadingUsers(options);
-        return Ok(new LeadersGetDto<UserPoints>(records, options));
+        UserPoints[] records = await _statisticsService.GetLeadingUsers(options);
+
+        var result = QueryDataGetDto<UserPoints>.MapFrom(records)
+            .AppendPaging(options);
+
+        return Ok(result);
     }
 
 
+    [HttpGet("groups/own/points")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetOwnGroupTotal()
+    {
+        Guid userId = GetRequestUserId();
+        GroupTotalPoints[] records = await _statisticsService.GetGroupPoints(userId);
+        return OkData(records);
+    }
+
 
     [HttpGet("groups/{groupId}/points")]
-    public async Task<IActionResult> GetFreshmanGroupTotal(int groupId)
+    [RequiresPermissions(Permissions.ReadStatistics)]
+    public async Task<IActionResult> GetFreshmanGroupTotal(long groupId)
     {
-        /* User must have permissions to read 
-         * statistics or be a member of the requested group
-         */
-        if (GetRequestPermissions().Has(Permissions.ReadStatistics))
-        {
-            Guid[]? groupMembers = await _groupDb.GetMembers(groupId);
-            if (groupMembers is null)
-            {
-                return IdNotFound();
-            }
-            if (groupMembers.Contains(GetRequestUserId()) is false)
-            {
-                return Unauthorized("Not group member.");
-            }
-        }
-
-        var result = await _statisticsService.GetFreshmanGroupPoints(groupId);
+        long? result = await _statisticsService.GetGroupPoints(groupId);
         return result is null
-            ? IdNotFound() : Ok(result);
+            ? IdNotFound() : OkData(result.Value);
     }
 
     [HttpGet("groups/leading")]
     [RequiresPermissions(Permissions.ReadStatistics)]
-    public async Task<IActionResult> GetLeadingFreshmanGroups([FromQuery] QueryOptions options)
+    public async Task<IActionResult> GetLeadingFreshmanGroups([FromQuery] StatisticsQueryOptions options)
     {
-        var records = await _statisticsService.GetLeadingGroups(options);
-        return Ok(new LeadersGetDto<GroupPoints>(records, options));
+        GroupPoints[] records = await _statisticsService.GetLeadingGroups(options);
+
+        var result = QueryDataGetDto<GroupPoints>.MapFrom(records)
+            .AppendPaging(options);
+
+        return Ok(result);
     }
 
 }

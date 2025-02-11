@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Cryptography.Xml;
 
 namespace LarpakeServer.Extensions;
 
@@ -53,6 +54,12 @@ public static class EnumExtensions
     internal static bool Has(this User user, Permissions value)
     {
         return user.Permissions.Has(value);
+    }
+
+    internal static bool IsMoreThan(this Permissions value, Permissions reference)
+    {
+        // Does value have more flags than reference?
+        return (value & reference) < value;
     }
 
  

@@ -4,17 +4,27 @@ using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
+using LarpakeServer.Services.Options;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Primitives;
 using System.Security.Claims;
+using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
 
+[Authorize]
 [ApiController]
-[Route("api")]
+[Route("api/[controller]")]
+[EnableRateLimiting(RateLimitingOptions.AuthPolicyName)]
 public class AuthenticationController : ExtendedControllerBase
 {
     readonly TokenService _tokenService;
     readonly IUserDatabase _userDb;
     readonly IRefreshTokenDatabase _refreshTokenDb;
+    const string RefreshTokenCookieName = "__Secure-refreshToken";
+    
+    record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt);
+
 
     public AuthenticationController(
         TokenService generator,
@@ -29,7 +39,30 @@ public class AuthenticationController : ExtendedControllerBase
     }
 
 
+    
+
+
+    [HttpPost("sign-up")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CreateUser([FromBody] UserPostDto dto)
+    {
+        // TODO: This should be handled differently when I know how
+        // TODO: Remove this, user comes from luuppi server and should be handled in login
+
+        var record = DbUser.MapFrom(dto);
+        Result<Guid> result = await _userDb.Insert(record);
+        if (result)
+        {
+            _logger.LogInformation("Created new user {id}", (Guid)result);
+            return CreatedId((Guid)result);
+        }
+        return FromError(result);
+    }
+
+
+
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest dto)
     {
         // TODO: Validate request and user
@@ -60,15 +93,33 @@ public class AuthenticationController : ExtendedControllerBase
         return await SaveToken(user, tokens, Guid.Empty);
     }
 
-
+    [AllowAnonymous]
     [HttpPost("token/refresh")]
-    public async Task<IActionResult> Refresh([FromBody] TokenPostDto dto)
+    public async Task<IActionResult> Refresh()
     {
-        // TODO: RateLimit this
-        // TODO: Refresh token should be read from http only cookie and access token from header (probably)
+        // Read headers and cookies to get tokens
+        if (Request.Headers.TryGetValue("Authorization", out StringValues accessTokenValue) is false)
+        {
+            return Unauthorized();
+        }
+        if (Request.Cookies.TryGetValue(RefreshTokenCookieName, out string? refreshToken) is false)
+        {
+            return Unauthorized();
+        }
+
+        // Get tokens and validate not empty
+        string? accessToken = accessTokenValue;
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            return Unauthorized();
+        }
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return Unauthorized();
+        }
 
         // Validate expired access token 
-        if (_tokenService.ValidateAccessToken(dto.AccessToken, out ClaimsPrincipal? claims, false) is false)
+        if (_tokenService.ValidateAccessToken(accessToken, out ClaimsPrincipal? claims, false) is false)
         {
             return Unauthorized();
         }
@@ -88,7 +139,7 @@ public class AuthenticationController : ExtendedControllerBase
         }
 
         // Validate refresh token
-        var validation = await _refreshTokenDb.IsValid(userId.Value, dto.RefreshToken);
+        var validation = await _refreshTokenDb.IsValid(userId.Value, refreshToken);
         if (validation.IsValid is false)
         {
             return Unauthorized();
@@ -96,7 +147,7 @@ public class AuthenticationController : ExtendedControllerBase
 
 
         // Tokens are valid, generate new ones
-        User? user = await _userDb.Get(userId.Value);
+        DbUser? user = await _userDb.Get(userId.Value);
         if (user is null)
         {
             return IdNotFound("User does not exist.");
@@ -107,14 +158,12 @@ public class AuthenticationController : ExtendedControllerBase
 
         _logger.LogInformation("Refreshed tokens for user {id}.", user.Id);
 
-        // TODO: Set refresh token to http only cookie
-
         // Finish by saving refresh token
         return await SaveToken(user, newTokens, validation.TokenFamily.Value);
     }
 
 
-    [Authorize]
+    [DisableRateLimiting]
     [HttpPost("token/invalidate")]
     public async Task<IActionResult> InvalidateTokens()
     {
@@ -123,13 +172,22 @@ public class AuthenticationController : ExtendedControllerBase
         return OkRowsAffected(rowsAffected);
     }
 
+    [DisableRateLimiting]
+    [HttpPost("token/invalidate/{tokenFamily}")]
+    [RequiresPermissions(Permissions.Admin)]
+    public async Task<IActionResult> InvalidateTokenFamily(Guid tokenFamily)
+    {
+        int rowsAffected = await _refreshTokenDb.RevokeFamily(tokenFamily);
+        return OkRowsAffected(rowsAffected);
+    }
 
 
-    private async Task<IActionResult> SaveToken(User user, TokenGetDto tokens, Guid tokenFamily)
+    private async Task<IActionResult> SaveToken(DbUser user, TokenGetDto tokens, Guid tokenFamily)
     {
         Guard.ThrowIfNull(user);
         Guard.ThrowIfNull(tokens);
         Guard.ThrowIfNull(tokens.RefreshTokenExpiresAt);
+        Guard.ThrowIfNull(tokens.AccessTokenExpiresAt);
 
         // Save refresh token
         var result = await _refreshTokenDb.Add(new RefreshToken
@@ -144,7 +202,46 @@ public class AuthenticationController : ExtendedControllerBase
         {
             return FromError(result);
         }
-        return Ok(tokens);
+
+
+        // Set refresh token to http only cookie
+        Result refreshTokenSet = await WriteRefreshTokenHeader(tokens, HttpContext);
+
+        if (refreshTokenSet.IsError)
+        {
+            return FromError(refreshTokenSet);
+        }
+
+
+        // Return result
+        TokenInfo tokenInfo = new(
+            Message: "Refresh token cookie set, access token in body.",
+            AccessToken: tokens.AccessToken,
+            AccessTokenExpiresAt: tokens.AccessTokenExpiresAt.Value,
+            RefreshTokenExpiresAt: tokens.RefreshTokenExpiresAt.Value);
+        
+        return Ok(tokenInfo);
+    }
+
+
+    private Task<Result> WriteRefreshTokenHeader(TokenGetDto tokens, HttpContext context)
+    {
+        Guard.ThrowIfNull(tokens);
+        Guard.ThrowIfNull(context);
+
+        // Write header
+        string controllerPath = ControllerContext.ActionDescriptor.ControllerName;
+        context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken,
+            new CookieOptions
+            {
+                MaxAge = _tokenService.RefreshTokenLifetime,
+                Secure = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+                Path = controllerPath
+            });
+
+        return Task.FromResult(Result.Ok);
     }
 }
 

@@ -1,9 +1,10 @@
 ﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 
 namespace LarpakeServer.Models.GetDtos;
 
-public class UserGetDto
+public class UserGetDto : IMappable<User, UserGetDto>
 {
     public required Guid Id { get; set; }
     public Permissions Permissions { get; set; }
@@ -11,7 +12,7 @@ public class UserGetDto
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    internal static UserGetDto From(User record)
+    public static UserGetDto From(User record)
     {
         return new UserGetDto
         {

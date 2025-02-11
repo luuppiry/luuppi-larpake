@@ -1,10 +1,8 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
-using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Identity;
-using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
-using LarpakeServer.Models.PostDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 
@@ -18,14 +16,18 @@ namespace LarpakeServer.Controllers;
 public class UsersController : ExtendedControllerBase
 {
     readonly IUserDatabase _db;
+    readonly IRefreshTokenDatabase _refreshTokenDb;
 
     public UsersController(
         IUserDatabase db,
         IClaimsReader claimsReader,
+        IRefreshTokenDatabase refreshTokenDb,
         ILogger<UsersController> logger) : base(claimsReader, logger)
     {
         _db = db;
+        _refreshTokenDb = refreshTokenDb;
     }
+
 
 
     [HttpGet]
@@ -33,8 +35,12 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> GetUsers([FromQuery] UserQueryOptions options)
     {
         var records = await _db.Get(options);
-        var result = UsersGetDto.MapFrom(records);
-        result.SetNextPaginationPage(options);
+
+        // Map to result
+        var result = QueryDataGetDto<UserGetDto>
+            .MapFrom(records)
+            .AppendPaging(options);
+        
         return Ok(result);
     }
 
@@ -44,31 +50,8 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> GetUser(Guid userId)
     {
         var record = await _db.Get(userId);
-        if (record is null)
-        {
-            return NotFound();
-        }
-        return Ok(record);
+        return record is null ? NotFound() : Ok(record);
     }
-
-    [HttpPost]
-    [AllowAnonymous]
-    public async Task<IActionResult> CreateUser([FromBody] UserPostDto dto)
-    {
-        // TODO: This should be handled differently when I know how
-        // Might move this to authentication controller
-
-        var record = DbUser.MapFrom(dto);
-        Result<Guid> result = await _db.Insert(record);
-        if (result)
-        {
-            _logger.LogInformation("Created new user {id}", (Guid)result);
-            return CreatedId((Guid)result);
-        }
-        return FromError(result);
-    }
-
-
 
 
     [HttpPut("{userId}")]
@@ -76,9 +59,11 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserPutDto dto)
     {
         // Validate request author role is higher than target role
-        Result roleValidationResult = await IsRequestAuthorInHigherRole(userId);
+        Result roleValidationResult = await RequireHigherAuthorRole(userId);
         if (roleValidationResult.IsError)
         {
+            _logger.LogInformation("Denied user {id} update request for {targetId}.", 
+                GetRequestUserId(), userId);
             return FromError(roleValidationResult);
         }
 
@@ -97,32 +82,43 @@ public class UsersController : ExtendedControllerBase
 
 
 
-    [HttpPut("{userId}/permissions")]
-    public async Task<IActionResult> UpdateUserPermissions(Guid userId, [FromBody] UserPermissionsPutDto dto)
+    [HttpPut("{targetId}/permissions")]
+    public async Task<IActionResult> UpdateUserPermissions(Guid targetId, [FromBody] UserPermissionsPutDto dto)
     {
         /* Validate roles (Author is always validated from database, not only from JWT)
          * - Request author must have matching permission to set target permission value.
          * - Request author must also have at least same permissions to be updated. 
          * - User cannot change their own permissions.
          */
-
-        if (userId == Guid.Empty)
+        
+        if (targetId == Guid.Empty)
         {
             return BadRequest("UserId must be provided.");
         }
 
+
+        // Validate user is not changing own permissions or setting higher than admin
         Guid authorId = GetRequestUserId();
-        if (userId == authorId)
+        if (targetId == authorId)
         {
-            _logger.LogInformation("User {id} tried to change own permissions.", userId);
+            _logger.LogInformation("User {id} tried to change own permissions.", targetId);
             return BadRequest("Cannot change own permissions.");
         }
+        if (dto.Permissions.IsMoreThan(Permissions.Admin))
+        {
+            _logger.LogInformation("User {id} tried to set permissions higher than admin.", targetId);
+            return BadRequest("Setting permissions higher than admin are forbidden in runtime.");
+        }
 
+        // Validate author exists
         DbUser? author = await _db.Get(authorId);
+
         if (author is null)
         {
             _logger.LogError("Authorized user {id} not found in database, " +
-                "token might have leaked and needs immidiate actions!", authorId);
+                "token might have leaked and needs immidiate actions, revoking!", authorId);
+
+            await _refreshTokenDb.RevokeUserTokens(authorId);
             return InternalServerError("Invalid token.");
         }
         if (author.IsAllowedToSet(dto.Permissions) is false)
@@ -136,13 +132,45 @@ public class UsersController : ExtendedControllerBase
             return Unauthorized("Higher request role required.");
         }
 
-        // Update
-        Result<int> result = await _db.UpdatePermissions(userId, dto.Permissions);
+        // Validate target exists
+        DbUser? target = await _db.Get(targetId);
+        if (target is null)
+        {
+            _logger.LogInformation("User {id} not found.", targetId);
+            return IdNotFound();
+        }
+
+
+        // Do update
+        Result<int> result = await _db.SetPermissions(targetId, dto.Permissions);
+        
+
+        _logger.LogInformation("User {author} set permissions {value} for user {target}.",
+            author, dto.Permissions, targetId);
 
         return result.MatchToResponse(
                 ok: OkRowsAffected,
                 error: FromError
             );
+    }
+
+
+    [HttpDelete("own/permissions")]
+    public async Task<IActionResult> RevokeOwnPermissions()
+    {
+        /* Because user is making the request, he should exit in database.
+         * Otherwise user is deleted and token still exists sometime.
+         */
+        Guid userId = GetRequestUserId();
+        Result<int> rowsAffected = await _db.SetPermissions(userId, Permissions.None);
+        
+        _logger.IfTrue(rowsAffected).LogInformation("User {id} revoked own permissions.", userId);
+        _logger.IfFalse(rowsAffected).LogError("Failed to revoke permissions for user {id}.", userId);
+
+        return rowsAffected.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError
+        );
     }
 
 
@@ -152,7 +180,7 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> DeleteUser(Guid userId)
     {
         // Validate request author role is higher than target role
-        Result roleValidationResult = await IsRequestAuthorInHigherRole(userId);
+        Result roleValidationResult = await RequireHigherAuthorRole(userId);
         if (roleValidationResult.IsError)
         {
             _logger.LogInformation(
@@ -171,7 +199,7 @@ public class UsersController : ExtendedControllerBase
 
 
 
-    private async Task<Result> IsRequestAuthorInHigherRole(Guid targetId)
+    private async Task<Result> RequireHigherAuthorRole(Guid targetId)
     {
         if (targetId == Guid.Empty)
         {

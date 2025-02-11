@@ -1,10 +1,12 @@
-using LarpakeServer.Extensions;
+using LarpakeServer;
 using LarpakeServer.Identity;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using LarpakeServer.Services.Implementations;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Order matters with hosted services (first is executed first)
+builder.Services.AddHostedService<PermissionsStartupService>();
 
 // Add services to the container.
 ConfigurationManager configuration = builder.Configuration;
@@ -14,25 +16,12 @@ builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new()
-        {
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!)),
-            ValidIssuer = configuration["Jwt:Issuer"],
-            ValidAudience = configuration["Jwt:Audience"],
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-        };
-    });
+builder.Services.AddJwt(configuration);
 builder.Services.AddAuthorization();
 builder.Services.AddServices(configuration);
-builder.Services.AddSqliteDatabases(configuration);
+builder.Services.AddPostgresDatabases(configuration);
 builder.Services.ConfigureCors();
+builder.Services.AddRateLimiters(configuration);
 
 builder.Services.AddRouting(options =>
 {
@@ -55,6 +44,7 @@ if (app.Environment.IsDevelopment())
 
 // TODO: Add exception handling middleware
 
+app.UseRateLimiter();
 app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
 
@@ -62,5 +52,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

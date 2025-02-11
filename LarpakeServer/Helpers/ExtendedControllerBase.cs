@@ -1,5 +1,4 @@
 ﻿using LarpakeServer.Extensions;
-using LarpakeServer.Helpers.Generic;
 using LarpakeServer.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -28,9 +27,6 @@ public class ExtendedControllerBase : ControllerBase
     protected ObjectResult FromError<T>(Result<T> error) => FromError((Error)error);
 
 
-
-
-
     protected ObjectResult OkRowsAffected(int rowsAffected)
     {
         return Ok(new { RowsAffected = rowsAffected });
@@ -40,6 +36,12 @@ public class ExtendedControllerBase : ControllerBase
     {
         string? resourceUrl = $"{Request.Path.Value}/{id}";
         return Created(resourceUrl, new { Id = id });
+    }
+
+
+    protected ObjectResult OkData<T>(T Data)
+    {
+        return Ok(new { Data });
     }
 
     protected ObjectResult CreatedId(Guid id)
@@ -100,6 +102,8 @@ public class ExtendedControllerBase : ControllerBase
 
     private ObjectResult FromError(Error error)
     {
+        _logger.LogInformation("Handled request error: {error}", error);
+
         if (error is DataError dataError)
         {
             return StatusCode(dataError.StatusCode, new

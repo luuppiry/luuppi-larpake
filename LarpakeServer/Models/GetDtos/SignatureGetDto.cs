@@ -1,10 +1,11 @@
 ﻿using LarpakeServer.Models.ComplexDataTypes;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos.Templates;
 using System.Text.Json;
 
 namespace LarpakeServer.Models.GetDtos;
 
-public class SignatureGetDto
+public class SignatureGetDto : IMappable<Signature, SignatureGetDto>
 {
     public required Guid Id { get; set; }
     public required Guid OwnerId { get; set; }

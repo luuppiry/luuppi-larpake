@@ -23,4 +23,14 @@ public static class Guard
         }
     }
 
+
+    [StackTraceHidden]
+    public static void ThrowIfNegative(int value, [CallerArgumentExpression(nameof(value))] string? paramName = "_paramName_")
+    {
+        if (value < 0)
+        {
+            throw new ArgumentOutOfRangeException(paramName, "Value must be non-negative.");
+        }
+    }
+
 }

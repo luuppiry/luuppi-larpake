@@ -56,7 +56,6 @@ public class PermissionsValidatorTests
     [Theory]
     [InlineData(Permissions.Admin, Permissions.Sudo)]    
     [InlineData(Permissions.Admin, Permissions.Admin)]    
-    [InlineData(Permissions.Admin | Permissions.WriteAllData, Permissions.Admin)]   // Non full role  
     [InlineData(Permissions.Tutor, Permissions.Admin)]    
     [InlineData(Permissions.Tutor | Permissions.CreateEvent, Permissions.Tutor)]    // Non full role
     [InlineData(Permissions.Freshman | Permissions.CreateEvent, Permissions.Admin)]

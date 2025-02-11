@@ -13,7 +13,7 @@ public class TokenService : IClaimsReader
     readonly IConfiguration _config;
     readonly ILogger<TokenService> _logger;
     readonly int _refreshTokenLength;
-
+    const string BearerPrefix = "Bearer ";
 
     public TimeSpan AccessTokenLifetime { get; }
     public TimeSpan RefreshTokenLifetime { get; }
@@ -77,8 +77,9 @@ public class TokenService : IClaimsReader
         string accessToken = GenerateToken(user);
         string refreshToken = GenerateRefreshToken();
         DateTime refreshExpires = DateTime.UtcNow.Add(RefreshTokenLifetime);
+        DateTime accessExpires = DateTime.UtcNow.Add(AccessTokenLifetime);
 
-        return new TokenGetDto(refreshExpires)
+        return new TokenGetDto(accessExpires, refreshExpires)
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
@@ -90,9 +91,14 @@ public class TokenService : IClaimsReader
     {
         Guard.ThrowIfNull(token);
 
+        // Create token handler and clear default mappings (e.g. "name" -> "some/xmlsoap/string")
         JwtSecurityTokenHandler tokenHandler = new();
+        tokenHandler.InboundClaimTypeMap.Clear();
+
+        // Get secret key
         byte[] key = Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]!);
 
+        // Set validation parameters
         var validationParameters = new TokenValidationParameters
         {
             IssuerSigningKey = new SymmetricSecurityKey(key),
@@ -104,12 +110,14 @@ public class TokenService : IClaimsReader
             ValidateLifetime = validateExpiration
         };
 
-        /* I don't know why this is necessary,
-         * but it fixes sub from getting mapped to some stupid value
-         * or something like that, I dont know why anyone would want that 
-         * This fixes reading sub (userId) later, so it is now here. */
-        tokenHandler.InboundClaimTypeMap.Clear();
-        
+
+        // Token might have "Bearer <token>" format, remove it
+        if (token.StartsWith(BearerPrefix))
+        {
+            token = token[BearerPrefix.Length..];
+        }
+
+        // Validate
         try
         {
             claims = tokenHandler.ValidateToken(token, validationParameters, out _);

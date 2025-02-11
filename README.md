@@ -13,22 +13,13 @@ Fuksilärpäke is traditional part of freshman year for students in Luuppi. Fres
 
 ## Getting started
 
+Instructions for running the project can be found on [Setup wiki](https://github.com/henrivain/Larpake/wiki/Setup) 
+
 ### Requirements
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 - [ASP.NET Core 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-
-### Steps
-
-1) Clone repository
-2) Go inside `LarpakeServer` -folder
-3) Run command
-```ps
-dotnet run build --launch-profile https
-```
-4) Server starts to run
-
-You can now view api endpoints and make requests in `https://localhost:7267/openapi`
+- [PostgreSQL 17 server](https://www.postgresql.org/download/)
 
 ## Technologies
 
@@ -42,12 +33,9 @@ In the heart of the Lärpäke is the REST api implemented using ASP.NET Core Web
 
 
 #### Database
-`SQLite` `Dapper`
+`PostgreSQL` `Dapper`
 
-The web API uses SQLite database to store all the data created by user clients. Dapper ORM is used in the C# code to map sql queries into.
-For those interested, database graphs can be found `Wiki` -pages under `Database Graphs` ([here](https://github.com/henrivain/Larpake/wiki/Diagrams)).
-
-Production setup might move databases later to something like PostgreSQL.
+The web API uses PostgreSQL database to store all the data created by user clients. Dapper ORM is used in the C# code to map sql query results into objects. For those interested, database graphs can be found `Wiki` -pages under `Database Graphs` ([here](https://github.com/henrivain/Larpake/wiki/Diagrams)).
 
 #### Api Events
 
