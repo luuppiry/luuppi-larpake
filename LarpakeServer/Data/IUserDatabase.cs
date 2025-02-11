@@ -7,10 +7,11 @@ namespace LarpakeServer.Data;
 public interface IUserDatabase
 {
     Task<User[]> Get(UserQueryOptions options);
-    Task<User?> Get(Guid id);
+    Task<User?> GetByUserId(Guid id);
+    Task<User?> GetByEntraId(Guid entraId);
     Task<Result<Guid>> Insert(User record);
     Task<Result<int>> Update(User record);
     Task<Result<int>> SetPermissions(Guid id, Permissions permissions);
+    Task<Result<int>> AppendPermissions(Guid id, Permissions permissions);
     Task<int> Delete(Guid id);
-
 }

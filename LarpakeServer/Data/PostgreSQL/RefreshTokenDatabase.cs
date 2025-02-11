@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
+using Npgsql;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
@@ -61,7 +62,46 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
         }
     }
 
-    public async Task<RefreshTokenValidationResult> IsValid(Guid userId, string refreshToken)
+    public async Task<RefreshTokenValidationResult> Validate(string refreshToken)
+    {
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            Logger.LogWarning("Empty refresh token provided.");
+            return RefreshTokenValidationResult.Invalid;
+        }
+
+        string hash = ComputeSHA256Hash(refreshToken);
+
+        using var connection = GetConnection();
+        var token = await connection.QueryFirstOrDefaultAsync<RefreshToken>($"""
+            SELECT 
+                user_id, 
+                token,
+                token_family,
+                invalid_at,
+                invalidated_at,
+                created_at
+            FROM refresh_tokens
+            WHERE token = @{nameof(hash)}
+            LIMIT 1;
+            """, new { hash });
+
+        if (token is null)
+        {
+            Logger.LogInformation("Token with hash {hashStart}*** not found.",
+                SafeSlicer.Slice(hash, 10));
+            return RefreshTokenValidationResult.Invalid;
+        }
+
+        // Validate and invalidate after single use
+        return await ValidateAndRevoke(token, connection);
+    }
+
+
+
+
+
+    public async Task<RefreshTokenValidationResult> Validate(string refreshToken, Guid userId)
     {
         // Get hash
         string hash = ComputeSHA256Hash(refreshToken);
@@ -88,38 +128,8 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
             return RefreshTokenValidationResult.Invalid;
         }
 
-        /* If token is already invalidated,
-         * All other tokens created from it should be invalidated as well.
-         */
-        bool isTimeInvalidated = token.InvalidAt < DateTime.UtcNow;
-        bool isUserInvalidated = token.InvalidatedAt is not null;
-        if (isTimeInvalidated || isUserInvalidated)
-        {
-            Logger.LogWarning("Token with hash {hashStart}*** is invalidated for user {id}, revoking family.",
-                SafeSlicer.Slice(hash, 10), userId);
-
-            await RevokeFamily(token.TokenFamily);
-            return RefreshTokenValidationResult.Invalid;
-        }
-
-        // Invalidate token after use
-        int rowsAffected = await connection.ExecuteAsync($"""
-            UPDATE refresh_tokens
-            SET 
-                invalidated_at = NOW()
-            WHERE user_id = @{nameof(userId)}
-                AND token = @{nameof(hash)};
-            """, new { userId, hash });
-
-        if (rowsAffected is 0)
-        {
-            throw new UnreachableException("Failed to invalidate token.");
-        }
-
-        Logger.LogInformation("Token {token}**** is valid for user {id}.", 
-            SafeSlicer.Slice(hash, 10), userId);
-
-        return new RefreshTokenValidationResult(token.TokenFamily);
+        // Validate and invalidate after single use
+        return await ValidateAndRevoke(token, connection);
     }
 
     public Task<int> RevokeUserTokens(Guid userId)
@@ -165,4 +175,45 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
         byte[] hash = SHA256.HashData(tokenBytes);
         return Convert.ToHexString(hash);
     }
+
+    private async Task<RefreshTokenValidationResult> ValidateAndRevoke(RefreshToken token, NpgsqlConnection connection)
+    {
+        if (token is null)
+        {
+            return RefreshTokenValidationResult.Invalid;
+        }
+
+        /* If token is already invalidated,
+        * All other tokens created from it should be invalidated as well.
+        */
+        bool isTimeInvalidated = token.InvalidAt < DateTime.UtcNow;
+        bool isUserInvalidated = token.InvalidatedAt is not null;
+        if (isTimeInvalidated || isUserInvalidated)
+        {
+            Logger.LogWarning("Token with hash {hashStart}*** is invalidated for user {id}, revoking family, double use.",
+                SafeSlicer.Slice(token.Token, 10), token.UserId);
+
+            await RevokeFamily(token.TokenFamily);
+            return RefreshTokenValidationResult.Invalid;
+        }
+
+        // Invalidate token after use
+        int rowsAffected = await connection.ExecuteAsync($"""
+            UPDATE refresh_tokens
+            SET 
+                invalidated_at = NOW()
+            WHERE token = @{nameof(token.Token)};
+            """, token);
+
+        if (rowsAffected is 0)
+        {
+            throw new UnreachableException("Failed to invalidate token.");
+        }
+
+        Logger.LogInformation("Token {token}**** is valid for user {id}.",
+            SafeSlicer.Slice(token.Token, 10), token.UserId);
+
+        return new RefreshTokenValidationResult(token.TokenFamily, token.UserId);
+    }
+
 }

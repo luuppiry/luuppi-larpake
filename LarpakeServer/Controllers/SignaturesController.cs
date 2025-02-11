@@ -6,6 +6,7 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.QueryOptions;
+using SignaturesGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.SignatureGetDto>;
 
 namespace LarpakeServer.Controllers;
 
@@ -30,12 +31,13 @@ public class SignaturesController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.CreateSignature)]
+    [ProducesResponseType(typeof(SignaturesGetDto), 200)]
     public async Task<IActionResult> GetSignatures([FromQuery] SignatureQueryOptions options)
     {
         var records = await _db.Get(options);
 
         // Map to result
-        var result = QueryDataGetDto<SignatureGetDto>
+        SignaturesGetDto result = SignaturesGetDto
             .MapFrom(records)
             .AppendPaging(options);
 
@@ -44,6 +46,8 @@ public class SignaturesController : ExtendedControllerBase
 
     [HttpGet("{signatureId}")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(SignatureGetDto), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> GetSignature(Guid signatureId)
     {
         Signature? record = await _db.Get(signatureId);
@@ -58,6 +62,8 @@ public class SignaturesController : ExtendedControllerBase
 
     [HttpPost]
     [RequiresPermissions(Permissions.CreateSignature)]
+    [ProducesResponseType(typeof(GuidIdResponse), 201)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> PostSignature([FromBody] SignaturePostDto dto)
     {
         if (dto.Signature.CalculatePointsCount() > _signaturePointLimit)
@@ -78,6 +84,8 @@ public class SignaturesController : ExtendedControllerBase
 
     [HttpDelete("{signatureId}")]
     [RequiresPermissions(Permissions.CreateSignature)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> DeleteSignature(Guid signatureId)
     {
         // Validate only admins or signature owner can delete

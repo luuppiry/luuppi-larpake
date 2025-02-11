@@ -7,6 +7,7 @@ using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeEventsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.LarpakeEventGetDto>;
 
 namespace LarpakeServer.Controllers;
 
@@ -15,6 +16,8 @@ namespace LarpakeServer.Controllers;
 [Route("api/larpake-events")]
 public class LarpakeEventsController : ExtendedControllerBase
 {
+    readonly record struct OrgEventIdsResponse(Guid[] Ids);
+
     readonly ILarpakeEventDatabase _db;
 
     public LarpakeEventsController(
@@ -28,6 +31,7 @@ public class LarpakeEventsController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(LarpakeEventsGetDto), 200)]
     public async Task<IActionResult> Get([FromQuery] LarpakeEventQueryOptions options)
     {
         Permissions permissions = GetRequestPermissions();
@@ -41,7 +45,7 @@ public class LarpakeEventsController : ExtendedControllerBase
         var records = await _db.GetEvents(options);
 
         // Map to result
-        var result = QueryDataGetDto<LarpakeEventGetDto>
+        LarpakeEventsGetDto result = LarpakeEventsGetDto
             .MapFrom(records)
             .AppendPaging(options);
 
@@ -55,6 +59,8 @@ public class LarpakeEventsController : ExtendedControllerBase
 
     [HttpGet("{eventId}")]
     [RequiresPermissions(Permissions.ReadAllData)]
+    [ProducesResponseType(typeof(LarpakeEventGetDto), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> Get(long eventId)
     {
         var record = await _db.GetEvent(eventId);
@@ -68,6 +74,8 @@ public class LarpakeEventsController : ExtendedControllerBase
 
     [HttpPost]
     [RequiresPermissions(Permissions.CreateEvent)]
+    [ProducesResponseType(typeof(LongIdResponse), 201)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Create([FromBody] LarpakeEventPostDto record)
     {
         LarpakeEvent mapped = LarpakeEvent.From(record);
@@ -79,6 +87,8 @@ public class LarpakeEventsController : ExtendedControllerBase
 
     [HttpPut("{eventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Update(long eventId, [FromBody] LarpakeEventPutDto record)
     {
         LarpakeEvent mapped = LarpakeEvent.From(record);
@@ -92,6 +102,7 @@ public class LarpakeEventsController : ExtendedControllerBase
     
     [HttpPost("{eventId}/cancel")]
     [RequiresPermissions(Permissions.DeleteEvent)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> Cancel(long eventId)
     {
         int rowsAffected = await _db.Cancel(eventId);
@@ -100,6 +111,8 @@ public class LarpakeEventsController : ExtendedControllerBase
 
     [HttpPost("{eventId}/attendance-opportunities/{orgEventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
+    [ProducesResponseType(200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> SyncOrganizationEvent(long eventId, long orgEventId)
     {
         Result result = await _db.SyncOrganizationEvent(eventId, orgEventId);
@@ -109,6 +122,7 @@ public class LarpakeEventsController : ExtendedControllerBase
     
     [HttpDelete("{eventId}/attendance-opportunities/{orgEventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> UnsyncOrganizationEvent(long eventId, long orgEventId)
     {
         int rowsAffected = await _db.UnsyncOrganizationEvent(eventId, orgEventId);
@@ -117,10 +131,11 @@ public class LarpakeEventsController : ExtendedControllerBase
 
     [HttpGet("{eventId}/attendance-opportunities")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(OrgEventIdsResponse), 200)]
     public async Task<IActionResult> GetAttendanceOpportunies(long eventId)
     {
         Guid[] orgEvents = await _db.GetRefOrganizationEvents(eventId);
-        return Ok(new { OrganizationEventIds = orgEvents });
+        return Ok(new OrgEventIdsResponse(orgEvents));
     }
     
 

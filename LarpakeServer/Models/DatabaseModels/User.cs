@@ -7,16 +7,18 @@ namespace LarpakeServer.Models.DatabaseModels;
 public class User
 {
     public required Guid Id { get; set; }
+    public Guid? EntraId { get; set; }
     public Permissions Permissions { get; set; } = Permissions.None;
     public int? StartYear { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
-    public static User MapFrom(UserPostDto dto)
+    public static User MapFrom(UserPostDto dto, Guid? entraId = null)
     {
         return new User
         {
             Id = Guid.Empty,
+            EntraId = entraId,
             Permissions = Permissions.None,
             StartYear = dto.StartYear,
         };

@@ -14,9 +14,9 @@ ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddControllers();
 builder.Services.AddOpenApi(options =>
 {
-    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    options.AddDocumentTransformer<LarpakeIdBearerSecuritySchemeTransformer>();
 });
-builder.Services.AddJwt(configuration);
+builder.Services.AddAuthenticationServices(configuration);
 builder.Services.AddAuthorization();
 builder.Services.AddServices(configuration);
 builder.Services.AddPostgresDatabases(configuration);

@@ -8,6 +8,7 @@ using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeSectionsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.DatabaseModels.LarpakeSection>;
+using LarpakeetGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.LarpakeGetDto>;
 
 namespace LarpakeServer.Controllers;
 
@@ -28,6 +29,7 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.ReadAllData)]
+    [ProducesResponseType(typeof(LarpakeetGetDto), 200)]
     public async Task<IActionResult> Get([FromQuery] LarpakeQueryOptions options)
     {
         /* Name search is only allowed for admins.
@@ -43,7 +45,7 @@ public class LarpakkeetController : ExtendedControllerBase
         var records = await _db.GetLarpakkeet(options);
 
         // Map to result
-        var result = QueryDataGetDto<LarpakeGetDto>
+        LarpakeetGetDto result = LarpakeetGetDto
             .MapFrom(records)
             .AppendPaging(options);
         
@@ -56,6 +58,7 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpGet("own")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(LarpakeetGetDto), 200)]
     public async Task<IActionResult> Get([FromQuery] bool? minimize)
     {
         minimize ??= false;
@@ -70,6 +73,8 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpGet("{larpakeId}")]
     [RequiresPermissions(Permissions.ReadAllData)]
+    [ProducesResponseType(typeof(LarpakeGetDto), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> Get(long larpakeId)
     {
         var record = await _db.GetLarpake(larpakeId);
@@ -79,10 +84,11 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpGet("{larpakeId}/sections")]
     [RequiresPermissions(Permissions.ReadAllData)]
+    [ProducesResponseType(typeof(LarpakeSectionsGetDto), 200)]
     public async Task<IActionResult> GetSections(long larpakeId, [FromQuery] QueryOptions options)
     {
         LarpakeSection[] sections = await _db.GetSections(larpakeId, options);
-        var result = LarpakeSectionsGetDto.MapFrom(sections);
+        LarpakeSectionsGetDto result = LarpakeSectionsGetDto.MapFrom(sections);
         result.SetNextPaginationPage(options);
         return Ok(result);
     }
@@ -90,6 +96,8 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpPost]
     [RequiresPermissions(Permissions.CreateLarpake)]
+    [ProducesResponseType(typeof(LongIdResponse), 201)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Create([FromBody] LarpakePostDto record)
     {
         var larpake = Larpake.From(record);
@@ -101,6 +109,8 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpPut("{larpakeId}")]
     [RequiresPermissions(Permissions.CreateLarpake)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Update(long larpakeId, [FromBody] LarpakePutDto record)
     {
         var larpake = Larpake.From(record);
@@ -114,6 +124,7 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpDelete("{larpakeId}")]
     [RequiresPermissions(Permissions.DeleteLarpake)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> Delete(long larpakeId)
     {
         int rowsAffected = await _db.DeleteLarpake(larpakeId);
@@ -122,10 +133,12 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpPost("{larpakeId}/sections")]
     [RequiresPermissions(Permissions.CreateLarpake)]
+    [ProducesResponseType(typeof(LongIdResponse), 201)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> CreateSection(long larpakeId, [FromBody] LarpakeSectionPostDto dto)
     {
         var record = LarpakeSection.From(dto, larpakeId);
-        var result = await _db.InsertSection(record);
+        Result<long> result = await _db.InsertSection(record);
         return result.MatchToResponse(
             ok: CreatedId,
             error: FromError);
@@ -133,10 +146,12 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpPut("{larpakeId}/sections")]
     [RequiresPermissions(Permissions.CreateLarpake)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> UpdateSection(long larpakeId, [FromBody] LarpakeSectionPutDto dto)
     {
         var record = LarpakeSection.From(dto, larpakeId);
-        var result = await _db.UpdateSection(record);
+        Result<int> result = await _db.UpdateSection(record);
         return result.MatchToResponse(
             ok: OkRowsAffected,
             error: FromError);
@@ -144,6 +159,7 @@ public class LarpakkeetController : ExtendedControllerBase
 
     [HttpDelete("sections/{sectionId}")]
     [RequiresPermissions(Permissions.DeleteLarpake)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> DeleteSection(long sectionId)
     {
         int rowsAffected = await _db.DeleteSection(sectionId);
