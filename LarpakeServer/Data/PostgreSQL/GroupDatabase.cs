@@ -2,15 +2,26 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services;
 using Npgsql;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
-public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILogger<FreshmanGroupDatabase> logger)
-    : PostgresDb(connectionString, logger), IFreshmanGroupDatabase
+public class GroupDatabase : PostgresDb, IGroupDatabase
 {
+    readonly InviteKeyService _keyService;
+
     record struct InsertModel(long Id, Guid UserId);
     record struct InsertModel2(long Id, Guid UserId, bool IsHidden);
+
+
+    public GroupDatabase(
+        NpgsqlConnectionString connectionString,
+        ILogger<GroupDatabase> logger,
+        InviteKeyService keyService) : base(connectionString, logger)
+    {
+        _keyService = keyService;
+    }
 
 
     public async Task<FreshmanGroup[]> GetGroups(FreshmanGroupQueryOptions options)
@@ -94,7 +105,7 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);
-        
+
         using var connection = GetConnection();
         var minimized = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
         return minimized.ToArray();
@@ -309,5 +320,95 @@ public class FreshmanGroupDatabase(NpgsqlConnectionString connectionString, ILog
                 AND user_id IN (@{nameof(members)});
             """,
             new { id, members });
+    }
+
+    public async Task<Result<string>> GetInviteKey(long groupId)
+    {
+        // Get group invite key or create new if null
+        string newKey = _keyService.GenerateKey();
+        using var connection = GetConnection();
+
+        // Get or update if null
+        string? key = await connection.ExecuteScalarAsync<string>($"""
+            UDPATE freshman_groups 
+            SET 
+                invite_key = COALESCE(invite_key, @{nameof(newKey)}),
+                updated_at = CASE 
+                    WHEN invite_key IS NULL THEN NOW() 
+                    ELSE updated_at END,
+                invite_key_changed_at = CASE 
+                    WHEN invite_key IS NULL THEN NOW() 
+                    ELSE invite_key_changed_at END
+            WHERE id = @{nameof(groupId)}
+            RETURNING invite_key;
+            """, new { newKey });
+
+        if (key is null)
+        {
+            return Error.NotFound("Group not found.");
+        }
+        return key;
+    }
+
+    public async Task<Result<int>> InsertMemberByInviteKey(string inviteKey, Guid userId)
+    {
+        if (inviteKey is null)
+        {
+            return Error.BadRequest("Invite key is null.");
+        }
+        if (inviteKey.Length != _keyService.KeyLength)
+        {
+            return Error.BadRequest("Invalid invite key length.");
+        }
+
+        try
+        {
+            using var connection = GetConnection();
+            return await connection.ExecuteAsync($"""
+            INSERT INTO freshman_group_members (
+                group_id,
+                user_id,
+                is_competing
+            )
+            SELECT 
+                id,
+                @{nameof(userId)},
+                TRUE
+            FROM freshman_groups
+            WHERE invite_key = @{nameof(inviteKey)};
+            """, new { inviteKey, userId });
+        }
+        catch (NpgsqlException ex)
+        {
+            // TODO: Handle error
+            // - User not found
+            // - Invite key not found
+            Logger.LogError(ex, "Error inserting member by invite key.");
+            throw;
+        }
+    }
+
+    public async Task<Result<string>> RefreshInviteKey(long groupId)
+    {
+        // Get group invite key or create new if null
+        string newKey = _keyService.GenerateKey();
+        using var connection = GetConnection();
+
+        // Get or update if null
+        string? key = await connection.ExecuteScalarAsync<string>($"""
+            UDPATE freshman_groups 
+            SET 
+                invite_key = @{nameof(newKey)},
+                updated_at = NOW(),
+                invite_key_changed_at = NOW()
+            WHERE id = @{nameof(groupId)}
+            RETURNING invite_key;
+            """, new { newKey });
+
+        if (key is null)
+        {
+            return Error.NotFound("Group not found.");
+        }
+        return key;
     }
 }

@@ -5,7 +5,7 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
-
+using System.Net;
 using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
@@ -32,6 +32,7 @@ public class UsersController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.ReadRawUserInfomation)]
+    [ProducesResponseType(typeof(QueryDataGetDto<UserGetDto>), 200)]
     public async Task<IActionResult> GetUsers([FromQuery] UserQueryOptions options)
     {
         var records = await _db.Get(options);
@@ -47,15 +48,19 @@ public class UsersController : ExtendedControllerBase
 
     [HttpGet("{userId}")]
     [RequiresPermissions(Permissions.ReadRawUserInfomation)]
+    [ProducesResponseType(typeof(UserGetDto), 200)]
+    [ProducesResponseType(404)]
     public async Task<IActionResult> GetUser(Guid userId)
     {
-        var record = await _db.Get(userId);
+        var record = await _db.GetByUserId(userId);
         return record is null ? NotFound() : Ok(record);
     }
 
 
     [HttpPut("{userId}")]
     [RequiresPermissions(Permissions.UpdateUserInformation)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserPutDto dto)
     {
         // Validate request author role is higher than target role
@@ -83,6 +88,9 @@ public class UsersController : ExtendedControllerBase
 
 
     [HttpPut("{targetId}/permissions")]
+    [RequiresPermissions(Permissions.UpdateUserInformation)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> UpdateUserPermissions(Guid targetId, [FromBody] UserPermissionsPutDto dto)
     {
         /* Validate roles (Author is always validated from database, not only from JWT)
@@ -111,7 +119,7 @@ public class UsersController : ExtendedControllerBase
         }
 
         // Validate author exists
-        DbUser? author = await _db.Get(authorId);
+        DbUser? author = await _db.GetByUserId(authorId);
 
         if (author is null)
         {
@@ -133,7 +141,7 @@ public class UsersController : ExtendedControllerBase
         }
 
         // Validate target exists
-        DbUser? target = await _db.Get(targetId);
+        DbUser? target = await _db.GetByUserId(targetId);
         if (target is null)
         {
             _logger.LogInformation("User {id} not found.", targetId);
@@ -156,6 +164,8 @@ public class UsersController : ExtendedControllerBase
 
 
     [HttpDelete("own/permissions")]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> RevokeOwnPermissions()
     {
         /* Because user is making the request, he should exit in database.
@@ -177,6 +187,8 @@ public class UsersController : ExtendedControllerBase
 
     [HttpDelete("{userId}")]
     [RequiresPermissions(Permissions.DeleteUser)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> DeleteUser(Guid userId)
     {
         // Validate request author role is higher than target role
@@ -206,7 +218,7 @@ public class UsersController : ExtendedControllerBase
             return Error.BadRequest("UserId must be provided.");
         }
 
-        DbUser? target = await _db.Get(targetId);
+        DbUser? target = await _db.GetByUserId(targetId);
         if (target is null)
         {
             return Error.NotFound("User not found.");

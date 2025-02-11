@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
+using System.Diagnostics;
 
 namespace LarpakeServer.Identity;
 
-internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
+internal sealed class LarpakeIdBearerSecuritySchemeTransformer : IOpenApiDocumentTransformer
 {
     private readonly IAuthenticationSchemeProvider _provider;
 
-    public BearerSecuritySchemeTransformer(IAuthenticationSchemeProvider provider)
+    public LarpakeIdBearerSecuritySchemeTransformer(IAuthenticationSchemeProvider provider)
     {
         _provider = provider;
     }
@@ -21,8 +22,9 @@ internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransfor
         var authenticationSchemes = await _provider.GetAllSchemesAsync();
 
         // Validate bearer scheme exists
-        if (authenticationSchemes.All(x => x.Name is not "Bearer"))
+        if (authenticationSchemes.All(x => x.Name is not Constants.Auth.LarpakeIdScheme))
         {
+            Debug.WriteLine($"Bearer scheme {Constants.Auth.LarpakeIdScheme} not found");
             return;
         }
 
@@ -31,7 +33,7 @@ internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransfor
             ["Bearer"] = new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
+                Scheme = "Bearer",
                 In = ParameterLocation.Header,
                 BearerFormat = "JWT",
             }
@@ -44,7 +46,7 @@ internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransfor
         {
             Reference = new OpenApiReference
             {
-                Id = "Bearer",
+                Id = Constants.Auth.LarpakeIdScheme, // The default scheme used
                 Type = ReferenceType.SecurityScheme
             }
         };

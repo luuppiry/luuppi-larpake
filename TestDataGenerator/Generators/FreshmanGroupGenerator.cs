@@ -2,11 +2,11 @@
 namespace TestDataGenerator.Generators;
 internal class FreshmanGroupGenerator : IRunAll
 {
-    private readonly IFreshmanGroupDatabase _db;
+    private readonly IGroupDatabase _db;
     private readonly IUserDatabase _userDb;
     private readonly ILarpakeDatabase _larpakeDb;
 
-    public FreshmanGroupGenerator(IFreshmanGroupDatabase db, IUserDatabase userDb, ILarpakeDatabase larpakeDb)
+    public FreshmanGroupGenerator(IGroupDatabase db, IUserDatabase userDb, ILarpakeDatabase larpakeDb)
     {
         _db = db;
         _userDb = userDb;

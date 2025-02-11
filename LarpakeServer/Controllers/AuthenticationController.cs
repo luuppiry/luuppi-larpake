@@ -6,13 +6,10 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Primitives;
-using System.Security.Claims;
 using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 [EnableRateLimiting(RateLimitingOptions.AuthPolicyName)]
@@ -22,8 +19,8 @@ public class AuthenticationController : ExtendedControllerBase
     readonly IUserDatabase _userDb;
     readonly IRefreshTokenDatabase _refreshTokenDb;
     const string RefreshTokenCookieName = "__Secure-refreshToken";
-    
-    record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt);
+
+    record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt, string TokenType = "Bearer");
 
 
     public AuthenticationController(
@@ -38,34 +35,47 @@ public class AuthenticationController : ExtendedControllerBase
         _refreshTokenDb = refreshTokenDb;
     }
 
-
-    
-
-
-    [HttpPost("sign-up")]
-    [AllowAnonymous]
-    public async Task<IActionResult> CreateUser([FromBody] UserPostDto dto)
+    [Authorize(AuthenticationSchemes = Constants.Auth.EntraIdScheme)]
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(TokenInfo), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
+    public async Task<IActionResult> Login()
     {
-        // TODO: This should be handled differently when I know how
-        // TODO: Remove this, user comes from luuppi server and should be handled in login
+        Guid entraId = ReadEntraId();
 
-        var record = DbUser.MapFrom(dto);
-        Result<Guid> result = await _userDb.Insert(record);
-        if (result)
+        // Check if user exists in database
+        DbUser? user = await _userDb.GetByEntraId(entraId);
+        if (user is null)
         {
-            _logger.LogInformation("Created new user {id}", (Guid)result);
-            return CreatedId((Guid)result);
+            // User is new and must be created first
+            Result<DbUser> createdUser = await SetupNewUser(entraId);
+            if (createdUser.IsError)
+            {
+                return FromError(createdUser);
+            }
+            
+            _logger.LogInformation("Created user {userId}.", ((DbUser)createdUser).Id);
+
+            user = (DbUser)createdUser;
         }
-        return FromError(result);
+
+        // Generate tokens as normal
+        TokenGetDto tokens = _tokenService.GenerateTokens(user);
+
+        _logger.LogInformation("User {id} logged in.", user.Id);
+
+        return await SaveToken(user, tokens, Guid.Empty);
     }
 
 
-
-    [HttpPost("login")]
-    [AllowAnonymous]
+#if DEBUG
+    [AllowAnonymous]    
+    [HttpPost("login/dummy")]
+    [ProducesResponseType(typeof(TokenInfo), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Login([FromBody] LoginRequest dto)
     {
-        // TODO: Validate request and user
+        // TODO: Remove this method in production
 
         if (dto.UserId == Guid.Empty)
         {
@@ -75,7 +85,7 @@ public class AuthenticationController : ExtendedControllerBase
             });
         }
 
-        User? user = await _userDb.Get(dto.UserId);
+        DbUser? user = await _userDb.GetByUserId(dto.UserId);
         if (user is null)
         {
             return NotFound(new
@@ -92,62 +102,36 @@ public class AuthenticationController : ExtendedControllerBase
         // Finish by saving refresh token
         return await SaveToken(user, tokens, Guid.Empty);
     }
+#endif
 
-    [AllowAnonymous]
-    [HttpPost("token/refresh")]
+    [AllowAnonymous]    // Authentication is handled inside the method, Anonymous is ok here.
+    [HttpGet("token/refresh")]
+    [ProducesResponseType(typeof(TokenInfo), 200)]
+    [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Refresh()
     {
         // Read headers and cookies to get tokens
-        if (Request.Headers.TryGetValue("Authorization", out StringValues accessTokenValue) is false)
-        {
-            return Unauthorized();
-        }
         if (Request.Cookies.TryGetValue(RefreshTokenCookieName, out string? refreshToken) is false)
         {
             return Unauthorized();
         }
 
         // Get tokens and validate not empty
-        string? accessToken = accessTokenValue;
-        if (string.IsNullOrEmpty(accessToken))
-        {
-            return Unauthorized();
-        }
+    
         if (string.IsNullOrEmpty(refreshToken))
         {
             return Unauthorized();
         }
 
-        // Validate expired access token 
-        if (_tokenService.ValidateAccessToken(accessToken, out ClaimsPrincipal? claims, false) is false)
-        {
-            return Unauthorized();
-        }
-
-        // Get user id from token
-        Guid? userId = _tokenService.GetUserId(claims);
-        DateTime? expires = _tokenService.GetTokenIssuedAt(claims);
-        if (userId is null || expires is null)
-        {
-            return Unauthorized();
-        }
-
-        // Check if possible refresh token must be expired
-        if (expires.Value.Add(_tokenService.RefreshTokenLifetime) < DateTime.UtcNow)
-        {
-            return Unauthorized();
-        }
-
         // Validate refresh token
-        var validation = await _refreshTokenDb.IsValid(userId.Value, refreshToken);
+        RefreshTokenValidationResult validation = await _refreshTokenDb.Validate(refreshToken);
         if (validation.IsValid is false)
         {
             return Unauthorized();
         }
 
-
         // Tokens are valid, generate new ones
-        DbUser? user = await _userDb.Get(userId.Value);
+        DbUser? user = await _userDb.GetByUserId(validation.UserId.Value);
         if (user is null)
         {
             return IdNotFound("User does not exist.");
@@ -163,8 +147,10 @@ public class AuthenticationController : ExtendedControllerBase
     }
 
 
+    [Authorize]
     [DisableRateLimiting]
     [HttpPost("token/invalidate")]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> InvalidateTokens()
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
@@ -172,9 +158,11 @@ public class AuthenticationController : ExtendedControllerBase
         return OkRowsAffected(rowsAffected);
     }
 
+    [Authorize]
     [DisableRateLimiting]
     [HttpPost("token/invalidate/{tokenFamily}")]
     [RequiresPermissions(Permissions.Admin)]
+    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     public async Task<IActionResult> InvalidateTokenFamily(Guid tokenFamily)
     {
         int rowsAffected = await _refreshTokenDb.RevokeFamily(tokenFamily);
@@ -219,7 +207,7 @@ public class AuthenticationController : ExtendedControllerBase
             AccessToken: tokens.AccessToken,
             AccessTokenExpiresAt: tokens.AccessTokenExpiresAt.Value,
             RefreshTokenExpiresAt: tokens.RefreshTokenExpiresAt.Value);
-        
+
         return Ok(tokenInfo);
     }
 
@@ -230,18 +218,49 @@ public class AuthenticationController : ExtendedControllerBase
         Guard.ThrowIfNull(context);
 
         // Write header
-        string controllerPath = ControllerContext.ActionDescriptor.ControllerName;
         context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken,
             new CookieOptions
             {
                 MaxAge = _tokenService.RefreshTokenLifetime,
                 Secure = true,
                 HttpOnly = true,
-                SameSite = SameSiteMode.Strict,
-                Path = controllerPath
+                SameSite = SameSiteMode.Strict
+                // TODO: Path if needed
             });
 
         return Task.FromResult(Result.Ok);
+    }
+
+
+    private Guid ReadEntraId()
+    {
+        // TODO: Implement this 
+        // Claims reader might also work here, if Guid is in same JWT field
+        throw new NotImplementedException();
+    }
+
+    private async Task<Result<DbUser>> SetupNewUser(Guid entraId)
+    {
+        var user = new User
+        {
+            Id = Guid.Empty,
+            EntraId = entraId,
+            Permissions = Permissions.None,
+            StartYear = null
+        };
+
+        Result<Guid> userId = await _userDb.Insert(user);
+        if (userId.IsError)
+        {
+            return (Error)userId;
+        }
+
+        DbUser? result = await _userDb.GetByUserId((Guid)userId);
+        if (result is null)
+        {
+            return Error.InternalServerError("Failed to create user.");
+        }
+        return result;
     }
 }
 
