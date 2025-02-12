@@ -1,83 +1,154 @@
+import { AccountInfo, IPublicClientApplication } from "@azure/msal-browser";
+import { EntraId } from "./auth-client.ts";
 
-
-type Creadentials = {
+type RefreshToken = {
+    message: string;
     accessToken: string;
+    accessTokenExpiresAt: Date;
+    refreshTokenExpiresAt: Date;
+    tokenType: string;
 };
 
-let creadentials: Creadentials | null = null;
+type Request = {
+    method: string;
+    headers: Headers;
+    body: string;
+};
 
-const userId = process.env.REACT_APP_DEBUG_USER!;
+export class HttpClient {
+    #entraId: EntraId;
+    #credentials: RefreshToken | null;
 
-export default async function makeRequest() {
-    const query = new URLSearchParams();
-    query.append("minimize", "false");
+    constructor(
+        msal: IPublicClientApplication,
+        accounts: AccountInfo[] | undefined
+    ) {
+        this.#entraId = new EntraId(msal, accounts);
+        this.#credentials = null;
+    }
 
-    let url = `${
-        process.env.REACT_APP_API_HOST
-    }/larpakkeet/own?${query.toString()}`;
-    let request = {
-        method: "GET",
-        headers: new Headers(),
-    };
-    request.headers.append("Content-Type", "application/json");
+    async makeRequest(
+        endpoint: string,
+        method: string = "GET",
+        body: any,
+        query: URLSearchParams | null
+    ): Promise<any> {
+        const host = process.env.REACT_APP_API_HOST;
+        let url = `${host}/api/${endpoint}}`;
 
-    return await runWithMiddleware(url, request);
-}
+        if (query instanceof URLSearchParams) {
+            url = `${url}?${query.toString()}`;
+        }
 
-async function runWithMiddleware(url: string, request: any) {
-    if (creadentials !== null) {
+        let headers = new Headers();
+        headers.append("Content-Type", "application/json");
+
+        let request: Request = {
+            method: method,
+            headers: headers,
+            body: JSON.stringify(body),
+        };
+
+        const response = await this.#runWithMiddleware(url, request);
+        if (response.ok) {
+            return response;
+        }
+
+        // If unauthorized (token might be invalid)
+        if (response.status === 401) {
+            // Reset credentials and retry
+            this.#credentials = null;
+            return await this.#runWithMiddleware(url, request);
+        }
+        return response;
+    }
+
+    async #runWithMiddleware(url: string, request: Request) {
+        // Try refresh new credentials
+        if (
+            this.#credentials === null ||
+            this.#credentials.accessTokenExpiresAt < new Date()
+        ) {
+            this.#credentials = await this.#apiRefreshToken();
+        }
+
+        // Get id token from Azure if needed
+        if (this.#credentials === null) {
+            const idToken = await this.#entraId.fetchAzurelogin();
+            if (idToken === null) {
+                throw new Error("Auth failed");
+            }
+            this.#credentials = await this.#apiLogin(idToken);
+        }
+
+        /* At this point we should have valid credentials
+         * - Tokens are refreshed (if needed)
+         * - New id token is aquired (if needed)
+         *
+         */
+
+        // Add access token
         request.headers.append(
             "Authorization",
-            `Bearer ${creadentials.accessToken}`
+            `Bearer ${this.#credentials.accessToken}`
         );
+
+        // Make the *real* api call
+        return await fetch(url, request);
     }
 
-    const first = await fetch(url, request);
-    if (!first.ok) {
-        if (first.status === 401) {
-            // invalid token
-            creadentials = await fetchDummyLogin(userId);
-        } else {
-            // Failed
-            console.log(first);
-            throw new Error("Request failed");
+    async #apiRefreshToken(): Promise<RefreshToken | null> {
+        const url = `${process.env.REACT_APP_API_HOST}api/authentication/token/refresh`;
+
+        const response = await fetch(url, {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            console.log(`Failed to refresh: ${response.statusText}`);
+            return null;
         }
-    } else {
-        return await first.json();
+        const token = await response.json();
+        return token;
     }
 
-    // Add new auth token
-    request.headers.append(
-        "Authorization",
-        `Bearer ${creadentials?.accessToken}`
-    );
-    const second = await fetch(url, request);
-    if (!second.ok) {
-        throw new Error("Invalid credentials");
-    }
-    return await second.json();
-}
+    async #apiLogin(idToken: string): Promise<RefreshToken> {
+        const url = `${process.env.REACT_APP_API_HOST}api/authentication/token/refresh`;
+        const headers = new Headers();
+        headers.append("Authorization", `Bearer ${idToken}`);
 
+        const response = await fetch(url, {
+            method: "GET",
+            headers: headers,
+        });
 
-
-
-
-async function fetchDummyLogin(userId: string) {
-    const response = await fetch(
-        `${process.env.REACT_APP_API_HOST}/authentication/login/dummy`,
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                userId: userId,
-            }),
+        if (!response.ok) {
+            throw new Error(
+                "Failed to login to api, maybe token is in incorrect format."
+            );
         }
-    );
 
-    if (!response.ok) {
-        throw new Error("Network error");
+        const token: RefreshToken = await response.json();
+        return token;
     }
-    return await response.json();
+
+    async #fetchDummyLogin(userId: string) {
+        const response = await fetch(
+            `${process.env.REACT_APP_API_HOST}api/authentication/login/dummy`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                }),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Network error");
+        }
+        return await response.json();
+    }
 }

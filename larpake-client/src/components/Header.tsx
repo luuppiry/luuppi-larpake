@@ -1,9 +1,6 @@
 import React from "react";
 import { Helmet } from "react-helmet";
-
-import "../types.d.ts";
 import "../styles/header.css";
-import luuppiLogo from "../assets/luuppi.logo.svg";
 
 function gotoHome() {
     window.location.href = "main.html";
@@ -43,7 +40,7 @@ export default function Header() {
             <header className="header">
                 <img
                     style={{ height: "60px", cursor: "pointer" }}
-                    src={luuppiLogo}
+                    src="luuppi.logo.svg"
                     onClick={gotoHome}
                     alt="Luuppi Logo"
                 ></img>

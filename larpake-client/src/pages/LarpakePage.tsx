@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Header, { SidePanel } from "../components/Header.tsx";
 import "../styles/larpake.css";
-import kiasaImage from "../assets/kiasa.png";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
 interface Page {
@@ -213,7 +212,7 @@ const LarpakePage: React.FC = () => {
 
     useEffect(() => {
         if (currentPage >= pages.length) {
-            navigate("/statistics.html");
+            navigate("/statistics");
         }
     }, [currentPage, navigate]);
 
