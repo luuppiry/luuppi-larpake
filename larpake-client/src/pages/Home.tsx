@@ -1,10 +1,22 @@
 import React from "react";
 import "../styles/main.css";
 import kiasaImage from "../assets/kiasa.png";
+import { EntraId } from "../services/auth-client.ts";
+import { useMsal } from "@azure/msal-react";
+import { AccountInfo, IPublicClientApplication } from "@azure/msal-browser";
+
+async function authenticate(msal: IPublicClientApplication, accounts: AccountInfo[]) {
+    const client = new EntraId(msal, accounts)
+    await client.fetchAzurelogin();
+}
 
 export default function Home() {
+    const { instance, accounts} = useMsal();
     return (
         <div>
+            <div>
+                <button onClick={() => authenticate(instance, accounts)}>Hello</button>{" "}
+            </div>
             <div className="container">
                 <div className="image-section">
                     <img src={kiasaImage} alt="Kiasa" />
