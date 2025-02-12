@@ -2,32 +2,14 @@ import React from "react";
 import Header, { SidePanel } from "../components/Header.tsx";
 import "../styles/main.css";
 import kiasaImage from "../assets/kiasa.png";
-import { PublicClientApplication } from "@azure/msal-browser";
-import { loginRequest } from "../authConfig.ts";
 import {
     AuthenticatedTemplate,
     UnauthenticatedTemplate,
-    useMsal,
 } from "@azure/msal-react";
 
 export default function Home() {
-    const { instance } = useMsal();
-
-    const login = () => {
-        instance
-            .loginRedirect(loginRequest)
-            .catch((error) => console.log(error));
-    };
-
-    const logout = () => {
-        instance.logoutRedirect().catch((error) => console.log());
-    };
-
     return (
         <div>
-            <Header />
-            <SidePanel />
-
             <div className="container">
                 <div className="image-section">
                     <img src={kiasaImage} alt="Kiasa" />
@@ -37,14 +19,7 @@ export default function Home() {
                     </a>
                 </div>
             </div>
-            <div>
-                <AuthenticatedTemplate>
-                    <button onClick={logout}>Logout</button>
-                </AuthenticatedTemplate>
-                <UnauthenticatedTemplate>
-                    <button onClick={login}>Login</button>
-                </UnauthenticatedTemplate>
-            </div>
+
             <div className="container">
                 <div className="events-section">
                     <h2>TULEVAT LÄRPÄKETAPAHTUMAT</h2>

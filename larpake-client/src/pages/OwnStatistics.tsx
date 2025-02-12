@@ -1,11 +1,10 @@
 import React from "react";
-import Header from "../components/Header.tsx";
+import Header, { SidePanel } from "../components/Header.tsx";
 
-export default function OwnStatistics(){
+export default function OwnStatistics() {
     return (
         <>
-            <Header/>
-        
+            <div>Statistics</div>
         </>
-    )
+    );
 }

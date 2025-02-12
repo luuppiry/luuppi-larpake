@@ -59,33 +59,31 @@ export function SidePanel() {
             </span>
             <ul>
                 <li>
-                    <a href="main.html">Koti</a>
+                    <a href="/">Koti</a>
                 </li>
                 <li>
-                    <a href="larpake.html">Lärpäke</a>
+                    <a href="larpake">Lärpäke</a>
                 </li>
                 <li>
-                    <a href="statistics.html">Oma statistiikka</a>
+                    <a href="statistics">Oma statistiikka</a>
                 </li>
                 <li>
-                    <a href="latest_accomplishment.html">
-                        Viimeisimmät suoritukset
-                    </a>
+                    <a href="latest_accomplishment">Viimeisimmät suoritukset</a>
                 </li>
                 <li>
-                    <a href="common_statistics.html">Yhteiset statistiikat</a>
+                    <a href="common_statistics">Yhteiset statistiikat</a>
                 </li>
                 <li>
-                    <a href="upcoming_events.html">Tulevat tapahtumat</a>
+                    <a href="upcoming_events">Tulevat tapahtumat</a>
                 </li>
                 <li>
-                    <a href="own_tutors.html">Omat tutorit</a>
+                    <a href="own_tutors">Omat tutorit</a>
                 </li>
                 <li>
-                    <a href="event_marking.html">Fuksi_marking_event</a>
+                    <a href="event_marking">Fuksi_marking_event</a>
                 </li>
                 <li>
-                    <a href="tutor_mark_event.html">Tutor_mark_event</a>
+                    <a href="tutor_mark_event">Tutor_mark_event</a>
                 </li>
             </ul>
         </div>
