@@ -1,11 +1,6 @@
 import React from "react";
-import Header, { SidePanel } from "../components/Header.tsx";
 import "../styles/main.css";
 import kiasaImage from "../assets/kiasa.png";
-import {
-    AuthenticatedTemplate,
-    UnauthenticatedTemplate,
-} from "@azure/msal-react";
 
 export default function Home() {
     return (
