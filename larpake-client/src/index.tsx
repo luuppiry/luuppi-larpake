@@ -13,6 +13,8 @@ import {
     UnauthenticatedTemplate,
     useMsal,
 } from "@azure/msal-react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LarpakePage from "./pages/LarpakePage.tsx";
 
 // This should be initialized outside component tree to prevent re-renders
 const msalInstance = new PublicClientApplication(msalConfig);
@@ -66,10 +68,14 @@ const MainContent = () => {
     );
 };
 
+
 root.render(
     <React.StrictMode>
-        <MsalProvider instance={msalInstance}>
-            <MainContent />
-        </MsalProvider>
+    <BrowserRouter>
+    <Routes>
+        <Route path="/" element={<Home />}></Route>
+        <Route path="/larpake.html" element={<LarpakePage />}></Route>
+    </Routes>
+    </BrowserRouter>
     </React.StrictMode>
 );
