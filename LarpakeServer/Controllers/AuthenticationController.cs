@@ -6,6 +6,7 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.RateLimiting;
+using System.IdentityModel.Tokens.Jwt;
 using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
@@ -41,6 +42,15 @@ public class AuthenticationController : ExtendedControllerBase
     [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Login()
     {
+        var usaer = Request.HttpContext.User;
+
+
+        Request.Headers.TryGetValue("Authorization", out var authHeader);
+
+        JwtSecurityTokenHandler handler = new();
+
+        var token = handler.ReadJwtToken(authHeader);
+
         Guid entraId = ReadEntraId();
 
         // Check if user exists in database
@@ -113,7 +123,7 @@ public class AuthenticationController : ExtendedControllerBase
         // Read headers and cookies to get tokens
         if (Request.Cookies.TryGetValue(RefreshTokenCookieName, out string? refreshToken) is false)
         {
-            return Unauthorized();
+            return Unauthorized("No refresh token");
         }
 
         // Get tokens and validate not empty

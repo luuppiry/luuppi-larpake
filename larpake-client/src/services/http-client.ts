@@ -1,5 +1,5 @@
-import { AccountInfo, IPublicClientApplication } from "@azure/msal-browser";
 import { EntraId } from "./auth-client.ts";
+import { IMsalContext, useMsal } from "@azure/msal-react";
 
 type RefreshToken = {
     message: string;
@@ -15,23 +15,25 @@ type Request = {
     body: string;
 };
 
+export default function useAuthenticatedClient() {
+    const ctx = useMsal();
+    return new HttpClient(ctx);
+}
+
 export class HttpClient {
     #entraId: EntraId;
     #credentials: RefreshToken | null;
 
-    constructor(
-        msal: IPublicClientApplication,
-        accounts: AccountInfo[] | undefined
-    ) {
-        this.#entraId = new EntraId(msal, accounts);
+    constructor(msal: IMsalContext) {
+        this.#entraId = new EntraId(msal);
         this.#credentials = null;
     }
 
-    async makeRequest(
+    async fetch(
         endpoint: string,
         method: string = "GET",
-        body: any,
-        query: URLSearchParams | null
+        body: any = null,
+        query: URLSearchParams | null = null
     ): Promise<any> {
         const host = process.env.REACT_APP_API_HOST;
         let url = `${host}/api/${endpoint}}`;
@@ -113,12 +115,12 @@ export class HttpClient {
     }
 
     async #apiLogin(idToken: string): Promise<RefreshToken> {
-        const url = `${process.env.REACT_APP_API_HOST}api/authentication/token/refresh`;
+        const url = `${process.env.REACT_APP_API_HOST}api/authentication/login`;
         const headers = new Headers();
         headers.append("Authorization", `Bearer ${idToken}`);
 
         const response = await fetch(url, {
-            method: "GET",
+            method: "POST",
             headers: headers,
         });
 

@@ -5,19 +5,20 @@ import {
     PopupRequest,
     SilentRequest,
 } from "@azure/msal-browser";
+import { IMsalContext } from "@azure/msal-react";
 
 export class EntraId {
     msalInstance: IPublicClientApplication;
     accounts: AccountInfo[];
 
     constructor(
-        msal: IPublicClientApplication,
-        accounts: AccountInfo[] | undefined
+        msal: IMsalContext,
     ) {
-        this.msalInstance = msal;
-        this.accounts = accounts ?? [];
+        this.msalInstance = msal.instance;
+        this.accounts = msal.accounts ?? [];
     }
 
+    
     async fetchAzurelogin(): Promise<string | null> {
         const request = this.getRequest();
 

@@ -1,6 +1,7 @@
 using LarpakeServer;
 using LarpakeServer.Identity;
 using LarpakeServer.Services.Implementations;
+using Microsoft.IdentityModel.Logging;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    IdentityModelEventSource.ShowPII = true;
+
     app.MapOpenApi();
 
     app.MapScalarApiReference(options =>

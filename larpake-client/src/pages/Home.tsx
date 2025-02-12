@@ -1,21 +1,34 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "../styles/main.css";
 import { EntraId } from "../services/auth-client.ts";
-import { useMsal } from "@azure/msal-react";
-import { AccountInfo, IPublicClientApplication } from "@azure/msal-browser";
+import { IMsalContext } from "@azure/msal-react";
+import useAuthenticatedClient, { HttpClient } from "../services/http-client.ts";
 
-async function authenticate(msal: IPublicClientApplication, accounts: AccountInfo[]) {
-    const client = new EntraId(msal, accounts)
-    await client.fetchAzurelogin();
+async function makeApiRequest(apiClient: HttpClient) {
+    const reponse = await apiClient.fetch("api/larpakkeet/own")
+
+    console.log(reponse);
 }
 
+
+
 export default function Home() {
-    const { instance, accounts} = useMsal();
+    // useMsal() can only be called inside react component
+    const apiClient = useAuthenticatedClient();
+    
+    useEffect(() => {
+        // Clear the URL hash to prevent state mismatch errors
+        if (window.location.hash) {
+            window.location.hash = "";
+        }
+    }, []);
+
+    
+
+    // onClick={() => authenticate(ctx)}
     return (
         <div>
-            <div>
-                <button onClick={() => authenticate(instance, accounts)}>Hello</button>{" "}
-            </div>
+            <button onClick={() => makeApiRequest(apiClient)}>Press me!</button>
             <div className="container">
                 <div className="image-section">
                     <img src="/kiasa.png" alt="Kiasa" />
