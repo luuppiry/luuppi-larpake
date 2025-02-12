@@ -7,7 +7,12 @@ import {
     AuthenticationResult,
 } from "@azure/msal-browser";
 import { loginRequest, msalConfig } from "./authConfig.ts";
-import { AuthenticatedTemplate, MsalProvider, UnauthenticatedTemplate, useMsal } from "@azure/msal-react";
+import {
+    AuthenticatedTemplate,
+    MsalProvider,
+    UnauthenticatedTemplate,
+    useMsal,
+} from "@azure/msal-react";
 
 // This should be initialized outside component tree to prevent re-renders
 const msalInstance = new PublicClientApplication(msalConfig);
@@ -52,21 +57,19 @@ const MainContent = () => {
     return (
         <div>
             <AuthenticatedTemplate>
-                {activeAccount ? (
-                    <div>You are in!</div>
-                ): null}
+                {activeAccount ? <Home /> : null}
             </AuthenticatedTemplate>
             <UnauthenticatedTemplate>
                 <button onClick={handleRedirect}>Sign up</button>
             </UnauthenticatedTemplate>
         </div>
-    )
+    );
 };
 
 root.render(
     <React.StrictMode>
         <MsalProvider instance={msalInstance}>
-            <MainContent/>
+            <MainContent />
         </MsalProvider>
     </React.StrictMode>
 );

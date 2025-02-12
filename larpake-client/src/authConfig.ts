@@ -2,9 +2,8 @@ import { LogLevel } from "@azure/msal-browser";
 
 export const msalConfig = {
     auth: {
-        clientId: "<ClientId>",
-        authority:
-            "https://<TenantId>.ciamlogin.com/<TenantId>",
+        clientId: process.env.REACT_APP_ENTRA_CLIENT_ID!,
+        authority: `https://${process.env.REACT_APP_ENTRA_TENANT_ID}.ciamlogin.com/${process.env.REACT_APP_ENTRA_TENANT_ID}`,
         redirectUri: "http://localhost:3000",
     },
     cache: {
