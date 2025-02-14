@@ -246,7 +246,7 @@ function renderPage() {
 }
 
 function getSignatureImage() {
-    const signature_list = ["", "", "", "img/signatures/test.png", "img/signatures/signature_HV_2.png", "img/signatures/signature_HV_3.png", "img/signatures/signature_JK_2.png", "img/signatures/signature_JK_1.png", "img/signatures/signature_JK_3.png"];
+    const signature_list = ["", "", "", "/signatures/test.png", "/signatures/signature_HV_2.png", "/signatures/signature_HV_3.png", "/signatures/signature_JK_2.png", "/signatures/signature_JK_1.png", "/signatures/signature_JK_3.png"];
     return signature_list[Math.floor(Math.random()*signature_list.length)];
 }
 

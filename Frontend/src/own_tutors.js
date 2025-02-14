@@ -5,7 +5,7 @@ const tutorData = [
         origin: "Tampereelta",
         favoriteEvent: "Gokous",
         studyTips: "Opiskelu on toissijaista",
-        image: "img/gambina-profiili-kuva.png",
+        image: "/gambina-profiili-kuva.png",
         group: "Ryhmä 12 - Loistofuksit"
     },
     {
@@ -14,7 +14,7 @@ const tutorData = [
         origin: "Kosio matkaltaan",
         favoriteEvent: "kurk",
         studyTips: "what the sigma?",
-        image: "img/gambina-profiili-kuva.png",
+        image: "/gambina-profiili-kuva.png",
         group: "Ryhmä 11 - Loistofuksit"
     }
 ];
