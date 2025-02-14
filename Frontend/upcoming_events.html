@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="src/larpake.css">
+    <title>Luuppi - Lärpake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <img src="img/luuppi.logo.svg" onclick="window.location.href='main.html'" style="height: 60px; cursor: pointer;">
+        <h1>LÄRPÄKE</h1>
+        <span class="menu-icon" onclick="toggleSidePanel()">☰</span>
+    </header>
+    
+    <div class="side-panel" id="sidePanel">
+        <span class="close-btn" onclick="toggleSidePanel()">X</span>
+        <ul>
+            <li><a href="main.html">Koti</a></li>
+            <li><a href="larpake.html">Lärpäke</a></li>
+            <li><a href="statistics.html">Oma statistiikka</a></li>
+            <li><a href="latest_accomplishment.html">Viimeisimmät suoritukset</a></li>
+            <li><a href="common_statistics.html">Yhteiset statistiikat</a></li>
+            <li><a href="upcoming_events.html">Tulevat tapahtumat</a></li>
+            <li><a href="own_tutors.html">Omat tutorit</a></li>
+            <li><a href="event_marking.html">Fuksi_marking_event</a></li>
+            <li><a href="tutor_mark_event.html">Tutor_mark_event</a></li>
+        </ul>
+    </div>
+
+    <div class="container">  
+        <h2>Content here: UPCOMOING_EVENTS</h2>
+    </div>
+
+    <script src="src/larpake.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="src/statistics.css">
+    <title>Luuppi - Lärpake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <img src="img/luuppi.logo.svg"  onclick="window.location.href='main.html'" style="height: 60px; cursor: pointer;">
+        <h1>LÄRPÄKE</h1>
+        <span class="menu-icon" onclick="toggleSidePanel()">☰</span>
+    </header>
+    
+    <div class="side-panel" id="sidePanel">
+        <span class="close-btn" onclick="toggleSidePanel()">X</span>
+        <ul>
+            <li><a href="main.html">Koti</a></li>
+            <li><a href="larpake.html">Lärpäke</a></li>
+            <li><a href="statistics.html">Oma statistiikka</a></li>
+            <li><a href="latest_accomplishment.html">Viimeisimmät suoritukset</a></li>
+            <li><a href="common_statistics.html">Yhteiset statistiikat</a></li>
+            <li><a href="event_marking.html">Tulevat tapahtumat</a></li>
+            <li><a href="own_tutors.html">Omat tutorit</a></li>
+            <li><a href="event_marking.html">Fuksi_marking_event</a></li>
+            <li><a href="tutor_mark_event.html">Tutor_mark_event</a></li>
+        </ul>
+    </div>
+
+    <div class="container">  
+        <div align="left">Lärpäke / Oma statistiikka</div>
+        <p class="greeting">Tervehdys arvon fuksi, olet mahtavassa vauhdissa!</p>
+        <ul class="stats-list">
+            <li>ENSI ASKELEET <span class="stat-value">21 / 49</span></li>
+            <li>PIENEN PIENI LUUPPILAINEN <span class="stat-value">17 / 58</span></li>
+            <li>PII-KLUBILLA TAPAHTUU <span class="stat-value">5 / 10</span></li>
+            <li>NORMIPÄIVÄ <span class="stat-value">20 / 23</span></li>
+            <li>YLIOPISTOELÄMÄÄ <span class="stat-value">8 / 32</span></li>
+            <li>VAIKUTUSVALTAA <span class="stat-value">35 / 54</span></li>
+            <li>LIIKUNNALISTA <span class="stat-value">13 / 25</span></li>
+            <li>KAIKENLAISTA <span class="stat-value">24 / 33</span></li>
+            <li>TANPEREELLA <span class="stat-value">18 / 20</span></li>
+          </ul>
+          <div class="total">
+            YHTEENSÄ: <span class="total-value">161 / 304</span>
+          </div>
+        <div class="pagination">
+            <a href="larpake.html?page=14"><button id="prev-page" onclick="goToPage(14)">&lt;</button></a>
+            <span id="page-info">16 / 16</span>
+            <button id="next-page" disabled>&gt;</button>
+        </div>
+    </div>
+    
+    <script>
+        function toggleSidePanel() {
+            const panel = document.getElementById('sidePanel');
+            panel.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
