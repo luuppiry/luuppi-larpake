@@ -49,7 +49,7 @@ export default class HttpClient {
                 ? `${this.baseUrl}${endpoint}`
                 : `${this.baseUrl}${endpoint}?${query.toString()}`;
 
-        console.log("fetch first")
+        console.log("fetch first");
         const response = await fetch(url, {
             method: method,
             headers: headers,
@@ -78,7 +78,7 @@ export default class HttpClient {
             `Bearer ${this.accessToken?.accessToken}`
         );
 
-        console.log("fetch second")
+        console.log("fetch second");
         return await fetch(url, {
             method: method,
             headers: headers,
@@ -86,7 +86,6 @@ export default class HttpClient {
     }
 
     async #ensureAccessToken(): Promise<boolean> {
-        
         const now = new Date();
         if (
             this.accessToken !== null &&
@@ -96,14 +95,14 @@ export default class HttpClient {
             return true;
         }
 
-        console.log("Renew token")
+        console.log("Renew token");
         return await this.#renewAccessToken();
     }
 
     async #renewAccessToken(tryRefresh: boolean = true): Promise<boolean> {
         console.log("getting token");
 
-        if (tryRefresh){
+        if (tryRefresh) {
             this.accessToken = await this.#fetchRefresh();
             if (this.accessToken != null) {
                 return true;
@@ -130,6 +129,7 @@ export default class HttpClient {
             {
                 method: "POST",
                 headers: headers,
+                credentials: "include",
             }
         );
 
@@ -149,6 +149,7 @@ export default class HttpClient {
             `${this.baseUrl}api/authentication/token/refresh`,
             {
                 method: "GET",
+                credentials: "include",
             }
         );
         if (!response.ok) {

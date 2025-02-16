@@ -24,9 +24,26 @@ public static class ServiceInjections
         {
             options.AddPolicy("CorsPolicy", builder =>
             {
-                builder.AllowAnyOrigin()
+
+
+
+                builder.SetIsOriginAllowed(origin => true)
                        .AllowAnyMethod()
                        .AllowAnyHeader();
+
+#if DEBUG
+                builder.WithOrigins([
+                    "http://localhost:3000/",
+                    "http://localhost:3001/",
+                    "http://localhost:3002/",
+                    "http://localhost:4000/",
+                    "http://localhost:4001/",
+                    "http://localhost:4002/"
+                    ])
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+#endif
             });
         });
     }

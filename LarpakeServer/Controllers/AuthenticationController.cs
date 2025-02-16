@@ -21,12 +21,8 @@ public class AuthenticationController : ExtendedControllerBase
     readonly IUserDatabase _userDb;
     readonly IRefreshTokenDatabase _refreshTokenDb;
 
-#if DEBUG
-    /* No secure required for development to fix no https for frontend. */
-    const string RefreshTokenCookieName = "refreshToken";
-#else
+
     const string RefreshTokenCookieName = "__Secure-refreshToken";
-#endif
 
     enum LoginAction
     {
@@ -264,21 +260,18 @@ public class AuthenticationController : ExtendedControllerBase
         Guard.ThrowIfNull(tokens);
         Guard.ThrowIfNull(context);
 
+        context.Response.Headers.AccessControlAllowCredentials = "true";
+        
+
         // Write header
         context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken,
             new CookieOptions
             {
                 MaxAge = _tokenService.RefreshTokenLifetime,
-#if DEBUG
-                Secure = false, // Allow insecure in development
-                HttpOnly = false, // Allow access via client-side scripts in development
-                SameSite = SameSiteMode.None
-#else
-                Secure = true, 
+
+                Secure = true,
                 HttpOnly = true,
-                SameSite = SameSiteMode.Strict
-                 
-#endif
+                SameSite = SameSiteMode.None
             });
 
         return Task.FromResult(Result.Ok);
