@@ -1,7 +1,6 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.Localizations;
-using System.ComponentModel.DataAnnotations;
 
 namespace LarpakeServer.Models.GetDtos;
 

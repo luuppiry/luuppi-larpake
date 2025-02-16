@@ -11,6 +11,6 @@ public interface ILarpakeEventDatabase
     Task<int> UnsyncOrganizationEvent(long larpakeEventId, long organizationEventId);
     Task<Result<int>> Update(LarpakeEvent record);
     Task<int> Cancel(long id);
-    Task<Guid[]> GetRefOrganizationEvents(long id);
+    Task<long[]> GetRefOrganizationEvents(long id);
 
 }

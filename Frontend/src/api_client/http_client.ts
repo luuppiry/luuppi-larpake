@@ -6,11 +6,6 @@ type AccessToken = {
     refreshTokenExpiresAt: Date;
 };
 
-export type ApiAction = {
-    description: string;
-    method: string;
-    href: string;
-}
 
 export default class HttpClient {
     baseUrl: string;

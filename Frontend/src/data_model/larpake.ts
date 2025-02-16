@@ -1,5 +1,3 @@
-import { ApiAction } from "../api_client/http_client";
-
 export type SectionTextData = {
     title: string,
     languageCode: string
@@ -27,7 +25,22 @@ export type Larpake = {
     updatedAt: Date;
     sections: Section[] | null;
     textData: LarpakeTextData[];
-    nextPage: number;
-    details: string[] | null;
-    actions: ApiAction[] | null;
 };
+
+export type LarpakeTaskTextData = {
+    title: string;
+    body: string;
+    languageCode: string;
+}
+
+export type LarpakeTask = {
+    id: number;
+    larpakeSectionId: number;
+    points: number; 
+    orderingWeightNumber: number;
+    cancelledAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    textData: LarpakeTaskTextData[];
+}
+
