@@ -35,20 +35,42 @@ public class AuthenticationController : ExtendedControllerBase
         _refreshTokenDb = refreshTokenDb;
     }
 
+    /* Notice that normally Constants.Auth.LarpakeIdScheme
+     * is used when the user is authenticated. This endpoint
+     * needs to validate Entra id access token, so different 
+     * scheme is used. After this login call, other endpoints
+     * should use the normal LarpakeIdScheme.
+     */
     [Authorize(AuthenticationSchemes = Constants.Auth.EntraIdScheme)]
     [HttpPost("login")]
     [ProducesResponseType(typeof(TokenInfo), 200)]
     [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Login()
     {
+        // Validate user id
         Guid entraId = ReadEntraId();
+        if (entraId == Guid.Empty)
+        {
+            return BadRequest("Token must provide user id (oid).");
+        }
 
         // Check if user exists in database
         DbUser? user = await _userDb.GetByEntraId(entraId);
         if (user is null)
         {
+            // Validate email/username
+            string email = ReadEntraEmail();
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Token must contain email address or username.");
+            }
+            if (email.Length > Constants.MaxUsernameLength)
+            {
+                return BadRequest("Token email/username is too long.");
+            }
+
             // User is new and must be created first
-            Result<DbUser> createdUser = await SetupNewUser(entraId);
+            Result<DbUser> createdUser = await SetupNewUser(entraId, email);
             if (createdUser.IsError)
             {
                 return FromError(createdUser);
@@ -244,14 +266,15 @@ public class AuthenticationController : ExtendedControllerBase
         throw new NotImplementedException();
     }
 
-    private async Task<Result<DbUser>> SetupNewUser(Guid entraId)
+    private async Task<Result<DbUser>> SetupNewUser(Guid entraId, string email)
     {
-        var user = new User
+        var user = new DbUser
         {
             Id = Guid.Empty,
             EntraId = entraId,
             Permissions = Permissions.None,
-            StartYear = null
+            StartYear = null,
+            Email = email
         };
 
         Result<Guid> userId = await _userDb.Insert(user);

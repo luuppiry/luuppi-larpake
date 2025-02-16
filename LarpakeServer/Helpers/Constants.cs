@@ -8,14 +8,10 @@ public class Constants
     public const string PermissionsFieldName = "permissions";
     public const string StartYearFieldName = "start_year";
 
-    #region LOCALIZATION
+    // Localization
     public const string LangFin = "fi";
     public const string LangEng = "en";
     public const string LangDefault = LangFin;
-    #endregion LOCALIZATION
-
-
-    #region LARPAKE_EVENT
 
     // LärpäkeEvent
     public const int MaxLarpakeEventTitleLength = 80;
@@ -26,8 +22,8 @@ public class Constants
     public const int MaxLarpakeTitleLength = 80;
     public const int MaxLarpakeDescriptionLength = 2000;
 
-    #endregion LARPAKE_EVENT
-
+    // User
+    public const int MaxUsernameLength = 255;
 
     public class Auth
     {

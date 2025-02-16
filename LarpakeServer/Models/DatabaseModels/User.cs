@@ -8,6 +8,7 @@ public class User
 {
     public required Guid Id { get; set; }
     public Guid? EntraId { get; set; }
+    public string? Email{ get; set; }
     public Permissions Permissions { get; set; } = Permissions.None;
     public int? StartYear { get; set; } = null;
     public DateTime CreatedAt { get; set; }
