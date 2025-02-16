@@ -71,6 +71,9 @@ public static class ServiceInjections
         //This prevents 'sub' claim to be mapped incorrectly
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
+        // Injections
+        services.AddSingleton<EntraTokenReader>();
+
         //Larpake id scheme is used by default
         services.AddAuthentication(Constants.Auth.LarpakeIdScheme)
             .AddJwt(Constants.Auth.LarpakeIdScheme, configuration)
