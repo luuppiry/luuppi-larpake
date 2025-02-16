@@ -20,6 +20,7 @@ Instructions for running the project can be found on [Setup wiki](https://github
 - [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 - [ASP.NET Core 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 - [PostgreSQL 17 server](https://www.postgresql.org/download/)
+- [NodeJs](https://nodejs.org/en/download)
 
 ## Technologies
 
@@ -45,11 +46,11 @@ Web api serves Server Sent Events (SSE) for subscribed clients when user's event
 
 ### Front End
 
-Front end technologies are in the works. It will probably be web UI and not a mobile application at first.
-For UI design drawings see `Wiki` -> `Design` ([here](https://github.com/henrivain/Larpake/wiki/Design)).
+`Vite` `Typescript` `CSS` `HTML`
 
-### Client
-TODO: Choose which one of the millions of js frameworks to use
+Front end is built with minimal vite + Typescript, HTML, CSS stack. 
+
+For UI design drawings see `Wiki` -> `Design` ([here](https://github.com/henrivain/Larpake/wiki/Design)).
 
 ## Project Timeline
 
