@@ -260,18 +260,14 @@ public class AuthenticationController : ExtendedControllerBase
         Guard.ThrowIfNull(tokens);
         Guard.ThrowIfNull(context);
 
-        context.Response.Headers.AccessControlAllowCredentials = "true";
-        
-
         // Write header
         context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken,
             new CookieOptions
             {
                 MaxAge = _tokenService.RefreshTokenLifetime,
-
                 Secure = true,
                 HttpOnly = true,
-                SameSite = SameSiteMode.None
+                SameSite = SameSiteMode.Strict
             });
 
         return Task.FromResult(Result.Ok);

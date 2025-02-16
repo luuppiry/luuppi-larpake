@@ -24,14 +24,13 @@ public static class ServiceInjections
         {
             options.AddPolicy("CorsPolicy", builder =>
             {
-
-
-
+                // Allow all
                 builder.SetIsOriginAllowed(origin => true)
                        .AllowAnyMethod()
                        .AllowAnyHeader();
 
 #if DEBUG
+                // Add more permissions for development ports
                 builder.WithOrigins([
                     "http://localhost:3000/",
                     "http://localhost:3001/",
