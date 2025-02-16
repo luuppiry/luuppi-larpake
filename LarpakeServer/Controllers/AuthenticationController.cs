@@ -239,6 +239,11 @@ public class AuthenticationController : ExtendedControllerBase
         throw new NotImplementedException();
     }
 
+    private string ReadEntraEmail()
+    {
+        throw new NotImplementedException();
+    }
+
     private async Task<Result<DbUser>> SetupNewUser(Guid entraId)
     {
         var user = new User

@@ -8,7 +8,7 @@ public static class EntraAuthenticationServiceExtensions
     public static AuthenticationBuilder AddEntraAuthenticationService(
         this AuthenticationBuilder builder, string authenticationScheme, IConfiguration configuration)
     {
-        builder.AddMicrosoftIdentityWebApi(configuration.GetSection(EntraIdOptions.SectionName), authenticationScheme);
+        builder.AddMicrosoftIdentityWebApi(configuration, EntraIdOptions.SectionName, authenticationScheme);
         return builder;
     }
 }

@@ -9,10 +9,10 @@ using LarpakeServer.Services.Implementations;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.RateLimiting;
+
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.RateLimiting;
-using Postgres = LarpakeServer.Data.PostgreSQL;
 
 namespace LarpakeServer;
 
@@ -68,10 +68,10 @@ public static class ServiceInjections
 
     public static void AddAuthenticationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // This prevents 'sub' claim to be mapped incorrectly
+        //This prevents 'sub' claim to be mapped incorrectly
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
-        // Larpake id scheme is used by default
+        //Larpake id scheme is used by default
         services.AddAuthentication(Constants.Auth.LarpakeIdScheme)
             .AddJwt(Constants.Auth.LarpakeIdScheme, configuration)
             .AddEntraAuthenticationService(Constants.Auth.EntraIdScheme, configuration);

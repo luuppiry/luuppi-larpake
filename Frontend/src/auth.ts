@@ -9,8 +9,6 @@ import {
     SilentRequest,
 } from "@azure/msal-browser";
 
-
-
 export default class EntraId {
     config: Configuration;
     msalInstance: IPublicClientApplication | null = null;
@@ -84,12 +82,13 @@ export default class EntraId {
     async #createRequest() {
         await this.#initialize();
 
+        const scope = import.meta.env.VITE_ENTRA_SCOPE;
         return this.accounts!.length > 0
             ? {
-                  scopes: [],
+                  scopes: [scope],
                   account: this.accounts![0],
               }
-            : { scopes: [] };
+            : { scopes: [scope] };
     }
 
     async #initialize() {
