@@ -7,4 +7,8 @@ async function getToken() {
     const response = await client.makeRequest("api/larpakkeet/own");
 
     console.log(response);
+
+    if (!response.ok){
+        console.log(await response.json())
+    }
 }

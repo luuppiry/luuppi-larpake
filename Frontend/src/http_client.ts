@@ -40,7 +40,7 @@ export default class HttpClient {
         headers ??= new Headers();
         headers.append("Content-Type", "application/json");
         headers.append(
-            "Authentication",
+            "Authorization",
             `Bearer ${this.accessToken?.accessToken}`
         );
 
@@ -49,6 +49,7 @@ export default class HttpClient {
                 ? `${this.baseUrl}${endpoint}`
                 : `${this.baseUrl}${endpoint}?${query.toString()}`;
 
+        console.log("fetch first")
         const response = await fetch(url, {
             method: method,
             headers: headers,
@@ -68,8 +69,7 @@ export default class HttpClient {
         }
 
         console.log("First request failed, reauthenticating.");
-
-        if ((await this.#renewAccessToken()) == false) {
+        if ((await this.#renewAccessToken(false)) == false) {
             return response;
         }
 
@@ -78,6 +78,7 @@ export default class HttpClient {
             `Bearer ${this.accessToken?.accessToken}`
         );
 
+        console.log("fetch second")
         return await fetch(url, {
             method: method,
             headers: headers,
@@ -85,22 +86,28 @@ export default class HttpClient {
     }
 
     async #ensureAccessToken(): Promise<boolean> {
+        
+        const now = new Date();
         if (
             this.accessToken !== null &&
-            this.accessToken.accessTokenExpiresAt < new Date()
+            this.accessToken.accessTokenExpiresAt > now
         ) {
             // Valid token exists
             return true;
         }
+
+        console.log("Renew token")
         return await this.#renewAccessToken();
     }
 
-    async #renewAccessToken(): Promise<boolean> {
+    async #renewAccessToken(tryRefresh: boolean = true): Promise<boolean> {
         console.log("getting token");
 
-        this.accessToken = await this.#fetchRefresh();
-        if (this.accessToken != null) {
-            return true;
+        if (tryRefresh){
+            this.accessToken = await this.#fetchRefresh();
+            if (this.accessToken != null) {
+                return true;
+            }
         }
 
         this.accessToken = await this.#fetchEntraLogin();
