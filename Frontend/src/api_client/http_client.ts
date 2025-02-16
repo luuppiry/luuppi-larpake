@@ -6,6 +6,12 @@ type AccessToken = {
     refreshTokenExpiresAt: Date;
 };
 
+export type ApiAction = {
+    description: string;
+    method: string;
+    href: string;
+}
+
 export default class HttpClient {
     baseUrl: string;
     accessToken: AccessToken | null;
@@ -13,6 +19,22 @@ export default class HttpClient {
     constructor() {
         this.baseUrl = import.meta.env.VITE_API_BASE_URL;
         this.accessToken = null;
+    }
+
+    async get(endpoint: string, query: URLSearchParams | null = null) {
+        return await this.makeRequest(endpoint, "GET", null, null, query);
+    }
+
+    async post(endpoint: string, body: any | null = null, headers: Headers | null = null) {
+        return await this.makeRequest(endpoint, "POST", body, headers, null);
+    }
+
+    async put(endpoint: string, body: any | null = null, headers: Headers | null = null) {
+        return await this.makeRequest(endpoint, "PUT", body, headers, null);
+    }
+    
+    async delete(endpoint: string, body: any | null = null, headers: Headers | null = null) {
+        return await this.makeRequest(endpoint, "DELETE", body, headers, null);
     }
 
     /**
@@ -29,6 +51,7 @@ export default class HttpClient {
     async makeRequest(
         endpoint: string,
         method: string = "GET",
+        body: any | null = null,
         headers: Headers | null = null,
         query: URLSearchParams | null = null
     ): Promise<Response> {
@@ -53,6 +76,7 @@ export default class HttpClient {
         const response = await fetch(url, {
             method: method,
             headers: headers,
+            body: JSON.stringify(body),
         });
 
         // If valid request
@@ -82,6 +106,7 @@ export default class HttpClient {
         return await fetch(url, {
             method: method,
             headers: headers,
+            body: JSON.stringify(body),
         });
     }
 

@@ -1,4 +1,4 @@
-import HttpClient from "./http_client.ts";
+import HttpClient from "./api_client/http_client.ts";
 
 document.getElementById("auth-btn")?.addEventListener("click", getToken);
 
