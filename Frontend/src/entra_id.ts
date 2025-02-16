@@ -107,7 +107,7 @@ export default class EntraId {
     }
 
     async #addDistinctAccount(account: AccountInfo) {
-        if (!this.accounts?.find((x) => x === account)) {
+        if (!this.accounts?.find((x) => x.homeAccountId === account.homeAccountId)) {
             this.accounts?.push(account);
         }
     }

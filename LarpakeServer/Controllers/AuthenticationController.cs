@@ -295,7 +295,7 @@ public class AuthenticationController : ExtendedControllerBase
             EntraId = entraId,
             Permissions = Permissions.None,
             StartYear = null,
-            Email = email
+            EntraUsername = email
         };
 
         Result<Guid> userId = await _userDb.Insert(user);
