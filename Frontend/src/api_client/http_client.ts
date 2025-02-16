@@ -32,6 +32,10 @@ export default class HttpClient {
         return await this.makeRequest(endpoint, "DELETE", body, headers, null);
     }
 
+
+    
+
+
     /**
      * Makes an HTTP request to the specified endpoint with the given method, headers, and query parameters.
      * Ensures valid access tokens if can get one, asks user credentials if needed.
@@ -68,11 +72,14 @@ export default class HttpClient {
                 : `${this.baseUrl}${endpoint}?${query.toString()}`;
 
         console.log("fetch first");
-        const response = await fetch(url, {
+
+        const request : RequestInit =  {
             method: method,
             headers: headers,
-            body: JSON.stringify(body),
-        });
+            body: method === "GET" ? null : JSON.stringify(body),
+        }
+
+        const response = await fetch(url, request);
 
         // If valid request
         if (response.ok) {
@@ -101,7 +108,7 @@ export default class HttpClient {
         return await fetch(url, {
             method: method,
             headers: headers,
-            body: JSON.stringify(body),
+            body: method === "GET" ? null : JSON.stringify(body),
         });
     }
 

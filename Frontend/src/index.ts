@@ -1,14 +1,11 @@
-import HttpClient from "./api_client/http_client.ts";
+import LarpakeClient from "./api_client/larpake_client.ts";
 
 document.getElementById("auth-btn")?.addEventListener("click", getToken);
 
 async function getToken() {
-    const client = new HttpClient();
-    const response = await client.makeRequest("api/larpakkeet/own");
+    
+    const client = new LarpakeClient();
 
-    console.log(response);
-
-    if (!response.ok){
-        console.log(await response.json())
-    }
+    const larpakkeet =  await client.getOwn();
+    console.log(larpakkeet)
 }
