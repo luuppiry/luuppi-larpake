@@ -267,7 +267,7 @@ public class AuthenticationController : ExtendedControllerBase
                 MaxAge = _tokenService.RefreshTokenLifetime,
                 Secure = true,
                 HttpOnly = true,
-                SameSite = SameSiteMode.Strict
+                SameSite = SameSiteMode.None    // TODO: Change to Strict in production
             });
 
         return Task.FromResult(Result.Ok);
