@@ -1,5 +1,4 @@
 ﻿using LarpakeServer.Data.Helpers;
-using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
@@ -53,6 +52,10 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
                     LEFT JOIN freshman_groups g
                         ON m.group_id = g.id
             )
+            """);
+
+        query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
+            e.id = ANY(@{nameof(options.LarpakeEventIds)})
             """);
 
         // Filter by larpake id

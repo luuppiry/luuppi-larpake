@@ -29,6 +29,10 @@ public class SignatureDatabase(NpgsqlConnectionString connectionString, ILogger<
             WHERE user_id = @{nameof(options.UserId)}
             """);
 
+        query.IfNotNull(options.SignatureIds).AppendConditionLine($"""
+            WHERE id = ANY(@{nameof(options.SignatureIds)})
+            """);
+
         query.AppendLine($"""
             ORDER BY user_id ASC, created_at DESC
             LIMIT @{nameof(options.PageSize)}
