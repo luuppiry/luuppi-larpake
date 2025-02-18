@@ -24,8 +24,8 @@ Update appsettings.Development.json (Add inside top level object)
 {
     "EntraId": {
         "Instance": "https://luuppiweba.ciamlogin.com",
-        "ClientId": "6b19d245-0286-43a2-8481-98db51a8e777", // From Azure
-        "TenantId": "e066975d-a520-4d16-bc9e-861a5ed8ded7", // From Azure
+        "ClientId": "<azure_client_id>", // From Azure
+        "TenantId": "<azure_tedant_id>", // From Azure
         "Scopes": "Larpake.Use"
     }
 }
