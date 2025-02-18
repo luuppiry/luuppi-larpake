@@ -1,3 +1,4 @@
+import DevHttpClient from "./dev_http_client.ts";
 import EntraId from "./entra_id.ts";
 
 type AccessToken = {
@@ -5,7 +6,6 @@ type AccessToken = {
     accessTokenExpiresAt: Date;
     refreshTokenExpiresAt: Date;
 };
-
 
 export default class HttpClient {
     baseUrl: string;
@@ -20,21 +20,29 @@ export default class HttpClient {
         return await this.makeRequest(endpoint, "GET", null, null, query);
     }
 
-    async post(endpoint: string, body: any | null = null, headers: Headers | null = null) {
+    async post(
+        endpoint: string,
+        body: any | null = null,
+        headers: Headers | null = null
+    ) {
         return await this.makeRequest(endpoint, "POST", body, headers, null);
     }
 
-    async put(endpoint: string, body: any | null = null, headers: Headers | null = null) {
+    async put(
+        endpoint: string,
+        body: any | null = null,
+        headers: Headers | null = null
+    ) {
         return await this.makeRequest(endpoint, "PUT", body, headers, null);
     }
-    
-    async delete(endpoint: string, body: any | null = null, headers: Headers | null = null) {
+
+    async delete(
+        endpoint: string,
+        body: any | null = null,
+        headers: Headers | null = null
+    ) {
         return await this.makeRequest(endpoint, "DELETE", body, headers, null);
     }
-
-
-    
-
 
     /**
      * Makes an HTTP request to the specified endpoint with the given method, headers, and query parameters.
@@ -48,6 +56,51 @@ export default class HttpClient {
      * @throws An error if authentication fails.
      */
     async makeRequest(
+        endpoint: string,
+        method: string = "GET",
+        body: any | null = null,
+        headers: Headers | null = null,
+        query: URLSearchParams | null = null
+    ): Promise<Response> {
+        if (import.meta.env.VITE_IS_DEV === "true") {
+            return await this.#fetchDev(endpoint, method, body, headers, query);
+        }
+
+        return await this.#makeRequestMiddleware(
+            endpoint,
+            method,
+            body,
+            headers,
+            query
+        );
+    }
+
+    async #fetchDev(
+        endpoint: string,
+        method: string = "GET",
+        body: any | null = null,
+        headers: Headers | null = null,
+        query: URLSearchParams | null = null
+    ): Promise<Response> {
+        const devClient = new DevHttpClient();
+        if (
+            this.accessToken == null ||
+            this.accessToken.accessTokenExpiresAt < new Date()
+        ) {
+            // Reauthenticate if needed
+            this.accessToken = await devClient.authenticate();
+        }
+        return await devClient.makeDevRequest(
+            this.accessToken,
+            endpoint,
+            method,
+            body,
+            headers,
+            query
+        );
+    }
+
+    async #makeRequestMiddleware(
         endpoint: string,
         method: string = "GET",
         body: any | null = null,
@@ -73,11 +126,11 @@ export default class HttpClient {
 
         console.log("fetch first");
 
-        const request : RequestInit =  {
+        const request: RequestInit = {
             method: method,
             headers: headers,
             body: method === "GET" ? null : JSON.stringify(body),
-        }
+        };
 
         const response = await fetch(url, request);
 
