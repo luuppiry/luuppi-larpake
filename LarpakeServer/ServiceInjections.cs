@@ -9,10 +9,10 @@ using LarpakeServer.Services.Implementations;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.RateLimiting;
+
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.RateLimiting;
-using Postgres = LarpakeServer.Data.PostgreSQL;
 
 namespace LarpakeServer;
 
@@ -24,9 +24,25 @@ public static class ServiceInjections
         {
             options.AddPolicy("CorsPolicy", builder =>
             {
-                builder.AllowAnyOrigin()
+                // Allow all
+                builder.SetIsOriginAllowed(origin => true)
                        .AllowAnyMethod()
                        .AllowAnyHeader();
+
+#if DEBUG
+                // Add more permissions for development ports
+                builder.WithOrigins([
+                    "http://localhost:3000/",
+                    "http://localhost:3001/",
+                    "http://localhost:3002/",
+                    "http://localhost:4000/",
+                    "http://localhost:4001/",
+                    "http://localhost:4002/"
+                    ])
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .AllowCredentials();
+#endif
             });
         });
     }
@@ -68,10 +84,13 @@ public static class ServiceInjections
 
     public static void AddAuthenticationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // This prevents 'sub' claim to be mapped incorrectly
+        //This prevents 'sub' claim to be mapped incorrectly
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
-        // Larpake id scheme is used by default
+        // Injections
+        services.AddSingleton<EntraTokenReader>();
+
+        //Larpake id scheme is used by default
         services.AddAuthentication(Constants.Auth.LarpakeIdScheme)
             .AddJwt(Constants.Auth.LarpakeIdScheme, configuration)
             .AddEntraAuthenticationService(Constants.Auth.EntraIdScheme, configuration);

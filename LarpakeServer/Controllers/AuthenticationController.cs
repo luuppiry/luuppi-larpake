@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
+using LarpakeServer.Identity.EntraId;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
@@ -16,45 +17,79 @@ namespace LarpakeServer.Controllers;
 public class AuthenticationController : ExtendedControllerBase
 {
     readonly TokenService _tokenService;
+    readonly EntraTokenReader _entraTokenReader;
     readonly IUserDatabase _userDb;
     readonly IRefreshTokenDatabase _refreshTokenDb;
+
+
     const string RefreshTokenCookieName = "__Secure-refreshToken";
 
-    record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt, string TokenType = "Bearer");
+    enum LoginAction
+    {
+        Undefined,
+        Login,
+        Refresh,
+        Register
+    }
+    record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt, string TokenType = "Bearer", string Action = "None");
 
 
     public AuthenticationController(
         TokenService generator,
+        EntraTokenReader entraTokenReader,
         IUserDatabase userDb,
         IRefreshTokenDatabase refreshTokenDb,
         IClaimsReader claimsReader,
         ILogger<AuthenticationController> logger) : base(claimsReader, logger)
     {
         _tokenService = generator;
+        _entraTokenReader = entraTokenReader;
         _userDb = userDb;
         _refreshTokenDb = refreshTokenDb;
     }
 
+    /* Notice that normally Constants.Auth.LarpakeIdScheme
+     * is used when the user is authenticated. This endpoint
+     * needs to validate Entra id access token, so different 
+     * scheme is used. After this login call, other endpoints
+     * should use the normal LarpakeIdScheme.
+     */
     [Authorize(AuthenticationSchemes = Constants.Auth.EntraIdScheme)]
     [HttpPost("login")]
     [ProducesResponseType(typeof(TokenInfo), 200)]
     [ProducesErrorResponseType(typeof(MessageResponse))]
     public async Task<IActionResult> Login()
     {
+        // Validate user id
         Guid entraId = ReadEntraId();
+        if (entraId == Guid.Empty)
+        {
+            return BadRequest("Token must provide user id (oid).");
+        }
 
         // Check if user exists in database
         DbUser? user = await _userDb.GetByEntraId(entraId);
         if (user is null)
         {
+            // Validate email/username
+            string email = ReadEntraUsername();
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Token must contain email address or username.");
+            }
+            if (email.Length > Constants.MaxUsernameLength)
+            {
+                return BadRequest("Token email/username is too long.");
+            }
+
             // User is new and must be created first
-            Result<DbUser> createdUser = await SetupNewUser(entraId);
+            Result<DbUser> createdUser = await SetupNewUser(entraId, email);
             if (createdUser.IsError)
             {
                 return FromError(createdUser);
             }
-            
-            _logger.LogInformation("Created user {userId}.", ((DbUser)createdUser).Id);
+
+            _logger.LogInformation("Created user {userId} with entra id {entraId}.", ((DbUser)createdUser).Id, entraId);
 
             user = (DbUser)createdUser;
         }
@@ -69,7 +104,7 @@ public class AuthenticationController : ExtendedControllerBase
 
 
 #if DEBUG
-    [AllowAnonymous]    
+    [AllowAnonymous]
     [HttpPost("login/dummy")]
     [ProducesResponseType(typeof(TokenInfo), 200)]
     [ProducesErrorResponseType(typeof(MessageResponse))]
@@ -100,7 +135,7 @@ public class AuthenticationController : ExtendedControllerBase
         _logger.LogInformation("User {id} logged in.", user.Id);
 
         // Finish by saving refresh token
-        return await SaveToken(user, tokens, Guid.Empty);
+        return await SaveToken(user, tokens, Guid.Empty, LoginAction.Login);
     }
 #endif
 
@@ -117,7 +152,7 @@ public class AuthenticationController : ExtendedControllerBase
         }
 
         // Get tokens and validate not empty
-    
+
         if (string.IsNullOrEmpty(refreshToken))
         {
             return Unauthorized();
@@ -143,7 +178,7 @@ public class AuthenticationController : ExtendedControllerBase
         _logger.LogInformation("Refreshed tokens for user {id}.", user.Id);
 
         // Finish by saving refresh token
-        return await SaveToken(user, newTokens, validation.TokenFamily.Value);
+        return await SaveToken(user, newTokens, validation.TokenFamily.Value, LoginAction.Refresh);
     }
 
 
@@ -170,7 +205,8 @@ public class AuthenticationController : ExtendedControllerBase
     }
 
 
-    private async Task<IActionResult> SaveToken(DbUser user, TokenGetDto tokens, Guid tokenFamily)
+    private async Task<IActionResult> SaveToken(DbUser user, TokenGetDto tokens,
+        Guid tokenFamily, LoginAction action = LoginAction.Undefined)
     {
         Guard.ThrowIfNull(user);
         Guard.ThrowIfNull(tokens);
@@ -206,7 +242,14 @@ public class AuthenticationController : ExtendedControllerBase
             Message: "Refresh token cookie set, access token in body.",
             AccessToken: tokens.AccessToken,
             AccessTokenExpiresAt: tokens.AccessTokenExpiresAt.Value,
-            RefreshTokenExpiresAt: tokens.RefreshTokenExpiresAt.Value);
+            RefreshTokenExpiresAt: tokens.RefreshTokenExpiresAt.Value,
+            Action: action switch
+            {
+                LoginAction.Refresh => "Refresh",
+                LoginAction.Login => "Login",
+                LoginAction.Register => "Register",
+                _ => "Undefined"
+            });
 
         return Ok(tokenInfo);
     }
@@ -224,8 +267,7 @@ public class AuthenticationController : ExtendedControllerBase
                 MaxAge = _tokenService.RefreshTokenLifetime,
                 Secure = true,
                 HttpOnly = true,
-                SameSite = SameSiteMode.Strict
-                // TODO: Path if needed
+                SameSite = SameSiteMode.None    // TODO: Change to Strict in production
             });
 
         return Task.FromResult(Result.Ok);
@@ -234,19 +276,27 @@ public class AuthenticationController : ExtendedControllerBase
 
     private Guid ReadEntraId()
     {
-        // TODO: Implement this 
-        // Claims reader might also work here, if Guid is in same JWT field
-        throw new NotImplementedException();
+        Guid? userId = _entraTokenReader.GetUserId(HttpContext.User);
+        Guard.ThrowIfNull(userId);
+        return userId.Value;
     }
 
-    private async Task<Result<DbUser>> SetupNewUser(Guid entraId)
+    private string ReadEntraUsername()
     {
-        var user = new User
+        string? email = _entraTokenReader.GetUsername(HttpContext.User);
+        Guard.ThrowIfNull(email);
+        return email;
+    }
+
+    private async Task<Result<DbUser>> SetupNewUser(Guid entraId, string email)
+    {
+        var user = new DbUser
         {
             Id = Guid.Empty,
             EntraId = entraId,
             Permissions = Permissions.None,
-            StartYear = null
+            StartYear = null,
+            EntraUsername = email
         };
 
         Result<Guid> userId = await _userDb.Insert(user);

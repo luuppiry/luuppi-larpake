@@ -61,14 +61,14 @@ This project is meant to be production ready for Freshmen starting their studies
 Contributions are always welcomed! Project is still at its youth so no contributing guidelines are written so far. If you are interested in improving Lärpäke, contact us! 
 
 ## Contributors
-@henrivain
+@henrivain & @JurnetFIN
 
 ## Support & Features
 
 For support and feature requests preferably open a issue in Github (see `Issues` -page)
 Or send email to  
 
-henri.vainio(at)luuppi.fi
+henri.vainio(at)luuppi.fi or juliusz.kotelba(at)luuppi.fi
 
 <details>
 
@@ -78,5 +78,8 @@ henri.vainio(at)luuppi.fi
 
 #### @henrivain
 [![wakatime](https://wakatime.com/badge/user/33becafa-9125-4b20-b55e-a824ccc490f1/project/ad9cdb99-5373-46b4-8af9-a789d14f6abc.svg)](https://wakatime.com/badge/user/33becafa-9125-4b20-b55e-a824ccc490f1/project/ad9cdb99-5373-46b4-8af9-a789d14f6abc)
+
+#### @JurnetFIN
+[![wakatime](https://wakatime.com/badge/user/c8b15fbf-a210-457e-9da7-a0093d788004/project/0f7f4037-1fcd-45ae-a399-158209116f96.svg)](https://wakatime.com/badge/user/c8b15fbf-a210-457e-9da7-a0093d788004/project/0f7f4037-1fcd-45ae-a399-158209116f96)
 
 </details>

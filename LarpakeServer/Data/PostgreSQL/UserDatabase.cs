@@ -64,10 +64,10 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
 
     }
 
-    public Task<User?> GetByEntraId(Guid entraId)
+    public async Task<User?> GetByEntraId(Guid entraId)
     {
         using var connection = GetConnection();
-        return connection.QueryFirstOrDefaultAsync<User>($"""
+        return await connection.QueryFirstOrDefaultAsync<User>($"""
             SELECT 
                 id,
                 permissions,
@@ -92,12 +92,14 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
             INSERT INTO users (
                 id,
                 start_year,
-                entra_id
+                entra_id,
+                entra_username
             )
             VALUES (
                 @{nameof(User.Id)},
                 @{nameof(User.StartYear)},
-                @{nameof(User.EntraId)}
+                @{nameof(User.EntraId)},
+                @{nameof(User.EntraUsername)}
             );
             """, record);
 

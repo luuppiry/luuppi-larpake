@@ -233,10 +233,10 @@ public class LarpakeEventDatabase(NpgsqlConnectionString connectionString, ILogg
             """, new { id });
     }
 
-    public async Task<Guid[]> GetRefOrganizationEvents(long id)
+    public async Task<long[]> GetRefOrganizationEvents(long id)
     {
         using var connection = GetConnection();
-        var records = await connection.QueryAsync<Guid>($"""
+        var records = await connection.QueryAsync<long>($"""
             SELECT organization_event_id
             FROM event_map
             WHERE larpake_event_id = @{nameof(id)};

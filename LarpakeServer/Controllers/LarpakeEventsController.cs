@@ -3,7 +3,6 @@ using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
-using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
@@ -16,7 +15,7 @@ namespace LarpakeServer.Controllers;
 [Route("api/larpake-events")]
 public class LarpakeEventsController : ExtendedControllerBase
 {
-    readonly record struct OrgEventIdsResponse(Guid[] Ids);
+    readonly record struct OrgEventIdsResponse(long[] Ids);
 
     readonly ILarpakeEventDatabase _db;
 
@@ -134,7 +133,7 @@ public class LarpakeEventsController : ExtendedControllerBase
     [ProducesResponseType(typeof(OrgEventIdsResponse), 200)]
     public async Task<IActionResult> GetAttendanceOpportunies(long eventId)
     {
-        Guid[] orgEvents = await _db.GetRefOrganizationEvents(eventId);
+        long[] orgEvents = await _db.GetRefOrganizationEvents(eventId);
         return Ok(new OrgEventIdsResponse(orgEvents));
     }
     
