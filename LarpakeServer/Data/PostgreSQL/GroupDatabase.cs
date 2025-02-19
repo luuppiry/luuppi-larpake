@@ -220,7 +220,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 )
                 VALUES (
                     @{nameof(InsertModel.Id)},
-                    @{nameof(InsertModel.UserId)},
+                    @{nameof(InsertModel.UserId)}
                 )
                 ON CONFLICT DO NOTHING;
                 """,

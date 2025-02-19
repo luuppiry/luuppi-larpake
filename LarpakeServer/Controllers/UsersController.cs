@@ -5,7 +5,6 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
-using System.Net;
 using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
@@ -56,6 +55,16 @@ public class UsersController : ExtendedControllerBase
         return record is null ? NotFound() : Ok(record);
     }
 
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(UserGetDto), 200)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> GetMe()
+    {
+        Guid authorId = GetRequestUserId();
+        DbUser? record = await _db.GetByUserId(authorId);
+        return record is null 
+            ? NotFound() : Ok(UserGetDto.From(record));
+    }
 
     [HttpPut("{userId}")]
     [RequiresPermissions(Permissions.UpdateUserInformation)]

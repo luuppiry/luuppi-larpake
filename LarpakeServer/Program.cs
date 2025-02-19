@@ -33,16 +33,13 @@ builder.Services.AddRouting(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
 
-    app.MapScalarApiReference(options =>
-    {
-        options.WithTitle(configuration["Scalar-OpenApi:Title"]!);
-    });
-}
+// Use openapi 
+app.MapOpenApi();
+app.MapScalarApiReference(options =>
+{
+    options.WithTitle(configuration["Scalar-OpenApi:Title"]!);
+});
 
 // TODO: Add exception handling middleware
 

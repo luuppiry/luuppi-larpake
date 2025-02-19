@@ -30,7 +30,7 @@ public class SignaturesController : ExtendedControllerBase
 
 
     [HttpGet]
-    [RequiresPermissions(Permissions.CreateSignature)]
+    [RequiresPermissions(Permissions.CommonRead)]
     [ProducesResponseType(typeof(SignaturesGetDto), 200)]
     public async Task<IActionResult> GetSignatures([FromQuery] SignatureQueryOptions options)
     {

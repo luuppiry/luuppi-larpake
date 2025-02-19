@@ -26,7 +26,11 @@ public class SignatureDatabase(NpgsqlConnectionString connectionString, ILogger<
             """);
 
         query.IfNotNull(options.UserId).AppendConditionLine($"""
-            WHERE user_id = @{nameof(options.UserId)}
+            user_id = @{nameof(options.UserId)}
+            """);
+
+        query.IfNotNull(options.SignatureIds).AppendConditionLine($"""
+            id = ANY(@{nameof(options.SignatureIds)})
             """);
 
         query.AppendLine($"""

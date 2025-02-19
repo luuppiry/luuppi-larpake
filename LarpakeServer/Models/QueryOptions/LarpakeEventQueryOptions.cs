@@ -7,4 +7,5 @@ public class LarpakeEventQueryOptions : QueryOptions
     public long? SectionId { get; set; }
     public long? LarpakeId { get; set; }
     public bool? IsCancelled { get; set; } = null;
+    public long[]? LarpakeEventIds { get; set; } = [];
 }

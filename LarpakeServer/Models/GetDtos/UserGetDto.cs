@@ -7,6 +7,8 @@ namespace LarpakeServer.Models.GetDtos;
 public class UserGetDto : IMappable<User, UserGetDto>
 {
     public required Guid Id { get; set; }
+    public Guid? EntraId { get; set; }
+    public string? EntraUsername { get; set; }
     public Permissions Permissions { get; set; }
     public int? StartYear { get; set; } = null;
     public DateTime CreatedAt { get; set; }
@@ -17,6 +19,8 @@ public class UserGetDto : IMappable<User, UserGetDto>
         return new UserGetDto
         {
             Id = record.Id,
+            EntraId = record.EntraId,
+            EntraUsername = record.EntraUsername,
             Permissions = record.Permissions,
             StartYear = record.StartYear,
             CreatedAt = record.CreatedAt,
