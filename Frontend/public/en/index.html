@@ -13,55 +13,40 @@
         />
         <!-- Import header and side panel -->
         <link rel="stylesheet" href="/styles/common.css" />
-        <script src="./src/components/side-panel.ts"></script>
-        <script src="./src/components/ui-header.ts"></script>
+        <script src="/src/components/side-panel.ts"></script>
+        <script src="/src/components/ui-header.ts"></script>
     </head>
     <body>
         <ui-header></ui-header>
-        <side-panel></side-panel>
+        <side-panel lang="en"></side-panel>
 
         <div class="container">
             <div class="image-section">
                 <img src="/kiasa.png" alt="Kiasa" />
-                <h2>TÄSTÄ LÄRPÄKKEEN IHMEELLISEEN MAAILMAAN</h2>
+                <h2>ENTER THE MAGICAL WORLD OF LÄRPÄKE</h2>
                 <a href="larpake.html" class="main-site-button">⭢</a>
             </div>
         </div>
 
         <div class="container">
             <div class="events-section">
-                <h2>TULEVAT LÄRPÄKETAPAHTUMAT</h2>
+                <h2>COMING EVENTS</h2>
                 <div class="event">
-                    <h3>Keskiviikko 27. marras. - Kv-pikkujoulut</h3>
+                    <h3>Wed 27. Nov. - International Christmas Party</h3>
                     <p>17:00–21:00</p>
                     <p>
-                        Tapahtuma on tarkoitettu kansainvälisille
-                        opiskelijoille, mutta kaikki opiskelijat ovat myös
-                        tervetulleita! Tapahtuman kieli on englanti.
+                        Event is mainly for international students, but national students are also welcome! This event
+                        is in english.
                     </p>
                 </div>
                 <div class="event">
-                    <h3>
-                        Torstai 28. marras. - Luonnontieteilijöiden
-                        jouluristeily
-                    </h3>
-                    <p>To 28.11 klo 17:00 - Pe 29.11 klo 12:00</p>
-                    <p>
-                        Liput tälle matkalle myydään Hervannan kampuksella
-                        Sähkötalon aulassa ja Kaupin kampuksella Lääketieteen
-                        aulassa.
-                    </p>
+                    <h3>Thu 28. Nov. - Science students' christmas voyage</h3>
+                    <p>Thu 28.11 17:00 - Fri 29.11 12:00</p>
+                    <p>Tickets are sold in the Hervanta campus Sähkötalo lobby and Kauppi campus medicine lobby.</p>
                 </div>
             </div>
         </div>
 
         <script type="module" src="/src/index.ts"></script>
-
-        <script>
-            function toggleSidePanel() {
-                const panel = document.getElementById("sidePanel");
-                panel.classList.toggle("open");
-            }
-        </script>
     </body>
 </html>

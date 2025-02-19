@@ -6,47 +6,45 @@ type ListItem = {
 class SidePanel extends HTMLElement {
     items: ListItem[];
 
-
     constructor() {
         super();
-        
 
         this.items = [
-            { 
-                href: "index.html", 
-                title: { fi: "Koti", en: "Home" } 
-            },
-            { 
-                href: "larpake.html", 
-                title: { fi: "Lärpäke", en: "Widget" } 
-            },
-            { 
-                href: "statistics.html", 
-                title: { fi: "Oma statistiikka", en: "My Statistics" } 
+            {
+                href: "index.html",
+                title: { fi: "Koti", en: "Home" },
             },
             {
-                href: "latest_accomplishment.html",
+                href: "larpake.html",
+                title: { fi: "Lärpäke", en: "Widget" },
+            },
+            {
+                href: "statistics.html",
+                title: { fi: "Oma statistiikka", en: "My Statistics" },
+            },
+            {
+                href: "latest_completion.html",
                 title: { fi: "Viimeisimmät suoritukset", en: "Latest Achievements" },
             },
-            { 
-                href: "common_statistics.html", 
-                title: { fi: "Yhteiset statistiikat", en: "Shared Statistics" } 
+            {
+                href: "common_statistics.html",
+                title: { fi: "Yhteiset statistiikat", en: "Shared Statistics" },
             },
-            { 
-                href: "upcoming_events.html", 
-                title: { fi: "Tulevat tapahtumat", en: "Upcoming Events" } 
+            {
+                href: "upcoming_events.html",
+                title: { fi: "Tulevat tapahtumat", en: "Upcoming Events" },
             },
-            { 
-                href: "own_tutors.html", 
-                title: { fi: "Omat tutorit", en: "My Tutors" } 
+            {
+                href: "own_tutors.html",
+                title: { fi: "Omat tutorit", en: "My Tutors" },
             },
-            { 
-                href: "event_marking.html", 
-                title: { fi: "Kirjaa osallistuminen - Fuksi", en: "Log Attendance - Freshman" } 
+            {
+                href: "event_marking.html",
+                title: { fi: "Kirjaa osallistuminen - Fuksi", en: "Log Attendance - Freshman" },
             },
-            { 
-                href: "tutor_mark_event.html", 
-                title: { fi: "Kirjaa osallistuminen - Tuutori", en: "Log Attendance - Tutor" } 
+            {
+                href: "tutor_mark_event.html",
+                title: { fi: "Kirjaa osallistuminen - Tuutori", en: "Log Attendance - Tutor" },
             },
         ];
     }
@@ -55,10 +53,8 @@ class SidePanel extends HTMLElement {
         this.render();
     }
 
-  
-
     render() {
-        const language = this.getAttribute("lang") !==  "en" ?  "fi" : "en";
+        const language = this.getAttribute("lang") !== "en" ? "fi" : "en";
         const menuItems = this.items
             .map((item) => `<li><a href="${item.href}">${item.title[language]}</a></li>`)
             .join("\n");
