@@ -14,9 +14,9 @@ public class Constants
     public const string LangDefault = LangFin;
 
     // LärpäkeEvent
-    public const int MaxLarpakeEventTitleLength = 80;
-    public const int MaxLarpakeEventBodyLength = 2000;
-    public const int MaxPointsPerLarpakeEvent = 100;
+    public const int MaxLarpakeTaskTitleLength = 80;
+    public const int MaxLarpakeTaskBodyLength = 2000;
+    public const int MaxPointsPerLarpakeTask = 100;
     
     // Lärpäke
     public const int MaxLarpakeTitleLength = 80;

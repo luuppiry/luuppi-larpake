@@ -17,10 +17,10 @@ public class LarpakeEventsController : ExtendedControllerBase
 {
     readonly record struct OrgEventIdsResponse(long[] Ids);
 
-    readonly ILarpakeEventDatabase _db;
+    readonly ILarpakeTaskDatabase _db;
 
     public LarpakeEventsController(
-        ILarpakeEventDatabase db, 
+        ILarpakeTaskDatabase db, 
         IClaimsReader claimsReader, 
         ILogger<LarpakeEventsController>? logger = null) 
         : base(claimsReader, logger)
@@ -31,7 +31,7 @@ public class LarpakeEventsController : ExtendedControllerBase
     [HttpGet]
     [RequiresPermissions(Permissions.CommonRead)]
     [ProducesResponseType(typeof(LarpakeEventsGetDto), 200)]
-    public async Task<IActionResult> Get([FromQuery] LarpakeEventQueryOptions options)
+    public async Task<IActionResult> Get([FromQuery] LarpakeTaskQueryOptions options)
     {
         Permissions permissions = GetRequestPermissions();
         bool isSelfOnly = permissions.Has(Permissions.ReadAllData) is false;
@@ -41,7 +41,7 @@ public class LarpakeEventsController : ExtendedControllerBase
             options.UserId = GetRequestUserId();
         }
 
-        var records = await _db.GetEvents(options);
+        var records = await _db.GetTasks(options);
 
         // Map to result
         LarpakeEventsGetDto result = LarpakeEventsGetDto
@@ -62,7 +62,7 @@ public class LarpakeEventsController : ExtendedControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> Get(long eventId)
     {
-        var record = await _db.GetEvent(eventId);
+        var record = await _db.GetTask(eventId);
         if (record is null)
         {
             return IdNotFound();
@@ -75,9 +75,9 @@ public class LarpakeEventsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(LongIdResponse), 201)]
     [ProducesErrorResponseType(typeof(MessageResponse))]
-    public async Task<IActionResult> Create([FromBody] LarpakeEventPostDto record)
+    public async Task<IActionResult> Create([FromBody] LarpakeTaskPostDto record)
     {
-        LarpakeEvent mapped = LarpakeEvent.From(record);
+        LarpakeTask mapped = LarpakeTask.From(record);
         var id = await _db.Insert(mapped);
         return id.MatchToResponse(
             ok: CreatedId, 
@@ -88,9 +88,9 @@ public class LarpakeEventsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     [ProducesErrorResponseType(typeof(MessageResponse))]
-    public async Task<IActionResult> Update(long eventId, [FromBody] LarpakeEventPutDto record)
+    public async Task<IActionResult> Update(long eventId, [FromBody] LarpakeTaskPutDto record)
     {
-        LarpakeEvent mapped = LarpakeEvent.From(record);
+        LarpakeTask mapped = LarpakeTask.From(record);
         mapped.Id = eventId;
 
         var rowsAffected = await _db.Update(mapped);

@@ -117,7 +117,7 @@ public static class ServiceInjections
         services.AddSingleton<ISignatureDatabase, SignatureDatabase>();
         services.AddSingleton<IRefreshTokenDatabase, RefreshTokenDatabase>();
         services.AddSingleton<ILarpakeDatabase, LarpakeDatabase>();
-        services.AddSingleton<ILarpakeEventDatabase, LarpakeEventDatabase>();
+        services.AddSingleton<ILarpakeTaskDatabase, LarpakeTaskDatabase>();
         services.AddSingleton<IStatisticsService, StatisticsService>();
     }
 
