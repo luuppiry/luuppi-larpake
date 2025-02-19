@@ -6,7 +6,7 @@ public class Attendance
 {
     public required Guid UserId { get; set; }
 
-    [SqlColumn("larpake_event_id")]
+    [SqlColumnName("larpake_event_id")]
     public required long LarpakeTaskId { get; set; }
     public Guid? CompletionId { get; set; } = null;
     public DateTime CreatedAt { get; set; }

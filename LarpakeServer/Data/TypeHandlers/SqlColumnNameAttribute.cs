@@ -7,18 +7,18 @@ namespace LarpakeServer.Data.TypeHandlers;
 /// </summary>
 
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
-public class SqlColumnAttribute : Attribute
+public class SqlColumnNameAttribute : Attribute
 {
     public string Name { get; }
-    public SqlColumnAttribute(string name)
+    public SqlColumnNameAttribute(string name)
     {
         Name = name;
     }
 }
 
-public class ColumnAttribute<T> : FallbackTypeMapper
+public class ColumnAttributeTypeMapper<T> : FallbackTypeMapper
 {
-    public ColumnAttribute()
+    public ColumnAttributeTypeMapper()
         : base([
             new CustomPropertyTypeMap(typeof(T), _propertySelector),
             new DefaultTypeMap(typeof(T))
@@ -32,7 +32,7 @@ public class ColumnAttribute<T> : FallbackTypeMapper
         type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                     .FirstOrDefault(
                     p => p.GetCustomAttributes(false)
-                        .OfType<SqlColumnAttribute>()
+                        .OfType<SqlColumnNameAttribute>()
                         .Any(attr => attr.Name == columnName))!;
 }
 
@@ -67,7 +67,21 @@ public class FallbackTypeMapper : SqlMapper.ITypeMap
 
     public ConstructorInfo? FindExplicitConstructor()
     {
-        throw new NotImplementedException();
+        foreach (var mapper in _mappers)
+        {
+            try
+            {
+                ConstructorInfo? result = mapper.FindExplicitConstructor();
+                if (result is not null)
+                {
+                    return result;
+                }
+            }
+            catch
+            {
+            }
+        }
+        return null;
     }
 
     public SqlMapper.IMemberMap? GetConstructorParameter(ConstructorInfo constructor, string columnName)

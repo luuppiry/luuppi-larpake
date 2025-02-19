@@ -108,6 +108,8 @@ public static class ServiceInjections
         services.AddSingleton(new NpgsqlConnectionString(connectionString));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
+        SqlMapper.SetTypeMap(typeof(Models.DatabaseModels.Attendance), 
+            new ColumnAttributeTypeMapper<Models.DatabaseModels.Attendance>());
         DefaultTypeMap.MatchNamesWithUnderscores = true;
 
         services.AddSingleton<IOrganizationEventDatabase, OrganizationEventDatabase>();
