@@ -10,18 +10,18 @@ class SidePanel extends HTMLElement {
         super();
 
         this.items = [
-            { href: "main.html", title: "Koti" },
+            { href: "main.html", title: "Home" },
             { href: "larpake.html", title: "Lärpäke" },
-            { href: "statistics.html", title: "Oma statistiikka" },
+            { href: "statistics.html", title: "Own statistics" },
             {
                 href: "latest_accomplishment.html",
-                title: "Viimeisimmät suoritukset",
+                title: "Latest accomplishments",
             },
-            { href: "common_statistics.html", title: "Yhteiset statistiikat" },
-            { href: "upcoming_events.html", title: "Tulevat tapahtumat" },
-            { href: "own_tutors.html", title: "Omat tutorit" },
-            { href: "event_marking.html", title: "Kirjaa osallistuminen" },
-            { href: "event_marking.html", title: "Lue osallistuminen" },
+            { href: "common_statistics.html", title: "Common statistics" },
+            { href: "upcoming_events.html", title: "Upcoming events" },
+            { href: "own_tutors.html", title: "Own tutors" },
+            { href: "event_marking.html", title: "Event_marking_fuksi" },
+            { href: "tutor_mark_event.html", title: "Event_marking_tutor" },
         ];
     }
 
