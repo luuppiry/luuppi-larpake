@@ -11,7 +11,6 @@ public class OrganizationEvent : ILocalized<OrganizationEventLocalization>
 
     public required DateTime StartsAt { get; set; }
     public DateTime? EndsAt { get; set; } = null;
-    public required string Location { get; set; }
 
     // Metadata
     public Guid CreatedBy { get; set; }
@@ -29,7 +28,6 @@ public class OrganizationEvent : ILocalized<OrganizationEventLocalization>
         return new OrganizationEvent
         {
             Id = id,
-            Location = dto.Location,
             TextData = dto.TextData.ToList(),
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,
@@ -42,7 +40,6 @@ public class OrganizationEvent : ILocalized<OrganizationEventLocalization>
         return new OrganizationEvent
         {
             Id = Constants.NullId,
-            Location = dto.Location,
             TextData = dto.TextData.ToList(),
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,

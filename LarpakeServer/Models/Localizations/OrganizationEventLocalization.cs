@@ -9,6 +9,10 @@ public class OrganizationEventLocalization : LocalizationBase
     [MaxLength(80)]
     public required string Title { get; set; }
 
+    [Required]
+    [MaxLength(100)]
+    public required string Location { get; set; }
+
     [MaxLength(4000)]
     public string Body { get; set; } = string.Empty;
 
@@ -17,4 +21,5 @@ public class OrganizationEventLocalization : LocalizationBase
 
     [MaxLength(150)]
     public string? ImageUrl { get; set; } = null;
+
 }

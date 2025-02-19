@@ -30,4 +30,9 @@ public class Constants
         public const string EntraIdScheme = "EntraIdBearer";
         public const string LarpakeIdScheme = "LarpakeIdBearer";
     }
+
+    public class Luuppi
+    {
+        public const string BaseUrl = "https://luuppi.fi";
+    }
 }
