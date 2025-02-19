@@ -3,7 +3,6 @@ using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
-using System.Diagnostics;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -19,7 +18,6 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 e.id, 
                 e.starts_at,
                 e.ends_at,
-                e.location,
                 e.created_by,
                 e.created_at,
                 e.updated_by,
@@ -27,6 +25,7 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 e.cancelled_at,
                 loc.title,
                 loc.body,
+                loc.location,
                 loc.image_url,
                 loc.website_url,
                 GetLanguageCode(loc.language_id) AS language_code,
@@ -77,7 +76,6 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 e.id, 
                 e.starts_at,
                 e.ends_at,
-                e.location,
                 e.created_by,
                 e.created_at,
                 e.updated_by,
@@ -85,6 +83,7 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 e.cancelled_at,
                 loc.title,
                 loc.body,
+                loc.location,
                 loc.image_url,
                 loc.website_url,
                 loc.language_code,
@@ -111,8 +110,8 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                     @{nameof(def.Body)},
                     CAST(@{nameof(record.StartsAt)} AS TIMESTAMPTZ),
                     CAST(@{nameof(record.EndsAt)} AS TIMESTAMPTZ),
-                    @{nameof(record.Location)},
                     @{nameof(record.CreatedBy)},
+                    @{nameof(def.Location)},
                     @{nameof(def.WebsiteUrl)},
                     @{nameof(def.ImageUrl)},
                     @{nameof(def.LanguageCode)});
@@ -122,8 +121,8 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 def.Body,
                 record.StartsAt,
                 record.EndsAt,
-                record.Location,
                 record.CreatedBy,
+                def.Location,
                 def.WebsiteUrl,
                 def.ImageUrl,
                 def.LanguageCode
@@ -157,7 +156,6 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 SET 
                     starts_at = @{nameof(record.StartsAt)},
                     ends_at = @{nameof(record.EndsAt)},
-                    location = @{nameof(record.Location)},
                     updated_at = NOW(),
                     updated_by = @{nameof(record.UpdatedBy)}
                 WHERE 
@@ -170,12 +168,13 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                     title = @{nameof(OrganizationEventLocalization.Title)},
                     body = @{nameof(OrganizationEventLocalization.Body)},
                     website_url = @{nameof(OrganizationEventLocalization.WebsiteUrl)},
-                    image_url = @{nameof(OrganizationEventLocalization.ImageUrl)}
+                    image_url = @{nameof(OrganizationEventLocalization.ImageUrl)},
+                    location = @{nameof(OrganizationEventLocalization.Location)}
                 WHERE 
                     organization_event_id = @{nameof(record.Id)}
                         AND language_id = GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)});
                 """, record.TextData.Select(
-                        x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl }));
+                        x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.Location }));
 
             await transaction.CommitAsync();
             return rowsAffected;
@@ -227,6 +226,7 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 body,
                 image_url,
                 website_url,
+                location,
                 language_id
             )
             VALUES (
@@ -235,8 +235,9 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 @{nameof(OrganizationEventLocalization.Body)},
                 @{nameof(OrganizationEventLocalization.ImageUrl)},
                 @{nameof(OrganizationEventLocalization.WebsiteUrl)},
+                @{nameof(OrganizationEventLocalization.Location)}
                 (SELECT GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)}))
             );
-            """, loc.Select(x => new { eventId, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.LanguageCode }));
+            """, loc.Select(x => new { eventId, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.LanguageCode, x.Location }));
     }
 }
