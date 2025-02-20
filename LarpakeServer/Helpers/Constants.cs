@@ -17,7 +17,7 @@ public class Constants
     public const int MaxLarpakeTaskTitleLength = 80;
     public const int MaxLarpakeTaskBodyLength = 2000;
     public const int MaxPointsPerLarpakeTask = 100;
-    
+
     // Lärpäke
     public const int MaxLarpakeTitleLength = 80;
     public const int MaxLarpakeDescriptionLength = 2000;
@@ -35,4 +35,11 @@ public class Constants
     {
         public const string BaseUrl = "https://luuppi.fi";
     }
+
+    public class HttpClients
+    {
+        public const string IntegrationClient = "LuuppiClient";
+    }
 }
+
+

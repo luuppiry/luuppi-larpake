@@ -3,10 +3,10 @@ using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
-using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services;
 using OrgEventsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.OrganizationEventGetDto>;
 
 namespace LarpakeServer.Controllers;
@@ -17,13 +17,16 @@ namespace LarpakeServer.Controllers;
 public class OrganizationEventsController : ExtendedControllerBase
 {
     readonly IOrganizationEventDatabase _db;
+    readonly IExternalIntegrationService _integrationService;
 
     public OrganizationEventsController(
         IOrganizationEventDatabase db,
+        IExternalIntegrationService integrationService,
         ILogger<OrganizationEventsController> logger,
         IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
+        _integrationService = integrationService;
     }
 
     [HttpGet]
@@ -129,7 +132,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     }
 
 
-
+  
 
 
 }

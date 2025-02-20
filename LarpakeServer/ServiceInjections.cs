@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.RateLimiting;
 
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Threading.RateLimiting;
 
 namespace LarpakeServer;
@@ -135,6 +137,8 @@ public static class ServiceInjections
         services.AddSingleton<IClaimsReader, TokenService>();
         services.AddSingleton<AttendanceKeyService>();
         services.AddSingleton<InviteKeyService>();
+        services.AddSingleton<IExternalIntegrationService, LuuppiIntegrationService>();
+        services.AddHttpClients(configuration);
 
         // Key options parsing from appsettings.json
         services.AddOptions<AttendanceKeyOptions>()
@@ -151,6 +155,24 @@ public static class ServiceInjections
         // Invite key options parsing from appsettings.json
         services.AddOptions<InviteKeyOptions>()
             .BindConfiguration(InviteKeyOptions.SectionName);
+
+        // Luuppi integration options
+        services.AddOptions<IntegrationOptions>()
+            .BindConfiguration(IntegrationOptions.SectionName);
+    }
+
+    private static IServiceCollection AddHttpClients(this IServiceCollection services, IConfiguration configuration)
+    {
+        IntegrationOptions options = new();
+        configuration.GetSection(IntegrationOptions.SectionName).Bind(options);
+
+        services.AddHttpClient(Constants.HttpClients.IntegrationClient, client =>
+        {
+            client.BaseAddress = new Uri(options.BasePath);
+            client.DefaultRequestHeaders.Add("Authorization", options.ApiKey!);
+            client.Timeout = new TimeSpan(0, 0, 20);
+        });
+        return services;
     }
 
 
