@@ -29,6 +29,7 @@ body {
     margin-left: auto;
     margin-right: 10px;
     width: 48px;
+    height: 48px;
     text-align: center;
     background-color: #494d7b;
 }
@@ -186,6 +187,11 @@ form {
   right: 20px;
   font-size: 24px;
   cursor: pointer;
+  width: 48px;
+  height: 48px;
+  text-align: center;
+  background-color: #5c61a3;
+  color: #ffffff;
 }
 
 @media screen and (max-width: 680px) {

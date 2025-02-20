@@ -13,19 +13,28 @@ class Header extends HTMLElement {
                 alt="Luuppi Logo"
             />
             <h1>LÄRPÄKE</h1>
-            <span class="menu-icon" onclick="toggleSidePanel()" style="display:block;"><img class="globle" src="/globle.png" height="30px" width="auto"></img></span>
-            <span class="menu-icon" onclick="toggleSidePanel()">L</span>
-            <span class="menu-icon" onclick="toggleSidePanelOutsider()">☰</span>
+            <div class="menu-icon" onclick="changeLanguage()" style="display:flex; justify-content: center; align-items: center;"><img class="globle" src="/globle.png" height="30px" width="auto"></img></div>
+            <div class="menu-icon" onclick="toggleSidePanelOutsider()" style="display:flex; justify-content: center; align-items: center;"><img class="profile-icon" src="/profile-icon.png" height="30px" width="auto"></img></div>
+            <div class="menu-icon" onclick="toggleSidePanelOutsider()">☰</div>
          </header>
          `;
     }
 
     // Runs when object is disconnected from DOM
     disconnectedCallback() {}
+}
 
-    toggelSidePanel() {
-        toggleSidePanelOutsider();
+function changeLanguage(): void {
+    const currentUrl = window.location.href;
+    let newUrl;
+    if (currentUrl.includes("/fi/")) {
+        newUrl = currentUrl.replace("/fi/", "/en/");
+    } else if (currentUrl.includes("/en/")) {
+        newUrl = currentUrl.replace("/en/", "/fi/");
+    } else {
+        return;
     }
+    window.open(newUrl, "_self");
 }
 
 function toggleSidePanelOutsider(): void {
