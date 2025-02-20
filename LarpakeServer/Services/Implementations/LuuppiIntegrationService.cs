@@ -1,12 +1,19 @@
 ﻿using LarpakeServer.Models.External;
+using System.Text.Json;
 
 namespace LarpakeServer.Services.Implementations;
 
 public class LuuppiIntegrationService : IExternalIntegrationService
 {
+    protected record JsonEvent(ExternalEvent[] Events);
+    protected record JsonUser(ExternalUserInformation User);
+
     readonly IHttpClientFactory _clientFactory;
     readonly ILogger<LuuppiIntegrationService> _logger;
-
+    readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
     public LuuppiIntegrationService(IHttpClientFactory clientFactory, ILogger<LuuppiIntegrationService> logger)
     {
         Guard.ThrowIfNull(clientFactory);
@@ -33,15 +40,17 @@ public class LuuppiIntegrationService : IExternalIntegrationService
         }
 
         // Map json
-        IEnumerable<ExternalEvent>? events = await request.Content.ReadFromJsonAsync<IEnumerable<ExternalEvent>>(token);
-        if (events is null)
-        {
-            _logger.LogError("Invalid data returned from external event server.");
+        
+        using Stream json = await request.Content.ReadAsStreamAsync(token);
 
-            return Error.InternalServerError("External event server returned invalid data.",
-                ErrorCode.ExternalServerError);
+        JsonEvent? result = await JsonSerializer.DeserializeAsync<JsonEvent>(json, _jsonOptions, token);
+        if (result is null)
+        {
+            _logger.LogError("Invalid data returned from external server.");
+            return Error.InternalServerError(
+                "External server returned invalid data.", ErrorCode.ExternalServerError);
         }
-        return events.ToArray();
+        return result.Events;
     }
 
     public async Task<Result<ExternalUserInformation>> PullUserInformationFromExternalSource(Guid userId, CancellationToken token)
@@ -65,13 +74,15 @@ public class LuuppiIntegrationService : IExternalIntegrationService
         }
 
         // Map json
-        ExternalUserInformation? data = await request.Content.ReadFromJsonAsync<ExternalUserInformation>(token);
+        JsonUser? data = await request.Content.ReadFromJsonAsync<JsonUser>(token);
         if (data is null)
         {
             _logger.LogError("Invalid data returned from external user server.");
             return Error.InternalServerError("External user server returned invalid data.",
                 ErrorCode.ExternalServerError);
         }
-        return data;
+        return data.User;
     }
+
+
 }
