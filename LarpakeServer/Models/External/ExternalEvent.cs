@@ -1,6 +1,5 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
-using System.Reflection.Metadata;
 using System.Text.Json.Serialization;
 
 namespace LarpakeServer.Models.External;
@@ -31,12 +30,12 @@ public class ExternalEvent
     public OrganizationEvent ToOrganizationEvent()
     {
         // Example website url: "https://luuppi.fi/fi/events/227"
-
         return new OrganizationEvent
         {
             Id = Constants.NullId,
             StartsAt = StartsAt,
             EndsAt = EndsAt,
+            ExternalId = $"{Constants.Luuppi.EventHeader}-{Id}",
             TextData = [
                 new OrganizationEventLocalization
                 {

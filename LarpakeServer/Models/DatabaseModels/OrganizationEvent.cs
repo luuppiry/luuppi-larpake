@@ -19,6 +19,7 @@ public class OrganizationEvent : ILocalized<OrganizationEventLocalization>
     public DateTime UpdatedAt { get; set; }
     public DateTime? CancelledAt { get; set; } = null;
     public bool IsDeleted => CancelledAt is not null;
+    public string? ExternalId { get; set; } = null;
     public required List<OrganizationEventLocalization> TextData { get; set; }
     internal OrganizationEventLocalization DefaultLocalization => GetDefaultLocalization();
 

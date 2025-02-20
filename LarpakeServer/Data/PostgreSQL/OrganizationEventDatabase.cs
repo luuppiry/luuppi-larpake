@@ -160,7 +160,7 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                     updated_by = @{nameof(record.UpdatedBy)}
                 WHERE 
                     id = @{nameof(record.Id)};
-                """, record);
+                """, record, transaction);
 
             rowsAffected += await connection.ExecuteAsync($"""
                 UPDATE organization_event_localizations
@@ -174,7 +174,8 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                     organization_event_id = @{nameof(record.Id)}
                         AND language_id = GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)});
                 """, record.TextData.Select(
-                        x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.Location }));
+                        x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.Location }),
+                    transaction);
 
             await transaction.CommitAsync();
             return rowsAffected;

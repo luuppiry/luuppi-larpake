@@ -11,4 +11,6 @@ public enum ErrorCode
 
     // Integration
     ExternalServerError = 1500,
+    IntegrationDbWriteFailed = 1501
+    
 }

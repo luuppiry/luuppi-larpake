@@ -34,6 +34,7 @@ public class Constants
     public class Luuppi
     {
         public const string BaseUrl = "https://luuppi.fi";
+        public const string EventHeader = "lupev1";   // Luuppi event version 1
     }
 
     public class HttpClients

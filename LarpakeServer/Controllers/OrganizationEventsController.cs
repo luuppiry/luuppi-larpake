@@ -2,6 +2,7 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.External;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
@@ -131,8 +132,15 @@ public class OrganizationEventsController : ExtendedControllerBase
         return OkRowsAffected(rowsAffected);
     }
 
+    [HttpGet("pull-external-server-events")]
+    [RequiresPermissions(Permissions.Admin)]
+    public async Task<IActionResult> PullUpdateFromExternalServer(CancellationToken token)
+    {
+        Result<ExternalEvent[]> events = await _integrationService.PullEventsFromExternalSource(token);
 
-  
+        
+    }
+
 
 
 }
