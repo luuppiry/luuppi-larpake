@@ -37,9 +37,9 @@ internal class QueryDataGetDto<T> : GetDtoBase
         return MapFrom<OrganizationEvent, OrganizationEventGetDto>(records);
     }
     
-    public static QueryDataGetDto<LarpakeEventGetDto> MapFrom(LarpakeTask[] records)
+    public static QueryDataGetDto<LarpakeTaskGetDto> MapFrom(LarpakeTask[] records)
     {
-        return MapFrom<LarpakeTask, LarpakeEventGetDto>(records);
+        return MapFrom<LarpakeTask, LarpakeTaskGetDto>(records);
     }
     
     public static QueryDataGetDto<LarpakeGetDto> MapFrom(Larpake[] records)

@@ -4,7 +4,7 @@ using LarpakeServer.Models.Localizations;
 
 namespace LarpakeServer.Models.GetDtos;
 
-public class LarpakeEventGetDto : IMappable<LarpakeTask, LarpakeEventGetDto>
+public class LarpakeTaskGetDto : IMappable<LarpakeTask, LarpakeTaskGetDto>
 {
     public required long Id { get; set; }
     public required long LarpakeSectionId { get; set; }
@@ -17,9 +17,9 @@ public class LarpakeEventGetDto : IMappable<LarpakeTask, LarpakeEventGetDto>
 
 
 
-    public static LarpakeEventGetDto From(LarpakeTask record)
+    public static LarpakeTaskGetDto From(LarpakeTask record)
     {
-        return new LarpakeEventGetDto
+        return new LarpakeTaskGetDto
         {
             Id = record.Id,
             TextData = record.TextData,

@@ -6,23 +6,23 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
-using LarpakeEventsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.LarpakeEventGetDto>;
+using TasksGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.LarpakeTaskGetDto>;
 
 namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/larpake-events")]
-public class LarpakeEventsController : ExtendedControllerBase
+[Route("api/larpake-tasks")]
+public class LarpakeTasksController : ExtendedControllerBase
 {
     readonly record struct OrgEventIdsResponse(long[] Ids);
 
     readonly ILarpakeTaskDatabase _db;
 
-    public LarpakeEventsController(
+    public LarpakeTasksController(
         ILarpakeTaskDatabase db, 
         IClaimsReader claimsReader, 
-        ILogger<LarpakeEventsController>? logger = null) 
+        ILogger<LarpakeTasksController>? logger = null) 
         : base(claimsReader, logger)
     {
         _db = db;
@@ -30,7 +30,7 @@ public class LarpakeEventsController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.CommonRead)]
-    [ProducesResponseType(typeof(LarpakeEventsGetDto), 200)]
+    [ProducesResponseType(typeof(TasksGetDto), 200)]
     public async Task<IActionResult> Get([FromQuery] LarpakeTaskQueryOptions options)
     {
         Permissions permissions = GetRequestPermissions();
@@ -44,7 +44,7 @@ public class LarpakeEventsController : ExtendedControllerBase
         var records = await _db.GetTasks(options);
 
         // Map to result
-        LarpakeEventsGetDto result = LarpakeEventsGetDto
+        TasksGetDto result = TasksGetDto
             .MapFrom(records)
             .AppendPaging(options);
 
@@ -58,7 +58,7 @@ public class LarpakeEventsController : ExtendedControllerBase
 
     [HttpGet("{eventId}")]
     [RequiresPermissions(Permissions.ReadAllData)]
-    [ProducesResponseType(typeof(LarpakeEventGetDto), 200)]
+    [ProducesResponseType(typeof(LarpakeTaskGetDto), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> Get(long eventId)
     {
@@ -67,7 +67,7 @@ public class LarpakeEventsController : ExtendedControllerBase
         {
             return IdNotFound();
         }
-        var result = LarpakeEventGetDto.From(record);
+        var result = LarpakeTaskGetDto.From(record);
         return Ok(result);
     }
 
