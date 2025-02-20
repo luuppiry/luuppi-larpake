@@ -13,6 +13,8 @@ class Header extends HTMLElement {
                 alt="Luuppi Logo"
             />
             <h1>LÄRPÄKE</h1>
+            <span class="menu-icon" onclick="toggleSidePanel()" style="display:block;"><img class="globle" src="/globle.png" height="30px" width="auto"></img></span>
+            <span class="menu-icon" onclick="toggleSidePanel()">L</span>
             <span class="menu-icon" onclick="toggleSidePanelOutsider()">☰</span>
          </header>
          `;
