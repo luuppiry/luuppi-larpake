@@ -19,15 +19,18 @@ public class OrganizationEventsController : ExtendedControllerBase
 {
     readonly IOrganizationEventDatabase _db;
     readonly IExternalIntegrationService _integrationService;
+    readonly IExternalDataDbService _externalDataDbService;
 
     public OrganizationEventsController(
         IOrganizationEventDatabase db,
         IExternalIntegrationService integrationService,
+        IExternalDataDbService externalDataDbService,
         ILogger<OrganizationEventsController> logger,
         IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
         _integrationService = integrationService;
+        _externalDataDbService = externalDataDbService;
     }
 
     [HttpGet]
@@ -137,8 +140,16 @@ public class OrganizationEventsController : ExtendedControllerBase
     public async Task<IActionResult> PullUpdateFromExternalServer(CancellationToken token)
     {
         Result<ExternalEvent[]> events = await _integrationService.PullEventsFromExternalSource(token);
+        if (events.IsError)
+        {
+            return FromError(events);
+        }
 
-        
+
+        Result<int> result = await _externalDataDbService.SyncExternalEvents((ExternalEvent[])events);
+        return result.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError);
     }
 
 

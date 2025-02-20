@@ -104,10 +104,5 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
             return Error.InternalServerError("Error syncing external events",
                 ErrorCode.IntegrationDbWriteFailed);
         }
-
-
-
-
-
     }
 }

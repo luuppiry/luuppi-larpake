@@ -123,6 +123,7 @@ public static class ServiceInjections
         services.AddSingleton<ILarpakeDatabase, LarpakeDatabase>();
         services.AddSingleton<ILarpakeTaskDatabase, LarpakeTaskDatabase>();
         services.AddSingleton<IStatisticsService, StatisticsService>();
+        services.AddSingleton<IExternalDataDbService, ExternalDataDbService>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)

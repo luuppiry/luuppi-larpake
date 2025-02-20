@@ -29,7 +29,7 @@ public class ExtendedControllerBase : ControllerBase
 
 
 
-    
+
 
     protected ObjectResult FromError(Result result) => FromError((Error)result);
     protected ObjectResult FromError<T>(Result<T> error) => FromError((Error)error);
@@ -39,7 +39,7 @@ public class ExtendedControllerBase : ControllerBase
     {
         return Ok(new RowsAffectedResponse(rowsAffected));
     }
-    
+
     protected ObjectResult OkRowsAffected(Result<int> rowsAffected)
     {
         return Ok(new RowsAffectedResponse((int)rowsAffected));
@@ -67,7 +67,7 @@ public class ExtendedControllerBase : ControllerBase
     {
         return NotFound(new MessageResponse("Id not found."));
     }
-    
+
     protected ObjectResult IdNotFound(string message)
     {
         return NotFound(new MessageDetailsResponse("Id not found.", message));
@@ -104,7 +104,7 @@ public class ExtendedControllerBase : ControllerBase
 
         if (error is DataError dataError)
         {
-            return StatusCode(dataError.StatusCode, new
+            return StatusCode(dataError.HttpStatusCode, new
             {
                 dataError.Message,
                 dataError.Data,
