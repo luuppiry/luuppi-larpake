@@ -69,7 +69,7 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
             """);
 
         query.AppendLine($"""
-            ORDER BY starts_at ASC
+            ORDER BY starts_at {(options.OrderDateAscending ? "ASC" : "DESC")}
             LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)};
             """);
@@ -79,7 +79,7 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
             query.ToString(), options, splitOn: "title");
 
         OrganizationEvent[] result = records.Values.ToArray();
-        
+
         AppendImageUrlsToAbsolute(result);
         return result;
     }
