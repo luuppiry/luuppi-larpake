@@ -23,19 +23,22 @@ class Header extends HTMLElement {
     // Runs when object is disconnected from DOM
     disconnectedCallback() {}
 
-    toggle(){
+    toggle() {
         toggleSidePanelOutsider();
     }
 
-    changeLanguage(){
+    changeLanguage() {
         changeLanguage();
     }
-
 }
 
 function changeLanguage(): void {
-    const currentUrl = window.location.href;
+    console.log("change language");
+    
+    // Add language if none are defined in url (from proxying)
+    const currentUrl = addMissingLanguage(window.location.href);
     let newUrl;
+
     if (currentUrl.includes("/fi/")) {
         newUrl = currentUrl.replace("/fi/", "/en/");
     } else if (currentUrl.includes("/en/")) {
@@ -44,6 +47,37 @@ function changeLanguage(): void {
         return;
     }
     window.open(newUrl, "_self");
+}
+
+function addMissingLanguage(currentUrl: string): string {
+    if (currentUrl.includes("/en/") || currentUrl.includes("/fi/")) {
+        return currentUrl;
+    }
+
+    /* user haven't chosen language, so the language choice
+     * was made at proxy level meaning language is fi
+     * calculate index where to put '/fi/' and
+     *
+     * Url is in format http(s)://domain.do/<some>/<stuff>
+     * Find first :// and next / for append location
+     */
+
+    let sepIndex = currentUrl.indexOf("://");
+    if (sepIndex > 0) {
+        sepIndex += "://".length;
+    } else {
+        sepIndex = 0;
+    }
+
+    sepIndex = currentUrl.indexOf("/", sepIndex);
+    if (sepIndex < 0) {
+        // entire url is domain, add to end
+        return `${currentUrl}/fi/`;
+    }
+
+    const before = currentUrl.slice(0, sepIndex); // take http(s)://domain.do
+    const after = currentUrl.slice(sepIndex, currentUrl.length); // take /<some>/<stuff>
+    return `${before}/fi${after}`;  // after contains separator /
 }
 
 function toggleSidePanelOutsider(): void {
