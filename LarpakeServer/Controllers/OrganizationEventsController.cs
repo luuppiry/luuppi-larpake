@@ -147,7 +147,7 @@ public class OrganizationEventsController : ExtendedControllerBase
         }
 
         Guid userId = GetRequestUserId();
-        Result<int> result = await _externalDataDbService.SyncExternalEvents((ExternalEvent[])events);
+        Result<int> result = await _externalDataDbService.SyncExternalEvents((ExternalEvent[])events, userId);
         return result.MatchToResponse(
             ok: OkRowsAffected,
             error: FromError);

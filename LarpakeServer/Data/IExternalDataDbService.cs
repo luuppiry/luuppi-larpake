@@ -4,5 +4,5 @@ namespace LarpakeServer.Data;
 
 public interface IExternalDataDbService
 {
-    Task<Result<int>> SyncExternalEvents(ExternalEvent[] events);
+    Task<Result<int>> SyncExternalEvents(ExternalEvent[] events, Guid authorId);
 }

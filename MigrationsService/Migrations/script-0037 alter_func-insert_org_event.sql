@@ -5,6 +5,7 @@ CREATE FUNCTION InsertOrganizationEvent(
     in_body TEXT,
     in_starts_at TIMESTAMPTZ,
     in_ends_at TIMESTAMPTZ,
+    in_external_id VARCHAR(100),
     in_created_by UUID,
     in_location TEXT,
     in_website_url TEXT,
@@ -19,11 +20,13 @@ BEGIN
     INSERT INTO organization_events (starts_at,
                                      ends_at,
                                      created_by,
-                                     updated_by)
+                                     updated_by,
+                                     external_id)
     VALUES (in_starts_at,
             in_ends_at,
             in_created_by,
-            in_created_by)
+            in_created_by,
+            in_external_id)
     RETURNING id INTO out_event_id;
 
     INSERT INTO organization_event_localizations (organization_event_id,

@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.External;
 using LarpakeServer.Models.Localizations;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using SQLitePCL;
 
 namespace LarpakeServer.Data.PostgreSQL;
@@ -18,7 +19,7 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
     }
 
 
-    public async Task<Result<int>> SyncExternalEvents(ExternalEvent[] events)
+    public async Task<Result<int>> SyncExternalEvents(ExternalEvent[] events, Guid authorId)
     {
         List<OrganizationEvent> newEvents = [];
 
@@ -26,6 +27,7 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
         using var connection = GetConnection();
         try
         {
+            await connection.OpenAsync();
             using var transaction = await connection.BeginTransactionAsync();
             foreach (OrganizationEvent record in events.Select(x => x.ToOrganizationEvent()))
             {
@@ -34,12 +36,15 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
                     throw new InvalidOperationException("External event must have an external id.");
                 }
 
-                long? id = await connection.ExecuteScalarAsync<long>($"""
+
+                record.UpdatedBy = authorId;
+                long? id = await connection.ExecuteScalarAsync<long?>($"""
                     UPDATE organization_events
                     SET
                         starts_at = @{nameof(record.StartsAt)},
                         ends_at = @{nameof(record.EndsAt)},
                         updated_at = NOW(),
+                        updated_by = @{nameof(record.UpdatedBy)}
                     WHERE 
                         external_id = @{nameof(record.ExternalId)}
                     RETURNING id;
@@ -68,7 +73,7 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
                             location
                         ) VALUES (
                             @{nameof(id)},
-                            GetLanguageId(@{nameof(loc.LanguageCode)}),
+                            (SELECT GetLanguageId(@{nameof(loc.LanguageCode)})),
                             @{nameof(loc.Title)},
                             @{nameof(loc.Body)},
                             @{nameof(loc.WebsiteUrl)},
@@ -87,16 +92,21 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
                 }
             }
 
+            await transaction.CommitAsync();
+
             // Insert the new events
             foreach (OrganizationEvent record in newEvents)
             {
+                record.CreatedBy = authorId;
+                record.UpdatedBy = authorId;
+
                 await _eventDb.Insert(record);
             }
 
             Logger.LogInformation("Synced {count} external events. ({new} where new)",
                events.Length, newEvents.Count);
 
-            return rowsAffected;
+            return rowsAffected + newEvents.Count;
         }
         catch (Exception ex)
         {
