@@ -8,7 +8,7 @@ class Header extends HTMLElement {
          <header class="header">
           <img
                 src="/luuppi.logo.svg"
-                onclick="window.location.href='main.html'"
+                onclick="window.location.href='index.html'"
                 style="height: 60px; cursor: pointer;"
                 alt="Luuppi Logo"
             />
@@ -22,6 +22,15 @@ class Header extends HTMLElement {
 
     // Runs when object is disconnected from DOM
     disconnectedCallback() {}
+
+    toggle(){
+        toggleSidePanelOutsider();
+    }
+
+    changeLanguage(){
+        changeLanguage();
+    }
+
 }
 
 function changeLanguage(): void {
