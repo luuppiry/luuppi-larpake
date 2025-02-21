@@ -51,8 +51,8 @@ public class UsersController : ExtendedControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetUser(Guid userId)
     {
-        var record = await _db.GetByUserId(userId);
-        return record is null ? NotFound() : Ok(record);
+        DbUser? record = await _db.GetByUserId(userId);
+        return record is null ? IdNotFound() : Ok(record);
     }
 
     [HttpGet("me")]
@@ -69,7 +69,7 @@ public class UsersController : ExtendedControllerBase
     [HttpPut("{userId}")]
     [RequiresPermissions(Permissions.UpdateUserInformation)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserPutDto dto)
     {
         // Validate request author role is higher than target role
@@ -99,7 +99,7 @@ public class UsersController : ExtendedControllerBase
     [HttpPut("{targetId}/permissions")]
     [RequiresPermissions(Permissions.UpdateUserInformation)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateUserPermissions(Guid targetId, [FromBody] UserPermissionsPutDto dto)
     {
         /* Validate roles (Author is always validated from database, not only from JWT)
@@ -174,7 +174,7 @@ public class UsersController : ExtendedControllerBase
 
     [HttpDelete("own/permissions")]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> RevokeOwnPermissions()
     {
         /* Because user is making the request, he should exit in database.
@@ -197,7 +197,7 @@ public class UsersController : ExtendedControllerBase
     [HttpDelete("{userId}")]
     [RequiresPermissions(Permissions.DeleteUser)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> DeleteUser(Guid userId)
     {
         // Validate request author role is higher than target role

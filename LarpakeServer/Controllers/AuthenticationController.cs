@@ -57,7 +57,7 @@ public class AuthenticationController : ExtendedControllerBase
     [Authorize(AuthenticationSchemes = Constants.Auth.EntraIdScheme)]
     [HttpPost("login")]
     [ProducesResponseType(typeof(TokenInfo), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Login()
     {
         // Validate user id
@@ -107,7 +107,7 @@ public class AuthenticationController : ExtendedControllerBase
     [AllowAnonymous]
     [HttpPost("login/dummy")]
     [ProducesResponseType(typeof(TokenInfo), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Login([FromBody] LoginRequest dto)
     {
         // TODO: Remove this method in production
@@ -142,7 +142,7 @@ public class AuthenticationController : ExtendedControllerBase
     [AllowAnonymous]    // Authentication is handled inside the method, Anonymous is ok here.
     [HttpGet("token/refresh")]
     [ProducesResponseType(typeof(TokenInfo), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Refresh()
     {
         // Read headers and cookies to get tokens

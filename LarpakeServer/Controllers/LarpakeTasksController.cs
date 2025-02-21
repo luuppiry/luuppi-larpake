@@ -74,7 +74,7 @@ public class LarpakeTasksController : ExtendedControllerBase
     [HttpPost]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(LongIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Create([FromBody] LarpakeTaskPostDto record)
     {
         LarpakeTask mapped = LarpakeTask.From(record);
@@ -87,7 +87,7 @@ public class LarpakeTasksController : ExtendedControllerBase
     [HttpPut("{eventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Update(long eventId, [FromBody] LarpakeTaskPutDto record)
     {
         LarpakeTask mapped = LarpakeTask.From(record);
@@ -111,7 +111,7 @@ public class LarpakeTasksController : ExtendedControllerBase
     [HttpPost("{eventId}/attendance-opportunities/{orgEventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> SyncOrganizationEvent(long eventId, long orgEventId)
     {
         Result result = await _db.SyncOrganizationEvent(eventId, orgEventId);

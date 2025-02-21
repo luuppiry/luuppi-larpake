@@ -70,7 +70,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     [HttpPost]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(LongIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> CreateEvent([FromBody] OrganizationEventPostDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
@@ -90,7 +90,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     [HttpPut("{eventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] OrganizationEventPutDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);

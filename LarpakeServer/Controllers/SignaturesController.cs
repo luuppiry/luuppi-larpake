@@ -63,7 +63,7 @@ public class SignaturesController : ExtendedControllerBase
     [HttpPost]
     [RequiresPermissions(Permissions.CreateSignature)]
     [ProducesResponseType(typeof(GuidIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> PostSignature([FromBody] SignaturePostDto dto)
     {
         if (dto.Signature.CalculatePointsCount() > _signaturePointLimit)
@@ -85,7 +85,7 @@ public class SignaturesController : ExtendedControllerBase
     [HttpDelete("{signatureId}")]
     [RequiresPermissions(Permissions.CreateSignature)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> DeleteSignature(Guid signatureId)
     {
         // Validate only admins or signature owner can delete

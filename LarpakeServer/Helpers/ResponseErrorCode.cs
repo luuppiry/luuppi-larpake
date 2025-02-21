@@ -11,6 +11,15 @@ public enum ErrorCode
 
     // Integration
     ExternalServerError = 1500,
-    IntegrationDbWriteFailed = 1501
+    IntegrationDbWriteFailed = 1501,
+
+
+    // Auth
+    AuthenticationError = 1600,
+    InvalidJWT = 1601,
+
+
+    // Internal server error
+    UnknownServerError = 1700
     
 }

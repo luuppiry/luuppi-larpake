@@ -6,8 +6,7 @@ namespace LarpakeServer.Helpers;
 
 public class ExtendedControllerBase : ControllerBase
 {
-    protected record MessageResponse(string Message);
-    protected record MessageDetailsResponse(string Message, string? Details);
+    protected record ErrorMessageResponse(string Message, string? Details, ErrorCode ApplicationError);
     protected record struct RowsAffectedResponse(int RowsAffected);
     protected record struct DataResponse<T>(T Data);
     protected record struct LongIdResponse(long Id);
@@ -65,37 +64,34 @@ public class ExtendedControllerBase : ControllerBase
 
     protected ObjectResult IdNotFound()
     {
-        return NotFound(new MessageResponse("Id not found."));
+        return NotFound(new ErrorMessageResponse("Id not found.", null, ErrorCode.IdNotFound));
     }
 
     protected ObjectResult IdNotFound(string message)
     {
-        return NotFound(new MessageDetailsResponse("Id not found.", message));
+        return NotFound(new ErrorMessageResponse("Id not found.", message, ErrorCode.IdNotFound));
     }
 
     protected ObjectResult InvalidJWT(string message)
     {
-        return BadRequest(new MessageDetailsResponse("Invalid JWT token.", message));
+        return BadRequest(new ErrorMessageResponse("Invalid JWT token.", message, ErrorCode.InvalidJWT));
     }
 
     protected ObjectResult InternalServerError(string message)
     {
-        return StatusCode(500, new MessageResponse(message));
+        return StatusCode(500, new ErrorMessageResponse(message, null, ErrorCode.UnknownServerError));
     }
 
-    protected ObjectResult BadRequest(string message, string? details = null)
+    protected ObjectResult BadRequest(string message, string? details = null, ErrorCode error = ErrorCode.Undefined)
     {
-        return StatusCode(400, new MessageDetailsResponse(message, details));
+        return StatusCode(400, new ErrorMessageResponse(message, details, error));
     }
 
-    protected ObjectResult Unauthorized(string message)
+    protected ObjectResult Unauthorized(string message, ErrorCode error = ErrorCode.Undefined)
     {
-        return Unauthorized(new MessageResponse(message));
+        return Unauthorized(new ErrorMessageResponse(message, null, error));
     }
-    protected ObjectResult BadRequest(string message)
-    {
-        return BadRequest(new MessageResponse(message));
-    }
+   
 
 
     private ObjectResult FromError(Error error)

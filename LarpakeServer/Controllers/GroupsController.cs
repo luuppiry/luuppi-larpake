@@ -123,7 +123,7 @@ public class GroupsController : ExtendedControllerBase
     [HttpPost]
     [RequiresPermissions(Permissions.CreateGroup)]
     [ProducesResponseType(typeof(LongIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> CreateGroup([FromBody] FreshmanGroupPostDto dto)
     {
         var record = FreshmanGroup.MapFrom(dto);
@@ -136,7 +136,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPost("join/{key}")]    // No permissions required
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> JoinByInvite([Required]string key)
     {
         // Anyone authenticated should be able to join
@@ -173,7 +173,7 @@ public class GroupsController : ExtendedControllerBase
     [HttpPost("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> AddMembers(long groupId, GroupMemberIdCollection members)
     {
         Result validation = await RequireMemberOrAdmin(groupId);
@@ -195,7 +195,7 @@ public class GroupsController : ExtendedControllerBase
     [HttpPost("{groupId}/members/non-competing")]
     [RequiresPermissions(Permissions.EditGroup | Permissions.Admin)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> AddNonCompetingMembers(long groupId, NonCompetingMemberIdCollection members)
     {
         bool canAddHidden = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
@@ -214,7 +214,7 @@ public class GroupsController : ExtendedControllerBase
     [HttpPut("{groupId}")]
     [RequiresPermissions(Permissions.EditGroup)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateGroup(long groupId, [FromBody] FreshmanGroupPutDto dto)
     {
         Result validation = await RequireMemberOrAdmin(groupId);
@@ -237,7 +237,7 @@ public class GroupsController : ExtendedControllerBase
     [HttpDelete("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> DeleteMembers(long groupId, [FromBody] GroupMemberIdCollection members)
     {
         Guid authorId = GetRequestUserId();
@@ -267,7 +267,7 @@ public class GroupsController : ExtendedControllerBase
     [HttpDelete("{groupId}")]
     [RequiresPermissions(Permissions.Admin)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> DeleteGroup(long groupId)
     {
         int result = await _db.Delete(groupId);

@@ -97,7 +97,7 @@ public class LarpakkeetController : ExtendedControllerBase
     [HttpPost]
     [RequiresPermissions(Permissions.CreateLarpake)]
     [ProducesResponseType(typeof(LongIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Create([FromBody] LarpakePostDto record)
     {
         var larpake = Larpake.From(record);
@@ -110,7 +110,7 @@ public class LarpakkeetController : ExtendedControllerBase
     [HttpPut("{larpakeId}")]
     [RequiresPermissions(Permissions.CreateLarpake)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Update(long larpakeId, [FromBody] LarpakePutDto record)
     {
         var larpake = Larpake.From(record);
@@ -134,7 +134,7 @@ public class LarpakkeetController : ExtendedControllerBase
     [HttpPost("{larpakeId}/sections")]
     [RequiresPermissions(Permissions.CreateLarpake)]
     [ProducesResponseType(typeof(LongIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> CreateSection(long larpakeId, [FromBody] LarpakeSectionPostDto dto)
     {
         var record = LarpakeSection.From(dto, larpakeId);
@@ -147,7 +147,7 @@ public class LarpakkeetController : ExtendedControllerBase
     [HttpPut("{larpakeId}/sections")]
     [RequiresPermissions(Permissions.CreateLarpake)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateSection(long larpakeId, [FromBody] LarpakeSectionPutDto dto)
     {
         var record = LarpakeSection.From(dto, larpakeId);
