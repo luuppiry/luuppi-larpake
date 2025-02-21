@@ -18,7 +18,7 @@ public class AttendanceGetDto : IMappable<Attendance, AttendanceGetDto>
         return new AttendanceGetDto
         {
             UserId = attendance.UserId,
-            LarpakeEventId = attendance.LarpakeEventId,
+            LarpakeEventId = attendance.LarpakeTaskId,
             Completed = attendance.Completion is null ?
                 null : CompletionGetDto.From(attendance.Completion),
             CreatedAt = attendance.CreatedAt,

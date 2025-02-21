@@ -2,14 +2,24 @@
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services.Options;
+using Microsoft.Extensions.Options;
 using Npgsql;
-using System.Diagnostics;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
-public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, ILogger<OrganizationEventDatabase> logger)
-    : PostgresDb(connectionString, logger), IOrganizationEventDatabase
+public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
 {
+    readonly IntegrationOptions _integrationOptions;
+
+    public OrganizationEventDatabase(
+        NpgsqlConnectionString connectionString,
+        ILogger<OrganizationEventDatabase> logger,
+        IOptions<IntegrationOptions> integrationOptions) : base(connectionString, logger)
+    {
+        _integrationOptions = integrationOptions.Value;
+    }
+
     public async Task<OrganizationEvent[]> Get(EventQueryOptions options)
     {
         SelectQuery query = new();
@@ -19,14 +29,15 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 e.id, 
                 e.starts_at,
                 e.ends_at,
-                e.location,
                 e.created_by,
                 e.created_at,
                 e.updated_by,
                 e.updated_at,
                 e.cancelled_at,
+                e.external_id,
                 loc.title,
                 loc.body,
+                loc.location,
                 loc.image_url,
                 loc.website_url,
                 GetLanguageCode(loc.language_id) AS language_code,
@@ -58,7 +69,7 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
             """);
 
         query.AppendLine($"""
-            ORDER BY starts_at ASC
+            ORDER BY starts_at {(options.OrderDateAscending ? "ASC" : "DESC")}
             LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)};
             """);
@@ -66,8 +77,14 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
         using var connection = GetConnection();
         var records = await connection.QueryLocalizedAsync<OrganizationEvent, OrganizationEventLocalization>(
             query.ToString(), options, splitOn: "title");
-        return records.Values.ToArray();
+
+        OrganizationEvent[] result = records.Values.ToArray();
+
+        AppendImageUrlsToAbsolute(result);
+        return result;
     }
+
+
 
     public Task<OrganizationEvent?> Get(long id)
     {
@@ -77,14 +94,15 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 e.id, 
                 e.starts_at,
                 e.ends_at,
-                e.location,
                 e.created_by,
                 e.created_at,
                 e.updated_by,
                 e.updated_at,
                 e.cancelled_at,
+                e.external_id,
                 loc.title,
                 loc.body,
+                loc.location,
                 loc.image_url,
                 loc.website_url,
                 loc.language_code,
@@ -111,8 +129,9 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                     @{nameof(def.Body)},
                     CAST(@{nameof(record.StartsAt)} AS TIMESTAMPTZ),
                     CAST(@{nameof(record.EndsAt)} AS TIMESTAMPTZ),
-                    @{nameof(record.Location)},
+                    @{nameof(record.ExternalId)},
                     @{nameof(record.CreatedBy)},
+                    @{nameof(def.Location)},
                     @{nameof(def.WebsiteUrl)},
                     @{nameof(def.ImageUrl)},
                     @{nameof(def.LanguageCode)});
@@ -122,8 +141,9 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 def.Body,
                 record.StartsAt,
                 record.EndsAt,
-                record.Location,
                 record.CreatedBy,
+                record.ExternalId,
+                def.Location,
                 def.WebsiteUrl,
                 def.ImageUrl,
                 def.LanguageCode
@@ -157,12 +177,12 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 SET 
                     starts_at = @{nameof(record.StartsAt)},
                     ends_at = @{nameof(record.EndsAt)},
-                    location = @{nameof(record.Location)},
                     updated_at = NOW(),
-                    updated_by = @{nameof(record.UpdatedBy)}
+                    updated_by = @{nameof(record.UpdatedBy)},
+                    external_id = @{nameof(record.ExternalId)}
                 WHERE 
                     id = @{nameof(record.Id)};
-                """, record);
+                """, record, transaction);
 
             rowsAffected += await connection.ExecuteAsync($"""
                 UPDATE organization_event_localizations
@@ -170,12 +190,14 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                     title = @{nameof(OrganizationEventLocalization.Title)},
                     body = @{nameof(OrganizationEventLocalization.Body)},
                     website_url = @{nameof(OrganizationEventLocalization.WebsiteUrl)},
-                    image_url = @{nameof(OrganizationEventLocalization.ImageUrl)}
+                    image_url = @{nameof(OrganizationEventLocalization.ImageUrl)},
+                    location = @{nameof(OrganizationEventLocalization.Location)}
                 WHERE 
                     organization_event_id = @{nameof(record.Id)}
                         AND language_id = GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)});
                 """, record.TextData.Select(
-                        x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl }));
+                        x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.Location }),
+                    transaction);
 
             await transaction.CommitAsync();
             return rowsAffected;
@@ -227,6 +249,7 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 body,
                 image_url,
                 website_url,
+                location,
                 language_id
             )
             VALUES (
@@ -235,8 +258,25 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 @{nameof(OrganizationEventLocalization.Body)},
                 @{nameof(OrganizationEventLocalization.ImageUrl)},
                 @{nameof(OrganizationEventLocalization.WebsiteUrl)},
+                @{nameof(OrganizationEventLocalization.Location)},
                 (SELECT GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)}))
             );
-            """, loc.Select(x => new { eventId, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.LanguageCode }));
+            """, loc.Select(x => new { eventId, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.LanguageCode, x.Location }));
+    }
+
+    private void AppendImageUrlsToAbsolute(OrganizationEvent[] result)
+    {
+        foreach (OrganizationEvent record in result)
+        {
+            foreach (OrganizationEventLocalization localization in record.TextData)
+            {
+                // If image url exists and is not absolute path
+                if (string.IsNullOrWhiteSpace(localization.ImageUrl) is false
+                    && localization.ImageUrl.StartsWith('/'))
+                {
+                    localization.ImageUrl = $"{_integrationOptions.CmsApiUrlGuess}{localization.ImageUrl}";
+                }
+            }
+        }
     }
 }

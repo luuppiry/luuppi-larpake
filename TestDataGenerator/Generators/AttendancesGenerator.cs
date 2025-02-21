@@ -10,14 +10,14 @@ internal class AttendancesGenerator : IRunAll
 {
     private readonly IAttendanceDatabase _db;
     private readonly IUserDatabase _userDb;
-    private readonly ILarpakeEventDatabase _eventDb;
+    private readonly ILarpakeTaskDatabase _eventDb;
     private readonly ISignatureDatabase _signatureDb;
     private readonly AttendanceKeyService _keyService;
 
     public AttendancesGenerator(
         IAttendanceDatabase db,
         IUserDatabase userDb,
-        ILarpakeEventDatabase eventDb,
+        ILarpakeTaskDatabase eventDb,
         ISignatureDatabase signatureDb,
         AttendanceKeyService keyService)
     {
@@ -41,14 +41,14 @@ internal class AttendancesGenerator : IRunAll
         Console.WriteLine("Generating attendances.");
 
         var users = await _userDb.Get(new UserQueryOptions { PageOffset = 0, PageSize = 40 });
-        var events = await _eventDb.GetEvents(new LarpakeEventQueryOptions { PageOffset = 0, PageSize = 40 });
+        var events = await _eventDb.GetTasks(new LarpakeTaskQueryOptions { PageOffset = 0, PageSize = 40 });
 
         var attendances = new Faker<Attendance>()
             .UseSeed(App.Seed)
             .RuleFor(a => a.UserId, f => f.PickRandom(users).Id)
-            .RuleFor(a => a.LarpakeEventId, f => f.PickRandom(events).Id)
+            .RuleFor(a => a.LarpakeTaskId, f => f.PickRandom(events).Id)
             .Generate(200)
-            .DistinctBy(x => new { x.UserId, x.LarpakeEventId })
+            .DistinctBy(x => new { x.UserId, x.LarpakeTaskId })
             .ToArray();
 
         foreach (var attendance in attendances)
@@ -94,7 +94,7 @@ internal class AttendancesGenerator : IRunAll
             {
                 Id = Guid.Empty,
                 CompletedAt = faker.Date.Future(1),
-                EventId = a.LarpakeEventId,
+                EventId = a.LarpakeTaskId,
                 UserId = a.UserId,
                 SignerId = faker.PickRandom(tutors).Id,
             };

@@ -137,7 +137,8 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 @{nameof(record.Year)},
                 @{nameof(def.Description)},
                 @{nameof(def.LanguageCode)});
-            """, new { def.Title, record.Year, def.Description, def.LanguageCode });
+            """, new { def.Title, record.Year, def.Description, def.LanguageCode },
+            transaction);
 
         // Insert rest of the localizations, filter default away
         await InsertLarpakeLocalizations(connection, id,

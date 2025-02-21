@@ -67,7 +67,7 @@ public class AttendancesController : ExtendedControllerBase
     [HttpPost("{eventId}")]
     [RequiresPermissions(Permissions.AttendEvent)]
     [ProducesResponseType(typeof(AttendanceGetDto), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GenerateAttendanceKey(long eventId)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
@@ -86,7 +86,7 @@ public class AttendancesController : ExtendedControllerBase
     [HttpPost("{key}/complete")]
     [RequiresPermissions(Permissions.CompleteAttendance)]
     [ProducesResponseType(typeof(GuidIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Complete(string key)
     {
         if (key.StartsWith(_keyOptions.Header) is false)
@@ -122,7 +122,7 @@ public class AttendancesController : ExtendedControllerBase
     [HttpPost("complete")]
     [RequiresPermissions(Permissions.Admin)]
     [ProducesResponseType(typeof(GuidIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Complete([FromBody] CompletionPutDto dto)
     {
         /* User cannot sign their own attendance.
@@ -149,7 +149,7 @@ public class AttendancesController : ExtendedControllerBase
     [HttpPost("uncomplete")]
     [RequiresPermissions(Permissions.DeleteAttendance)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
         

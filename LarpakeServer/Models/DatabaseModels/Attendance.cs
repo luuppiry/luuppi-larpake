@@ -1,9 +1,13 @@
-﻿namespace LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Data.TypeHandlers;
+
+namespace LarpakeServer.Models.DatabaseModels;
 
 public class Attendance
 {
     public required Guid UserId { get; set; }
-    public required long LarpakeEventId { get; set; }
+
+    [SqlColumnName("larpake_event_id")]
+    public required long LarpakeTaskId { get; set; }
     public Guid? CompletionId { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -17,7 +21,7 @@ public class Attendance
         return new Attendance
         {
             UserId = userId,
-            LarpakeEventId = eventId,
+            LarpakeTaskId = eventId,
         };
     }
 }

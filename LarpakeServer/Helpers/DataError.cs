@@ -1,14 +1,20 @@
 ﻿namespace LarpakeServer.Helpers;
 
-public record DataError(
-    int StatusCode, 
-    string Message, 
-    object Data, 
-    string DataKind,
-    Exception? Ex = null) : Error(StatusCode, Message, Ex)
+public class DataError : Error
 {
 
-    public static DataError AlreadyExistsNoError(object data, string dataKind, string message) 
+    public DataError(
+        int StatusCode, string message, object data, 
+        string dataKind, Exception? Ex = null) : base(StatusCode, message, Ex)
+    {
+        Data = data;
+        DataKind = dataKind;
+    }
+
+    public object Data { get; }
+    public string DataKind { get; }
+
+    public static DataError AlreadyExistsNoError(object data, string dataKind, string message)
         => new(200, message, data, dataKind, null);
 
 }

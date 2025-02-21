@@ -14,4 +14,6 @@ public class EventQueryOptions : QueryOptions
     public string? Title { get; set; } = null;
     public bool DoMinimize { get; set; } = false;
 
+    public bool OrderDateAscending { get; set; } = false;
+
 }

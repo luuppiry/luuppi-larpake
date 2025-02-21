@@ -41,8 +41,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             """);
 
         // Search specific event
-        query.IfNotNull(options.LarpakeEventId).AppendConditionLine($"""
-            a.larpake_event_id = @{nameof(options.LarpakeEventId)}
+        query.IfNotNull(options.LarpakeTaskId).AppendConditionLine($"""
+            a.larpake_event_id = @{nameof(options.LarpakeTaskId)}
             """);
 
         // Only completed
@@ -126,7 +126,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                         ON s.larpake_id = g.larpake_id
                     LEFT JOIN freshman_group_members m 
                         ON g.id = m.group_id
-                WHERE e.id = @{nameof(attendance.LarpakeEventId)}
+                WHERE e.id = @{nameof(attendance.LarpakeTaskId)}
                     AND m.user_id = @{nameof(attendance.UserId)}
                     AND m.is_competing = TRUE);
                 """, attendance);
@@ -146,7 +146,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 )
                 VALUES (
                     @{nameof(attendance.UserId)}, 
-                    @{nameof(attendance.LarpakeEventId)}, 
+                    @{nameof(attendance.LarpakeTaskId)}, 
                     NULL,
                     @{nameof(attendance.QrCodeKey)},
                     @{nameof(attendance.KeyInvalidAt)}
@@ -238,8 +238,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
             // Validate signer is in same Larpake and is not competing
             bool isSignerValid = await connection.ExecuteScalarAsync<bool>($"""
-                SELECT CanUserSignAttendance({nameof(completion.SignerId)}, {attendance.LarpakeEventId});
-                """, new { completion.SignerId, attendance.LarpakeEventId });
+                SELECT CanUserSignAttendance({nameof(completion.SignerId)}, {attendance.LarpakeTaskId});
+                """, new { completion.SignerId, attendance.LarpakeTaskId });
 
             if (isSignerValid is false)
             {
@@ -287,12 +287,12 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             await transaction.CommitAsync();
 
             Logger.LogInformation("User {userId} completed event {eventId}.",
-                attendance.UserId, attendance.LarpakeEventId);
+                attendance.UserId, attendance.LarpakeTaskId);
 
             return new AttendedCreated
             {
                 CompletionId = record.Id,
-                LarpakeEventId = attendance.LarpakeEventId,
+                LarpakeEventId = attendance.LarpakeTaskId,
                 UserId = attendance.UserId
             };
         }

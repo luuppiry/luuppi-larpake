@@ -4,12 +4,12 @@ public static class ErrorExtensions
 {
     public static Error WithInner(this Error master, Error inner)
     {
-        string msg = $"""
+        master.Message = $"""
             {master.Message}
             Inner error: 
-                Code: {inner.StatusCode} 
+                Code: {inner.HttpStatusCode} 
                 Message: {inner.Message}
             """;
-        return master with { Message = msg };
+        return master;
     }
 }

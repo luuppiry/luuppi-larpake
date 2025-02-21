@@ -1,10 +1,13 @@
-﻿using LarpakeServer.Data;
+﻿using System.Security.Cryptography.Pkcs;
+using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
+using LarpakeServer.Models.External;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services;
 using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
@@ -16,31 +19,81 @@ public class UsersController : ExtendedControllerBase
 {
     readonly IUserDatabase _db;
     readonly IRefreshTokenDatabase _refreshTokenDb;
+    readonly IExternalIntegrationService _userInfoService;
 
     public UsersController(
         IUserDatabase db,
         IClaimsReader claimsReader,
         IRefreshTokenDatabase refreshTokenDb,
+        IExternalIntegrationService userInfoService,
         ILogger<UsersController> logger) : base(claimsReader, logger)
     {
         _db = db;
         _refreshTokenDb = refreshTokenDb;
+        _userInfoService = userInfoService;
     }
+
+
 
 
 
     [HttpGet]
     [RequiresPermissions(Permissions.ReadRawUserInfomation)]
     [ProducesResponseType(typeof(QueryDataGetDto<UserGetDto>), 200)]
-    public async Task<IActionResult> GetUsers([FromQuery] UserQueryOptions options)
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
+    public async Task<IActionResult> GetUsers([FromQuery] UserQueryOptions options, CancellationToken token)
     {
-        var records = await _db.Get(options);
+        DbUser[] records = await _db.Get(options);
+
+        // To dictionary
+        Dictionary<Guid, UserGetDto> entraUsers = [];
+        List<UserGetDto> nonEntraUsers = [];
+        foreach (DbUser user in records)
+        {
+            if (user.EntraId is null)
+            {
+                nonEntraUsers.Add(UserGetDto.From(user));
+            }
+            else
+            {
+                entraUsers[user.EntraId!.Value] = UserGetDto.From(user);
+            }
+        }
+
+
+        // Fetch external information
+        Task<Result<ExternalUserInformation>>[] externalTasks = records
+            .Where(x => x.EntraId is not null)
+            .Select(x => _userInfoService.PullUserInformationFromExternalSource(x.EntraId!.Value, token))
+            .ToArray();
+
+
+        // Append external information
+        foreach (Result<ExternalUserInformation> user in await Task.WhenAll(externalTasks))
+        {
+            if (user.IsError && ((Error)user).ApplicationErrorCode is ErrorCode.IdNotFound)
+            {
+                continue;
+            }
+            if (user.IsError)
+            {
+                return FromError(user);
+            }
+            var value = (ExternalUserInformation)user;
+            if (entraUsers.TryGetValue(value.EntraId, out UserGetDto? userDto))
+            {
+                userDto.Append(value);
+            }
+        }
+
 
         // Map to result
-        var result = QueryDataGetDto<UserGetDto>
-            .MapFrom(records)
-            .AppendPaging(options);
-        
+        var result = new QueryDataGetDto<UserGetDto>
+        {
+            Data = nonEntraUsers.Concat(entraUsers.Values).ToArray()
+        }
+        .AppendPaging(options);
+
         return Ok(result);
     }
 
@@ -49,34 +102,60 @@ public class UsersController : ExtendedControllerBase
     [RequiresPermissions(Permissions.ReadRawUserInfomation)]
     [ProducesResponseType(typeof(UserGetDto), 200)]
     [ProducesResponseType(404)]
-    public async Task<IActionResult> GetUser(Guid userId)
+    public async Task<IActionResult> GetUser(Guid userId, CancellationToken token)
     {
-        var record = await _db.GetByUserId(userId);
-        return record is null ? NotFound() : Ok(record);
+        Result<UserGetDto>? record = await GetFullUser(userId, token);
+        return record.MatchToResponse(
+            ok: Ok,
+            error: FromError
+        );
     }
+
+    [HttpGet("{userId}/reduced")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(ReducedUserGetDto), 200)]
+    [ProducesResponseType(404)]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
+    public async Task<IActionResult> GetCommonUserInfo(Guid userId, CancellationToken token)
+    {
+        Result<UserGetDto>? record = await GetFullUser(userId, token);
+
+        if (record.IsError)
+        {
+            return FromError(record);
+        }
+
+        ReducedUserGetDto reduced = ReducedUserGetDto.From((UserGetDto)record);
+        return Ok(reduced);
+    }
+
+
+
+
 
     [HttpGet("me")]
     [ProducesResponseType(typeof(UserGetDto), 200)]
     [ProducesResponseType(404)]
-    public async Task<IActionResult> GetMe()
+    public async Task<IActionResult> GetMe(CancellationToken token)
     {
         Guid authorId = GetRequestUserId();
-        DbUser? record = await _db.GetByUserId(authorId);
-        return record is null 
-            ? NotFound() : Ok(UserGetDto.From(record));
+        Result<UserGetDto> record = await GetFullUser(authorId, token);
+        return record.MatchToResponse(
+            ok: Ok,
+            error: FromError);
     }
 
     [HttpPut("{userId}")]
     [RequiresPermissions(Permissions.UpdateUserInformation)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UserPutDto dto)
     {
         // Validate request author role is higher than target role
         Result roleValidationResult = await RequireHigherAuthorRole(userId);
         if (roleValidationResult.IsError)
         {
-            _logger.LogInformation("Denied user {id} update request for {targetId}.", 
+            _logger.LogInformation("Denied user {id} update request for {targetId}.",
                 GetRequestUserId(), userId);
             return FromError(roleValidationResult);
         }
@@ -99,7 +178,7 @@ public class UsersController : ExtendedControllerBase
     [HttpPut("{targetId}/permissions")]
     [RequiresPermissions(Permissions.UpdateUserInformation)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateUserPermissions(Guid targetId, [FromBody] UserPermissionsPutDto dto)
     {
         /* Validate roles (Author is always validated from database, not only from JWT)
@@ -107,7 +186,7 @@ public class UsersController : ExtendedControllerBase
          * - Request author must also have at least same permissions to be updated. 
          * - User cannot change their own permissions.
          */
-        
+
         if (targetId == Guid.Empty)
         {
             return BadRequest("UserId must be provided.");
@@ -160,7 +239,7 @@ public class UsersController : ExtendedControllerBase
 
         // Do update
         Result<int> result = await _db.SetPermissions(targetId, dto.Permissions);
-        
+
 
         _logger.LogInformation("User {author} set permissions {value} for user {target}.",
             author, dto.Permissions, targetId);
@@ -174,7 +253,7 @@ public class UsersController : ExtendedControllerBase
 
     [HttpDelete("own/permissions")]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> RevokeOwnPermissions()
     {
         /* Because user is making the request, he should exit in database.
@@ -182,7 +261,7 @@ public class UsersController : ExtendedControllerBase
          */
         Guid userId = GetRequestUserId();
         Result<int> rowsAffected = await _db.SetPermissions(userId, Permissions.None);
-        
+
         _logger.IfTrue(rowsAffected).LogInformation("User {id} revoked own permissions.", userId);
         _logger.IfFalse(rowsAffected).LogError("Failed to revoke permissions for user {id}.", userId);
 
@@ -197,7 +276,7 @@ public class UsersController : ExtendedControllerBase
     [HttpDelete("{userId}")]
     [RequiresPermissions(Permissions.DeleteUser)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> DeleteUser(Guid userId)
     {
         // Validate request author role is higher than target role
@@ -205,13 +284,13 @@ public class UsersController : ExtendedControllerBase
         if (roleValidationResult.IsError)
         {
             _logger.LogInformation(
-                "User {authorId} tried to delete user {userId} without correct permission.", 
+                "User {authorId} tried to delete user {userId} without correct permission.",
                     GetRequestUserId(), userId);
             return FromError(roleValidationResult);
         }
 
         int rowsAffected = await _db.Delete(userId);
-        
+
         _logger.IfPositive(rowsAffected)
             .LogInformation("Deleted user {id}.", userId);
 
@@ -241,5 +320,28 @@ public class UsersController : ExtendedControllerBase
         return Result.Ok;
     }
 
+    private async Task<Result<UserGetDto>> GetFullUser(Guid userId, CancellationToken token)
+    {
+        DbUser? user = await _db.GetByUserId(userId);
+        if (user is null)
+        {
+            return Error.NotFound("User id not found", ErrorCode.IdNotFound);
+        }
+        if (user.EntraId is null)
+        {
+            return UserGetDto.From(user);
+        }
 
+        // Fetch information like username and names from external source
+        Result<ExternalUserInformation> luuppiUser =
+            await _userInfoService.PullUserInformationFromExternalSource(user.EntraId.Value, token);
+        if (luuppiUser.IsError)
+        {
+            _logger.LogWarning("Failed to get user information from external source for user {id}.", userId);
+            return (Error)luuppiUser;
+        }
+        UserGetDto result = UserGetDto.From(user);
+        result.Append((ExternalUserInformation)luuppiUser);
+        return result;
+    }
 }

@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.RateLimiting;
 
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Threading.RateLimiting;
 
 namespace LarpakeServer;
@@ -108,6 +110,8 @@ public static class ServiceInjections
         services.AddSingleton(new NpgsqlConnectionString(connectionString));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
+        SqlMapper.SetTypeMap(typeof(Models.DatabaseModels.Attendance), 
+            new ColumnAttributeTypeMapper<Models.DatabaseModels.Attendance>());
         DefaultTypeMap.MatchNamesWithUnderscores = true;
 
         services.AddSingleton<IOrganizationEventDatabase, OrganizationEventDatabase>();
@@ -117,8 +121,9 @@ public static class ServiceInjections
         services.AddSingleton<ISignatureDatabase, SignatureDatabase>();
         services.AddSingleton<IRefreshTokenDatabase, RefreshTokenDatabase>();
         services.AddSingleton<ILarpakeDatabase, LarpakeDatabase>();
-        services.AddSingleton<ILarpakeEventDatabase, LarpakeEventDatabase>();
+        services.AddSingleton<ILarpakeTaskDatabase, LarpakeTaskDatabase>();
         services.AddSingleton<IStatisticsService, StatisticsService>();
+        services.AddSingleton<IExternalDataDbService, ExternalDataDbService>();
     }
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
@@ -133,6 +138,8 @@ public static class ServiceInjections
         services.AddSingleton<IClaimsReader, TokenService>();
         services.AddSingleton<AttendanceKeyService>();
         services.AddSingleton<InviteKeyService>();
+        services.AddSingleton<IExternalIntegrationService, LuuppiIntegrationService>();
+        services.AddHttpClients(configuration);
 
         // Key options parsing from appsettings.json
         services.AddOptions<AttendanceKeyOptions>()
@@ -149,6 +156,25 @@ public static class ServiceInjections
         // Invite key options parsing from appsettings.json
         services.AddOptions<InviteKeyOptions>()
             .BindConfiguration(InviteKeyOptions.SectionName);
+
+        // Luuppi integration options
+        services.AddOptions<IntegrationOptions>()
+            .BindConfiguration(IntegrationOptions.SectionName);
+    }
+
+
+    private static IServiceCollection AddHttpClients(this IServiceCollection services, IConfiguration configuration)
+    {
+        IntegrationOptions options = new();
+        configuration.GetSection(IntegrationOptions.SectionName).Bind(options);
+
+        services.AddHttpClient(Constants.HttpClients.IntegrationClient, client =>
+        {
+            client.BaseAddress = new Uri(options.BasePath);
+            client.DefaultRequestHeaders.Add("Authorization", options.ApiKey!);
+            client.Timeout = new TimeSpan(0, 0, 20);
+        });
+        return services;
     }
 
 

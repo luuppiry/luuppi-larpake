@@ -1,3 +1,6 @@
+# Postgres port 5501
+# Api port 5502
+
 services:
     larpake_pg_production:
         container_name: larpake_pg_production
