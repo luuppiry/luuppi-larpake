@@ -139,13 +139,14 @@ public class OrganizationEventsController : ExtendedControllerBase
     [RequiresPermissions(Permissions.Admin)]
     public async Task<IActionResult> PullUpdateFromExternalServer(CancellationToken token)
     {
+
         Result<ExternalEvent[]> events = await _integrationService.PullEventsFromExternalSource(token);
         if (events.IsError)
         {
             return FromError(events);
         }
 
-
+        Guid userId = GetRequestUserId();
         Result<int> result = await _externalDataDbService.SyncExternalEvents((ExternalEvent[])events);
         return result.MatchToResponse(
             ok: OkRowsAffected,
