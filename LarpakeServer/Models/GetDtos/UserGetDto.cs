@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.External;
 using LarpakeServer.Models.GetDtos.Templates;
 
 namespace LarpakeServer.Models.GetDtos;
@@ -13,6 +14,7 @@ public class UserGetDto : IMappable<User, UserGetDto>
     public int? StartYear { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public ExternalUserInformation? Identity { get; set; }
 
     public static UserGetDto From(User record)
     {

@@ -1,10 +1,13 @@
-﻿using LarpakeServer.Data;
+﻿using System.Security.Cryptography.Pkcs;
+using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
+using LarpakeServer.Models.External;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services;
 using DbUser = LarpakeServer.Models.DatabaseModels.User;
 
 namespace LarpakeServer.Controllers;
@@ -16,16 +19,21 @@ public class UsersController : ExtendedControllerBase
 {
     readonly IUserDatabase _db;
     readonly IRefreshTokenDatabase _refreshTokenDb;
+    readonly IExternalIntegrationService _userInfoService;
 
     public UsersController(
         IUserDatabase db,
         IClaimsReader claimsReader,
         IRefreshTokenDatabase refreshTokenDb,
+        IExternalIntegrationService userInfoService,
         ILogger<UsersController> logger) : base(claimsReader, logger)
     {
         _db = db;
         _refreshTokenDb = refreshTokenDb;
+        _userInfoService = userInfoService;
     }
+
+
 
 
 
@@ -40,7 +48,11 @@ public class UsersController : ExtendedControllerBase
         var result = QueryDataGetDto<UserGetDto>
             .MapFrom(records)
             .AppendPaging(options);
-        
+
+
+
+
+
         return Ok(result);
     }
 
@@ -52,7 +64,37 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> GetUser(Guid userId)
     {
         DbUser? record = await _db.GetByUserId(userId);
-        return record is null ? IdNotFound() : Ok(record);
+        return record is null ? IdNotFound() : Ok(UserGetDto.From(record));
+    }
+
+    [HttpGet("{userId}/reduced")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetCommonUserInfo(Guid userId, CancellationToken token)
+    {
+        throw new NotImplementedException();
+
+
+    }
+
+
+
+    private async Task<Result<UserGetDto>> GetFullUser(Guid userId, CancellationToken token)
+    {
+        DbUser? user = await _db.GetByUserId(userId);
+        if (user is null)
+        {
+            return Error.NotFound("User id not found", ErrorCode.InvalidId);
+        }
+        if (user.EntraId is null)
+        {
+            return UserGetDto.From(user);
+        }
+
+        Result<ExternalUserInformation> luuppiUser =
+            await _userInfoService.PullUserInformationFromExternalSource(user.EntraId.Value, token);
+        throw new NotImplementedException();
+
+
     }
 
     [HttpGet("me")]
@@ -62,7 +104,7 @@ public class UsersController : ExtendedControllerBase
     {
         Guid authorId = GetRequestUserId();
         DbUser? record = await _db.GetByUserId(authorId);
-        return record is null 
+        return record is null
             ? NotFound() : Ok(UserGetDto.From(record));
     }
 
@@ -76,7 +118,7 @@ public class UsersController : ExtendedControllerBase
         Result roleValidationResult = await RequireHigherAuthorRole(userId);
         if (roleValidationResult.IsError)
         {
-            _logger.LogInformation("Denied user {id} update request for {targetId}.", 
+            _logger.LogInformation("Denied user {id} update request for {targetId}.",
                 GetRequestUserId(), userId);
             return FromError(roleValidationResult);
         }
@@ -107,7 +149,7 @@ public class UsersController : ExtendedControllerBase
          * - Request author must also have at least same permissions to be updated. 
          * - User cannot change their own permissions.
          */
-        
+
         if (targetId == Guid.Empty)
         {
             return BadRequest("UserId must be provided.");
@@ -160,7 +202,7 @@ public class UsersController : ExtendedControllerBase
 
         // Do update
         Result<int> result = await _db.SetPermissions(targetId, dto.Permissions);
-        
+
 
         _logger.LogInformation("User {author} set permissions {value} for user {target}.",
             author, dto.Permissions, targetId);
@@ -182,7 +224,7 @@ public class UsersController : ExtendedControllerBase
          */
         Guid userId = GetRequestUserId();
         Result<int> rowsAffected = await _db.SetPermissions(userId, Permissions.None);
-        
+
         _logger.IfTrue(rowsAffected).LogInformation("User {id} revoked own permissions.", userId);
         _logger.IfFalse(rowsAffected).LogError("Failed to revoke permissions for user {id}.", userId);
 
@@ -205,13 +247,13 @@ public class UsersController : ExtendedControllerBase
         if (roleValidationResult.IsError)
         {
             _logger.LogInformation(
-                "User {authorId} tried to delete user {userId} without correct permission.", 
+                "User {authorId} tried to delete user {userId} without correct permission.",
                     GetRequestUserId(), userId);
             return FromError(roleValidationResult);
         }
 
         int rowsAffected = await _db.Delete(userId);
-        
+
         _logger.IfPositive(rowsAffected)
             .LogInformation("Deleted user {id}.", userId);
 

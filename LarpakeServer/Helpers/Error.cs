@@ -47,6 +47,7 @@ public class Error
     public static Error Conflict(string message, Exception? ex = null) => new(409, message, ex);
     public static Error Conflict(string message, ErrorCode appError) => new(409, message, appError);
     public static Error NotFound(string message, Exception? ex = null) => new(404, message, ex);
+    public static Error NotFound(string message, ErrorCode appError) => new(404, message, appError);
     public static Error InternalServerError(string message, Exception? ex = null) => new(500, message, ex);
     public static Error InternalServerError(string message, ErrorCode appError) => new(500, message, appError);
     public static Error Unauthorized(string? message = null, Exception? ex = null) => new(401, message ?? "Unauthorized", ex);
