@@ -18,8 +18,18 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
                 permissions,
                 start_year,
                 created_at,
-                updated_at
+                updated_at,
+                entra_id,
+                entra_username
             FROM users
+            """);
+
+        query.IfNotNull(options.EntraId).AppendConditionLine($"""
+            entra_id = @{nameof(options.EntraId)}
+            """);
+
+        query.IfNotNull(options.EntraUsername).AppendConditionLine($"""
+            entra_username ILIKE @{nameof(options.EntraUsernameQueryValue)}
             """);
 
         // If has at least permissions

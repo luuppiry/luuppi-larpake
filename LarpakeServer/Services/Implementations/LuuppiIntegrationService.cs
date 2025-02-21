@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Models.External;
 using LarpakeServer.Services.Options;
 using Microsoft.Extensions.Options;
+using System.Net;
 using System.Text.Json;
 
 namespace LarpakeServer.Services.Implementations;
@@ -12,6 +13,7 @@ public class LuuppiIntegrationService : IExternalIntegrationService
 
     readonly IHttpClientFactory _clientFactory;
     readonly ILogger<LuuppiIntegrationService> _logger;
+    private readonly IntegrationOptions _options;
     readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
@@ -25,6 +27,7 @@ public class LuuppiIntegrationService : IExternalIntegrationService
         Guard.ThrowIfNull(clientFactory);
         _clientFactory = clientFactory;
         _logger = logger;
+        _options = options.Value;
     }
 
     /* Implementation assumes that
@@ -35,7 +38,7 @@ public class LuuppiIntegrationService : IExternalIntegrationService
     public async Task<Result<ExternalEvent[]>> PullEventsFromExternalSource(CancellationToken token)
     {
         // Make request
-        using HttpClient client = _clientFactory.CreateClient(Constants.HttpClients.IntegrationClient);
+        HttpClient client = _clientFactory.CreateClient(Constants.HttpClients.IntegrationClient);   // Factory manages disposal
         HttpResponseMessage request = await client.GetAsync("/api/integration/event-feed", token);
         if (request.IsSuccessStatusCode is false)
         {
@@ -68,8 +71,15 @@ public class LuuppiIntegrationService : IExternalIntegrationService
 
 
         // Make request
-        using HttpClient client = _clientFactory.CreateClient(Constants.HttpClients.IntegrationClient);
-        HttpResponseMessage request = await client.GetAsync($"/api/integration/user?userId={userId}", token);
+        HttpClient client = _clientFactory.CreateClient(Constants.HttpClients.IntegrationClient); // Factory manages disposal
+        HttpResponseMessage request = await client.GetAsync($"/api/integration/user-info?userId={userId}", token);
+        if (request.StatusCode == HttpStatusCode.NotFound)
+        {
+            return Error.NotFound("User not found.", ErrorCode.IdNotFound);
+        }
+
+        string json = await request.Content.ReadAsStringAsync();
+
         if (request.IsSuccessStatusCode is false)
         {
             _logger.LogWarning("External user server failed to respond with status '{code}' and message: {msg}.",
@@ -80,7 +90,7 @@ public class LuuppiIntegrationService : IExternalIntegrationService
         }
 
         // Map json
-        JsonUser? data = await request.Content.ReadFromJsonAsync<JsonUser>(token);
+        JsonUser? data = await request.Content.ReadFromJsonAsync<JsonUser>(_jsonOptions, token);
         if (data is null)
         {
             _logger.LogError("Invalid data returned from external user server.");
