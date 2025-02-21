@@ -1,0 +1,13 @@
+:root {
+    --non-highlight-gray: "#6B7280"; /* Darkish grey */
+    --luuppi-blue: "#5C61A3"; /* luuppi header color */
+    --backgroud-gray: "#E7E7E7"; /* Nearly white */
+    --accent-blue: "#252741"; /* Dark blue */
+    --luuppi-gray: "#F5F5FB"; /* Bluish gray */
+    --section-background: "#D5D5D5";    /* gray */
+    --whitish-broder: "#F8F8F8"; /* very very close to white */
+    --gold: "#F3C325";
+    --dark-gold: "#C39C1D";
+    --light-gold: "#F7E196";
+    --victory-red: "#E11D24";
+}
