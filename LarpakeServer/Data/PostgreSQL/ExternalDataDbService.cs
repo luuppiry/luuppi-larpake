@@ -1,21 +1,24 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.External;
 using LarpakeServer.Models.Localizations;
-using Microsoft.Extensions.Configuration.UserSecrets;
-using SQLitePCL;
+using LarpakeServer.Services.Options;
+using Microsoft.Extensions.Options;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
 public class ExternalDataDbService : PostgresDb, IExternalDataDbService
 {
     readonly IOrganizationEventDatabase _eventDb;
+    readonly IntegrationOptions _integrationOptions;
 
     public ExternalDataDbService(
         NpgsqlConnectionString connectionString,
         IOrganizationEventDatabase eventDb,
+        IOptions<IntegrationOptions> integrationOptions,
         ILogger<ExternalDataDbService> logger) : base(connectionString, logger)
     {
         _eventDb = eventDb;
+        _integrationOptions = integrationOptions.Value;
     }
 
 
@@ -29,7 +32,7 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
         {
             await connection.OpenAsync();
             using var transaction = await connection.BeginTransactionAsync();
-            foreach (OrganizationEvent record in events.Select(x => x.ToOrganizationEvent()))
+            foreach (OrganizationEvent record in events.Select(x => x.ToOrganizationEvent(_integrationOptions)))
             {
                 if (record.ExternalId is null)
                 {
@@ -88,7 +91,7 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
                                 image_url = @{nameof(loc.ImageUrl)},
                                 location = @{nameof(loc.Location)};
                         """, 
-                        new { id, loc.Title, loc.Body, loc.WebsiteUrl, loc.ImageUrl, loc.Location });
+                        new { id, loc.Title, loc.Body, loc.WebsiteUrl, loc.ImageUrl, loc.Location, loc.LanguageCode });
                 }
             }
 
@@ -110,7 +113,7 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
         }
         catch (Exception ex)
         {
-            Logger.LogError("Error syncing external events: {msg}", ex.Message);
+            Logger.LogError("Error syncing external events: {msg}.", ex.Message);
             return Error.InternalServerError("Error syncing external events",
                 ErrorCode.IntegrationDbWriteFailed);
         }

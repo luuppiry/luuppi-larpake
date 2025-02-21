@@ -162,6 +162,7 @@ public static class ServiceInjections
             .BindConfiguration(IntegrationOptions.SectionName);
     }
 
+
     private static IServiceCollection AddHttpClients(this IServiceCollection services, IConfiguration configuration)
     {
         IntegrationOptions options = new();

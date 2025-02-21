@@ -2,13 +2,24 @@
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services.Options;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
-public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, ILogger<OrganizationEventDatabase> logger)
-    : PostgresDb(connectionString, logger), IOrganizationEventDatabase
+public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
 {
+    readonly IntegrationOptions _integrationOptions;
+
+    public OrganizationEventDatabase(
+        NpgsqlConnectionString connectionString,
+        ILogger<OrganizationEventDatabase> logger,
+        IOptions<IntegrationOptions> integrationOptions) : base(connectionString, logger)
+    {
+        _integrationOptions = integrationOptions.Value;
+    }
+
     public async Task<OrganizationEvent[]> Get(EventQueryOptions options)
     {
         SelectQuery query = new();
@@ -66,8 +77,14 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
         using var connection = GetConnection();
         var records = await connection.QueryLocalizedAsync<OrganizationEvent, OrganizationEventLocalization>(
             query.ToString(), options, splitOn: "title");
-        return records.Values.ToArray();
+
+        OrganizationEvent[] result = records.Values.ToArray();
+        
+        AppendImageUrlsToAbsolute(result);
+        return result;
     }
+
+
 
     public Task<OrganizationEvent?> Get(long id)
     {
@@ -245,5 +262,21 @@ public class OrganizationEventDatabase(NpgsqlConnectionString connectionString, 
                 (SELECT GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)}))
             );
             """, loc.Select(x => new { eventId, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.LanguageCode, x.Location }));
+    }
+
+    private void AppendImageUrlsToAbsolute(OrganizationEvent[] result)
+    {
+        foreach (OrganizationEvent record in result)
+        {
+            foreach (OrganizationEventLocalization localization in record.TextData)
+            {
+                // If image url exists and is not absolute path
+                if (string.IsNullOrWhiteSpace(localization.ImageUrl) is false
+                    && localization.ImageUrl.StartsWith('/'))
+                {
+                    localization.ImageUrl = $"{_integrationOptions.CmsApiUrlGuess}{localization.ImageUrl}";
+                }
+            }
+        }
     }
 }

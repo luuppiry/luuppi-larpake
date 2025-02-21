@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
+using LarpakeServer.Services.Options;
 using System.Text.Json.Serialization;
 
 namespace LarpakeServer.Models.External;
@@ -25,17 +26,17 @@ public class ExternalEvent
     public string? ImageEnUrl { get; set; }
 
 
-
-
-    public OrganizationEvent ToOrganizationEvent()
+    public OrganizationEvent ToOrganizationEvent(IntegrationOptions? options = null)
     {
+        string baseUrl = options?.BasePath ?? Constants.Luuppi.BaseUrl;
+
         // Example website url: "https://luuppi.fi/fi/events/227"
         return new OrganizationEvent
         {
             Id = Constants.NullId,
             StartsAt = StartsAt,
             EndsAt = EndsAt,
-            ExternalId = $"{Constants.Luuppi.EventHeader}-{Id}",
+            ExternalId = $"{options?.EventHeader ?? "ext"}-{Id}",
             TextData = [
                 new OrganizationEventLocalization
                 {
@@ -44,7 +45,7 @@ public class ExternalEvent
                     Title = NameFi,
                     Body = DescriptionFi ?? string.Empty,
                     ImageUrl = ImageFiUrl,
-                    WebsiteUrl = $"{Constants.Luuppi.BaseUrl}/fi/events/{Id}"
+                    WebsiteUrl = $"{baseUrl}/fi/events/{Id}"
                 },
                 new OrganizationEventLocalization
                 {
@@ -53,7 +54,7 @@ public class ExternalEvent
                     Title = NameEn,
                     Body = DescriptionEn ?? string.Empty,
                     ImageUrl = ImageEnUrl,
-                    WebsiteUrl = $"{Constants.Luuppi.BaseUrl}/en/events/{Id}"
+                    WebsiteUrl = $"{baseUrl}/en/events/{Id}"
                 }
             ]
         };

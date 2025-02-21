@@ -35,12 +35,15 @@ public class Constants
     {
         public const string BaseUrl = "https://luuppi.fi";
         public const string EventHeader = "lupev1";   // Luuppi event version 1
+        public const string CmsApi = "https://cms.luuppi.fi";
     }
 
     public class HttpClients
     {
         public const string IntegrationClient = "LuuppiClient";
     }
+
+    
 }
 
 

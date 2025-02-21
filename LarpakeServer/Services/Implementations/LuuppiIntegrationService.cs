@@ -1,4 +1,6 @@
 ﻿using LarpakeServer.Models.External;
+using LarpakeServer.Services.Options;
+using Microsoft.Extensions.Options;
 using System.Text.Json;
 
 namespace LarpakeServer.Services.Implementations;
@@ -14,7 +16,11 @@ public class LuuppiIntegrationService : IExternalIntegrationService
     {
         PropertyNameCaseInsensitive = true
     };
-    public LuuppiIntegrationService(IHttpClientFactory clientFactory, ILogger<LuuppiIntegrationService> logger)
+    public LuuppiIntegrationService(
+        IHttpClientFactory clientFactory, 
+        ILogger<LuuppiIntegrationService> logger,
+        IOptions<IntegrationOptions> options
+        )
     {
         Guard.ThrowIfNull(clientFactory);
         _clientFactory = clientFactory;
