@@ -40,6 +40,7 @@ public class UsersController : ExtendedControllerBase
     [HttpGet]
     [RequiresPermissions(Permissions.ReadRawUserInfomation)]
     [ProducesResponseType(typeof(QueryDataGetDto<UserGetDto>), 200)]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GetUsers([FromQuery] UserQueryOptions options, CancellationToken token)
     {
         DbUser[] records = await _db.Get(options);
@@ -112,6 +113,9 @@ public class UsersController : ExtendedControllerBase
 
     [HttpGet("{userId}/reduced")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType(typeof(ReducedUserGetDto), 200)]
+    [ProducesResponseType(404)]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GetCommonUserInfo(Guid userId, CancellationToken token)
     {
         Result<UserGetDto>? record = await GetFullUser(userId, token);
