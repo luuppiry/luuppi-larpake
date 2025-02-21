@@ -5,7 +5,7 @@ using LarpakeServer.Models.PutDtos;
 
 namespace LarpakeServer.Models.DatabaseModels;
 
-public class LarpakeEvent : ILocalized<LarpakeEventLocalization>
+public class LarpakeTask : ILocalized<LarpakeTaskLocalization>
 {
     public required long Id { get; set; }
     public required long LarpakeSectionId { get; set; }
@@ -14,13 +14,13 @@ public class LarpakeEvent : ILocalized<LarpakeEventLocalization>
     public DateTime? CancelledAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public required List<LarpakeEventLocalization> TextData { get; set; }
-    internal LarpakeEventLocalization DefaultLocalization => GetDefaultLocalization();
+    public required List<LarpakeTaskLocalization> TextData { get; set; }
+    internal LarpakeTaskLocalization DefaultLocalization => GetDefaultLocalization();
 
 
-    internal static LarpakeEvent From(LarpakeEventPostDto record)
+    internal static LarpakeTask From(LarpakeTaskPostDto record)
     {
-        return new LarpakeEvent
+        return new LarpakeTask
         {
             Id = Constants.NullId,
             LarpakeSectionId = record.LarpakeSectionId,
@@ -30,9 +30,9 @@ public class LarpakeEvent : ILocalized<LarpakeEventLocalization>
         };
     }
 
-    internal static LarpakeEvent From(LarpakeEventPutDto record)
+    internal static LarpakeTask From(LarpakeTaskPutDto record)
     {
-        return new LarpakeEvent
+        return new LarpakeTask
         {
             Id = Constants.NullId,
             LarpakeSectionId = Constants.NullId,
@@ -42,7 +42,7 @@ public class LarpakeEvent : ILocalized<LarpakeEventLocalization>
         };
     }
 
-    private LarpakeEventLocalization GetDefaultLocalization()
+    private LarpakeTaskLocalization GetDefaultLocalization()
     {
         if (TextData is null || TextData.Count is 0)
         {

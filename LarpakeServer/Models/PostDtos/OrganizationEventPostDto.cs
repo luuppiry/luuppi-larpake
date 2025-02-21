@@ -13,8 +13,4 @@ public class OrganizationEventPostDto
     public required DateTime StartsAt { get; set; }
 
     public DateTime? EndsAt { get; set; } = null;
-
-    [Required]
-    [MaxLength(100)]
-    public string Location { get; set; } = string.Empty;
 }

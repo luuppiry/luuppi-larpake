@@ -2,12 +2,12 @@
 
 namespace LarpakeServer.Models.Localizations;
 
-public class LarpakeEventLocalization : LocalizationBase
+public class LarpakeTaskLocalization : LocalizationBase
 {
     [Required]
-    [Length(5, Constants.MaxLarpakeEventTitleLength)]
+    [Length(5, Constants.MaxLarpakeTaskTitleLength)]
     public required string Title { get; set; }
 
-    [MaxLength(Constants.MaxLarpakeEventBodyLength)]
+    [MaxLength(Constants.MaxLarpakeTaskBodyLength)]
     public string? Body { get; set; }
 }

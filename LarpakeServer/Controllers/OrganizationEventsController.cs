@@ -2,11 +2,12 @@
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.External;
 using LarpakeServer.Models.GetDtos;
-using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services;
 using OrgEventsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.OrganizationEventGetDto>;
 
 namespace LarpakeServer.Controllers;
@@ -17,13 +18,19 @@ namespace LarpakeServer.Controllers;
 public class OrganizationEventsController : ExtendedControllerBase
 {
     readonly IOrganizationEventDatabase _db;
+    readonly IExternalIntegrationService _integrationService;
+    readonly IExternalDataDbService _externalDataDbService;
 
     public OrganizationEventsController(
         IOrganizationEventDatabase db,
+        IExternalIntegrationService integrationService,
+        IExternalDataDbService externalDataDbService,
         ILogger<OrganizationEventsController> logger,
         IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
+        _integrationService = integrationService;
+        _externalDataDbService = externalDataDbService;
     }
 
     [HttpGet]
@@ -63,7 +70,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     [HttpPost]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(LongIdResponse), 201)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> CreateEvent([FromBody] OrganizationEventPostDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
@@ -83,7 +90,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     [HttpPut("{eventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    [ProducesErrorResponseType(typeof(MessageResponse))]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateEvent(long eventId, [FromBody] OrganizationEventPutDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
@@ -127,5 +134,25 @@ public class OrganizationEventsController : ExtendedControllerBase
         
         return OkRowsAffected(rowsAffected);
     }
+
+    [HttpGet("pull-external-server-events")]
+    [RequiresPermissions(Permissions.Admin)]
+    public async Task<IActionResult> PullUpdateFromExternalServer(CancellationToken token)
+    {
+
+        Result<ExternalEvent[]> events = await _integrationService.PullEventsFromExternalSource(token);
+        if (events.IsError)
+        {
+            return FromError(events);
+        }
+
+        Guid userId = GetRequestUserId();
+        Result<int> result = await _externalDataDbService.SyncExternalEvents((ExternalEvent[])events, userId);
+        return result.MatchToResponse(
+            ok: OkRowsAffected,
+            error: FromError);
+    }
+
+
 
 }

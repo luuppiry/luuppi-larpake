@@ -33,4 +33,15 @@ public static class Guard
         }
     }
 
+
+    [StackTraceHidden]
+    public static void ThrowIfNullOrEmpty([NotNull] string? value, [CallerArgumentExpression(nameof(value))] string? paramName = "_paramName_")
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            throw new ArgumentNullException(paramName, "Value must not be empty or null.");
+        }
+    }
+
+
 }

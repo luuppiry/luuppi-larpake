@@ -14,10 +14,10 @@ public class Constants
     public const string LangDefault = LangFin;
 
     // LärpäkeEvent
-    public const int MaxLarpakeEventTitleLength = 80;
-    public const int MaxLarpakeEventBodyLength = 2000;
-    public const int MaxPointsPerLarpakeEvent = 100;
-    
+    public const int MaxLarpakeTaskTitleLength = 80;
+    public const int MaxLarpakeTaskBodyLength = 2000;
+    public const int MaxPointsPerLarpakeTask = 100;
+
     // Lärpäke
     public const int MaxLarpakeTitleLength = 80;
     public const int MaxLarpakeDescriptionLength = 2000;
@@ -30,4 +30,20 @@ public class Constants
         public const string EntraIdScheme = "EntraIdBearer";
         public const string LarpakeIdScheme = "LarpakeIdBearer";
     }
+
+    public class Luuppi
+    {
+        public const string BaseUrl = "https://luuppi.fi";
+        public const string EventHeader = "lupev1";   // Luuppi event version 1
+        public const string CmsApi = "https://cms.luuppi.fi";
+    }
+
+    public class HttpClients
+    {
+        public const string IntegrationClient = "LuuppiClient";
+    }
+
+    
 }
+
+

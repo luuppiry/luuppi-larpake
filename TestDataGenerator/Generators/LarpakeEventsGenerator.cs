@@ -3,10 +3,10 @@
 namespace TestDataGenerator.Generators;
 internal class LarpakeEventsGenerator : IRunAll
 {
-    private readonly ILarpakeEventDatabase _db;
+    private readonly ILarpakeTaskDatabase _db;
     private readonly ILarpakeDatabase _larpakeDb;
 
-    public LarpakeEventsGenerator(ILarpakeEventDatabase db, ILarpakeDatabase larpakeDb)
+    public LarpakeEventsGenerator(ILarpakeTaskDatabase db, ILarpakeDatabase larpakeDb)
     {
         _db = db;
         _larpakeDb = larpakeDb;
@@ -14,7 +14,7 @@ internal class LarpakeEventsGenerator : IRunAll
 
     public async Task CreateEvents()
     {
-        var records = await _db.GetEvents(new LarpakeEventQueryOptions { PageOffset = 0, PageSize = 1 });
+        var records = await _db.GetTasks(new LarpakeTaskQueryOptions { PageOffset = 0, PageSize = 1 });
         if (records.Length is not 0)
         {
             Console.WriteLine("Larpake events already exist.");
@@ -27,19 +27,19 @@ internal class LarpakeEventsGenerator : IRunAll
         long[] validSections = larpakkeet.Where(x=> x.Sections is not null).SelectMany(x => x.Sections!).Select(x => x.Id).ToArray();
         var validPoints = Enumerable.Range(1, 20).ToArray();
 
-        List<LarpakeEvent> events = new Faker<LarpakeEvent>()
+        List<LarpakeTask> events = new Faker<LarpakeTask>()
             .UseSeed(App.Seed)
             .RuleFor(x => x.TextData, x => 
             {
 
                 return [
-                    new LarpakeEventLocalization
+                    new LarpakeTaskLocalization
                     {
                         LanguageCode = "fi",
                         Title = x.Lorem.Sentence(),
                         Body = x.Lorem.Paragraph()
                     },
-                    new LarpakeEventLocalization
+                    new LarpakeTaskLocalization
                     {
                         LanguageCode = "en",
                         Title = x.Lorem.Sentence(),
