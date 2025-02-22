@@ -46,6 +46,10 @@ class SidePanel extends HTMLElement {
                 href: "tutor_mark_event.html",
                 title: { fi: "Kirjaa osallistuminen - Tuutori", en: "Log Attendance - Tutor" },
             },
+            {
+                href: "profile.html",
+                title: { fi: "Profiili", en: "Profile" },
+            },
         ];
     }
 
@@ -61,7 +65,9 @@ class SidePanel extends HTMLElement {
 
         this.innerHTML = `
          <div class="side-panel" id="sidePanel">
-             <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;"><img class="close-x" src="/close-x.png" height="30px" width="auto"></img></div>
+             <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
+                <img class="close-x" src="/close-x.png" height="30px" width="auto"></img>
+             </div>
              <ul>${menuItems}</ul>
          </div>
          `;

@@ -27,6 +27,7 @@ body {
     font-size: 5x;
     flex-grow: 1;
     text-align: center;
+    user-select: none;
 }
 
 .menu-icon {
@@ -38,6 +39,7 @@ body {
     height: 48px;
     text-align: center;
     background-color: #494d7b;
+    user-select: none;
 }
 
 .container {
@@ -138,6 +140,7 @@ body {
 .side-panel ul li a {
     color: white;
     text-decoration: none;
+    user-select: none;
 }
 
 .side-panel ul li.active {
@@ -157,6 +160,7 @@ body {
     text-align: center;
     background-color: #5c61a3;
     color: #ffffff;
+    user-select: none;
 }
 
 @media screen and (max-width: 660px) {

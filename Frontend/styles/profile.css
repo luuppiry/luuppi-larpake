@@ -1,0 +1,23 @@
+@import "colors.css";
+@import "section.css";
+@import "tooltip.css";
+
+
+.data-value {
+    font-weight: bold;
+    font-size: 14px;
+    margin: 0;
+}
+
+.section-filler > div > h2 {
+    /* Main page title */ 
+    margin: 0px;
+    padding: 0;
+}
+
+.text-field {
+    font-weight: 400;
+    font-size: 16px;
+    font-style: normal;
+}
+

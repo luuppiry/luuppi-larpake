@@ -1,0 +1,42 @@
+.centering {
+    /* Center horizontally */
+    /* If you want child to expand use max-width: x; and width: 100%; */
+    display: flex;
+    justify-content: center;
+}
+
+.section {
+    /*  */
+    width: 100%;
+    max-width: 600px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-flow: row;
+    margin: 20px 20px 0 20px;
+}
+
+.section-filler {
+    /* Section 'filler' */
+    justify-content: center;
+    display: flex;
+    width: 100%;
+}
+
+.section-filler > div {
+    /* Section content */
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    padding: 30px 30px 50px 30px;
+    display: flex;
+    flex-flow: column;
+}
+
+.stripe {
+    min-height: 20px;
+    flex-shrink: 0;
+    width: 5px;
+    background-color: var(--luuppi-blue);
+}
