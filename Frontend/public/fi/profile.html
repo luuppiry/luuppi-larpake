@@ -14,13 +14,14 @@
         <script src="/src/components/side-panel.ts"></script>
         <script src="/src/components/ui-header.ts"></script>
     </head>
-    <body>
+    <body">
         <ui-header></ui-header>
         <side-panel></side-panel>
 
         <div class="centering">
             <div class="section">
                 <div class="section-filler">
+                    <!-- Following empty looking div is important for auto scaling (in css side) -->
                     <div>
                         <h2>Käyttäjätiedot</h2>
                         <div class="tooltipped-title">
@@ -69,6 +70,44 @@
                 <div class="stripe"></div>
             </div>
         </div>
+
+        <dialog id="signature-dialog" class="signature-dialog">
+            <div class="section">
+                <div class="section-filler">
+                    <!-- Following empty looking div is important for auto scaling (in css side) -->
+                    <div>
+                        <h1>Lisää signeeraus</h1>
+                        <p>Piirrä alla olevaan ruutuun</p>
+                        <canvas class="signature-canvas"></canvas>
+                        <div class="dialog-btn-container">
+                            <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">OK</button>
+                            <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">Peruuta</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="stripe"></div>
+            </div>
+        </dialog>
+
+        <div class="centering" style="padding: 0 0 30% 0;">
+            <div class="section">
+                <div class="section-filler">
+                    <!-- Following empty looking div is important for auto scaling (in css side) -->
+                    <div>
+                        <h2>Signeeraus</h2>
+                        <p>
+                            Tutor -roolilliset jäsenet voivat lisätä itselleen jopa 5 omaa signeerausta, jotka tulevat
+                            näkyviin lärpäkkeen sivuill kirjatun tapahtuman kohdalle.
+                        </p>
+                        <div id="show-dialog-btn" class="signature-field" >
+                            <img src="/icons/plus_icon.svg" alt="add new icon" />
+                        </div>
+                    </div>
+                </div>
+                <div class="stripe"></div>
+            </div>
+        </div>
     </body>
+
     <script type="module" src="/src/profile.ts"></script>
 </html>
