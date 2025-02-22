@@ -55,6 +55,30 @@ class SidePanel extends HTMLElement {
 
     connectedCallback() {
         this.render();
+
+        window.addEventListener("click", (event: MouseEvent) => {
+            if (!this.firstElementChild?.classList.contains("open")){
+                // Side bar was not opened
+                return;
+            }
+
+            const target = event.target as HTMLElement;
+
+            /* This is little bit janky but works
+             * If side ui header is not filtered out, 
+             * this would immidiately close the menu when menu button pressed
+             */ 
+            if (document.querySelector<HTMLElement>("ui-header")?.contains(target)){
+                return;
+            }
+            
+            
+            if (this.contains(target) == true) {
+                // Clicked inside sidebar
+                return;
+            }
+            this.toggleSidePanel();
+        }, false);  // False to sen event listener onwards from here
     }
 
     render() {
@@ -64,9 +88,9 @@ class SidePanel extends HTMLElement {
             .join("\n");
 
         this.innerHTML = `
-         <div class="side-panel" id="sidePanel">
+         <div class="side-panel" id="side-panel-element">
              <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
-                <img class="close-x" src="/close-x.png" height="30px" width="auto"></img>
+                <img class="close-x" id="side-panel-close-btn" src="/close-x.png" height="30px" width="auto"></img>
              </div>
              <ul>${menuItems}</ul>
          </div>
@@ -81,8 +105,8 @@ class SidePanel extends HTMLElement {
 }
 
 function toggleSidePanel(): void {
-    const panel: HTMLElement | null = document.getElementById("sidePanel");
-    if (panel) {
+    const panel: HTMLElement | null = document.getElementById("side-panel-element");
+    if (panel != null) {
         panel.classList.toggle("open");
     }
 }

@@ -81,11 +81,12 @@ function addMissingLanguage(currentUrl: string): string {
 }
 
 function toggleSidePanelOutsider(): void {
-    const panel: HTMLElement | null = document.getElementById("sidePanel");
+    const panel: HTMLElement | null = document.getElementById("side-panel-element");
     if (panel != null) {
         panel.classList.toggle("open");
     }
 }
+
 
 if ("customElements" in window) {
     customElements.define("ui-header", Header);
