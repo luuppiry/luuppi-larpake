@@ -192,7 +192,10 @@ function renderPage() {
     }
 
     // Update buttons
-    buttonContainer.innerHTML = ""; // Clear previous buttons
+    if (buttonContainer != null){
+        buttonContainer.innerHTML = ""; // Clear previous buttons
+    }
+
     pages[currentPage].buttons.forEach((buttonText) => {
         const buttonWrapper = document.createElement("div"); // Wrapper for text and image
         buttonWrapper.className = "button-wrapper";
@@ -234,14 +237,18 @@ function renderPage() {
         }
 
         buttonWrapper.appendChild(button);
-        buttonContainer.appendChild(buttonWrapper);
+        buttonContainer?.appendChild(buttonWrapper);
     });
 
     // Update pagination info
-    pageInfo.textContent = `${currentPage + 1} / ${pages.length + 1}`;
+    if (pageInfo != null){
+        pageInfo.textContent = `${currentPage + 1} / ${pages.length + 1}`;
+    }
 
     // Update button states
-    prevPage.disabled = currentPage === 0;
+    if (prevPage != null){
+        prevPage.disabled = currentPage === 0;
+    }
     //nextPage.disabled = currentPage === pages.length - 1;
 }
 
