@@ -1,6 +1,6 @@
 import HttpClient from "./http_client.ts";
-import { Larpake, LarpakeTask } from "../data_model/larpake.ts";
-import { Container } from "../data_model/common.ts";
+import { Larpake, LarpakeTask } from "../models/larpake.ts";
+import { Container } from "../models/common.ts";
 
 type Ids = {
     ids: number[];

@@ -1,5 +1,5 @@
-import { Container } from "../data_model/common.ts";
-import { Group, Signature } from "../data_model/user.ts";
+import { Container } from "../models/common.ts";
+import { Group, Signature } from "../models/user.ts";
 import HttpClient from "./http_client.ts";
 
 export class UserClient {

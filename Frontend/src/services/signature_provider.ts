@@ -1,7 +1,4 @@
-export type Point2D = {
-    X: number;
-    Y: number;
-};
+import { Point2D } from "../models/common.ts";
 
 export default class Draw {
     flattenThreshold: number;

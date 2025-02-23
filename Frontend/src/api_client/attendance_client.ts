@@ -1,5 +1,5 @@
-import { Attendance } from "../data_model/attendance";
-import { Container } from "../data_model/common";
+import { Attendance } from "../models/attendance";
+import { Container } from "../models/common";
 import HttpClient from "./http_client";
 
 export default class AttendanceClient {

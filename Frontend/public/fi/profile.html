@@ -23,7 +23,7 @@
                         <h1>Lisää signeeraus</h1>
                         <p>Piirrä alla olevaan ruutuun</p>
                         <!-- Setting height and width in css mess up the canvas 2d context -->
-                        <canvas height="150" width="450" id="signature-canvas" class="signature-canvas"></canvas>
+                        <canvas height="100" width="450" id="signature-canvas" class="signature-canvas"></canvas>
                         <div class="dialog-btn-container">
                             <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">OK</button>
                             <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">Peruuta</button>
@@ -100,8 +100,19 @@
                             Tutor -roolilliset jäsenet voivat lisätä itselleen jopa 5 omaa signeerausta, jotka tulevat
                             näkyviin lärpäkkeen sivuill kirjatun tapahtuman kohdalle.
                         </p>
-                        <div id="show-dialog-btn" class="signature-field">
-                            <img src="/icons/plus_icon.svg" alt="add new icon" />
+                        <div style="display: flex; flex-flow: column; gap:5px;">
+                            <div id="show-dialog-btn" class="signature-field">
+                                <img src="/icons/plus_icon.svg" alt="add new icon" />
+                            </div>
+    
+                            <div  class="signature-field" style="padding: 5px">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 450 100"
+                                    id="signature-svg"
+                                    style="height: 100; "
+                                ></svg>
+                            </div>
                         </div>
                     </div>
                 </div>
