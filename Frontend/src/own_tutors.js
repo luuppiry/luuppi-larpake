@@ -39,7 +39,4 @@ tutorData.forEach(tutor => {
     cardsContainer.appendChild(card);
 });
 
-function toggleSidePanel() {
-    const panel = document.getElementById('sidePanel');
-    panel.classList.toggle('open');
-}
+

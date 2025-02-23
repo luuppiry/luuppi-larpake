@@ -6,25 +6,63 @@ class Header extends HTMLElement {
     connectedCallback() {
         this.innerHTML = `
          <header class="header">
-          <img
+            <img
                 src="/luuppi.logo.svg"
                 onclick="window.location.href='index.html'"
-                style="height: 60px; cursor: pointer;"
+                style="height: 60px; cursor: pointer"
                 alt="Luuppi Logo"
             />
             <h1>LÄRPÄKE</h1>
-            <div class="menu-icon" onclick="changeLanguage()" style="display:flex; justify-content: center; align-items: center;"><img class="globle" src="/globle.png" height="30px" width="auto"></img></div>
-            <div class="menu-icon" onclick="toggleSidePanelOutsider()" style="display:flex; justify-content: center; align-items: center;"><img class="profile-icon" src="/profile-icon.png" height="30px" width="auto"></img></div>
-            <div class="menu-icon" onclick="toggleSidePanelOutsider()">☰</div>
-         </header>
+            <div
+                class="menu-icon"
+                id="ui-header-change-language-btn"
+                style="display: flex; justify-content: center; align-items: center"
+            >
+                <img class="globle" src="/globle.png" height="30px" width="auto" />
+            </div>
+            <div
+                class="menu-icon"
+                id="ui-header-profile-btn"
+                style="display: flex; justify-content: center; align-items: center"
+            >
+                <img class="profile-icon" src="/profile-icon.png" height="30px" width="auto" />
+            </div>
+            <div class="menu-icon" id="ui-header-open-menu-btn">☰</div>
+        </header>
          `;
+
+        const languageBtn = this.querySelector<HTMLDivElement>("#ui-header-change-language-btn");
+        if (languageBtn == null) {
+            throw new Error("Language button not found");
+        }
+        languageBtn.addEventListener("click", (_) => {
+            this.changeLanguage();
+        });
+
+        const profileBtn = this.querySelector<HTMLDivElement>("#ui-header-profile-btn");
+        if (profileBtn == null) {
+            throw new Error("Profile button not found");
+        }
+        profileBtn.addEventListener("click", (_) => {
+            this.toggle();
+        });
+
+        const menuBtn = this.querySelector<HTMLDivElement>("#ui-header-open-menu-btn");
+        if (menuBtn == null) {
+            throw new Error("Menu button not found");
+        }
+        menuBtn.addEventListener("click", (_) => {
+            this.toggle();
+        });
     }
 
     // Runs when object is disconnected from DOM
     disconnectedCallback() {}
 
     toggle() {
-        toggleSidePanelOutsider();
+        const nameOverride = this.getAttribute("side-panel-name");
+        console.log(nameOverride)
+        toggleSidePanelOutsider(nameOverride);
     }
 
     changeLanguage() {
@@ -34,7 +72,7 @@ class Header extends HTMLElement {
 
 function changeLanguage(): void {
     console.log("change language");
-    
+
     // Add language if none are defined in url (from proxying)
     const currentUrl = addMissingLanguage(window.location.href);
     let newUrl;
@@ -77,16 +115,18 @@ function addMissingLanguage(currentUrl: string): string {
 
     const before = currentUrl.slice(0, sepIndex); // take http(s)://domain.do
     const after = currentUrl.slice(sepIndex, currentUrl.length); // take /<some>/<stuff>
-    return `${before}/fi${after}`;  // after contains separator /
+    return `${before}/fi${after}`; // after contains separator /
 }
 
-function toggleSidePanelOutsider(): void {
-    const panel: HTMLElement | null = document.getElementById("side-panel-element");
+function toggleSidePanelOutsider(nameOverride: string | null = null): void {
+    // If side panel is not found with default name and name is overridden
+    const searchName = nameOverride == null ? "side-panel-element" : nameOverride;
+
+    const panel: HTMLElement | null = document.getElementById(searchName);
     if (panel != null) {
         panel.classList.toggle("open");
     }
 }
-
 
 if ("customElements" in window) {
     customElements.define("ui-header", Header);

@@ -182,9 +182,8 @@ function renderPage() {
 
     const header = document.getElementById("larpake-page-name");
     const buttonContainer = document.getElementById("larpake-button-container");
-    const pageInfo = document.getElementById("page-info");
-    const prevPage = document.getElementById("prev-page");
-    const nextPage = document.getElementById("next-page");
+    const pageInfo = document.getElementById("page-info") as HTMLSpanElement;
+    const prevPage = document.getElementById("prev-page") as HTMLButtonElement;
 
     // Update header
     if (header != null) {
@@ -192,7 +191,7 @@ function renderPage() {
     }
 
     // Update buttons
-    if (buttonContainer != null){
+    if (buttonContainer != null) {
         buttonContainer.innerHTML = ""; // Clear previous buttons
     }
 
@@ -241,12 +240,12 @@ function renderPage() {
     });
 
     // Update pagination info
-    if (pageInfo != null){
+    if (pageInfo != null) {
         pageInfo.textContent = `${currentPage + 1} / ${pages.length + 1}`;
     }
 
     // Update button states
-    if (prevPage != null){
+    if (prevPage != null) {
         prevPage.disabled = currentPage === 0;
     }
     //nextPage.disabled = currentPage === pages.length - 1;
@@ -267,19 +266,30 @@ function getSignatureImage() {
     return signature_list[Math.floor(Math.random() * signature_list.length)];
 }
 
-function changePage(direction) {
+function changePage(direction: number) {
+    // Check if going forwards and that button is disabled
+    if (direction > 0) {
+        const nextBtn = document.getElementById("next-page") as HTMLButtonElement;
+        if (nextBtn != null && nextBtn.disabled) {
+            return;
+        }
+    }
+
+    // Check if going backwords and that button is disabled
+    if (direction < 0) {
+        const prevBtn = document.getElementById("prev-page") as HTMLButtonElement;
+        if (prevBtn != null && prevBtn.disabled) {
+            return;
+        }
+    }
+
     currentPage += direction;
     renderPage();
 }
 
-function goToPage(index) {
+function goToPage(index: number) {
     currentPage = index;
     renderPage();
-}
-
-function toggleSidePanel() {
-    const panel = document.getElementById("sidePanel");
-    panel.classList.toggle("open");
 }
 
 // Initialize the first page
