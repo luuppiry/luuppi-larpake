@@ -4,6 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="/styles/larpake.css" />
+        <link rel="stylesheet" href="/styles/common.css" />
         <title>Luuppi - Lärpäke</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,7 +21,9 @@
     <body>
         <ui-header side-panel-name="sidePanel"></ui-header>
         <div class="side-panel" id="sidePanel">
-            <span class="close-btn" onclick="toggleSidePanel()">X</span>
+            <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
+                <img class="close-x" id="side-panel-close-btn" src="/close-x.png" height="30px" width="auto"></img>
+             </div>
             <ul>
                 <li><a href="index.html">Koti</a></li>
                 <li><a href="larpake.html#">Lärpäke</a></li>
