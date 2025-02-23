@@ -31,20 +31,19 @@ submitBtn.addEventListener("click", () => {
         return;
     }
 
-    // upload new signature
-    upLoadSignature(output);
-
+    // upload new signature and update UI
+    uploadSignature(output);
     appendToFirstEmpty(output);
 });
 
-function upLoadSignature(value: Point2D[][]) {
+function uploadSignature(value: Point2D[][]) {
     console.log("uploading new signature...");
     console.log(value);
 }
 
 function appendToFirstEmpty(signature: Point2D[][]) {
     // Draw svg new signature to UI
-    const svgContainer = document.getElementById("default-signature") as HTMLDivElement;
+    const svgContainer = document.getElementById("default-signature") as HTMLLIElement;
 
     // Choose where to write new signature
     let svg: HTMLElement;
@@ -63,11 +62,11 @@ function appendToFirstEmpty(signature: Point2D[][]) {
     renderer.renderTo(svg);
 }
 
-function cloneNewSignatureNode(template: HTMLDivElement, destination: HTMLElement): HTMLElement {
+function cloneNewSignatureNode(template: HTMLElement, destination: HTMLElement): HTMLElement {
     // Get template child (svg)
     const templateChild = template.firstElementChild as HTMLElement;
 
-    // Clone root (div) and child (svg)
+    // Clone root (div/li) and child (svg)
     const rootClone = template.cloneNode(false);
     const childClone = templateChild.cloneNode(false) as HTMLElement;
 

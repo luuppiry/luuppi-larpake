@@ -8,7 +8,7 @@ export default class Draw {
     points: (Point2D | null)[];
 
     constructor(canvas: HTMLCanvasElement) {
-        this.flattenThreshold = 5;
+        this.flattenThreshold = 4;
         this.canvas = canvas;
         this.context = canvas.getContext("2d")!;
         this.isDrawing = false;
