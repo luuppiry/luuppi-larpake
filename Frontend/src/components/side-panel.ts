@@ -4,12 +4,12 @@ type ListItem = {
 };
 
 class SidePanel extends HTMLElement {
-    items: ListItem[];
-
     constructor() {
         super();
+    }
 
-        this.items = [
+    connectedCallback() {
+        const items: ListItem[] = [
             {
                 href: "index.html",
                 title: { fi: "Koti", en: "Home" },
@@ -50,42 +50,47 @@ class SidePanel extends HTMLElement {
                 href: "profile.html",
                 title: { fi: "Profiili", en: "Profile" },
             },
+            {
+                href: "admin/admin.html",
+                title: { fi: "Ylläpito", en: "Admin" },
+            },
         ];
+
+        const correctedItems = this.#add_path_correction(items);
+
+        this.render(correctedItems);
+
+        window.addEventListener(
+            "click",
+            (event: MouseEvent) => {
+                if (!this.firstElementChild?.classList.contains("open")) {
+                    // Side bar was not opened
+                    return;
+                }
+
+                const target = event.target as HTMLElement;
+
+                /* This is little bit janky but works
+                 * If side ui header is not filtered out,
+                 * this would immidiately close the menu when menu button pressed
+                 */
+                if (document.querySelector<HTMLElement>("ui-header")?.contains(target)) {
+                    return;
+                }
+
+                if (this.contains(target) == true) {
+                    // Clicked inside sidebar
+                    return;
+                }
+                this.toggleSidePanel();
+            },
+            false
+        ); // False to sen event listener onwards from here
     }
 
-    connectedCallback() {
-        this.render();
-
-        window.addEventListener("click", (event: MouseEvent) => {
-            if (!this.firstElementChild?.classList.contains("open")){
-                // Side bar was not opened
-                return;
-            }
-
-            const target = event.target as HTMLElement;
-
-            /* This is little bit janky but works
-             * If side ui header is not filtered out, 
-             * this would immidiately close the menu when menu button pressed
-             */ 
-            if (document.querySelector<HTMLElement>("ui-header")?.contains(target)){
-                return;
-            }
-            
-            
-            if (this.contains(target) == true) {
-                // Clicked inside sidebar
-                return;
-            }
-            this.toggleSidePanel();
-        }, false);  // False to sen event listener onwards from here
-    }
-
-    render() {
+    render(items: ListItem[]) {
         const language = this.getAttribute("lang") !== "en" ? "fi" : "en";
-        const menuItems = this.items
-            .map((item) => `<li><a href="${item.href}">${item.title[language]}</a></li>`)
-            .join("\n");
+        const menuItems = items.map((item) => `<li><a href="${item.href}">${item.title[language]}</a></li>`).join("\n");
 
         this.innerHTML = `
          <div class="side-panel" id="side-panel-element">
@@ -95,6 +100,31 @@ class SidePanel extends HTMLElement {
              <ul>${menuItems}</ul>
          </div>
          `;
+    }
+
+    #add_path_correction(items: ListItem[]): ListItem[] {
+        /* Path depth should be positive number
+         * For example 2 = ../../<path>
+         */
+        const pathDepth = this.getAttribute("path-depth") as number | null;
+
+        // Build correction
+        let correction = "";
+        if (pathDepth != null && pathDepth > 0) {
+            for (let i = 0; i < pathDepth; i++) {
+                correction += "../";
+            }
+        }
+
+        if (correction == "") {
+            return items;
+        }
+
+        // Add correction
+        for (let j = 0; j < items.length; j++) {
+            items[j].href = correction + items[j].href;
+        }
+        return items;
     }
 
     disconnectedCallback() {}

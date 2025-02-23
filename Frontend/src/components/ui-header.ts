@@ -4,11 +4,14 @@ class Header extends HTMLElement {
     }
 
     connectedCallback() {
+
+        const index = this.#add_path_correction("index.html")
+
         this.innerHTML = `
          <header class="header">
             <img
                 src="/luuppi.logo.svg"
-                onclick="window.location.href='index.html'"
+                onclick="window.location.href='${index}'"
                 style="height: 60px; cursor: pointer"
                 alt="Luuppi Logo"
             />
@@ -61,12 +64,34 @@ class Header extends HTMLElement {
 
     toggle() {
         const nameOverride = this.getAttribute("side-panel-name");
-        console.log(nameOverride)
+        console.log(nameOverride);
         toggleSidePanelOutsider(nameOverride);
     }
 
     changeLanguage() {
         changeLanguage();
+    }
+
+    #add_path_correction(path: string): string {
+        /* Path depth should be positive number
+         * For example 2 = ../../<path>
+         */
+        const pathDepth = this.getAttribute("path-depth") as number | null;
+
+        // Build correction
+        let correction = "";
+        if (pathDepth != null && pathDepth > 0) {
+            for (let i = 0; i < pathDepth; i++) {
+                correction += "../";
+            }
+        }
+
+        if (correction == "") {
+            return path;
+        }
+
+        // Add correction
+        return correction + path;
     }
 }
 
