@@ -34,13 +34,47 @@ submitBtn.addEventListener("click", () => {
     // upload new signature
     upLoadSignature(output);
 
-    // Draw svg new signature to UI
-    const svg = document.getElementById("signature-svg") as HTMLElement;
-    const renderer = new SignatureRenderer(output);
-    renderer.renderTo(svg);
+    appendToFirstEmpty(output);
 });
 
 function upLoadSignature(value: Point2D[][]) {
     console.log("uploading new signature...");
     console.log(value);
+}
+
+function appendToFirstEmpty(signature: Point2D[][]) {
+    // Draw svg new signature to UI
+    const svgContainer = document.getElementById("default-signature") as HTMLDivElement;
+
+    // Choose where to write new signature
+    let svg: HTMLElement;
+    if (svgContainer.classList.contains("signature-unused")) {
+        // Use default svg container
+        svgContainer.classList.remove("signature-unused");
+        svg = svgContainer.firstElementChild as HTMLElement;
+    } else {
+        // svg container is already in use, clone new
+        const destination = document.getElementById("signature-container") as HTMLElement;
+        svg = cloneNewSignatureNode(svgContainer, destination);
+    }
+    
+    // Render
+    const renderer = new SignatureRenderer(signature);
+    renderer.renderTo(svg);
+}
+
+function cloneNewSignatureNode(template: HTMLDivElement, destination: HTMLElement): HTMLElement {
+    // Get template child (svg)
+    const templateChild = template.firstElementChild as HTMLElement;
+
+    // Clone root (div) and child (svg)
+    const rootClone = template.cloneNode(false);
+    const childClone = templateChild.cloneNode(false) as HTMLElement;
+
+    // Append to destination structure
+    rootClone.appendChild(childClone);
+    destination.appendChild(rootClone);
+
+    // return child (svg)
+    return childClone;
 }
