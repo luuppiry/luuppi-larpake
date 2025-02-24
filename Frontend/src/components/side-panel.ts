@@ -1,56 +1,141 @@
 type ListItem = {
     href: string;
-    title: string;
+    title: { [key: string]: string }; // Support multiple languages
 };
 
 class SidePanel extends HTMLElement {
-    items: ListItem[];
-
     constructor() {
         super();
-
-        this.items = [
-            { href: "main.html", title: "Koti" },
-            { href: "larpake.html", title: "Lärpäke" },
-            { href: "statistics.html", title: "Oma statistiikka" },
-            {
-                href: "latest_accomplishment.html",
-                title: "Viimeisimmät suoritukset",
-            },
-            { href: "common_statistics.html", title: "Yhteiset statistiikat" },
-            { href: "upcoming_events.html", title: "Tulevat tapahtumat" },
-            { href: "own_tutors.html", title: "Omat tutorit" },
-            { href: "event_marking.html", title: "Kirjaa osallistuminen" },
-            { href: "event_marking.html", title: "Lue osallistuminen" },
-        ];
     }
 
-    // Runs when element is appended or moved in DOM
     connectedCallback() {
-        const lines: string = this.items
-            .map((x) => `<li><a href="${x.href}">${x.title}</a></li>`)
-            .reduce((acc, x) => `${acc}\n${x}`);
+        const items: ListItem[] = [
+            {
+                href: "index.html",
+                title: { fi: "Koti", en: "Home" },
+            },
+            {
+                href: "larpake.html",
+                title: { fi: "Lärpäke", en: "Widget" },
+            },
+            {
+                href: "statistics.html",
+                title: { fi: "Oma statistiikka", en: "My Statistics" },
+            },
+            {
+                href: "latest_completion.html",
+                title: { fi: "Viimeisimmät suoritukset", en: "Latest Achievements" },
+            },
+            {
+                href: "common_statistics.html",
+                title: { fi: "Yhteiset statistiikat", en: "Shared Statistics" },
+            },
+            {
+                href: "upcoming_events.html",
+                title: { fi: "Tulevat tapahtumat", en: "Upcoming Events" },
+            },
+            {
+                href: "own_tutors.html",
+                title: { fi: "Omat tutorit", en: "My Tutors" },
+            },
+            {
+                href: "event_marking.html",
+                title: { fi: "Kirjaa osallistuminen - Fuksi", en: "Log Attendance - Freshman" },
+            },
+            {
+                href: "tutor_mark_event.html",
+                title: { fi: "Kirjaa osallistuminen - Tuutori", en: "Log Attendance - Tutor" },
+            },
+            {
+                href: "profile.html",
+                title: { fi: "Profiili", en: "Profile" },
+            },
+            {
+                href: "admin/admin.html",
+                title: { fi: "Ylläpito", en: "Admin" },
+            },
+        ];
+
+        const correctedItems = this.#add_path_correction(items);
+
+        this.render(correctedItems);
+
+        window.addEventListener(
+            "click",
+            (event: MouseEvent) => {
+                if (!this.firstElementChild?.classList.contains("open")) {
+                    // Side bar was not opened
+                    return;
+                }
+
+                const target = event.target as HTMLElement;
+
+                /* This is little bit janky but works
+                 * If side ui header is not filtered out,
+                 * this would immidiately close the menu when menu button pressed
+                 */
+                if (document.querySelector<HTMLElement>("ui-header")?.contains(target)) {
+                    return;
+                }
+
+                if (this.contains(target) == true) {
+                    // Clicked inside sidebar
+                    return;
+                }
+                this.toggleSidePanel();
+            },
+            false
+        ); // False to sen event listener onwards from here
+    }
+
+    render(items: ListItem[]) {
+        const language = this.getAttribute("lang") !== "en" ? "fi" : "en";
+        const menuItems = items.map((item) => `<li><a href="${item.href}">${item.title[language]}</a></li>`).join("\n");
 
         this.innerHTML = `
-         <div class="side-panel" id="sidePanel">
-             <span class="close-btn" onclick="toggleSidePanel()">
-                 X
-             </span>
-             <ul>${lines}</ul>
-         </div>;
+         <div class="side-panel" id="side-panel-element">
+             <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
+                <img class="close-x" id="side-panel-close-btn" src="/close-x.png" height="30px" width="auto"></img>
+             </div>
+             <ul>${menuItems}</ul>
+         </div>
          `;
     }
 
-    // Runs when object is disconnected from DOM
+    #add_path_correction(items: ListItem[]): ListItem[] {
+        /* Path depth should be positive number
+         * For example 2 = ../../<path>
+         */
+        const pathDepth = this.getAttribute("path-depth") as number | null;
+
+        // Build correction
+        let correction = "";
+        if (pathDepth != null && pathDepth > 0) {
+            for (let i = 0; i < pathDepth; i++) {
+                correction += "../";
+            }
+        }
+
+        if (correction == "") {
+            return items;
+        }
+
+        // Add correction
+        for (let j = 0; j < items.length; j++) {
+            items[j].href = correction + items[j].href;
+        }
+        return items;
+    }
+
     disconnectedCallback() {}
 
-    toggelSidePanel() {
+    toggleSidePanel() {
         toggleSidePanel();
     }
 }
 
 function toggleSidePanel(): void {
-    const panel: HTMLElement | null = document.getElementById("sidePanel");
+    const panel: HTMLElement | null = document.getElementById("side-panel-element");
     if (panel != null) {
         panel.classList.toggle("open");
     }

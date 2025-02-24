@@ -1,0 +1,55 @@
+@import "../common.css";
+
+.larpake-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 30px;
+    margin: 0px 30px;
+}
+
+.hover-scale {
+    transition: transform 0.3s ease;
+    transform-origin: center;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.larpake-title {
+    margin: 0px;
+}
+
+.data-container > p {
+    margin: 0px;
+    padding: 2px;
+}
+
+li {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+p.line-breaking > span {
+    display: inline-block;
+}
+
+.image-container {
+    margin-top: 20px;
+    flex: 1;
+    position: relative;
+    display: inline-block;
+    height: fit-content;
+    width: fit-content;
+    border-radius: 30px;
+    overflow: hidden;
+}
+
+.link-section {
+    cursor: pointer;
+    text-decoration: none;
+    color: initial;
+}

@@ -1,0 +1,16 @@
+:root {
+
+
+    --whitish-border: #F8F8F8; /* very very close to white */
+    --luuppi-gray: #F5F5FB; /* Bluish gray */
+    --backgroud-gray: #E7E7E7; /* Nearly white */
+    --section-background: #D5D5D5;    /* gray */
+    --non-highlight-gray: #6B7280; /* Darkish grey */
+    --accent-blue: #787eba; /* header buttons background color */
+    --luuppi-blue: #5C61A3; /* luuppi header color */
+    --accent-blue: #252741; /* Dark blue */
+    --gold: #F3C325;
+    --dark-gold: #C39C1D;
+    --light-gold: #F7E196;
+    --victory-red: #E11D24;
+}

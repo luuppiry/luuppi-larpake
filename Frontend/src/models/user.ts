@@ -1,3 +1,5 @@
+import { Point2D } from "./common.ts";
+
 export type User = {};
 
 export type Group = {
@@ -10,10 +12,7 @@ export type Group = {
     members: string[];
 };
 
-export type Point2D = {
-    x: number;
-    y: number;
-};
+
 
 export type Signature = {
     id: string;

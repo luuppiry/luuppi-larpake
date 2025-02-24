@@ -1,0 +1,51 @@
+/* Example use of this css 
+ *
+ *  <div class="tooltipped-title">
+ *      <h3 class="text-field">Etunimi</h3> <!-- Tooltip title -->
+ *      <img src="/icons/tooltip.svg" alt="tooltip icon"/>    <!-- Tooltip icon image -->
+ *      <p class="tooltip">Virallinen etunimi (ei näytetä julkisesti)</p> <!-- the tooltip -->
+ *  </div>
+ */
+
+.tooltipped-title {
+    /* Data field title */
+    display: flex;
+    flex-flow: row;
+    margin: 25px 0px 0px 0px;
+}
+
+.tooltipped-title > img {
+    /* Tooltip image */
+    padding: 5px;
+    position: relative;
+    vertical-align: middle;
+    height: fit-content;
+}
+
+.tooltipped-title > h3 {
+    /* Text */
+    margin: 0px 0 5px 0;
+}
+
+.tooltip {
+    /* Tooltip styling */
+    visibility: hidden;
+    margin: 0;
+    background-color: var(--backgroud-gray);
+    display: block;
+    height: fit-content;
+    border-radius: 3px;
+    padding: 2px 5px;
+    margin-left: 5px;
+    margin-top: -10px;
+    font-size: 13px;
+    z-index: 2;
+}
+
+.tooltipped-title > img:hover ~ .tooltip {
+    /* Show tooltip when hovering over image 
+     *(tootip must be sibling of image) 
+     */ 
+
+    visibility: visible;
+}

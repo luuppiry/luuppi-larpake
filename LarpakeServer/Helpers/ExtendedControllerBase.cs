@@ -92,7 +92,7 @@ public class ExtendedControllerBase : ControllerBase
         return Unauthorized(new ErrorMessageResponse(message, null, error));
     }
    
-
+    
 
     private ObjectResult FromError(Error error)
     {
@@ -113,7 +113,7 @@ public class ExtendedControllerBase : ControllerBase
         return StatusCode(statusCode, new { Message = message, Exception = error.Ex });
 #else
         var (statusCode, message) = error;
-        return StatusCode(statusCode, new MessageResponse(message));
+        return StatusCode(statusCode, new ErrorMessageResponse(message, null, error.ApplicationErrorCode));
 #endif
     }
 }

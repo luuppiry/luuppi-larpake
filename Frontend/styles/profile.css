@@ -1,0 +1,100 @@
+@import "colors.css";
+@import "section.css";
+@import "tooltip.css";
+
+.data-value {
+    /* Value of data field like email value */
+    font-weight: bold;
+    font-size: 14px;
+    margin: 0;
+}
+
+.section-filler > div > h2 {
+    /* Main page title */
+    margin: 0px;
+    padding: 0;
+}
+
+.text-field {
+    /* Title of data field */
+    font-weight: 400;
+    font-size: 16px;
+    font-style: normal;
+}
+
+.signature-field {
+    /* Default style for signature container */
+    border-radius: 10px;
+    border: 2px solid var(--section-background);
+    display: flex;
+    justify-content: center;
+    padding: 15px;
+}
+
+/* Dialog styles */
+
+.signature-dialog {
+    /* Dialog screen styling */
+    border-radius: 5px;
+    border-width: 0px;
+    padding: 0px;
+}
+
+.signature-dialog > div {
+    margin: 0px;
+    padding: 0px;
+    border-radius: 0px;
+}
+
+.signature-dialog > div > div {
+    padding: 0px;
+    margin: 0px;
+}
+
+.signature-canvas {
+    background-color: var(--luuppi-gray);
+    border-radius: 10px;
+    cursor: crosshair;
+}
+
+.dialog-btn-container {
+    margin-top: 20px;
+    display: flex;
+    flex-flow: row;
+    justify-content: flex-end;
+}
+
+.dialog-btn {
+    padding: 5px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dialog-ok-btn {
+    background-color: var(--luuppi-blue);
+    border-width: 0px;
+    color: white;
+    outline: none;
+}
+
+.dialog-cancel-btn {
+    /* */
+    margin-left: 5px;
+    background-color: white;
+    border: solid var(--luuppi-blue) 1.5px;
+    outline: none;
+    color: var(--luuppi-blue);
+}
+
+.signature-container {
+    list-style-type: none;
+    padding: 0px;
+    display: flex;
+    flex-flow: column;
+    gap: 5px;
+}
+
+.signature-unused {
+    display: none;
+}
+

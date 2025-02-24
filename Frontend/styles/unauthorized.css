@@ -1,0 +1,13 @@
+@import "common.css";
+
+
+
+.info-container {
+    margin: 40px;
+    border-radius: 20px;
+    background-color: #FFFFFF;
+    padding: 40px;
+    display: block;
+    justify-self: center;
+}
+

@@ -10,3 +10,8 @@ export type Container<T> = {
     actions: ApiAction[] | null;
     nextPage: number;
 }
+
+export type Point2D = {
+    X: number;
+    Y: number;
+};

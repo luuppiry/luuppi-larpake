@@ -19,7 +19,12 @@ var sqlFileNames = typeof(Program).Assembly
     .ToArray();
 
 // Execute migrations
-string connectionString = config.GetConnectionString("Default")!;
+
+string connectionString = Environment.GetEnvironmentVariable("PG_CONNECTION_STRING") ??
+    config.GetConnectionString("Default")!;
+
+logger.LogInformation(connectionString);
+
 QueryExecutionService service = new(connectionString, logger);
 service.ExecuteEmbeddedMigrations(sqlFileNames);
 

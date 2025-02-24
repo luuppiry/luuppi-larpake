@@ -1,4 +1,4 @@
-import { Container } from "../data_model/common.ts";
+import { Container } from "../models/common.ts";
 import HttpClient from "./http_client.ts";
 
 export class EventClient {

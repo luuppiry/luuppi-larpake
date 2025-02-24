@@ -54,7 +54,7 @@ For UI design drawings see `Wiki` -> `Design` ([here](https://github.com/henriva
 
 ## Project Timeline
 
-This project is meant to be production ready for Freshmen starting their studies in fall 2025. Front end development will start soon.  
+This project is meant to be production ready for Freshmen starting their studies in fall 2025.
 
 ## Contributing
 

@@ -11,8 +11,8 @@ const pages = [
             "KAUPUNKIKÄVELY 3P",
             "TUTUSTUMISSAUNA 20.8 5P",
             "PUISTOHENGAILU 3P - PERUUTETTU",
-            "KAMPUSKIERROS 3P"
-        ]
+            "KAMPUSKIERROS 3P",
+        ],
     },
     {
         header: "Lärpäke / Ensi askeleet",
@@ -22,8 +22,8 @@ const pages = [
             "LÄRPÄKKEEN PÄÄLLYSTYS TAI KORISTELU 2P",
             "KERÄÄ VIIDELTÄ TUUTORILTA ALLEKIRJOITUS 5P",
             "FUKSIRYHMÄN TAPAHTUMA 5P",
-            "KUMMIRYHMÄN TAPAHTUMA 5P"
-        ]
+            "KUMMIRYHMÄN TAPAHTUMA 5P",
+        ],
     },
     {
         header: "Lärpäke / Ensi askeleet",
@@ -33,8 +33,8 @@ const pages = [
             "FUKSIKEILAUS 4P",
             "PIENEN PIENI LUUPPILAINEN - OTSIKKO",
             "LIITY LUUPIN JÄSENEKSI 20P",
-            "TILAA HAALARIT 10P"
-        ]
+            "TILAA HAALARIT 10P",
+        ],
     },
     {
         header: "Lärpäke / Pienen pieni luuppilainen",
@@ -44,8 +44,8 @@ const pages = [
             "OSTA LUUPPI-TUOTE (pl. Luuppi-haalarimekki) 3P",
             "OMPELE 5 HAALARIMERKKIÄ 6P",
             "OSALLISTU KOPO-TAPAHTUMAAN 5P",
-            "KIERTOAJELU 5P"
-        ]
+            "KIERTOAJELU 5P",
+        ],
     },
     {
         header: "Lärpäke / Pii-Klubilla tapahtuu",
@@ -55,8 +55,8 @@ const pages = [
             "KÄY TOIMISTOLLA 2P",
             "KEITÄ PANNULLINEN KAHVIA 3P",
             "PULLAPÄIVÄ 2P",
-            "OSALLISTU TALKOOPÄIVÄÄN 3P"
-        ]
+            "OSALLISTU TALKOOPÄIVÄÄN 3P",
+        ],
     },
     {
         header: "Lärpäke / Normipäivä",
@@ -66,8 +66,8 @@ const pages = [
             "OSALLISTU KOLMIOIDEN VIRALLISILLE ETKOILLE 26.9 3P",
             "KOTIBILEET/ETKOT (OMAT/LUUPPILAISEN) 2P",
             "SITSIT 3P",
-            "PELI-ILTA 3P"
-        ]
+            "PELI-ILTA 3P",
+        ],
     },
     {
         header: "Lärpäke / Normipäivä",
@@ -77,8 +77,8 @@ const pages = [
             "MUU TAPAHTUMA 5P",
             "YLIOPISTOELÄMÄÄ - OTSIKKO",
             "SELVITÄ KOULUTUSASIANTUNTIJASI NIMI 2P",
-            "LUO OMA HOPS 5P"
-        ]
+            "LUO OMA HOPS 5P",
+        ],
     },
     {
         header: "Lärpäke / Yliopistoelämää",
@@ -88,8 +88,8 @@ const pages = [
             "KÄY LASKUTUVASSA TAI LUUPIN OPINTOPIIRISSÄ 3P",
             "KÄY SYÖMÄSSÄ 4 ERI OPISKELIJARAVINTOLASSA 4P",
             "VIERAILE TOISEN AINEJÄRJESTÖN/KILLAN/KERHON TILOISSA 2P",
-            "HANKI TOISEN TOISEN AINEJÄRJESTÖN/KILLAN/KERHON HAALARIMERKKI 2P"
-        ]
+            "HANKI TOISEN TOISEN AINEJÄRJESTÖN/KILLAN/KERHON HAALARIMERKKI 2P",
+        ],
     },
     {
         header: "Lärpäke / Yliopistoelämää",
@@ -99,8 +99,8 @@ const pages = [
             "KYSY SPONSORIA HAALAREIHIN 5P",
             "SAA SPONSORI HAALAREIHIN 15P",
             "NAKKEILE TAPAHTUMASSA 5P",
-            "OSALLISTU LUUPIN HALLITUKSEN KOKOUKSEN 5P"
-        ]
+            "OSALLISTU LUUPIN HALLITUKSEN KOKOUKSEN 5P",
+        ],
     },
     {
         header: "Lärpäke / Vaikutusvaltaa",
@@ -110,8 +110,8 @@ const pages = [
             "OSALLISTU HALLITUSINFO-TAPAHTUMAAN 5P",
             "OSALLISTU HALLITUSPANEELLIIN 3P",
             "SÄÄNTÖMÄÄRÄINEN VUOSIKOKOUS 5P",
-            "ÄÄNESTÄ TREY:N EDUSTAJISTOVAALEISSA 2P"
-        ]
+            "ÄÄNESTÄ TREY:N EDUSTAJISTOVAALEISSA 2P",
+        ],
     },
     {
         header: "Lärpäke / Liikunnallista",
@@ -121,8 +121,8 @@ const pages = [
             "FUKSIKYYKKÄ (FINAALI) 5P",
             "LUUPIN LIIKUNTAVUORO 3P",
             "LASERTAISTELU 3P",
-            "METSÄRETKI 3P"
-        ]
+            "METSÄRETKI 3P",
+        ],
     },
     {
         header: "Lärpäke / Kaikenlaista",
@@ -132,8 +132,8 @@ const pages = [
             "KAIKENLAISTA - OTSIKKO",
             "TEK-INFO 2P",
             "LOIMU-INFO 2P",
-            "SEURAA LUUPIN SOMEA (TG/IG/TT) 2P"
-        ]
+            "SEURAA LUUPIN SOMEA (TG/IG/TT) 2P",
+        ],
     },
     {
         header: "Lärpäke / Kaikenlaista",
@@ -143,8 +143,8 @@ const pages = [
             "KULTTUURITAPAHTUMA 4P",
             "POIKKITIETEELLINEN TAPAHTUMA TAMPEREELLA 3P",
             "LUUPIN PELITURNAUS 3P",
-            "YRITYSTAPAHTUMA 3P"
-        ]
+            "YRITYSTAPAHTUMA 3P",
+        ],
     },
     {
         header: "Lärpäke / Tanpereella",
@@ -154,8 +154,8 @@ const pages = [
             "TANPEREELLA - OTSIKKO",
             "KÄY PYYNIKIN NÄKÖTORNILLA 2P",
             "KÄY HERVANNAN VESITORNILLA 2P",
-            "SYÖ SIIPIÄ, VEGESIIPIÄ, MUSTAMAKKARAA TAI PYYNIKIN MUNKKEJA 2P"
-        ]
+            "SYÖ SIIPIÄ, VEGESIIPIÄ, MUSTAMAKKARAA TAI PYYNIKIN MUNKKEJA 2P",
+        ],
     },
     {
         header: "Lärpäke / Tanpereella",
@@ -165,11 +165,10 @@ const pages = [
             "KÄY NÄSINNEULALLA 2P",
             "RATIKKA-AJELU 5P",
             "KÄY JOKAISELLA YLIOPISTON KAMPUKSELLA 3P",
-            "- TYHJÄ"
-        ]
-    }
+            "- TYHJÄ",
+        ],
+    },
 ];
-
 
 let currentPage = 0;
 if (Number(pageNum)) {
@@ -177,22 +176,26 @@ if (Number(pageNum)) {
 }
 
 function renderPage() {
-    if (currentPage === pages.length){
+    if (currentPage === pages.length) {
         window.open("statistics.html", "_self");
     }
 
     const header = document.getElementById("larpake-page-name");
     const buttonContainer = document.getElementById("larpake-button-container");
-    const pageInfo = document.getElementById("page-info");
-    const prevPage = document.getElementById("prev-page");
-    const nextPage = document.getElementById("next-page");
+    const pageInfo = document.getElementById("page-info") as HTMLSpanElement;
+    const prevPage = document.getElementById("prev-page") as HTMLButtonElement;
 
     // Update header
-    header.textContent = pages[currentPage].header;
+    if (header != null) {
+        header.textContent = pages[currentPage].header;
+    }
 
     // Update buttons
-    buttonContainer.innerHTML = ""; // Clear previous buttons
-    pages[currentPage].buttons.forEach(buttonText => {
+    if (buttonContainer != null) {
+        buttonContainer.innerHTML = ""; // Clear previous buttons
+    }
+
+    pages[currentPage].buttons.forEach((buttonText) => {
         const buttonWrapper = document.createElement("div"); // Wrapper for text and image
         buttonWrapper.className = "button-wrapper";
 
@@ -200,7 +203,6 @@ function renderPage() {
         button.className = "button";
         const textContainer = document.createElement("div"); // Container for text
         textContainer.className = "button-text";
-        
 
         // Add disabled style for specific cases
         if (buttonText.includes("PERUUTETTU")) {
@@ -220,49 +222,74 @@ function renderPage() {
             button.style.visibility = "hidden";
             button.appendChild(textContainer);
         } else {
-            textContainer.textContent = buttonText;    
+            textContainer.textContent = buttonText;
             const imageContainer = document.createElement("div"); // Container for signature
             imageContainer.className = "button-image";
             const img = document.createElement("img");
             img.src = getSignatureImage();
             imageContainer.appendChild(img);
             button.addEventListener("click", () => {
-                window.location.href = 'event_marking.html?eventId=1';
+                window.location.href = "event_marking.html?eventId=1";
             });
             button.appendChild(textContainer);
             button.appendChild(imageContainer);
         }
 
         buttonWrapper.appendChild(button);
-        buttonContainer.appendChild(buttonWrapper);
+        buttonContainer?.appendChild(buttonWrapper);
     });
 
     // Update pagination info
-    pageInfo.textContent = `${currentPage + 1} / ${pages.length + 1}`;
+    if (pageInfo != null) {
+        pageInfo.textContent = `${currentPage + 1} / ${pages.length + 1}`;
+    }
 
     // Update button states
-    prevPage.disabled = currentPage === 0;
+    if (prevPage != null) {
+        prevPage.disabled = currentPage === 0;
+    }
     //nextPage.disabled = currentPage === pages.length - 1;
 }
 
 function getSignatureImage() {
-    const signature_list = ["", "", "", "/signatures/test.png", "/signatures/signature_HV_2.png", "/signatures/signature_HV_3.png", "/signatures/signature_JK_2.png", "/signatures/signature_JK_1.png", "/signatures/signature_JK_3.png"];
-    return signature_list[Math.floor(Math.random()*signature_list.length)];
+    const signature_list = [
+        "",
+        "",
+        "",
+        "/signatures/test.png",
+        "/signatures/signature_HV_2.png",
+        "/signatures/signature_HV_3.png",
+        "/signatures/signature_JK_2.png",
+        "/signatures/signature_JK_1.png",
+        "/signatures/signature_JK_3.png",
+    ];
+    return signature_list[Math.floor(Math.random() * signature_list.length)];
 }
 
-function changePage(direction) {
+function changePage(direction: number) {
+    // Check if going forwards and that button is disabled
+    if (direction > 0) {
+        const nextBtn = document.getElementById("next-page") as HTMLButtonElement;
+        if (nextBtn != null && nextBtn.disabled) {
+            return;
+        }
+    }
+
+    // Check if going backwords and that button is disabled
+    if (direction < 0) {
+        const prevBtn = document.getElementById("prev-page") as HTMLButtonElement;
+        if (prevBtn != null && prevBtn.disabled) {
+            return;
+        }
+    }
+
     currentPage += direction;
     renderPage();
 }
 
-function goToPage(index) {
+function goToPage(index: number) {
     currentPage = index;
     renderPage();
-}
-
-function toggleSidePanel() {
-    const panel = document.getElementById('sidePanel');
-    panel.classList.toggle('open');
 }
 
 // Initialize the first page
