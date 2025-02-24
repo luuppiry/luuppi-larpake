@@ -9,6 +9,7 @@ class SidePanel extends HTMLElement {
     }
 
     connectedCallback() {
+        const language = this.getAttribute("lang") !== "en" ? "fi" : "en";
         const items: ListItem[] = [
             {
                 href: "index.html",
@@ -36,25 +37,28 @@ class SidePanel extends HTMLElement {
             },
             {
                 href: "own_tutors.html",
-                title: { fi: "Omat tutorit", en: "My Tutors" },
+                title: { fi: "Omat tuutorit", en: "My Tutors" },
             },
             {
                 href: "event_marking.html",
-                title: { fi: "Kirjaa osallistuminen - Fuksi", en: "Log Attendance - Freshman" },
+                title: { fi: "DEMO Kirjaa osallistuminen - Fuksi", en: "DEMO Log Attendance - Freshman" },
             },
             {
                 href: "tutor_mark_event.html",
-                title: { fi: "Kirjaa osallistuminen - Tuutori", en: "Log Attendance - Tutor" },
+                title: { fi: "DEMO Kirjaa osallistuminen - Tuutori", en: "DEMO Log Attendance - Tutor" },
             },
             {
                 href: "profile.html",
-                title: { fi: "Profiili", en: "Profile" },
-            },
-            {
-                href: "admin/admin.html",
-                title: { fi: "Ylläpito", en: "Admin" },
+                title: { fi: "DEMO Profiili", en: "DEMO Profile" },
             },
         ];
+
+        if (language === "fi") {
+            items.push({
+                href: "admin/admin.html",
+                title: { fi: "DEMO Ylläpito", en: "Admin" },
+            });
+        }
 
         const correctedItems = this.#add_path_correction(items);
 
@@ -95,7 +99,7 @@ class SidePanel extends HTMLElement {
         this.innerHTML = `
          <div class="side-panel" id="side-panel-element">
              <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
-                <img class="close-x" id="side-panel-close-btn" src="/close-x.png" height="30px" width="auto"></img>
+                <img class="close-x" id="side-panel-close-btn" src="/icons/close-x.png" height="30px" width="auto"></img>
              </div>
              <ul>${menuItems}</ul>
          </div>

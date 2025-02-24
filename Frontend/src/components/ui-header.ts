@@ -19,16 +19,14 @@ class Header extends HTMLElement {
             <div
                 class="menu-icon"
                 id="ui-header-change-language-btn"
-                style="display: flex; justify-content: center; align-items: center"
-            >
-                <img class="globle" src="/globle.png" height="30px" width="auto" />
+                style="display: flex; justify-content: center; align-items: center">
+                <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
             </div>
             <div
                 class="menu-icon"
                 id="ui-header-profile-btn"
-                style="display: flex; justify-content: center; align-items: center"
-            >
-                <img class="profile-icon" src="/profile-icon.png" height="30px" width="auto" />
+                style="display: flex; justify-content: center; align-items: center">
+                <img class="profile-icon" src="/icons/profile-icon.png" height="30px" width="auto" />
             </div>
             <div class="menu-icon" id="ui-header-open-menu-btn">☰</div>
         </header>
