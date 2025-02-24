@@ -36,6 +36,8 @@ public class Constants
         public const string BaseUrl = "https://luuppi.fi";
         public const string EventHeader = "lupev1";   // Luuppi event version 1
         public const string CmsApi = "https://cms.luuppi.fi";
+        public const string Issuer = "larpake.luuppi.fi";
+        public const string Audience = "larpake.luuppi.fi";
     }
 
     public class HttpClients
@@ -43,7 +45,16 @@ public class Constants
         public const string IntegrationClient = "LuuppiClient";
     }
 
-    
+    public class Environment
+    {
+        public const string EntraClientId = "ENTRA_CLIENT_ID";
+        public const string EntraTenantId = "ENTRA_TEDANT_ID";
+        public const string LuuppiApiKey = "LUUPPI_API_KEY";
+        public const string LarpakeIdSecret = "JWT_SECRET";
+        public const string LarpakeIdIssuer = "JWT_ISSUER";
+        public const string LarpakeIdAudience = "JWT_AUDIENCE";
+        public const string PostgresConnectionString = "POSTGRES_CONNECTION_STRING";
+    }
 }
 
 

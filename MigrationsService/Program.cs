@@ -20,12 +20,24 @@ var sqlFileNames = typeof(Program).Assembly
 
 // Execute migrations
 
-string connectionString = Environment.GetEnvironmentVariable("PG_CONNECTION_STRING") ??
-    config.GetConnectionString("Default")!;
+string? connectionString = Environment.GetEnvironmentVariable("PG_CONNECTION_STRING");
+if (connectionString is not null)
+{
+    logger.LogInformation("Using connection string from environment variable.");
+}
+else
+{
+    connectionString = config.GetConnectionString("Default")!;
+    logger.LogInformation("Using connection string from appsettings.");
+}
 
-logger.LogInformation(connectionString);
-
-QueryExecutionService service = new(connectionString, logger);
+if (connectionString is null)
+{
+    logger.LogError("No connection string found.");
+    return;
+}
+        
+QueryExecutionService service = new(connectionString!, logger);
 service.ExecuteEmbeddedMigrations(sqlFileNames);
 
 

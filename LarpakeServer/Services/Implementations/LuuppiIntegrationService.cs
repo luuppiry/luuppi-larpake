@@ -13,21 +13,17 @@ public class LuuppiIntegrationService : IExternalIntegrationService
 
     readonly IHttpClientFactory _clientFactory;
     readonly ILogger<LuuppiIntegrationService> _logger;
-    private readonly IntegrationOptions _options;
     readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
     public LuuppiIntegrationService(
-        IHttpClientFactory clientFactory, 
-        ILogger<LuuppiIntegrationService> logger,
-        IOptions<IntegrationOptions> options
-        )
+        IHttpClientFactory clientFactory,
+        ILogger<LuuppiIntegrationService> logger)
     {
         Guard.ThrowIfNull(clientFactory);
         _clientFactory = clientFactory;
         _logger = logger;
-        _options = options.Value;
     }
 
     /* Implementation assumes that
@@ -49,7 +45,7 @@ public class LuuppiIntegrationService : IExternalIntegrationService
         }
 
         // Map json
-        
+
         using Stream json = await request.Content.ReadAsStreamAsync(token);
 
         JsonEvent? result = await JsonSerializer.DeserializeAsync<JsonEvent>(json, _jsonOptions, token);
@@ -77,8 +73,6 @@ public class LuuppiIntegrationService : IExternalIntegrationService
         {
             return Error.NotFound("User not found.", ErrorCode.IdNotFound);
         }
-
-        string json = await request.Content.ReadAsStringAsync();
 
         if (request.IsSuccessStatusCode is false)
         {
