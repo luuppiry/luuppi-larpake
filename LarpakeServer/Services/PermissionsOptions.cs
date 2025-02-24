@@ -37,7 +37,7 @@ public class PermissionsOptions
     /// Set the parsed guids as entra sudo users.
     /// </summary>
     /// <param name="semicolonSeparatedGuids">Example: 0194ad9a-c487-705e-90c0-2a046022a0c0;0194ad9a-c487-705e-90c0-2a046022a0c0;0194ad9a-c487-705e-90c0-2a046022a0c0</param>
-    public void ParseSudoUsersFromString(ReadOnlySpan<char> semicolonSeparatedGuids)
+    public void AddSudoUsersFromString(ReadOnlySpan<char> semicolonSeparatedGuids)
     {
         List<Guid> guids =[];
         foreach (Range span in semicolonSeparatedGuids.Split(';'))

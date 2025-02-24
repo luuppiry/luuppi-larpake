@@ -56,9 +56,7 @@ public static class ServiceInjections
         services.AddOptions<AttendanceKeyOptions>()
             .BindConfiguration(AttendanceKeyOptions.SectionName);
 
-        // Permissions options parsing from appsettings.json
-        services.AddOptions<PermissionsOptions>()
-            .BindConfiguration(PermissionsOptions.SectionName);
+
 
         // Conflict retry policy options parsing from appsettings.json
         services.AddOptions<ConflictRetryPolicyOptions>()
@@ -74,7 +72,14 @@ public static class ServiceInjections
 
 
         // Options that read secrets from environment variables
+
+        // Permissions
+        PermissionsOptions permissionsOptions = new();
         
+
+        services.AddOptions<PermissionsOptions>()
+            .BindConfiguration(PermissionsOptions.SectionName);
+
         // Integration
         IntegrationOptions integrationOptions = Options.GetIntegrationOptions(configuration);
         services.AddSingleton<IOptions<IntegrationOptions>>(new OptionsContainer<IntegrationOptions>(integrationOptions));
@@ -277,6 +282,19 @@ public static class ServiceInjections
             if (clientId is not null)
             {
                 options.ClientId = clientId;
+            }
+            return options;
+        }
+
+        internal static PermissionsOptions GetPermissionsOptions(IConfiguration configuration)
+        {
+            PermissionsOptions options = new();
+            configuration.GetSection(PermissionsOptions.SectionName).Bind(options);
+
+            string? sudoUsers = Environment.GetEnvironmentVariable(Env.Environment.EntraSudoUsers);
+            if (sudoUsers is not null)
+            {
+                options.AddSudoUsersFromString(sudoUsers.AsSpan());
             }
             return options;
         }
