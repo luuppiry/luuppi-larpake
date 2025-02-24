@@ -27,7 +27,6 @@ body {
 }
 
 .header h1 {
-    font-size: 5x;
     flex-grow: 1;
     text-align: center;
     user-select: none;
@@ -40,6 +39,7 @@ body {
     margin-right: 10px;
     width: 48px;
     height: 48px;
+    min-width: 48px;
     text-align: center;
     background-color: #494d7b;
     user-select: none;
@@ -166,7 +166,8 @@ body {
 
 @media screen and (max-width: 660px) {
     .header h1 {
-        display: none;
+        color: var(--luuppi-blue);
+        font-size: 1px;
     }
     .container {
         margin: 20px 10px;
