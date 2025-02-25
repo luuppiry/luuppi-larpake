@@ -21,7 +21,7 @@ class SidePanel extends HTMLElement {
             },
             {
                 href: "statistics.html",
-                title: { fi: "Oma statistiikka", en: "My Statistics" },
+                title: { fi: "Omat tilastot", en: "My Statistics" },
             },
             {
                 href: "latest_completion.html",
@@ -29,7 +29,7 @@ class SidePanel extends HTMLElement {
             },
             {
                 href: "common_statistics.html",
-                title: { fi: "Yhteiset statistiikat", en: "Shared Statistics" },
+                title: { fi: "Yhteiset tilastot", en: "Common Statistics" },
             },
             {
                 href: "upcoming_events.html",

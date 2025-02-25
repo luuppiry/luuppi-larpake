@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lärpäke - Profiili</title>
+
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/styles/profile.css" />
+        <link rel="stylesheet" href="/styles/common.css" />
+        <script src="/src/components/side-panel.ts"></script>
+        <script src="/src/components/ui-header.ts"></script>
+    </head>
+    <body>
+        <!-- This dialog does not show on ui if not called from js side -->
+        <dialog id="signature-dialog" class="signature-dialog">
+            <div class="section">
+                <div class="section-filler">
+                    <!-- Following empty looking div is important for auto scaling (in css side) -->
+                    <div>
+                        <h1>Lisää signeeraus</h1>
+                        <p>Piirrä alla olevaan ruutuun</p>
+                        <!-- Setting height and width in css mess up the canvas 2d context -->
+                        <canvas height="100" width="450" id="signature-canvas" class="signature-canvas"></canvas>
+                        <div class="dialog-btn-container">
+                            <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">OK</button>
+                            <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">Peruuta</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="stripe"></div>
+            </div>
+        </dialog>
+
+        <ui-header></ui-header>
+        <side-panel></side-panel>
+
+        <div class="centering">
+            <div class="section">
+                <div class="section-filler">
+                    <!-- Following empty looking div is important for auto scaling (in css side) -->
+                    <div>
+                        <h2>Käyttäjätiedot</h2>
+                        <div class="tooltipped-title">
+                            <h3 class="text-field">Sähköposti</h3>
+                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                            <p class="tooltip">Sähköposti luuppi.fi järjestelmässä</p>
+                        </div>
+                        <p id="id-field" class="data-value">webmaster@luuppi.fi</p>
+
+                        <div class="tooltipped-title">
+                            <h3 class="text-field">Etunimi</h3>
+                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                            <p class="tooltip">Virallinen etunimi (ei näytetä julkisesti)</p>
+                        </div>
+                        <p id="first-name-field" class="data-value">Keijo</p>
+
+                        <div class="tooltipped-title">
+                            <h3 class="text-field">Sukunimi</h3>
+                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                            <p class="tooltip">Virallinen sukunimi (ei näytetä julkisesti)</p>
+                        </div>
+                        <p id="last-name-field" class="data-value">Kangas</p>
+
+                        <div class="tooltipped-title">
+                            <h3 class="text-field">Käyttäjänimi</h3>
+                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                            <p class="tooltip">Käyttäjänimi (voi näkyä sivustolla)</p>
+                        </div>
+                        <p id="username-field" class="data-value">keijok123</p>
+
+                        <div class="tooltipped-title">
+                            <h3 class="text-field">Ryhmät</h3>
+                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                            <p class="tooltip">Kaikki ryhmät joissa olet osallisena</p>
+                        </div>
+                        <p id="groups-field" class="data-value">Ryhmä 11</p>
+
+                        <div class="tooltipped-title">
+                            <h3 class="text-field">Rooli</h3>
+                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                            <p class="tooltip">Tilisi oikeudet järjestelmässä</p>
+                        </div>
+                        <p id="permissions-field" class="data-value">Käyttäjä</p>
+                    </div>
+                </div>
+                <div class="stripe"></div>
+            </div>
+        </div>
+
+        <div class="centering" style="padding: 0 0 30% 0">
+            <div class="section">
+                <div class="section-filler">
+                    <!-- Following empty looking div is important for auto scaling (in css side) -->
+                    <div>
+                        <h2>Signeeraus</h2>
+                        <p>
+                            Tutor -roolilliset jäsenet voivat lisätä itselleen jopa 5 omaa signeerausta, jotka tulevat
+                            näkyviin lärpäkkeen sivuilla kirjatun tapahtuman kohdalle.
+                        </p>
+                        <ul class="signature-container" id="signature-container">
+                            <li id="show-dialog-btn" class="signature-field">
+                                <img src="/icons/plus_icon.svg" alt="add new icon" />
+                            </li>
+
+                            <li class="signature-field signature-unused" id="default-signature" style="padding: 5px">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 450 100"
+                                    id="signature-svg"
+                                    style="height: 100"
+                                ></svg>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="stripe"></div>
+            </div>
+        </div>
+    </body>
+
+    <script type="module" src="/src/profile.ts"></script>
+</html>

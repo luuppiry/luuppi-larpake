@@ -63,6 +63,6 @@ if (eventId && eventDatabase[eventId]) {
 }
 
 function toggleSidePanel() {
-    const panel = document.getElementById('sidePanel');
+    const panel = document.getElementById('side-panel-element');
     panel.classList.toggle('open');
 }

@@ -15,8 +15,8 @@
         <script src="/src/components/side-panel.ts"></script>
     </head>
     <body>
-        <ui-header side-panel-name="sidePanel"></ui-header>
-        <div class="side-panel" id="sidePanel">
+        <ui-header side-panel-name="side-panel-element"></ui-header>
+        <div class="side-panel" id="side-panel-element">
             <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
                 <img class="close-x" id="side-panel-close-btn" src="/icons/close-x.png" height="30px" width="auto"></img>
              </div>
@@ -24,33 +24,15 @@
                 <li><a href="index.html">Koti</a></li>
                 <li><a href="larpake.html#">Lärpäke</a></li>
                 <li class="active">
-                    <ul>
-                        <a href="#" onclick="goToPage(0)">Ensi askeleet</a>
-                    </ul>
-                    <ul>
-                        <a href="#" onclick="goToPage(2)">Pienen pieni luuppilainen</a>
-                    </ul>
-                    <ul>
-                        <a href="#" onclick="goToPage(4)">Pii-Klubilla tapahtuu</a>
-                    </ul>
-                    <ul>
-                        <a href="#" onclick="goToPage(5)">Normipäivä</a>
-                    </ul>
-                    <ul>
-                        <a href="#" onclick="goToPage(6)">Yliopistoelämää</a>
-                    </ul>
-                    <ul>
-                        <a href="#" onclick="goToPage(8)">Vaikutusvaltaa</a>
-                    </ul>
-                    <ul>
-                        <a href="#" onclick="goToPage(10)">Liikunnallista</a>
-                    </ul>
-                    <ul>
-                        <a href="#" onclick="goToPage(11)">Kaikenlaista</a>
-                    </ul>
-                    <ul>
-                        <a href="#" onclick="goToPage(13)">Tanpereella</a>
-                    </ul>
+                    <ul><a href="#" onclick="goToPage(0)">Ensi askeleet</a></ul>
+                    <ul><a href="#" onclick="goToPage(2)">Pienen pieni luuppilainen</a></ul>
+                    <ul><a href="#" onclick="goToPage(4)">Pii-Klubilla tapahtuu</a></ul>
+                    <ul><a href="#" onclick="goToPage(5)">Normipäivä</a></ul>
+                    <ul><a href="#" onclick="goToPage(6)">Yliopistoelämää</a></ul>
+                    <ul><a href="#" onclick="goToPage(8)">Vaikutusvaltaa</a></ul>
+                    <ul><a href="#" onclick="goToPage(10)">Liikunnallista</a></ul>
+                    <ul><a href="#" onclick="goToPage(11)">Kaikenlaista</a></ul>
+                    <ul><a href="#" onclick="goToPage(13)">Tanpereella</a></ul>
                 </li>
                 <li><a href="statistics.html">Oma statistiikka</a></li>
                 <li><a href="latest_completion.html">Viimeisimmät suoritukset</a></li>
@@ -78,14 +60,5 @@
             </div>
         </div>
     </body>
-    <script>
-        function toggleSidePanel() {
-            const panel = document.getElementById("sidePanel");
-            if (panel != null) {
-                panel.classList.toggle("open");
-            }
-        }
-    </script>
-
     <script src="/src/larpake.ts"></script>
 </html>

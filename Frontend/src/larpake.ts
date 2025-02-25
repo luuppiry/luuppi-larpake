@@ -292,5 +292,12 @@ function goToPage(index: number) {
     renderPage();
 }
 
+function toggleSidePanel(): void {
+    const panel: HTMLElement | null = document.getElementById("side-panel-element");
+    if (panel != null) {
+        panel.classList.toggle("open");
+    }
+}
+
 // Initialize the first page
 renderPage();
