@@ -22,6 +22,7 @@ export default class EntraId {
                 authority: `https://${
                     import.meta.env.VITE_ENTRA_SERVER
                 }.ciamlogin.com/${import.meta.env.VITE_ENTRA_TEDANT_ID}`,
+                redirectUri: import.meta.env.VITE_ENTRA_REDIRECT_URL,
             },
         };
     }

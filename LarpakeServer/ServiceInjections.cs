@@ -32,7 +32,6 @@ public static class ServiceInjections
                        .AllowAnyMethod()
                        .AllowAnyHeader();
 
-#if DEBUG
                 // Add more permissions for development ports
                 builder.WithOrigins([
                     "http://localhost:3000/",
@@ -45,7 +44,6 @@ public static class ServiceInjections
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .AllowCredentials();
-#endif
             });
         });
     }
