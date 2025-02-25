@@ -16,34 +16,7 @@
     </head>
     <body>
         <ui-header side-panel-name="side-panel-element"></ui-header>
-        <div class="side-panel" id="side-panel-element">
-            <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
-                <img class="close-x" id="side-panel-close-btn" src="/icons/close-x.png" height="30px" width="auto"></img>
-             </div>
-            <ul>
-                <li><a href="index.html">Koti</a></li>
-                <li onclick="showSubMenu()" id="larpakeLiObject">Lärpäke</li>
-                <li class="active" id="larpakeSubMenu" style="display: none;">
-                    <ul><a href="#" onclick="goToPage(0)">Ensi askeleet</a></ul>
-                    <ul><a href="#" onclick="goToPage(2)">Pienen pieni luuppilainen</a></ul>
-                    <ul><a href="#" onclick="goToPage(4)">Pii-Klubilla tapahtuu</a></ul>
-                    <ul><a href="#" onclick="goToPage(5)">Normipäivä</a></ul>
-                    <ul><a href="#" onclick="goToPage(6)">Yliopistoelämää</a></ul>
-                    <ul><a href="#" onclick="goToPage(8)">Vaikutusvaltaa</a></ul>
-                    <ul><a href="#" onclick="goToPage(10)">Liikunnallista</a></ul>
-                    <ul><a href="#" onclick="goToPage(11)">Kaikenlaista</a></ul>
-                    <ul><a href="#" onclick="goToPage(13)">Tanpereella</a></ul>
-                </li>
-                <li><a href="statistics.html">Oma statistiikka</a></li>
-                <li><a href="latest_completion.html">Viimeisimmät suoritukset</a></li>
-                <li><a href="common_statistics.html">Yhteiset statistiikat</a></li>
-                <li><a href="upcoming_events.html">Tulevat tapahtumat</a></li>
-                <li><a href="own_tutors.html">Omat tutorit</a></li>
-                <li><a href="event_marking.html">Fuksi_marking_event</a></li>
-                <li><a href="tutor_mark_event.html">Tutor_mark_event</a></li>
-            </ul>
-        </div>
-
+        <side-panel lang="en"></side-panel>
         <div class="container">
             <div id="larpake-page-name">Lärpäke</div>
             <div id="larpake-button-container">
