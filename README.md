@@ -1,3 +1,4 @@
+[![Build and Deploy](https://github.com/luuppiry/luuppi-larpake/actions/workflows/production.yaml/badge.svg?branch=master)](https://github.com/luuppiry/luuppi-larpake/actions/workflows/production.yaml)
 # Lärpäke
 Electronical Luuppi Lärpäke. Track who attends the most events in their freshman year!
 
