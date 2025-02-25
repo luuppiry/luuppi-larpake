@@ -11,6 +11,7 @@ body {
     overflow-x: hidden;
 }
 
+/* Header thinks */
 .header {
     background-color: var(--luuppi-blue);
     color: white;
@@ -45,6 +46,33 @@ body {
     user-select: none;
 }
 
+/* The dropdown container */  
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    top: 85px;
+    margin-right: 150px;
+    font-size: 20px;
+}
+  
+.profile-dropdown a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+  
+.profile-dropdown a:hover {
+    background-color: #ddd;
+}
+  
+/* Body */
 .container {
     max-width: 600px;
     margin: 20px auto;

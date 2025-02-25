@@ -27,6 +27,11 @@ class Header extends HTMLElement {
                 id="ui-header-profile-btn"
                 style="display: flex; justify-content: center; align-items: center">
                 <img class="profile-icon" src="/icons/profile-icon.png" height="30px" width="auto" />
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="profile.html">Profiili</a>
+                    <a href="admin/admin.html">Ylläpito</a>
+                    <a href="#" style="color: red;">Kirjaudu ulos</a>
+                </div>
             </div>
             <div class="menu-icon" id="ui-header-open-menu-btn">☰</div>
         </header>
@@ -45,7 +50,7 @@ class Header extends HTMLElement {
             throw new Error("Profile button not found");
         }
         profileBtn.addEventListener("click", (_) => {
-            this.toggle();
+            this.profileDropdown();
         });
 
         const menuBtn = this.querySelector<HTMLDivElement>("#ui-header-open-menu-btn");
@@ -62,12 +67,15 @@ class Header extends HTMLElement {
 
     toggle() {
         const nameOverride = this.getAttribute("side-panel-name");
-        console.log(nameOverride);
         toggleSidePanelOutsider(nameOverride);
     }
 
     changeLanguage() {
         changeLanguage();
+    }
+
+    profileDropdown() {
+        profileDropdown();
     }
 
     #add_path_correction(path: string): string {
@@ -90,6 +98,13 @@ class Header extends HTMLElement {
 
         // Add correction
         return correction + path;
+    }
+}
+
+function profileDropdown(): void {
+    const profileDropdown = document.getElementById("profileDropdown");
+    if (profileDropdown) {
+        profileDropdown.style.display = profileDropdown.style.display === "block" ? "none" : "block";
     }
 }
 
