@@ -73,6 +73,8 @@ services:
             - JWT_SECRET=${JWT_SECRET}
             - POSTGRES_CONNECTION_STRING=${POSTGRES_API_CONNECTION_STRING}
             - ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
+            - JWT_ISSUER=${JWT_ISSUER}
+            - JWT_AUDIENCE=${JWT_AUDIENCE}
         depends_on:
             larpake_migrations_production:
                 condition: service_completed_successfully
