@@ -12,6 +12,8 @@ public interface IUserDatabase
     Task<Result<Guid>> Insert(User record);
     Task<Result<int>> Update(User record);
     Task<Result<int>> SetPermissions(Guid id, Permissions permissions);
+    Task<Result<int>> SetPermissionsByEntra(Guid id, Permissions permissions);
     Task<Result<int>> AppendPermissions(Guid id, Permissions permissions);
+    Task<Result<int>> AppendPermissionsByEntra(Guid id, Permissions permissions);
     Task<int> Delete(Guid id);
 }

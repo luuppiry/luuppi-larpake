@@ -9,12 +9,13 @@ using LarpakeServer.Services.Implementations;
 using LarpakeServer.Services.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.RateLimiting;
-
+using Microsoft.Extensions.Options;
+using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
 using System.Threading.RateLimiting;
+using Env = LarpakeServer.Helpers.Constants;
 
 namespace LarpakeServer;
 
@@ -47,6 +48,49 @@ public static class ServiceInjections
 #endif
             });
         });
+    }
+
+    public static void AddApplicationOptions(this IServiceCollection services, IConfiguration configuration)
+    {
+          // Key options parsing from appsettings.json
+        services.AddOptions<AttendanceKeyOptions>()
+            .BindConfiguration(AttendanceKeyOptions.SectionName);
+
+
+
+        // Conflict retry policy options parsing from appsettings.json
+        services.AddOptions<ConflictRetryPolicyOptions>()
+            .BindConfiguration(ConflictRetryPolicyOptions.SectionName);
+
+        // Invite key options parsing from appsettings.json
+        services.AddOptions<InviteKeyOptions>()
+            .BindConfiguration(InviteKeyOptions.SectionName);
+
+        // Luuppi integration options
+        services.AddOptions<IntegrationOptions>()
+            .BindConfiguration(IntegrationOptions.SectionName);
+
+
+        // Options that read secrets from environment variables
+
+        // Permissions
+        PermissionsOptions permissionsOptions = new();
+        
+
+        services.AddOptions<PermissionsOptions>()
+            .BindConfiguration(PermissionsOptions.SectionName);
+
+        // Integration
+        IntegrationOptions integrationOptions = Options.GetIntegrationOptions(configuration);
+        services.AddSingleton<IOptions<IntegrationOptions>>(new OptionsContainer<IntegrationOptions>(integrationOptions));
+
+        // Id
+        LarpakeIdOptions idOptions = Options.GetLarpakeIdOptions(configuration);
+        services.AddSingleton<IOptions<LarpakeIdOptions>>(new OptionsContainer<LarpakeIdOptions>(idOptions));
+
+        // EntraId
+        EntraIdOptions entraIdOptions = Options.GetEntraIdOptions(configuration);
+        services.AddSingleton<IOptions<EntraIdOptions>>(new OptionsContainer<EntraIdOptions>(entraIdOptions));
     }
 
     public static void AddRateLimiters(this IServiceCollection services, IConfiguration configuration)
@@ -93,9 +137,9 @@ public static class ServiceInjections
         services.AddSingleton<EntraTokenReader>();
 
         //Larpake id scheme is used by default
-        services.AddAuthentication(Constants.Auth.LarpakeIdScheme)
-            .AddJwt(Constants.Auth.LarpakeIdScheme, configuration)
-            .AddEntraAuthenticationService(Constants.Auth.EntraIdScheme, configuration);
+        services.AddAuthentication(Env.Auth.LarpakeIdScheme)
+            .AddJwt(Env.Auth.LarpakeIdScheme, configuration)
+            .AddEntraAuthenticationService(Env.Auth.EntraIdScheme, configuration);
     }
 
 
@@ -103,7 +147,9 @@ public static class ServiceInjections
 
     public static void AddPostgresDatabases(this IServiceCollection services, IConfiguration configuration)
     {
-        string connectionString = configuration.GetConnectionString("PostgreSQL")
+        string connectionString = 
+            Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING")
+            ?? configuration.GetConnectionString("PostgreSQL")
             ?? configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("No connection string found.");
 
@@ -128,6 +174,8 @@ public static class ServiceInjections
 
     public static void AddServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddApplicationOptions(configuration);
+
         services.AddSingleton<CompletionMessageService>();
         services.AddSingleton(new ClientPoolConfiguration
         {
@@ -140,38 +188,16 @@ public static class ServiceInjections
         services.AddSingleton<InviteKeyService>();
         services.AddSingleton<IExternalIntegrationService, LuuppiIntegrationService>();
         services.AddHttpClients(configuration);
-
-        // Key options parsing from appsettings.json
-        services.AddOptions<AttendanceKeyOptions>()
-            .BindConfiguration(AttendanceKeyOptions.SectionName);
-
-        // Permissions options parsing from appsettings.json
-        services.AddOptions<PermissionsOptions>()
-            .BindConfiguration(PermissionsOptions.SectionName);
-
-        // Conflict retry policy options parsing from appsettings.json
-        services.AddOptions<ConflictRetryPolicyOptions>()
-            .BindConfiguration(ConflictRetryPolicyOptions.SectionName);
-
-        // Invite key options parsing from appsettings.json
-        services.AddOptions<InviteKeyOptions>()
-            .BindConfiguration(InviteKeyOptions.SectionName);
-
-        // Luuppi integration options
-        services.AddOptions<IntegrationOptions>()
-            .BindConfiguration(IntegrationOptions.SectionName);
     }
 
 
     private static IServiceCollection AddHttpClients(this IServiceCollection services, IConfiguration configuration)
     {
-        IntegrationOptions options = new();
-        configuration.GetSection(IntegrationOptions.SectionName).Bind(options);
-
-        services.AddHttpClient(Constants.HttpClients.IntegrationClient, client =>
+        IntegrationOptions options = Options.GetIntegrationOptions(configuration);
+        services.AddHttpClient(Env.HttpClients.IntegrationClient, client =>
         {
             client.BaseAddress = new Uri(options.BasePath);
-            client.DefaultRequestHeaders.Add("Authorization", options.ApiKey!);
+            client.DefaultRequestHeaders.Add("Authorization", options.ApiKey);
             client.Timeout = new TimeSpan(0, 0, 20);
         });
         return services;
@@ -180,14 +206,16 @@ public static class ServiceInjections
 
     private static AuthenticationBuilder AddJwt(this AuthenticationBuilder builder, string authenticationScheme, IConfiguration configuration)
     {
+        LarpakeIdOptions idOptions = Options.GetLarpakeIdOptions(configuration);
+        Guard.ThrowIfNull(idOptions.SecretBytes);
+        
         return builder.AddJwtBearer(authenticationScheme, options =>
         {
             options.TokenValidationParameters = new()
             {
-                IssuerSigningKey = new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(configuration["Jwt:SecretKey"]!)),
-                ValidIssuer = configuration["Jwt:Issuer"],
-                ValidAudience = configuration["Jwt:Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(idOptions.SecretBytes),
+                ValidIssuer = idOptions.Issuer,
+                ValidAudience = idOptions.Audience,
                 ValidateIssuerSigningKey = true,
                 ValidateIssuer = true,
                 ValidateAudience = true,
@@ -195,4 +223,85 @@ public static class ServiceInjections
             };
         });
     }
+
+    public static AuthenticationBuilder AddEntraAuthenticationService(
+       this AuthenticationBuilder builder, string authenticationScheme, IConfiguration configuration)
+    {
+        EntraIdOptions options = Options.GetEntraIdOptions(configuration);
+
+        builder.AddMicrosoftIdentityWebApi(_ => { }, config =>
+        {
+            config.Instance = options.Instance!;
+            config.TenantId = options.TenantId;
+            config.ClientId = options.ClientId;
+        }, authenticationScheme);
+        return builder;
+    }
+
+
+
+    private static class Options
+    {
+        internal static LarpakeIdOptions GetLarpakeIdOptions(IConfiguration configuration)
+        {
+            LarpakeIdOptions options = new();
+            configuration.GetSection(LarpakeIdOptions.SectionName).Bind(options);
+
+            // Override with possible environment variable
+            options.OverrideFromEnvironment();
+            return options;
+        }
+
+
+        internal static IntegrationOptions GetIntegrationOptions(IConfiguration configuration)
+        {
+            IntegrationOptions options = new();
+            configuration.GetSection(IntegrationOptions.SectionName).Bind(options);
+
+            // Override with possible environment variable
+            options.OverrideFromEnvironment();
+            
+            Debug.WriteLineIf(options.ApiKey is null, "Integration api key is null");
+            return options;
+        }
+
+        internal static EntraIdOptions GetEntraIdOptions(IConfiguration configuration)
+        {
+            EntraIdOptions options = new();
+            configuration.GetSection(EntraIdOptions.SectionName).Bind(options);
+
+            // Override with possible environment variable
+            string? tenantId = Environment.GetEnvironmentVariable(Env.Environment.EntraTenantId);
+            if (tenantId is not null)
+            {
+                options.TenantId = tenantId;
+            }
+
+            // Override with possible environment variable
+            string? clientId = Environment.GetEnvironmentVariable(Env.Environment.EntraClientId);
+            if (clientId is not null)
+            {
+                options.ClientId = clientId;
+            }
+            return options;
+        }
+
+        internal static PermissionsOptions GetPermissionsOptions(IConfiguration configuration)
+        {
+            PermissionsOptions options = new();
+            configuration.GetSection(PermissionsOptions.SectionName).Bind(options);
+
+            string? sudoUsers = Environment.GetEnvironmentVariable(Env.Environment.EntraSudoUsers);
+            if (sudoUsers is not null)
+            {
+                options.AddSudoUsersFromString(sudoUsers.AsSpan());
+            }
+            return options;
+        }
+    }
+
+
+    
+
+
 }

@@ -3,7 +3,7 @@
 public class EntraIdOptions
 {
     public const string SectionName = "EntraId";
-    public Guid Instance { get; set; }
-    public Guid ClientId { get; set; }
-    public Guid TenantId { get; set; }
+    public string? Instance { get; set; }
+    public string? ClientId { get; set; }
+    public string? TenantId { get; set; }
 }

@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
@@ -10,33 +11,26 @@ namespace LarpakeServer.Identity;
 
 public class TokenService : IClaimsReader
 {
-    readonly IConfiguration _config;
     readonly ILogger<TokenService> _logger;
-    readonly int _refreshTokenLength;
+    readonly LarpakeIdOptions _options;
     const string BearerPrefix = "Bearer ";
 
     public TimeSpan AccessTokenLifetime { get; }
     public TimeSpan RefreshTokenLifetime { get; }
 
-    public TokenService(IConfiguration config, ILogger<TokenService> logger)
+    public TokenService(IOptions<LarpakeIdOptions> options, ILogger<TokenService> logger)
     {
-        _config = config;
+        _options = options.Value;
         _logger = logger;
 
-        AccessTokenLifetime = TimeSpan.FromMinutes(
-            _config.GetValue<int>("Jwt:AccessTokenLifetimeMinutes"));
-
-        RefreshTokenLifetime = TimeSpan.FromDays(
-            _config.GetValue<int>("Jwt:RefreshTokenLifetimeDays"));
-
-        _refreshTokenLength = _config.GetValue<int>("JWT:RefreshTokenByteLength");
+        AccessTokenLifetime = TimeSpan.FromMinutes(_options.AccessTokenLifetimeMinutes);
+        RefreshTokenLifetime = TimeSpan.FromDays(_options.RefreshTokenLifetimeDays);
     }
 
     public string GenerateToken(User user)
     {
         JwtSecurityTokenHandler tokenHandler = new();
 
-        byte[] key = Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]!);
 
         List<Claim> claims = [
             new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -45,15 +39,16 @@ public class TokenService : IClaimsReader
             new (Constants.StartYearFieldName, user.StartYear?.ToString() ?? "null"),
         ];
 
+        Guard.ThrowIfNull(_options.SecretBytes);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.Add(AccessTokenLifetime),
             IssuedAt = DateTime.UtcNow,
-            Issuer = _config.GetValue<string>("Jwt:Issuer"),
-            Audience = _config.GetValue<string>("Jwt:Audience"),
+            Issuer = _options.Issuer,
+            Audience = _options.Audience,
             SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(key),
+                new SymmetricSecurityKey(_options.SecretBytes),
                 SecurityAlgorithms.HmacSha256Signature)
         };
 
@@ -63,7 +58,11 @@ public class TokenService : IClaimsReader
 
     public string GenerateRefreshToken()
     {
-        var number = new byte[_refreshTokenLength];
+        if (_options.RefreshTokenByteLength <= 0)
+        {
+            throw new InvalidOperationException("Refresh token byte length must be positive.");
+        }
+        var number = new byte[_options.RefreshTokenByteLength];
         using var gen = RandomNumberGenerator.Create();
         gen.GetBytes(number);
         return Convert.ToBase64String(number);
@@ -95,15 +94,14 @@ public class TokenService : IClaimsReader
         JwtSecurityTokenHandler tokenHandler = new();
         tokenHandler.InboundClaimTypeMap.Clear();
 
-        // Get secret key
-        byte[] key = Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]!);
+        Guard.ThrowIfNull(_options.SecretBytes);
 
         // Set validation parameters
         var validationParameters = new TokenValidationParameters
         {
-            IssuerSigningKey = new SymmetricSecurityKey(key),
-            ValidIssuer = _config["Jwt:Issuer"],
-            ValidAudience = _config["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(_options.SecretBytes),
+            ValidIssuer = _options.Issuer,
+            ValidAudience = _options.Audience,
             ValidateIssuerSigningKey = true,
             ValidateIssuer = true,
             ValidateAudience = true,
