@@ -292,5 +292,21 @@ function goToPage(index: number) {
     renderPage();
 }
 
+function toggleSidePanel(): void {
+    const panel: HTMLElement | null = document.getElementById("side-panel-element");
+    if (panel != null) {
+        panel.classList.toggle("open");
+    }
+}
+
+function showSubMenu() {
+    const submenu: HTMLElement | null = document.getElementById("larpakeSubMenu");
+    if (submenu != null && submenu.style.display == "none") {
+        submenu.style.display = "block";    
+    } else if ((submenu != null && submenu.style.display == "block")) {
+        window.open("larpake.html","_self")
+    }
+}
+
 // Initialize the first page
 renderPage();

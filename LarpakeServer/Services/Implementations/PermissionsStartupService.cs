@@ -32,22 +32,27 @@ public class PermissionsStartupService : IHostedService
         _logger.LogInformation("Setting {count} permissions.",
             _options.GetTargetCount());
 
-        // Sudo permissions
-        foreach (Guid userId in _options.Sudo)
+        foreach (Guid userId in _options.EntraSudoModeUsers)
         {
-            await SetPermissions(userId, Permissions.Sudo);
+            await SetPermissions(userId, Permissions.Sudo, true);
+        }
+
+        // Sudo permissions
+        foreach (Guid userId in _options.App.Sudo)
+        {
+            await SetPermissions(userId, Permissions.Sudo, false);
         }
 
         // Admin permissions
-        foreach (Guid userId in _options.Admin)
+        foreach (Guid userId in _options.App.Admin)
         {
-            await SetPermissions(userId, Permissions.Admin);
+            await SetPermissions(userId, Permissions.Admin, false);
         }
 
         // Specific permissions values
-        foreach ((Guid userId, Permissions permission) in _options.Special)
+        foreach ((Guid userId, Permissions permission) in _options.App.Special)
         {
-            await SetPermissions(userId, permission);
+            await SetPermissions(userId, permission, false);
         }
 
         _logger.LogInformation("Startup permission configuration completed successfully.");
@@ -58,14 +63,23 @@ public class PermissionsStartupService : IHostedService
         return Task.CompletedTask;
     }
 
-    private async Task SetPermissions(Guid userId, Permissions permission)
+    private async Task SetPermissions(Guid userId, Permissions permission, bool isEntraUser)
     {
         if (userId == Guid.Empty)
         {
             throw new InvalidOperationException("Cannot set permissions for null user.");
         }
 
-        Result<int> result = await _database.SetPermissions(userId, permission);
+        Result<int> result;
+        if (isEntraUser)
+        {
+            result = await _database.AppendPermissionsByEntra(userId, permission);
+        }
+        else
+        {
+             result = await _database.AppendPermissions(userId, permission);
+        }
+
         if (result.IsOk)
         {
             return;
