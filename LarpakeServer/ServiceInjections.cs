@@ -30,20 +30,8 @@ public static class ServiceInjections
                 // Allow all
                 builder.SetIsOriginAllowed(origin => true)
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
-
-                // Add more permissions for development ports
-                builder.WithOrigins([
-                    "http://localhost:3000/",
-                    "http://localhost:3001/",
-                    "http://localhost:3002/",
-                    "http://localhost:4000/",
-                    "http://localhost:4001/",
-                    "http://localhost:4002/"
-                    ])
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
+                       .AllowAnyHeader()
+                       .AllowCredentials();
             });
         });
     }
