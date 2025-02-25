@@ -1,5 +1,5 @@
-# Postgres port 5501
-# Api port 5502
+# Postgres port 5501 or 5432 (default)
+# Api port 5502 or 8080 (default)
 
 services:
     larpake_pg_production:
