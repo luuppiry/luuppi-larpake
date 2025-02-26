@@ -5,6 +5,8 @@ document.getElementById("auth-btn")?.addEventListener("click", getToken);
 
 async function getToken() {
     
+    const id = new EntraId();
+    const g = await id.fetchAzureLogin();
     
 
     const client = new LarpakeClient();

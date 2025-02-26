@@ -55,6 +55,7 @@ public class Constants
         public const string LarpakeIdAudience = "JWT_AUDIENCE";
         public const string PostgresConnectionString = "POSTGRES_CONNECTION_STRING";
         public const string EntraSudoUsers = "ENTRA_SUDO_USERS";
+        public const string EnvVariablePrefix = "LARPAKE_";
     }
 }
 

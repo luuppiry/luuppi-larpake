@@ -68,14 +68,14 @@ services:
         networks:
             - weba-network
         environment:
-            - ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
-            - ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
-            - LUUPPI_API_KEY=${LUUPPI_API_KEY}
-            - JWT_SECRET=${JWT_SECRET}
-            - POSTGRES_CONNECTION_STRING=${POSTGRES_API_CONNECTION_STRING}
-            - ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
-            - JWT_ISSUER=${JWT_ISSUER}
-            - JWT_AUDIENCE=${JWT_AUDIENCE}
+            - LARPAKE_ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
+            - LARPAKE_ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
+            - LARPAKE_LUUPPI_API_KEY=${LUUPPI_API_KEY}
+            - LARPAKE_JWT_SECRET=${JWT_SECRET}
+            - LARPAKE_POSTGRES_CONNECTION_STRING=${POSTGRES_API_CONNECTION_STRING}
+            - LARPAKE_ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
+            - LARPAKE_JWT_ISSUER=${JWT_ISSUER}
+            - LARPAKE_JWT_AUDIENCE=${JWT_AUDIENCE}
         depends_on:
             larpake_migrations_production:
                 condition: service_completed_successfully

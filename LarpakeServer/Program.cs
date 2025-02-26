@@ -5,6 +5,7 @@ using Scalar.AspNetCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables(Constants.Environment.EnvVariablePrefix);
 
 using var loggerFactory = LoggerFactory.Create(config =>
 {
@@ -15,6 +16,7 @@ using var loggerFactory = LoggerFactory.Create(config =>
 });
 
 ILogger<DITypeMarker> logger = loggerFactory.CreateLogger<DITypeMarker>();
+logger.LogInformation("Added environment variables with prefix {prefix}", Constants.Environment.EnvVariablePrefix);
 
 
 

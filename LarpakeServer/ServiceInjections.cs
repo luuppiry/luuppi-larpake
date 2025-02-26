@@ -130,12 +130,11 @@ public static class ServiceInjections
         IConfiguration configuration,
         ILogger<DITypeMarker> logger)
     {
-        string? connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING");
+        string? connectionString = configuration[Env.Environment.PostgresConnectionString];
         if (connectionString is not null)
         {
             logger.LogInformation("Using Postgres connection string from environment variables.");
         }
-
 
         connectionString
             ??= configuration.GetConnectionString("PostgreSQL")
@@ -250,21 +249,21 @@ public static class ServiceInjections
             configuration.GetSection(LarpakeIdOptions.SectionName).Bind(options);
 
             // Override with possible environment variable
-            string? secret = Environment.GetEnvironmentVariable(Env.Environment.LarpakeIdSecret);
+            string? secret = configuration[Env.Environment.LarpakeIdSecret]; 
             if (secret is not null)
             {
                 logger.LogInformation("Overriding LarpakeId JWT secret from environment variables.");
                 options.SecretKey = secret;
             }
 
-            string? issuer = Environment.GetEnvironmentVariable(Env.Environment.LarpakeIdIssuer);
+            string? issuer = configuration[Env.Environment.LarpakeIdIssuer];
             if (issuer is not null)
             {
                 logger.LogInformation("Overriding LarpakeId JWT issuer from environment variables.");
                 options.Issuer = issuer;
             }
 
-            string? audience = Environment.GetEnvironmentVariable(Env.Environment.LarpakeIdAudience);
+            string? audience = configuration[Env.Environment.LarpakeIdAudience];
             if (audience is not null)
             {
                 logger.LogInformation("Overriding LarpakeId JWT audience from environment variables.");
@@ -287,7 +286,7 @@ public static class ServiceInjections
             configuration.GetSection(IntegrationOptions.SectionName).Bind(options);
 
             // Override with possible environment variable
-            string? apiKey = Environment.GetEnvironmentVariable(Env.Environment.LuuppiApiKey);
+            string? apiKey = configuration[Env.Environment.LuuppiApiKey];
             if (apiKey is not null)
             {
                 logger.LogInformation("Overriding integration api key with environment variables.");
@@ -304,7 +303,7 @@ public static class ServiceInjections
             configuration.GetSection(EntraIdOptions.SectionName).Bind(options);
 
             // Override with possible environment variable
-            string? tenantId = Environment.GetEnvironmentVariable(Env.Environment.EntraTenantId);
+            string? tenantId = configuration[Env.Environment.EntraTenantId];
             if (tenantId is not null)
             {
                 logger.LogInformation("Overriding EntraId tenant id with environment variable.");
@@ -312,7 +311,7 @@ public static class ServiceInjections
             }
 
             // Override with possible environment variable
-            string? clientId = Environment.GetEnvironmentVariable(Env.Environment.EntraClientId);
+            string? clientId = configuration[Env.Environment.EntraClientId];
             if (clientId is not null)
             {
                 logger.LogInformation("Overriding EntraId client id with environment variable.");
@@ -331,7 +330,7 @@ public static class ServiceInjections
             PermissionsOptions options = new();
             configuration.GetSection(PermissionsOptions.SectionName).Bind(options);
 
-            string? sudoUsers = Environment.GetEnvironmentVariable(Env.Environment.EntraSudoUsers);
+            string? sudoUsers = configuration[Env.Environment.EntraSudoUsers];
             if (sudoUsers is not null)
             {
                 logger.LogInformation("Overriding Entra sudo users with environment variable.");
