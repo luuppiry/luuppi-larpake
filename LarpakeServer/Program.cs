@@ -47,6 +47,9 @@ builder.Services.AddRouting(options =>
 var app = builder.Build();
 
 
+
+app.Logger.LogInformation("Added environment variables with prefix {prefix}", Constants.Environment.EnvVariablePrefix);
+
 // Use openapi 
 app.MapOpenApi();
 app.MapScalarApiReference(options =>
