@@ -63,13 +63,6 @@ class SidePanel extends HTMLElement {
             },
         ];
 
-        if (language === "fi") {
-            items.push({
-                href: "admin/admin.html",
-                title: { fi: "DEMO Ylläpito", en: "Admin" },
-            });
-        }
-
         const correctedItems = this.#addPathCorrection(items);
         this.render(correctedItems);
     }
