@@ -170,10 +170,29 @@ async function logout() {
 
 function profileDropdown(): void {
     const profileDropdown = document.getElementById("profileDropdown");
-    if (profileDropdown) {
-        profileDropdown.style.display = profileDropdown.style.display === "block" ? "none" : "block";
+    if (!profileDropdown) return;
+
+    // Detect current language
+    const currentLang = window.location.href.includes("/en/") ? "en" : "fi";
+
+    // Update the menu items based on language
+    const profileLink = profileDropdown.querySelector("a[href='profile.html']");
+    const adminLink = profileDropdown.querySelector("a[href='admin/admin.html']");
+    const logoutLink = profileDropdown.querySelector("a[href='#']");
+
+    if (profileLink) {
+        profileLink.textContent = currentLang === "en" ? "Profile" : "Profiili";
     }
+    if (adminLink) {
+        adminLink.textContent = currentLang === "en" ? "Admin" : "Ylläpito";
+    }
+    if (logoutLink) {
+        logoutLink.textContent = currentLang === "en" ? "Logout" : "Kirjaudu ulos";
+    }
+
+    profileDropdown.style.display = profileDropdown.style.display === "block" ? "none" : "block";
 }
+
 
 function changeLanguage(): void {
     console.log("change language");
