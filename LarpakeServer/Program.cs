@@ -6,6 +6,18 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+using var loggerFactory = LoggerFactory.Create(config =>
+{
+    config.AddConsole();
+#if DEBUG
+    config.AddDebug();
+#endif
+});
+
+ILogger<DITypeMarker> logger = loggerFactory.CreateLogger<DITypeMarker>();
+
+
+
 // Order matters with hosted services (first is executed first)
 builder.Services.AddHostedService<PermissionsStartupService>();
 
@@ -17,10 +29,10 @@ builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<LarpakeIdBearerSecuritySchemeTransformer>();
 });
-builder.Services.AddAuthenticationServices(configuration);
+builder.Services.AddAuthenticationServices(configuration, logger);
 builder.Services.AddAuthorization();
-builder.Services.AddServices(configuration);
-builder.Services.AddPostgresDatabases(configuration);
+builder.Services.AddServices(configuration, logger);
+builder.Services.AddPostgresDatabases(configuration, logger);
 builder.Services.ConfigureCors();
 builder.Services.AddRateLimiters(configuration);
 

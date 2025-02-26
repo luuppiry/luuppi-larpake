@@ -202,7 +202,7 @@ export default class HttpClient {
         }
 
         const headers = new Headers();
-        headers.append("Authorization", `Bearer ${entraToken}`);
+        headers.append("Authorization", `${entraToken}`);
 
         const response = await fetch(
             `${this.baseUrl}api/authentication/login`,
