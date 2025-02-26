@@ -50,10 +50,6 @@ class SidePanel extends HTMLElement {
                 href: "tutor_mark_event.html",
                 title: { fi: "DEMO Kirjaa osallistuminen - Tuutori", en: "DEMO Log Attendance - Tutor" },
             },
-            {
-                href: "profile.html",
-                title: { fi: "DEMO Profiili", en: "DEMO Profile" },
-            },
         ];
 
         if (language === "fi") {
