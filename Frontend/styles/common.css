@@ -46,19 +46,19 @@ body {
     user-select: none;
 }
 
-/* The dropdown container */  
+/* The dropdown container */
 .profile-dropdown {
     display: none;
     position: absolute;
     background-color: #f9f9f9;
     min-width: 200px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
     top: 85px;
     margin-right: 150px;
     font-size: 20px;
 }
-  
+
 .profile-dropdown a {
     float: none;
     color: black;
@@ -67,11 +67,11 @@ body {
     display: block;
     text-align: left;
 }
-  
+
 .profile-dropdown a:hover {
     background-color: #ddd;
 }
-  
+
 /* Body */
 .container {
     max-width: 600px;
@@ -132,26 +132,27 @@ body {
     margin: 5px 0;
     font-size: 0.9rem;
     color: #555;
-    
 }
 
 /* Side panel styles */
 .side-panel {
     position: fixed;
     top: 0;
-    right: -270px; /* Initially off-screen to the right */
     height: 100%;
-    width: 250px;
     background-color: #787eba;
     color: white;
-    overflow-y: auto;
-    transition: 0.3s ease;
+    overflow-y: none;
     padding: 10px;
     z-index: 1000;
+    right: 0;
+    width: 250px;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
 }
 
 .side-panel.open {
-    right: 0; /* Slide in from the right */
+    transform: translateX(0);
+    transition: transform 0.3s ease;
 }
 
 .side-panel ul {
@@ -162,7 +163,7 @@ body {
 
 .side-panel ul li {
     margin: 10px 0;
-    padding: 5px 0;
+    padding: 5px 0px;
     font-size: 1rem;
 }
 
