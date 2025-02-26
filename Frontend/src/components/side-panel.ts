@@ -10,6 +10,8 @@ class SidePanel extends HTMLElement {
     }
 
     connectedCallback() {
+        this.#addClickListeners();
+
         const language = this.getAttribute("lang") !== "en" ? "fi" : "en";
         const items: ListItem[] = [
             { href: "index.html", title: { fi: "Koti", en: "Home" } },
@@ -68,7 +70,7 @@ class SidePanel extends HTMLElement {
             });
         }
 
-        const correctedItems = this.#add_path_correction(items);
+        const correctedItems = this.#addPathCorrection(items);
         this.render(correctedItems);
     }
 
@@ -118,8 +120,8 @@ class SidePanel extends HTMLElement {
         });
     }
 
-    #add_path_correction(items: ListItem[]) {
-        const stringPathDepth = this.getAttribute("path-depth") ?? "0"; 
+    #addPathCorrection(items: ListItem[]) {
+        const stringPathDepth = this.getAttribute("path-depth") ?? "0";
         const pathDepth = parseInt(stringPathDepth) || 0;
         let correction = "";
         for (let i = 0; i < pathDepth; i++) {
@@ -134,7 +136,37 @@ class SidePanel extends HTMLElement {
         return items;
     }
 
-    toggleSidePanel(){
+    #addClickListeners() {
+        window.addEventListener(
+            "click",
+            (event: MouseEvent) => {
+                if (!this.firstElementChild?.classList.contains("open")) {
+                    // Side panel is already closed
+                    return;
+                }
+
+                // Get clicked UI element
+                const target = event.target as HTMLElement;
+
+                if (document.querySelector<HTMLElement>("ui-header")?.contains(target)) {
+                    /* This is little bit janky but works
+                     * If side ui header is not filtered out,
+                     * this would immidiately close the menu when menu button pressed
+                     */
+                    return;
+                }
+
+                if (this.contains(target) == true) {
+                    // Clicked inside sidepanel
+                    return;
+                }
+                this.toggleSidePanel();
+            },
+            false
+        );
+    }
+
+    toggleSidePanel() {
         toggleSidePanel();
     }
 }
