@@ -27,6 +27,7 @@ services:
             - PGHOST=larpake_pg_production
             - PGPORT=5432
             - PGUSER=${POSTGRES_ADMIN_USERNAME}
+            - PGDATABASE=postgres
             - PGPASSWORD=${POSTGRES_ADMIN_PASSWORD}
             - PG_API_CLIENT_PASSWORD=${PG_API_CLIENT_PASSWORD}
             - PG_API_MIGRATIONS_PASSWORD=${PG_API_MIGRATIONS_PASSWORD}
