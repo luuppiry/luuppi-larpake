@@ -46,8 +46,7 @@ services:
     larpake_migrations_production:
         container_name: larpake_migrations_production
         env_file: ".env"
-        build:
-            dockerfile: migrations.Dockerfile
+        image: luuppi.azurecr.io/larpake-prod-mig:latest
         networks:
             - weba-network
         environment:
@@ -61,8 +60,7 @@ services:
     larpake_api_production:
         container_name: larpake_api_production
         env_file: ".env"
-        build:
-            dockerfile: api.Dockerfile
+        image: luuppi.azurecr.io/larpake-prod:latest
         ports:
             - "127.0.0.1:5502:8080"
         networks:
