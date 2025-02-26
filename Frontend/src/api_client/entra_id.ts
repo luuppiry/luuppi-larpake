@@ -22,6 +22,7 @@ export default class EntraId {
                 authority: `https://${
                     import.meta.env.VITE_ENTRA_SERVER
                 }.ciamlogin.com/${import.meta.env.VITE_ENTRA_TEDANT_ID}`,
+                redirectUri: window.location.origin,
             },
         };
     }
@@ -45,7 +46,6 @@ export default class EntraId {
 
         try {
             const token = await this.msalInstance!.acquireTokenSilent(request);
-
             this.#addDistinctAccount(token.account);
             return token.accessToken;
         } catch (error) {
@@ -76,6 +76,17 @@ export default class EntraId {
             await this.msalInstance!.acquireTokenRedirect(request);
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    async fetchAzureLogout() {
+        await this.#initialize();
+        try {
+            await this.msalInstance!.logoutPopup();
+            this.accounts = [];
+            return "Logout succesful";
+        } catch (error) {
+            console.log("Logout failed:", error);
         }
     }
 

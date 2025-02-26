@@ -1,11 +1,14 @@
+import EntraId from "../api_client/entra_id.ts";
+const auth = new EntraId();
+
 class Header extends HTMLElement {
     constructor() {
         super();
     }
 
     connectedCallback() {
-
         const index = this.#add_path_correction("index.html")
+        const loggedIn = Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"));
 
         this.innerHTML = `
          <header class="header">
@@ -22,6 +25,7 @@ class Header extends HTMLElement {
                 style="display: flex; justify-content: center; align-items: center">
                 <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
             </div>
+            ${loggedIn ? `
             <div
                 class="menu-icon"
                 id="ui-header-profile-btn"
@@ -32,7 +36,14 @@ class Header extends HTMLElement {
                     <a href="admin/admin.html">Ylläpito</a>
                     <a href="#" style="color: red;">Kirjaudu ulos</a>
                 </div>
-            </div>
+            </div> ` : ''}
+            ${!loggedIn ? `
+                <div
+                    class="menu-icon"
+                    id="ui-header-login-btn"
+                    style="display: flex; justify-content: center; align-items: center">
+                    <img class="login-icon" src="/icons/login-icon.png" height="30px" width="auto" />
+                </div> ` : ''}
             <div class="menu-icon" id="ui-header-open-menu-btn">☰</div>
         </header>
          `;
@@ -45,13 +56,33 @@ class Header extends HTMLElement {
             this.changeLanguage();
         });
 
-        const profileBtn = this.querySelector<HTMLDivElement>("#ui-header-profile-btn");
-        if (profileBtn == null) {
-            throw new Error("Profile button not found");
+        if(loggedIn){
+            const profileBtn = this.querySelector<HTMLDivElement>("#ui-header-profile-btn");
+            if (profileBtn == null) {
+                throw new Error("Profile button not found");
+            }
+            profileBtn.addEventListener("click", (_) => {
+                this.profileDropdown();
+            });
+            const logoutBtn = this.querySelector<HTMLAnchorElement>(".profile-dropdown a[href='#']");
+            if (logoutBtn == null) {
+                throw new Error("Logout button not found");
+            }
+            logoutBtn.addEventListener("click", (event) => {
+                event.preventDefault(); // Prevent default anchor behavior
+                this.logout();
+            });
         }
-        profileBtn.addEventListener("click", (_) => {
-            this.profileDropdown();
-        });
+        
+        if(!loggedIn){
+            const logInBtn = this.querySelector<HTMLDivElement>("#ui-header-login-btn");
+            if (logInBtn == null) {
+                throw new Error("Login button not found");
+            }
+            logInBtn.addEventListener("click", (_) => {
+                this.login();
+            });
+        }
 
         const menuBtn = this.querySelector<HTMLDivElement>("#ui-header-open-menu-btn");
         if (menuBtn == null) {
@@ -78,6 +109,14 @@ class Header extends HTMLElement {
         profileDropdown();
     }
 
+    login() {
+        login();
+    }
+
+    logout() {
+        logout();
+    }
+
     #add_path_correction(path: string): string {
         /* Path depth should be positive number
          * For example 2 = ../../<path>
@@ -98,6 +137,34 @@ class Header extends HTMLElement {
 
         // Add correction
         return correction + path;
+    }
+}
+
+async function login() {
+    try {
+        const token = await auth.fetchAzureLogin();
+        if (token) {
+            console.log("Login successful.");
+            location.reload(); 
+        } else {
+            console.log("Login failed.");
+        }
+    } catch (error) {
+        console.error("Login Error:", error);
+    }
+}
+
+async function logout() {
+    try {
+        const token = await auth.fetchAzureLogout();
+        if (token) {
+            console.log("Access Token:", token);
+            location.reload(); 
+        } else {
+            console.log("Logout failed.");
+        }
+    } catch (error) {
+        console.error("Logout Error:", error);
     }
 }
 
