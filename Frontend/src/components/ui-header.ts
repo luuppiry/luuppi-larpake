@@ -7,9 +7,10 @@ class Header extends HTMLElement {
     }
 
     connectedCallback() {
-        const index = this.#add_path_correction("index.html")
+        const index = this.#add_path_correction("index.html");
         const loggedIn = Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"));
-
+        const currentLang = window.location.href.includes("/en/") ? "en" : "fi";
+        
         this.innerHTML = `
          <header class="header">
             <img
@@ -33,7 +34,7 @@ class Header extends HTMLElement {
                 <img class="profile-icon" src="/icons/profile-icon.png" height="30px" width="auto" />
                 <div class="profile-dropdown" id="profileDropdown">
                     <a href="profile.html">Profiili</a>
-                    <a href="admin/admin.html">Ylläpito</a>
+                    ${currentLang === "fi" ? '<a href="admin/admin.html">Ylläpito</a>' : ''}
                     <a href="#" style="color: red;">Kirjaudu ulos</a>
                 </div>
             </div> ` : ''}

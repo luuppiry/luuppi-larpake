@@ -12,7 +12,6 @@ class SidePanel extends HTMLElement {
     connectedCallback() {
         this.#addClickListeners();
 
-        const language = this.getAttribute("lang") !== "en" ? "fi" : "en";
         const items: ListItem[] = [
             { href: "index.html", title: { fi: "Koti", en: "Home" } },
             {
