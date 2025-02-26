@@ -10,8 +10,14 @@
             rel="stylesheet"
         />
         <link rel="stylesheet" href="/styles/profile.css" />
+        <link rel="stylesheet" href="/styles/common.css" />
         <script src="/src/components/side-panel.ts"></script>
         <script type="module" src="/src/components/ui-header.ts"></script>
+        <script>
+            if (!Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"))){
+                window.location.replace("unauthorized.html");
+            }
+        </script>
     </head>
     <body>
         <!-- This dialog does not show on ui if not called from js side -->
@@ -42,63 +48,60 @@
                 <div class="section-filler">
                     <!-- Following empty looking div is important for auto scaling (in css side) -->
                     <div>
-                        <h2>Käyttäjätiedot</h2>
+                        <h2>User information</h2>
                         <div class="tooltipped-title">
-                            <h3 class="text-field">Sähköposti</h3>
+                            <h3 class="text-field">Email</h3>
                             <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Sähköposti luuppi.fi järjestelmässä</p>
+                            <p class="tooltip">Email from luuppi.fi database</p>
                         </div>
                         <p id="id-field" class="data-value">webmaster@luuppi.fi</p>
 
                         <div class="tooltipped-title">
-                            <h3 class="text-field">Etunimi</h3>
+                            <h3 class="text-field">Forename(s)</h3>
                             <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Virallinen etunimi (ei näytetä julkisesti)</p>
+                            <p class="tooltip">All your official first names. This is information required by section 11 of the Associations Act,
+                                which will be verified upon joining the association. Will not be displayed publicly.</p>
                         </div>
                         <p id="first-name-field" class="data-value">Keijo</p>
 
                         <div class="tooltipped-title">
-                            <h3 class="text-field">Sukunimi</h3>
+                            <h3 class="text-field">Surname</h3>
                             <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Virallinen sukunimi (ei näytetä julkisesti)</p>
+                            <p class="tooltip">Official surame. This is information required by section 11 of the Associations Act,
+                                which will be verified upon joining the association. Will not be displayed publicly.</p>
                         </div>
                         <p id="last-name-field" class="data-value">Kangas</p>
 
                         <div class="tooltipped-title">
-                            <h3 class="text-field">Käyttäjänimi</h3>
+                            <h3 class="text-field">Username</h3>
                             <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Käyttäjänimi (voi näkyä sivustolla)</p>
+                            <p class="tooltip">Username is used to identify you on the website. It must be 3-30 characters long. Username can be displayed publicly.</p>
                         </div>
                         <p id="username-field" class="data-value">keijok123</p>
 
                         <div class="tooltipped-title">
-                            <h3 class="text-field">Ryhmät</h3>
+                            <h3 class="text-field">Group</h3>
                             <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Kaikki ryhmät joissa olet osallisena</p>
+                            <p class="tooltip">All groups you are participant</p>
                         </div>
-                        <p id="groups-field" class="data-value">Ryhmä 11</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Rooli</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Tilisi oikeudet järjestelmässä</p>
-                        </div>
-                        <p id="permissions-field" class="data-value">Käyttäjä</p>
+                        <p id="groups-field" class="data-value">2024: Group 11 - High five!</p>
+                        <p id="groups-field" class="data-value">2025: Group 12 - High six!</p>
+                        <p id="groups-field" class="data-value">2026: Group 13 - High seven!</p>
                     </div>
                 </div>
                 <div class="stripe"></div>
             </div>
         </div>
 
-        <div class="centering" style="padding: 0 0 30% 0">
+        <div class="centering" style="padding: 0 0 20px 0">
             <div class="section">
                 <div class="section-filler">
                     <!-- Following empty looking div is important for auto scaling (in css side) -->
                     <div>
-                        <h2>Signeeraus</h2>
+                        <h2>Signature</h2>
                         <p>
-                            Tutor -roolilliset jäsenet voivat lisätä itselleen jopa 5 omaa signeerausta, jotka tulevat
-                            näkyviin lärpäkkeen sivuilla kirjatun tapahtuman kohdalle.
+                            Members with the Tutor role can add up to 5 signatures of their own,
+                            which will appear on the Lärpäke pages next to the recorded event.
                         </p>
                         <ul class="signature-container" id="signature-container">
                             <li id="show-dialog-btn" class="signature-field">
