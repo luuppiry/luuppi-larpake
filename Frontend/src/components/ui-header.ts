@@ -192,6 +192,11 @@ function profileDropdown(): void {
     }
 
     profileDropdown.style.display = profileDropdown.style.display === "block" ? "none" : "block";
+
+    if (profileDropdown.style.display === "block") {
+        // Add event listener to detect clicks outside the dropdown
+        document.addEventListener("click", closeDropdownOutside);
+    }
 }
 
 
@@ -250,6 +255,19 @@ function toggleSidePanelOutsider(nameOverride: string | null = null): void {
     const panel: HTMLElement | null = document.getElementById(searchName);
     if (panel != null) {
         panel.classList.toggle("open");
+    }
+}
+
+function closeDropdownOutside(event: MouseEvent): void {
+    const profileDropdown = document.getElementById("profileDropdown");
+    const profileBtn = document.getElementById("ui-header-profile-btn");
+
+    if (!profileDropdown || !profileBtn) return;
+
+    // Check if the click is outside the dropdown and the profile button
+    if (!profileDropdown.contains(event.target as Node) && !profileBtn.contains(event.target as Node)) {
+        profileDropdown.style.display = "none";
+        document.removeEventListener("click", closeDropdownOutside);
     }
 }
 
