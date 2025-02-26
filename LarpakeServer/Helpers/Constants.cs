@@ -1,4 +1,7 @@
-﻿namespace LarpakeServer.Helpers;
+﻿using LarpakeServer.Controllers;
+using SQLitePCL;
+
+namespace LarpakeServer.Helpers;
 
 public class Constants
 {
@@ -56,6 +59,39 @@ public class Constants
         public const string PostgresConnectionString = "POSTGRES_CONNECTION_STRING";
         public const string EntraSudoUsers = "ENTRA_SUDO_USERS";
         public const string EnvVariablePrefix = "LARPAKE_";
+    }
+
+    public class Api
+    {
+        static string? _version;
+
+        public static string Version
+        {
+            get
+            {
+                _version ??= GetVersion();
+                return _version;
+            }
+        }
+
+        public const string AppName = "Lärpäke Server";
+
+        public const string Authors = "Henri Vainio";
+
+        public const string Copyright = "Copyright (c) 2025 Henri Vainio";
+
+        public const string Mode =
+#if RELEASE
+            "release";
+#else
+            "debug";
+#endif
+
+
+        private static string GetVersion()
+        {
+            return typeof(StatusController).Assembly.GetName().Version?.ToString() ?? "unknown";
+        }
     }
 }
 

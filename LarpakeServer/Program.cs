@@ -16,8 +16,6 @@ using var loggerFactory = LoggerFactory.Create(config =>
 });
 
 ILogger<DITypeMarker> logger = loggerFactory.CreateLogger<DITypeMarker>();
-logger.LogInformation("Added environment variables with prefix {prefix}", Constants.Environment.EnvVariablePrefix);
-
 
 
 // Order matters with hosted services (first is executed first)
@@ -43,12 +41,7 @@ builder.Services.AddRouting(options =>
     options.LowercaseUrls = true;
 });
 
-
 var app = builder.Build();
-
-
-
-app.Logger.LogInformation("Added environment variables with prefix {prefix}", Constants.Environment.EnvVariablePrefix);
 
 // Use openapi 
 app.MapOpenApi();
