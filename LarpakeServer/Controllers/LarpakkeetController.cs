@@ -3,18 +3,17 @@ using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
-using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
-using LarpakeSectionsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.DatabaseModels.LarpakeSection>;
 using LarpakeetGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.LarpakeGetDto>;
+using LarpakeSectionsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.DatabaseModels.LarpakeSection>;
 
 namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/larpakkeet")]
 public class LarpakkeetController : ExtendedControllerBase
 {
     readonly ILarpakeDatabase _db;

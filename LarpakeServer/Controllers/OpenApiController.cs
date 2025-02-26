@@ -1,7 +1,7 @@
 ﻿namespace LarpakeServer.Controllers;
 
 [ApiController]
-[Route("[Controller]")]
+[Route("openapi")]
 public class OpenApiController : ControllerBase
 {
     [HttpGet]

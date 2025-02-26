@@ -17,7 +17,7 @@ namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/attendances")]
 public class AttendancesController : ExtendedControllerBase
 {
     readonly IAttendanceDatabase _db;

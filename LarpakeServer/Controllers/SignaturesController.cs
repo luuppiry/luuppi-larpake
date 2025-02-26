@@ -3,7 +3,6 @@ using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
-using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.QueryOptions;
 using SignaturesGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.SignatureGetDto>;
@@ -12,7 +11,7 @@ namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/signatures")]
 public class SignaturesController : ExtendedControllerBase
 {
     readonly ISignatureDatabase _db;
