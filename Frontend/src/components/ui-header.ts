@@ -7,45 +7,56 @@ class Header extends HTMLElement {
     }
 
     connectedCallback() {
-        const index = this.#add_path_correction("index.html");
+        const hasLanguageOptions: boolean = this.getAttribute("lang-options") === "false" ? false : true;
+        const indexPath = this.#add_path_correction("index.html");
+        const profilePath = this.#add_path_correction("profile.html");
+        const adminPath = this.#add_path_correction("admin/admin.html");
+
         const loggedIn = Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"));
         const currentLang = window.location.href.includes("/en/") ? "en" : "fi";
 
-        this.innerHTML = `
-         <header class="header">
-            <img
-                src="/luuppi.logo.svg"
-                onclick="window.location.href='${index}'"
-                style="height: 60px; cursor: pointer"
-                alt="Luuppi Logo"
-            />
-            <h1>LÄRPÄKE</h1>
-            <div
-                class="menu-icon"
-                id="ui-header-change-language-btn"
-                style="display: flex; justify-content: center; align-items: center">
-                <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
-            </div>
-            ${
-                loggedIn
-                    ? `<div
+        const adminBtn = currentLang === "fi" ? `<a href="${adminPath}">Ylläpito</a>` : "";
+
+        const langBtn = hasLanguageOptions
+            ? `
+                    <div
+                        class="menu-icon"
+                        id="ui-header-change-language-btn"
+                        style="display: flex; justify-content: center; align-items: center">
+                        <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
+                    </div>`
+            : "";
+
+        const profileBtn = loggedIn
+            ? `<div
                 class="menu-icon"
                 id="ui-header-profile-btn"
                 style="display: flex; justify-content: center; align-items: center">
                 <img class="profile-icon" src="/icons/profile-icon.png" height="30px" width="auto" />
                 <div class="profile-dropdown" id="profileDropdown">
-                    <a href="profile.html">Profiili</a>
-                    ${currentLang === "fi" ? '<a href="admin/admin.html">Ylläpito</a>' : ""}
+                    <a href="${profilePath}">Profiili</a>
+                    ${adminBtn}
                     <a href="#" style="color: red;">Kirjaudu ulos</a>
                 </div>
             </div> `
-                    : `<div
+            : `<div
                     class="menu-icon"
                     id="ui-header-login-btn"
                     style="display: flex; justify-content: center; align-items: center">
                     <img class="login-icon" src="/icons/login-icon.png" height="30px" width="auto" />
-                </div> `
-            }
+                </div> `;
+
+        this.innerHTML = `
+         <header class="header">
+            <img
+                src="/luuppi.logo.svg"
+                onclick="window.location.href='${indexPath}'"
+                style="height: 60px; cursor: pointer"
+                alt="Luuppi Logo"
+            />
+            <h1>LÄRPÄKE</h1>
+            ${langBtn}
+            ${profileBtn}
             <div class="menu-icon" id="ui-header-open-menu-btn">☰</div>
         </header>
          `;
