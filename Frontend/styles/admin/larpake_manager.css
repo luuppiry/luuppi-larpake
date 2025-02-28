@@ -49,3 +49,7 @@ h3 {
         gap: 0px;
     }
 }
+
+.events-list {
+    list-style: none;
+}
