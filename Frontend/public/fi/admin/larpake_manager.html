@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Lärpäke - Admin</title>
-        <link rel="stylesheet" href="/styles/admin/larpake_selector.css" />
+        <link rel="stylesheet" href="/styles/admin/larpake_manager.css" />
         <link rel="stylesheet" href="/styles/section.css" />
         <script src="/src/components/side-panel.ts"></script>
         <script src="/src/components/form-container.ts"></script>
@@ -19,30 +19,68 @@
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
         <form-container>
-            <div>Hello</div>
-        </form-container>
-
-        <div class="hor-center-content">
-            <div class="section" style="max-width: 1400px">
-                <div class="stripe"></div>
-                <div class="section-filler">
-                    <div>
-                        <!-- Content -->
-                        <form>
-                            <p>Nimi (fi)</p>
-                            <input />
-                            <p>Kuvaus (fi)</p>
-                            <input />
-
-                            <p>Nimi (en)</p>
-                            <input />
-
-                            <p>Kuvaus (en)</p>
-                            <input />
-                        </form>
-                    </div>
+            <div style="padding: 20px">
+                <h2>Muokkaa Yleisiä Tietoja</h2>
+                <p>
+                    Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tämäm osion muokkaaminen ei vaikuta
+                    käyttäjätietoihin eivätkä esimerkiksi osallistumiset poistu olemassa olevista tapahtumista. Huomaa,
+                    että eri kielille on määritelty omat osionsa. Arvon tyhjäksi jättäminen määrittää oletusarvon
+                    käytettäväksi.
+                </p>
+                <div class="field">
+                    <label for="start-year">Aloitusvuosi</label>
+                    <input
+                        id="start-year"
+                        class="text-field start-year-field"
+                        type="number"
+                        min="-1"
+                        max="2099"
+                        step="1"
+                        placeholder="20xx"
+                    />
                 </div>
+                <form>
+                    <div class="form-divider">
+                        <div>
+                            <h3>Suomeksi (oletus)</h3>
+                            <div class="field">
+                                <label for="title-fi">Nimi</label>
+                                <input id="title-fi" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                            </div>
+                            <div class="field">
+                                <label for="description-fi">Kuvaus</label>
+                                <textarea
+                                    id="description-fi"
+                                    class="description-field text-field"
+                                    placeholder="kerro lyhyesti Lärpäkkeestä"
+                                    maxlength="2000"
+                                ></textarea>
+                            </div>
+                        </div>
+                        <div>
+                            <h3>Englanniksi</h3>
+                            <div class="field">
+                                <label for="title-en">Nimi</label>
+                                <input id="title-en" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                            </div>
+                            <div class="field">
+                                <label for="description-en">Kuvaus</label>
+                                <textarea
+                                    id="description-en"
+                                    class="description-field text-field"
+                                    placeholder="shortly in english"
+                                    maxlength="2000"
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="send-options">
+                        <button id="commonCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
+                        <button id="commonSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+                    </div>
+                </form>
             </div>
-        </div>
+        </form-container>
     </body>
+    <script type="module" src="/src/admin/larpake_manager.ts"></script>
 </html>

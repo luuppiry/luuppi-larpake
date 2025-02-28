@@ -1,2 +1,51 @@
 @import "../common.css";
 @import "../section.css";
+
+.form-divider {
+    display: flex;
+    flex-flow: row;
+    gap: 40px;
+}
+
+.form-divider > div {
+    display: flex;
+    flex-flow: column;
+    gap: 14px;
+    flex: 1;
+}
+
+.field {
+    display: flex;
+    flex-flow: column;
+    gap: 2px;
+}
+
+.start-year-field {
+    max-width: 70px;
+}
+
+.description-field {
+    resize: vertical;
+    line-height: 1.5em;
+    min-height: calc(1.5em * 3);
+}
+
+.send-options {
+    display: flex;
+    justify-content: end;
+    gap: 8px;
+    /* Force bottom over because of form margin */
+    margin-top: 35px;
+    margin-bottom: -40px;
+}
+
+h3 {
+    margin: 40px 0 0 0;
+}
+
+@media screen and (max-width: 800px) {
+    .form-divider {
+        flex-flow: column;
+        gap: 0px;
+    }
+}

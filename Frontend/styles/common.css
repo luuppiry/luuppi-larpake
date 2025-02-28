@@ -211,3 +211,45 @@ body {
         margin: 20px 10px;
     }
 }
+
+/* Default text field/area style for settings etc */
+.text-field {
+    border-radius: 5px;
+    padding: 5px 7px;
+    font-family: Poppins;
+    border-color: var(--text-border);
+    border: var(--text-border) solid 2px;
+}
+
+.text-field:focus {
+    outline: none !important;
+}
+
+.primary-btn {
+    font-size: large;
+    background-color: var(--luuppi-blue);
+    color: white;
+    border-radius: 6px;
+    padding: 8px 16px;
+    border-style: none;
+    cursor: pointer;
+}
+
+.secondary-btn {
+    font-size: large;
+    border-radius: 6px;
+    background-color: white;
+    color: var(--luuppi-blue);
+    border: 2px var(--luuppi-blue) solid;
+    cursor: pointer;
+    padding: 8px 16px;
+}
+
+.hover-scale {
+    transition: transform 0.3s ease;
+    transform-origin: center;
+}
+
+.hover-scale:hover {
+    transform: scale(1.1);
+}
