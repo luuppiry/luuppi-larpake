@@ -12,6 +12,7 @@
     flex-flow: column;
     gap: 14px;
     flex: 1;
+    margin: 40px 0 0 0;
 }
 
 .field {
@@ -39,10 +40,6 @@
     margin-bottom: -40px;
 }
 
-h3 {
-    margin: 40px 0 0 0;
-}
-
 @media screen and (max-width: 800px) {
     .form-divider {
         flex-flow: column;
@@ -50,6 +47,22 @@ h3 {
     }
 }
 
-.events-list {
+.sections-list {
     list-style: none;
+    padding: 5px 10px;
+    background-color: var(--luuppi-gray);
+    gap: 10px;
+    border-radius: 10px;
+}
+
+.sections-list > li {
+    background-color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin: 20px;
+}
+
+.sections-list > li > h3 {
+    padding: 0px;
+    margin: 0px;
 }

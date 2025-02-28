@@ -20,7 +20,7 @@
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
         <form-container>
-            <div style="padding: 20px">
+            <form style="padding: 20px">
                 <h2>Muokkaa Yleisiä Tietoja</h2>
                 <p>
                     Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tämäm osion muokkaaminen ei vaikuta
@@ -45,58 +45,57 @@
                         value="2025"
                     />
                 </div>
-                <form>
-                    <div class="form-divider">
-                        <div>
-                            <h3>Suomeksi (oletus)</h3>
-                            <div class="field">
-                                <label for="title-fi">Nimi</label>
-                                <input id="title-fi" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
-                            </div>
-                            <div class="field">
-                                <label for="description-fi">Kuvaus</label>
-                                <textarea
-                                    id="description-fi"
-                                    class="description-field text-field"
-                                    placeholder="kerro lyhyesti Lärpäkkeestä"
-                                    maxlength="2000"
-                                ></textarea>
-                            </div>
+                <div class="form-divider">
+                    <div>
+                        <h3>Suomeksi (oletus)</h3>
+                        <div class="field">
+                            <label for="title-fi">Nimi</label>
+                            <input id="title-fi" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
                         </div>
-                        <div>
-                            <h3>Englanniksi</h3>
-                            <div class="field">
-                                <label for="title-en">Nimi</label>
-                                <input id="title-en" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
-                            </div>
-                            <div class="field">
-                                <label for="description-en">Kuvaus</label>
-                                <textarea
-                                    id="description-en"
-                                    class="description-field text-field"
-                                    placeholder="shortly in english"
-                                    maxlength="2000"
-                                ></textarea>
-                            </div>
+                        <div class="field">
+                            <label for="description-fi">Kuvaus</label>
+                            <textarea
+                                id="description-fi"
+                                class="description-field text-field"
+                                placeholder="kerro lyhyesti Lärpäkkeestä"
+                                maxlength="2000"
+                            ></textarea>
                         </div>
                     </div>
-                    <div class="send-options">
-                        <button id="commonCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
-                        <button id="commonSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+                    <div>
+                        <h3>Englanniksi</h3>
+                        <div class="field">
+                            <label for="title-en">Nimi</label>
+                            <input id="title-en" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                        </div>
+                        <div class="field">
+                            <label for="description-en">Kuvaus</label>
+                            <textarea
+                                id="description-en"
+                                class="description-field text-field"
+                                placeholder="shortly in english"
+                                maxlength="2000"
+                            ></textarea>
+                        </div>
                     </div>
-                </form>
-            </div>
+                </div>
+                <div class="send-options">
+                    <!-- type="button" to disable any default action -->
+                    <button type="button" id="commonCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
+                    <button type="button" id="commonSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+                </div>
+            </form>
         </form-container>
 
         <form-container>
             <div style="padding: 20px">
-                <h2>Muokkaa Yleisiä Tietoja</h2>
+                <h2>Osiot Ja Tehtävät</h2>
                 <p>
-                    Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tehtävän poistaminen ei poista
-                    tehtävää jätjestelmäst, mutta poistaa siitä saatavat pisteet ja merkitsee sen peruutetuksi. Tietoja
-                    ei täten häviä, mutta kokonaispisteet voivat muuttua.
+                    HUOM! VOIT MENETTÄÄ TIETOJA! Osion poistaminen poistaa myös kaikki sen tehtävät, jolloin dataa
+                    katoaa. Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tehtävän poistaminen ei poista
+                    tehtävää järjestelmästä, mutta poistaa siitä saatavat pisteet ja merkitsee sen peruutetuksi.
                 </p>
-                <ol>
+                <ol class="sections-list">
                     <li>
                         <h3>Kaupunkikävely</h3>
                     </li>
