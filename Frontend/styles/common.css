@@ -2,7 +2,7 @@
 @import "colors.css";
 
 :root {
-    --side-panel-width: 250px
+    --side-panel-width: 250px;
 }
 
 body {
@@ -169,7 +169,6 @@ body {
     margin: 10px 0;
     padding: 5px 0px;
     font-size: 1rem;
-
 }
 
 .side-panel ul li a {
@@ -196,6 +195,11 @@ body {
     background-color: #5c61a3;
     color: #ffffff;
     user-select: none;
+}
+
+.hor-center-content {
+    display: flex;
+    justify-content: center;
 }
 
 @media screen and (max-width: 660px) {

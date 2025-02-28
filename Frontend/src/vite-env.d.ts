@@ -6,6 +6,7 @@ interface ImportMetaEnv {
     readonly VITE_API_BASE_URL: string;
     readonly VITE_IS_DEV: string;
     readonly VITE_DEV_ID: string;
+    readonly VITE_ENTRA_REDIRECT_URL: string;
 }
 
 interface ImportMeta {

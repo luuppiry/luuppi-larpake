@@ -19,10 +19,10 @@ export default class EntraId {
         this.config = {
             auth: {
                 clientId: import.meta.env.VITE_ENTRA_CLIENT_ID,
-                authority: `https://${
-                    import.meta.env.VITE_ENTRA_SERVER
-                }.ciamlogin.com/${import.meta.env.VITE_ENTRA_TEDANT_ID}`,
-                redirectUri: window.location.origin,
+                authority: `https://${import.meta.env.VITE_ENTRA_SERVER}.ciamlogin.com/${
+                    import.meta.env.VITE_ENTRA_TEDANT_ID
+                }`,
+                redirectUri: import.meta.env.VITE_ENTRA_REDIRECT_URL,
             },
         };
     }
@@ -109,10 +109,7 @@ export default class EntraId {
         //  Create client if not already initialized.
         if (this.msalInstance === null) {
             this.isInitialized = true;
-            this.msalInstance =
-                await PublicClientApplication.createPublicClientApplication(
-                    this.config
-                );
+            this.msalInstance = await PublicClientApplication.createPublicClientApplication(this.config);
             this.accounts = this.msalInstance.getAllAccounts() ?? [];
         }
     }

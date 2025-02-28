@@ -8,9 +8,9 @@ class Header extends HTMLElement {
 
     connectedCallback() {
         const index = this.#add_path_correction("index.html");
-        const loggedIn = Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"));
+        const loggedIn = Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"));
         const currentLang = window.location.href.includes("/en/") ? "en" : "fi";
-        
+
         this.innerHTML = `
          <header class="header">
             <img
@@ -26,25 +26,26 @@ class Header extends HTMLElement {
                 style="display: flex; justify-content: center; align-items: center">
                 <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
             </div>
-            ${loggedIn ? `
-            <div
+            ${
+                loggedIn
+                    ? `<div
                 class="menu-icon"
                 id="ui-header-profile-btn"
                 style="display: flex; justify-content: center; align-items: center">
                 <img class="profile-icon" src="/icons/profile-icon.png" height="30px" width="auto" />
                 <div class="profile-dropdown" id="profileDropdown">
                     <a href="profile.html">Profiili</a>
-                    ${currentLang === "fi" ? '<a href="admin/admin.html">Ylläpito</a>' : ''}
+                    ${currentLang === "fi" ? '<a href="admin/admin.html">Ylläpito</a>' : ""}
                     <a href="#" style="color: red;">Kirjaudu ulos</a>
                 </div>
-            </div> ` : ''}
-            ${!loggedIn ? `
-                <div
+            </div> `
+                    : `<div
                     class="menu-icon"
                     id="ui-header-login-btn"
                     style="display: flex; justify-content: center; align-items: center">
                     <img class="login-icon" src="/icons/login-icon.png" height="30px" width="auto" />
-                </div> ` : ''}
+                </div> `
+            }
             <div class="menu-icon" id="ui-header-open-menu-btn">☰</div>
         </header>
          `;
@@ -57,7 +58,7 @@ class Header extends HTMLElement {
             this.changeLanguage();
         });
 
-        if(loggedIn){
+        if (loggedIn) {
             const profileBtn = this.querySelector<HTMLDivElement>("#ui-header-profile-btn");
             if (profileBtn == null) {
                 throw new Error("Profile button not found");
@@ -74,8 +75,8 @@ class Header extends HTMLElement {
                 this.logout();
             });
         }
-        
-        if(!loggedIn){
+
+        if (!loggedIn) {
             const logInBtn = this.querySelector<HTMLDivElement>("#ui-header-login-btn");
             if (logInBtn == null) {
                 throw new Error("Login button not found");
@@ -146,7 +147,7 @@ async function login() {
         const token = await auth.fetchAzureLogin();
         if (token) {
             console.log("Login successful.");
-            location.reload(); 
+            location.reload();
         } else {
             console.log("Login failed.");
         }
@@ -160,7 +161,7 @@ async function logout() {
         const token = await auth.fetchAzureLogout();
         if (token) {
             console.log("Access Token:", token);
-            location.reload(); 
+            location.reload();
         } else {
             console.log("Logout failed.");
         }
@@ -198,7 +199,6 @@ function profileDropdown(): void {
         document.addEventListener("click", closeDropdownOutside);
     }
 }
-
 
 function changeLanguage(): void {
     console.log("change language");

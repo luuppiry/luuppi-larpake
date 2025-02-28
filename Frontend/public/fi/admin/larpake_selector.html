@@ -7,16 +7,16 @@
         <link rel="stylesheet" href="/styles/admin/larpake_selector.css" />
         <link rel="stylesheet" href="/styles/section.css" />
         <script src="/src/components/side-panel.ts"></script>
-        <script src="/src/components/ui-header.ts"></script>
+        <script type="module" src="/src/components/ui-header.ts"></script>
         <script>
-            if (!Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"))){
+            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
                 window.location.replace("unauthorized.html");
             }
         </script>
     </head>
     <body>
-        <side-panel path-depth="1" />
-        <ui-header path-depth="1" />
+        <ui-header path-depth="1"></ui-header>
+        <side-panel path-depth="1"></side-panel>
         <div>
             <div style="display: flex; justify-content: center">
                 <h2 style="font-size: xx-large">Lärpäkkeet</h2>
