@@ -40,14 +40,14 @@
                         class="text-field start-year-field"
                         type="number"
                         min="-1"
-                        max="2999"
+                        max="2100"
                         step="1"
                         value="2025"
                     />
                 </div>
-                <div class="form-divider">
+                <div class="larpake-divider">
                     <div>
-                        <h3>Suomeksi (oletus)</h3>
+                        <h3 class="no-margin">Suomeksi (oletus)</h3>
                         <div class="field">
                             <label for="title-fi">Nimi</label>
                             <input id="title-fi" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
@@ -63,7 +63,7 @@
                         </div>
                     </div>
                     <div>
-                        <h3>Englanniksi</h3>
+                        <h3 class="no-margin">Englanniksi</h3>
                         <div class="field">
                             <label for="title-en">Nimi</label>
                             <input id="title-en" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
@@ -88,23 +88,116 @@
         </form-container>
 
         <form-container>
-            <div style="padding: 20px">
-                <h2>Osiot Ja Tehtävät</h2>
-                <p>
-                    HUOM! VOIT MENETTÄÄ TIETOJA! Osion poistaminen poistaa myös kaikki sen tehtävät, jolloin dataa
-                    katoaa. Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tehtävän poistaminen ei poista
-                    tehtävää järjestelmästä, mutta poistaa siitä saatavat pisteet ja merkitsee sen peruutetuksi.
-                </p>
-                <ol class="sections-list">
-                    <li>
-                        <h3>Kaupunkikävely</h3>
-                    </li>
-                </ol>
-                <div class="send-options">
-                    <button id="tasksCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
-                    <button id="tasksSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+            <form>
+                <div style="padding: 20px">
+                    <h2>Osiot Ja Tehtävät</h2>
+                    <p>
+                        HUOM! VOIT MENETTÄÄ TIETOJA! Osion poistaminen poistaa myös kaikki sen tehtävät, jolloin dataa
+                        katoaa. Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tehtävän poistaminen ei
+                        poista tehtävää järjestelmästä, mutta poistaa siitä saatavat pisteet ja merkitsee sen
+                        peruutetuksi.
+                    </p>
+                    <ol class="section-list">
+                        <li>
+                            <div class="larpake-section">
+                                <h3>Osio</h3>
+                                <div class="section-divider">
+                                    <div class="field">
+                                        <label for="section-title-fi">Otsikko (fi, oletus)</label>
+                                        <input
+                                            id="section-title-fi"
+                                            class="text-field"
+                                            placeholder="Tanpereella"
+                                            maxlength="80"
+                                        />
+                                    </div>
+                                    <div class="field">
+                                        <label for="section-title-en">Otsikko (en)</label>
+                                        <input
+                                            id="section-title-en"
+                                            class="text-field"
+                                            placeholder="In Tampere"
+                                            maxlength="80"
+                                        />
+                                    </div>
+                                </div>
+                                <ol class="section-list task-list">
+                                    <div class="task">
+                                        <div class="section-divider">
+                                            <h4>Tehtävä</h4>
+                                            <div class="field">
+                                                <div class="tooltipped-title" style="margin: 0">
+                                                    <label for="task-points">Pisteitä</label>
+                                                    <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                                                    <p class="tooltip">Tehtävän suorittamisesta annettava pistemäärä</p>
+                                                </div>
+                                                <input
+                                                    id="task-points"
+                                                    class="text-field start-year-field"
+                                                    type="number"
+                                                    min="1"
+                                                    max="100"
+                                                    step="1"
+                                                    value="3"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="section-divider">
+                                            <div>
+                                                <h4 class="no-margin">Suomeksi (oletus)</h4>
+                                                <div class="field">
+                                                    <label for="task-title-fi">Otsikko</label>
+                                                    <input
+                                                        id="task-title-fi"
+                                                        class="text-field"
+                                                        placeholder="Kaupunkikävely"
+                                                        maxlength="80"
+                                                    />
+                                                </div>
+                                                <div class="field">
+                                                    <label for="task-body-fi">Selitys</label>
+                                                    <textarea
+                                                        id="task-body-fi"
+                                                        class="description-field text-field"
+                                                        placeholder="kuvaus"
+                                                        maxlength="2000"
+                                                    ></textarea>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <h4 class="no-margin">Englanniksi</h4>
+                                                <div class="field">
+                                                    <label for="task-title-en">Otsikko</label>
+                                                    <input
+                                                        id="task-title-en"
+                                                        class="text-field"
+                                                        placeholder="Kaupunkikävely"
+                                                        maxlength="80"
+                                                    />
+                                                </div>
+                                                <div class="field">
+                                                    <label for="task-body-en">Selitys</label>
+                                                    <textarea
+                                                        id="task-body-en"
+                                                        class="description-field text-field"
+                                                        placeholder="body"
+                                                        maxlength="2000"
+                                                    ></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ol>
+                            </div>
+                        </li>
+                    </ol>
+                    <div class="send-options">
+                        <button id="tasksCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
+                        <button id="tasksSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </form-container>
     </body>
     <script type="module" src="/src/admin/larpake_manager.ts"></script>

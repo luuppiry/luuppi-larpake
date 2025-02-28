@@ -1,18 +1,18 @@
 @import "../common.css";
 @import "../section.css";
 
-.form-divider {
+.larpake-divider {
     display: flex;
     flex-flow: row;
     gap: 40px;
 }
 
-.form-divider > div {
+.larpake-divider > div {
     display: flex;
     flex-flow: column;
     gap: 14px;
     flex: 1;
-    margin: 40px 0 0 0;
+    margin: 30px 0 0 0;
 }
 
 .field {
@@ -40,29 +40,69 @@
     margin-bottom: -40px;
 }
 
+.section-list {
+    list-style: none;
+    gap: 10px;
+    padding: 0;
+}
+
+.section-list > li {
+    background-color: white;
+    border-radius: 5px;
+}
+
+.larpake-section {
+    border-radius: 10px;
+    background-color: var(--luuppi-gray);
+    padding: 10px 20px;
+}
+
+.larpake-section > h3 {
+    padding: 0px;
+    margin: 0px;
+}
+
+.section-divider {
+    display: flex;
+    flex-flow: row;
+    gap: 40px;
+}
+
+.section-divider > * {
+    flex: 1;
+}
+
+.no-margin {
+    margin: 0px;
+}
+
+.task-list {
+    margin-top: 20px;
+}
+
+.task {
+    background-color: white;
+    border-radius: 10px;
+    padding: 10px 16px;
+}
+
+.task > h4 {
+    margin: 0;
+    padding: 0;
+}
+
 @media screen and (max-width: 800px) {
     .form-divider {
         flex-flow: column;
-        gap: 0px;
+        gap: 0;
     }
-}
 
-.sections-list {
-    list-style: none;
-    padding: 5px 10px;
-    background-color: var(--luuppi-gray);
-    gap: 10px;
-    border-radius: 10px;
-}
+    .form-divider > div {
+        gap: 8px;
+    }
 
-.sections-list > li {
-    background-color: white;
-    border-radius: 5px;
-    padding: 5px 10px;
-    margin: 20px;
-}
-
-.sections-list > li > h3 {
-    padding: 0px;
-    margin: 0px;
+    .section-divider {
+        flex-flow: column;
+        gap: 8px;
+    }
 }
