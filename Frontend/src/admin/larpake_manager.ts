@@ -1,3 +1,5 @@
+import TaskEditor, { addTaskEventListeners } from "../components/task-editor";
+
 document.getElementById("commonCancelBtn")?.addEventListener("click", (_) => {
     // Cancel to default values
 });
@@ -5,3 +7,7 @@ document.getElementById("commonCancelBtn")?.addEventListener("click", (_) => {
 document.getElementById("commonSaveBtn")?.addEventListener("click", (_) => {
     // Validate and send new values to server
 });
+
+
+addTaskEventListeners();
+

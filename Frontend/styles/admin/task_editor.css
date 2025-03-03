@@ -1,0 +1,51 @@
+
+.task {
+    display: flex;
+    flex-flow: column;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.task-header {
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 10px;
+    user-select: none;
+}
+
+.task-header:hover {
+    background-color: #eee;
+    border-radius: 10px;
+}
+
+.task-header > div {
+    display: flex;
+    flex-flow: row;
+    padding: 10px 0 10px 0;
+    gap: 10px;
+}
+.task-header > div > h4,
+.task-header > div > p {
+    font-size: medium;
+    margin: 0;
+}
+
+.task-header > img {
+    transition: transform 0.2s ease;
+    padding-top: 5px;
+    height: 30px;
+    width: 30px;
+}
+
+.task-content {
+    padding: 0px 16px 10px 16px;
+    display: none;
+    overflow: hidden;
+}
+
+.rotate-180deg {
+    transition: transform 0.2s ease;
+    transform: rotate(180deg);
+}

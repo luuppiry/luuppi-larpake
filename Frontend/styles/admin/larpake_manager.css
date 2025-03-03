@@ -1,5 +1,7 @@
+@import "task_editor.css";
 @import "../common.css";
 @import "../section.css";
+@import "../common_settings.css";
 
 .larpake-divider {
     display: flex;
@@ -48,7 +50,7 @@
 
 .section-list > li {
     background-color: white;
-    border-radius: 5px;
+    border-radius: 10px;
 }
 
 .larpake-section {
@@ -80,22 +82,7 @@
     margin-top: 20px;
 }
 
-.task-list > li {
-    display: flex;
-    flex-flow: column;
-}
 
-.task-header {
-}
-
-.task-header > h4 {
-}
-
-.task {
-    background-color: white;
-    border-radius: 10px;
-    padding: 10px 16px;
-}
 
 @media screen and (max-width: 800px) {
     .form-divider {
