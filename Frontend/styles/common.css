@@ -212,20 +212,9 @@ body {
     }
 }
 
-/* Default text field/area style for settings etc */
-.text-field {
-    border-radius: 5px;
-    padding: 5px 7px;
-    font-family: Poppins;
-    border-color: var(--text-border);
-    border: var(--text-border) solid 2px;
-}
-
-.text-field:focus {
-    outline: none !important;
-}
 
 .primary-btn {
+
     font-size: large;
     background-color: var(--luuppi-blue);
     color: white;
