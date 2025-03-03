@@ -87,12 +87,12 @@ class SidePanel extends HTMLElement {
             .join("\n");
 
         this.innerHTML = `
-            <div class="side-panel" id="side-panel-element">
+            <nav class="side-panel" id="side-panel-element">
                 <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
                     <img class="close-x" src="/icons/close-x.png" height="30px" width="auto">
                 </div>
                 <ul>${menuItems}</ul>
-            </div>
+            </nav>
         `;
 
         this.setupSubmenuToggle();
