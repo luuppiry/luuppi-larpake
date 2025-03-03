@@ -25,7 +25,7 @@ export default class TaskEditor extends HTMLElement {
         const idNum = this.idNumber;
 
         const header = `
-            <div class="task-header">
+            <div id="task-${idNum}-header" class="task-header">
                 <div>
                     <h4>Title</h4>
                     <p>&HorizontalLine;</p>
@@ -107,17 +107,13 @@ export default class TaskEditor extends HTMLElement {
             </div>
             `;
 
-        const content = `
-            <div class="task-content">
-                ${commonInfo}
-                ${localizedInfo}
-            </div>
-            `;
-
         this.innerHTML = `
         <li class="task">
             ${header}
-            ${content}
+            <div id="task-${idNum}-content" class="task-content">
+                ${commonInfo}
+                ${localizedInfo}
+            </div>
         </li>
         `;
 
@@ -136,7 +132,7 @@ export default class TaskEditor extends HTMLElement {
 
         let i = 0;
         while (document.getElementById(`${idStart}${i}`) != null) {
-            if (i > 200) {
+            if (i > 1000) {
                 console.log(`Low on available task editor ids, currently searching ${i}`);
             }
             i++;
@@ -164,22 +160,16 @@ export default class TaskEditor extends HTMLElement {
         }
     }
 
-    addAllEventListeners(){
-        addTaskEventListeners();
-    }
-}
+    addEventListeners() {
+        const current = this;
 
-if ("customElements" in window) {
-    customElements.define("task-editor", TaskEditor);
-}
+        const header = document.getElementById(`task-${this.idNumber}-header`);
+        if (header === null) {
+            return;
+        }
 
-export function addTaskEventListeners() {
-    let collapsibles = document.getElementsByClassName("task-header");
-
-    for (let i = 0; i < collapsibles.length; i++) {
-        const current = collapsibles[i];
-        current.addEventListener("click", (_) => {
-            const content = current.nextElementSibling as HTMLElement;
+        header.addEventListener("click", (_) => {
+            const content = document.getElementById(`task-${this.idNumber}-content`) as HTMLElement;
             const isOpen = content.style.display === "block";
 
             content.style.display = isOpen ? "none" : "block";
@@ -191,4 +181,22 @@ export function addTaskEventListeners() {
             }
         });
     }
+
+    addAllEventListeners() {
+        addTaskEventListeners();
+    }
+}
+
+if ("customElements" in window) {
+    customElements.define("task-editor", TaskEditor);
+}
+
+export function addTaskEventListeners() {
+    let editors = document.getElementsByClassName("task-header");
+    for (let i = 0; i < editors.length; i++){
+        if (editors[i] instanceof TaskEditor){
+            (editors[i] as TaskEditor).addEventListeners();
+        }
+    }
+
 }

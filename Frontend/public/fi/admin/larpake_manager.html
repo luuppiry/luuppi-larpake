@@ -16,7 +16,7 @@
             }
         </script>
     </head>
-    <body style="margin-bottom: 100px;">
+    <body style="margin-bottom: 100px">
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
         <form-container>
@@ -97,35 +97,8 @@
                         poista tehtävää järjestelmästä, mutta poistaa siitä saatavat pisteet ja merkitsee sen
                         peruutetuksi.
                     </p>
-                    <ol class="section-list">
-                        <li class="task">
-                            <div class="larpake-section">
-                                <h3>Osio</h3>
-                                <div class="section-divider">
-                                    <div class="field">
-                                        <label for="section-title-fi">Otsikko (fi, oletus)</label>
-                                        <input
-                                            id="section-title-fi"
-                                            class="text-field"
-                                            placeholder="Tanpereella"
-                                            maxlength="80"
-                                        />
-                                    </div>
-                                    <div class="field">
-                                        <label for="section-title-en">Otsikko (en)</label>
-                                        <input
-                                            id="section-title-en"
-                                            class="text-field"
-                                            placeholder="In Tampere"
-                                            maxlength="80"
-                                        />
-                                    </div>
-                                </div>
-                                <ol class="section-list task-list">
-                                    <task-editor></task-editor>
-                                </ol>
-                            </div>
-                        </li>
+                    <ol id="section-container" class="section-list" >
+                        <!-- Lärpäke sections and their tasks -->
                     </ol>
                     <div class="send-options">
                         <button id="tasksCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
