@@ -122,72 +122,79 @@
                                     </div>
                                 </div>
                                 <ol class="section-list task-list">
-                                    <div class="task">
-                                        <div class="section-divider">
-                                            <h4>Tehtävä</h4>
-                                            <div class="field">
-                                                <div class="tooltipped-title" style="margin: 0">
-                                                    <label for="task-points">Pisteitä</label>
-                                                    <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                                                    <p class="tooltip">Tehtävän suorittamisesta annettava pistemäärä</p>
-                                                </div>
-                                                <input
-                                                    id="task-points"
-                                                    class="text-field start-year-field"
-                                                    type="number"
-                                                    min="1"
-                                                    max="100"
-                                                    step="1"
-                                                    value="3"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div class="section-divider">
+                                    <li>
+                                        <div class="task">
                                             <div>
-                                                <h4 class="no-margin">Suomeksi (oletus)</h4>
+                                                <h4>Kaupunkikävely</h4>
+                                            </div>
+                                            <div class="section-divider">
+                                                <h4>Tehtävä</h4>
                                                 <div class="field">
-                                                    <label for="task-title-fi">Otsikko</label>
+                                                    <div class="tooltipped-title" style="margin: 0">
+                                                        <label for="task-points">Pisteitä</label>
+                                                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                                                        <p class="tooltip">
+                                                            Tehtävän suorittamisesta annettava pistemäärä
+                                                        </p>
+                                                    </div>
                                                     <input
-                                                        id="task-title-fi"
-                                                        class="text-field"
-                                                        placeholder="Kaupunkikävely"
-                                                        maxlength="80"
+                                                        id="task-points"
+                                                        class="text-field start-year-field"
+                                                        type="number"
+                                                        min="1"
+                                                        max="100"
+                                                        step="1"
+                                                        value="3"
                                                     />
                                                 </div>
-                                                <div class="field">
-                                                    <label for="task-body-fi">Selitys</label>
-                                                    <textarea
-                                                        id="task-body-fi"
-                                                        class="description-field text-field"
-                                                        placeholder="kuvaus"
-                                                        maxlength="2000"
-                                                    ></textarea>
-                                                </div>
                                             </div>
+                                            <div class="section-divider">
+                                                <div>
+                                                    <h4 class="no-margin">Suomeksi (oletus)</h4>
+                                                    <div class="field">
+                                                        <label for="task-title-fi">Otsikko</label>
+                                                        <input
+                                                            id="task-title-fi"
+                                                            class="text-field"
+                                                            placeholder="Kaupunkikävely"
+                                                            maxlength="80"
+                                                        />
+                                                    </div>
+                                                    <div class="field">
+                                                        <label for="task-body-fi">Selitys</label>
+                                                        <textarea
+                                                            id="task-body-fi"
+                                                            class="description-field text-field"
+                                                            placeholder="kuvaus"
+                                                            maxlength="800"
+                                                        ></textarea>
+                                                    </div>
+                                                </div>
 
-                                            <div>
-                                                <h4 class="no-margin">Englanniksi</h4>
-                                                <div class="field">
-                                                    <label for="task-title-en">Otsikko</label>
-                                                    <input
-                                                        id="task-title-en"
-                                                        class="text-field"
-                                                        placeholder="Kaupunkikävely"
-                                                        maxlength="80"
-                                                    />
-                                                </div>
-                                                <div class="field">
-                                                    <label for="task-body-en">Selitys</label>
-                                                    <textarea
-                                                        id="task-body-en"
-                                                        class="description-field text-field"
-                                                        placeholder="body"
-                                                        maxlength="2000"
-                                                    ></textarea>
+                                                <div>
+                                                    <h4 class="no-margin">Englanniksi</h4>
+                                                    <div class="field">
+                                                        <label for="task-title-en">Otsikko</label>
+                                                        <input
+                                                            id="task-title-en"
+                                                            class="text-field"
+                                                            placeholder="Kaupunkikävely"
+                                                            maxlength="80"
+                                                        />
+                                                    </div>
+                                                    <div class="field">
+                                                        <label for="task-body-en">Selitys</label>
+                                                        <textarea
+                                                            id="task-body-en"
+                                                            class="description-field text-field"
+                                                            placeholder="body"
+                                                            maxlength="2000"
+                                                        ></textarea>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </li>
                                 </ol>
                             </div>
                         </li>

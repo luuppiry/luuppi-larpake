@@ -25,7 +25,7 @@ class Header extends HTMLElement {
                         style="display: flex; justify-content: center; align-items: center">
                         <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
                     </div>`
-            : "";
+            : "<!-- no other languages available -->";
 
         const profileBtn = loggedIn
             ? `<div
