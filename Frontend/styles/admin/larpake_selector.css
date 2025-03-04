@@ -1,4 +1,6 @@
 @import "../common.css";
+@import "../section.css";
+@import "../tooltip.css";
 
 .larpake-container {
     display: grid;

@@ -1,0 +1,13 @@
+@import "../common.css";
+@import "../section.css";
+
+a {
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+}
+
+group-info-container {
+    display: flex;
+    flex-flow: column;
+}
