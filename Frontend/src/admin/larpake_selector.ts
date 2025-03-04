@@ -34,3 +34,8 @@ data.forEach((larpake) => {
     container.appendChild(item);
     item.addData(larpake);
 });
+
+const addNewBtn = document.getElementById("add-new-template") as HTMLTemplateElement;
+if (addNewBtn) {
+    container.appendChild(addNewBtn.content);
+}

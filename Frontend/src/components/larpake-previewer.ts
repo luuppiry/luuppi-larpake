@@ -42,11 +42,11 @@ export default class LarpakePreview extends HTMLLIElement {
                         <h3 id="larpake-${numId}-title" class="larpake-title">Kiasan SeikkailuLärpäke 2024</h3>
                         <div style="display: flex" class="cursor-pointer">
                             <div class="data-container" style="flex: 1">
-                                <p id="larpake-${numId}-year">Vuosi: <b>2024</b></p>
-                                <p id="larpake-${numId}-sections">Osioita: <b>4</b> kpl</p>
-                                <p id="larpake-${numId}-tasks">Tehtäviä: <b>35</b> kpl</p>
-                                <p id="larpake-${numId}-total">Yhteensä: <b>120</b> pistettä</p>
-                                <p id="larpake-${numId}-groups">Ryhmiä: <b>12</b> kpl</p>
+                                <p>Vuosi: <b id="larpake-${numId}-year">20XX</b></p>
+                                <p>Osioita: <b id="larpake-${numId}-sections">X</b> kpl</p>
+                                <p>Tehtäviä: <b id="larpake-${numId}-tasks">X</b> kpl</p>
+                                <p>Yhteensä: <b id="larpake-${numId}-total">X</b> pistettä</p>
+                                <p>Ryhmiä: <b id="larpake-${numId}-groups">X</b> kpl</p>
 
                                 <p class="line-breaking">
                                     <span class="line">Luotu: </span>
@@ -65,7 +65,7 @@ export default class LarpakePreview extends HTMLLIElement {
                 </div>
             </a>
             `;
-
+        this.id = `${idStart}${numId}`;
         this.link = document.getElementById(`larpake-${numId}-link`) as HTMLAnchorElement;
         this.image = document.getElementById(`larpake-${numId}-title-image`) as HTMLImageElement;
         this.titleText = document.getElementById(`larpake-${numId}-title`) as HTMLHeadingElement;
@@ -91,19 +91,19 @@ export default class LarpakePreview extends HTMLLIElement {
             this.titleText.innerText = data.titleFi;
         }
         if (this.year) {
-            this.year.innerHTML = `Vuosi: <b>${data.year ?? "N/A"}</b>`;
+            this.year.innerText = data.year?.toString() ?? "N/A";
         }
         if (this.sections) {
-            this.sections.innerHTML = `Osioita: <b>${data.sections}</b> kpl`;
+            this.sections.innerText = data.sections.toString();
         }
         if (this.tasks) {
-            this.tasks.innerHTML = `Tehtäviä: <b>${data.tasks}</b> kpl`;
+            this.tasks.innerText = data.tasks.toString();
         }
         if (this.total) {
-            this.total.innerHTML = `Yhteensä: <b>${data.points}</b> pistettä`;
+            this.total.innerText = data.points.toString();
         }
         if (this.groups) {
-            this.groups.innerHTML = `Ryhmiä: <b>${data.groups}</b> kpl`;
+            this.groups.innerText = data.groups.toString();
         }
         if (this.created) {
             this.created.innerText = data.createdAt.toLocaleString();
