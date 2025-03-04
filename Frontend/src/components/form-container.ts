@@ -8,6 +8,13 @@ class FormContainer extends HTMLElement {
     }
 
     connectedCallback() {
+        /* If cloned from template, inner html is already set
+         * Otherwise inner html is added after this callback and that muset be monitored*/
+        if (this.innerHTML != null && this.innerHTML != "") {
+            this.appendContent();
+            return;
+        }
+
         // Add observer to track if element children are changed
         this.observer.observe(this, { childList: true });
     }
