@@ -1,7 +1,10 @@
-@import "task_editor.css";
 @import "../common.css";
 @import "../section.css";
 @import "../common_settings.css";
+
+:root {
+    --hover-white: #eee;
+}
 
 .larpake-divider {
     display: flex;
@@ -82,6 +85,86 @@
 
 .task-list {
     margin-top: 20px;
+}
+
+.task {
+    display: flex;
+    flex-flow: column;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.task-header {
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 10px;
+    user-select: none;
+}
+
+.task-header:hover {
+    background-color: var(--hover-white);
+    border-radius: 10px;
+}
+
+.task-header-titles {
+    display: flex;
+    flex-flow: row;
+    padding: 10px 0 10px 0;
+    gap: 10px;
+}
+.task-header-titles > h4,
+.task-header-titles > p {
+    font-size: medium;
+    margin: 0;
+}
+.task-header-titles > img {
+    height: 20px;
+    width: 20px;
+    padding: 5px;
+    margin: -5px -5px -5px 0;
+    border-radius: 5px;
+}
+
+.task-header-titles > img:hover {
+    background-color: #ffc2c5;
+}
+
+.task-header > img {
+    transition: transform 0.2s ease;
+    padding-top: 5px;
+    height: 30px;
+    width: 30px;
+}
+
+.task-content {
+    padding: 0px 16px 10px 16px;
+    display: none;
+    overflow: hidden;
+}
+
+.rotate-180deg {
+    transition: transform 0.2s ease;
+    transform: rotate(180deg);
+}
+
+.add-task {
+    cursor: pointer;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.add-task:hover {
+    background-color: var(--hover-white);
+}
+
+.add-task > img {
+    max-height: 40px;
 }
 
 @media screen and (max-width: 800px) {

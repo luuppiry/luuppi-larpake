@@ -51,6 +51,9 @@ export default class SectionEditor extends HTMLElement {
                     <ol id="section-${idNum}-tasks-container" class="section-list task-list">
                         <!-- Tasks in this section -->
                     </ol>
+                    <div id="add-task-${idNum}-btn" class="add-task">
+                        <img src="/icons/plus_icon.svg" alt="add new icon">
+                    </div>
                 </div>
             </li>
             `;
@@ -59,6 +62,17 @@ export default class SectionEditor extends HTMLElement {
         this.titleFiField = document.getElementById(`section-${idNum}-title-fi`) as HTMLInputElement;
         this.titleEnField = document.getElementById(`section-${idNum}-title-en`) as HTMLInputElement;
         this.tasksContainer = document.getElementById(`section-${idNum}-tasks-container`) as HTMLOListElement;
+
+        document.getElementById(`add-task-${idNum}-btn`)?.addEventListener("click", (_) => {
+            this.appendTask({
+                id: -1,
+                titleFi: "Uusi Tehtävä",
+                titleEn: "",
+                bodyFi: "",
+                bodyEn: "",
+                points: 0,
+            });
+        });
     }
 
     disconnectedCallback() {}

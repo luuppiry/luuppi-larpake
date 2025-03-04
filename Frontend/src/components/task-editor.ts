@@ -28,12 +28,13 @@ export default class TaskEditor extends HTMLElement {
 
         const header = `
             <div id="task-${idNum}-header" class="task-header">
-                <div>
+                <div class="task-header-titles">
                     <h4 id="task-${idNum}-header-title">Title</h4>
                     <p>&HorizontalLine;</p>
                     <p id="task-${idNum}-header-points">Xp</p>
+                    <img id="delete-task-${idNum}-btn" src="/icons/bin.svg" alt="delete icon" />
                 </div>
-                <img src="/icons/menu_closed.svg" alt="menu closed icon" />
+                <img id="task-${idNum}-opened-img" src="/icons/menu_closed.svg" alt="menu closed icon" />
             </div>
             `;
 
@@ -171,24 +172,21 @@ export default class TaskEditor extends HTMLElement {
     }
 
     addEventListeners() {
-        const current = this;
-
         const header = document.getElementById(`task-${this.idNumber}-header`);
-        if (header === null) {
-            return;
-        }
-
-        header.addEventListener("click", (_) => {
+        header?.addEventListener("click", (_) => {
+            // Change content visibility
             const content = document.getElementById(`task-${this.idNumber}-content`) as HTMLElement;
             const isOpen = content.style.display === "block";
-
             content.style.display = isOpen ? "none" : "block";
-            for (let j = 0; j < current.children.length; j++) {
-                const currentChild = current.children.item(j);
-                if (currentChild instanceof HTMLImageElement) {
-                    currentChild.classList.toggle("rotate-180deg");
-                }
-            }
+
+            // Flip header opened icon
+            const isOpenedImg = document.getElementById(`task-${this.idNumber}-opened-img`);
+            isOpenedImg?.classList.toggle("rotate-180deg");
+        });
+
+        const deleteBtn = document.getElementById(`delete-task-${this.idNumber}-btn`);
+        deleteBtn?.addEventListener("click", (_) => {
+            this.parentElement?.removeChild(this);
         });
     }
 
