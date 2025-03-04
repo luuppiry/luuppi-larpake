@@ -1,9 +1,12 @@
+import TaskEditor, { TaskData } from "./task-editor";
+
 const idStart = "section-editor-";
 
-export type TaskData = {
+export type SectionData = {
     id: number;
     titleFi: string;
     titleEn: string;
+    tasks: TaskData[];
 };
 
 export default class SectionEditor extends HTMLElement {
@@ -11,13 +14,14 @@ export default class SectionEditor extends HTMLElement {
     titleFiField: HTMLInputElement | null = null;
     titleEnField: HTMLInputElement | null = null;
     serverTaskId: number | null = null;
+    tasksContainer: HTMLOListElement | null = null;
 
     constructor() {
         super();
     }
 
     connectedCallback() {
-        this.idNumber = this.getAvailableIdNum();
+        this.idNumber = this.#getAvailableIdNum();
         const idNum = this.idNumber;
 
         this.innerHTML = `
@@ -44,7 +48,7 @@ export default class SectionEditor extends HTMLElement {
                             />
                         </div>
                     </div>
-                    <ol class="section-list task-list">
+                    <ol id="section-${idNum}-tasks-container" class="section-list task-list">
                         <!-- Tasks in this section -->
                     </ol>
                 </div>
@@ -54,11 +58,12 @@ export default class SectionEditor extends HTMLElement {
         this.id = `${idStart}${idNum}`;
         this.titleFiField = document.getElementById(`section-${idNum}-title-fi`) as HTMLInputElement;
         this.titleEnField = document.getElementById(`section-${idNum}-title-en`) as HTMLInputElement;
+        this.tasksContainer = document.getElementById(`section-${idNum}-tasks-container`) as HTMLOListElement;
     }
 
     disconnectedCallback() {}
 
-    getAvailableIdNum() {
+    #getAvailableIdNum() {
         let i = 0;
         while (document.getElementById(`${idStart}${i}`) != null) {
             if (i > 1000) {
@@ -69,15 +74,18 @@ export default class SectionEditor extends HTMLElement {
         return i;
     }
 
-    appendTask(task: HTMLElement) {
-        this.appendChild(task);
+    appendTask(task: TaskData) {
+        const editor = new TaskEditor();
+        this.tasksContainer?.appendChild(editor);
+        editor.setData(task);
+        editor.addEventListeners();
     }
 
     removeTask(task: HTMLElement) {
-        this.removeChild(task);
+        this.tasksContainer?.removeChild(task);
     }
 
-    setData(data: TaskData) {
+    setData(data: SectionData) {
         this.serverTaskId = data.id;
 
         if (this.titleFiField) {
@@ -86,13 +94,11 @@ export default class SectionEditor extends HTMLElement {
         if (this.titleEnField) {
             this.titleEnField.value = data.titleEn;
         }
+
+        data.tasks.forEach((task) => this.appendTask(task));
     }
 }
 
 if ("customElements" in window) {
     customElements.define("section-editor", SectionEditor);
-}
-
-export function func() {
-    console.log("func")
 }

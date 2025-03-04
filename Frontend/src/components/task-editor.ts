@@ -13,6 +13,8 @@ export default class TaskEditor extends HTMLElement {
     bodyFiField: HTMLTextAreaElement | null = null;
     bodyEnField: HTMLTextAreaElement | null = null;
     pointsField: HTMLInputElement | null = null;
+    headerTitleField: HTMLHeadingElement | null = null;
+    headerPointsField: HTMLParagraphElement | null = null;
     idNumber: number | null = null;
     serverTaskId: number | null = null;
 
@@ -27,9 +29,9 @@ export default class TaskEditor extends HTMLElement {
         const header = `
             <div id="task-${idNum}-header" class="task-header">
                 <div>
-                    <h4>Title</h4>
+                    <h4 id="task-${idNum}-header-title">Title</h4>
                     <p>&HorizontalLine;</p>
-                    <p>Xp</p>
+                    <p id="task-${idNum}-header-points">Xp</p>
                 </div>
                 <img src="/icons/menu_closed.svg" alt="menu closed icon" />
             </div>
@@ -122,7 +124,9 @@ export default class TaskEditor extends HTMLElement {
         this.titleEnField = document.getElementById(`task-${idNum}-title-en`) as HTMLInputElement;
         this.bodyFiField = document.getElementById(`task-${idNum}-body-fi`) as HTMLTextAreaElement;
         this.bodyEnField = document.getElementById(`task-${idNum}-body-en`) as HTMLTextAreaElement;
-        this.pointsField = document.getElementById(`task-${idNum}-body-en`) as HTMLInputElement;
+        this.pointsField = document.getElementById(`task-${idNum}-points`) as HTMLInputElement;
+        this.headerTitleField = document.getElementById(`task-${idNum}-header-title`) as HTMLHeadingElement;
+        this.headerPointsField = document.getElementById(`task-${idNum}-header-points`) as HTMLParagraphElement;
     }
 
     disconnectedCallback() {}
@@ -157,6 +161,12 @@ export default class TaskEditor extends HTMLElement {
         }
         if (this.pointsField) {
             this.pointsField.value = data.points.toString();
+        }
+        if (this.headerTitleField) {
+            this.headerTitleField.innerText = data.titleFi;
+        }
+        if (this.headerPointsField) {
+            this.headerPointsField.innerText = `${data.points}p`;
         }
     }
 
@@ -193,10 +203,9 @@ if ("customElements" in window) {
 
 export function addTaskEventListeners() {
     let editors = document.getElementsByClassName("task-header");
-    for (let i = 0; i < editors.length; i++){
-        if (editors[i] instanceof TaskEditor){
+    for (let i = 0; i < editors.length; i++) {
+        if (editors[i] instanceof TaskEditor) {
             (editors[i] as TaskEditor).addEventListeners();
         }
     }
-
 }

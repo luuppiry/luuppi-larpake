@@ -43,6 +43,8 @@
 }
 
 .section-list {
+    display: flex;
+    flex-flow: column;
     list-style: none;
     gap: 10px;
     padding: 0;
@@ -81,8 +83,6 @@
 .task-list {
     margin-top: 20px;
 }
-
-
 
 @media screen and (max-width: 800px) {
     .form-divider {
