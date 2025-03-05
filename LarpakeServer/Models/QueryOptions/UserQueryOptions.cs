@@ -5,12 +5,14 @@ namespace LarpakeServer.Models.QueryOptions;
 public class UserQueryOptions : QueryOptions
 {
     public int? StartedBefore { get; set; } = null;
-    
+
     public int? StartedAfter { get; set; } = null;
 
     public int? Permissions { get; set; } = null;
-
-    public Guid? EntraId { get; set; }
+    
+    public Guid[]? UserIds { get; set; }
+    
+    public Guid[]? EntraIds { get; set; }
 
     public string? EntraUsername { get; set; }
 
