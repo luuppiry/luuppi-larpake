@@ -10,7 +10,7 @@ public class FreshmanGroup
     public int? GroupNumber { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    public List<Guid>? Members { get; set; }
+    public List<FreshmanGroupMember>? Members { get; set; }
 
     internal static FreshmanGroup MapFrom(FreshmanGroupPostDto dto)
     {
@@ -20,7 +20,6 @@ public class FreshmanGroup
             LarpakeId = dto.LarpakeId,
             Name = dto.Name,
             GroupNumber = dto.GroupNumber
-
         };
     }
 }
