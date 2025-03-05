@@ -24,8 +24,12 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
             FROM users
             """);
 
-        query.IfNotNull(options.EntraId).AppendConditionLine($"""
-            entra_id = @{nameof(options.EntraId)}
+        query.IfNotNull(options.EntraIds).AppendConditionLine($"""
+            entra_id = ANY(@{nameof(options.EntraIds)})
+            """);
+
+        query.IfNotNull(options.UserIds).AppendConditionLine($"""
+            id = ANY(@{nameof(options.UserIds)})
             """);
 
         query.IfNotNull(options.EntraUsername).AppendConditionLine($"""
