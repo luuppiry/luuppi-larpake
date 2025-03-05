@@ -14,7 +14,7 @@ namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/users")]
 public class UsersController : ExtendedControllerBase
 {
     readonly IUserDatabase _db;

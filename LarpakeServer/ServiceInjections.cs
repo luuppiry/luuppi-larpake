@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.RateLimiting;
 using Env = LarpakeServer.Helpers.Constants;
@@ -30,33 +29,20 @@ public static class ServiceInjections
                 // Allow all
                 builder.SetIsOriginAllowed(origin => true)
                        .AllowAnyMethod()
-                       .AllowAnyHeader();
-
-#if DEBUG
-                // Add more permissions for development ports
-                builder.WithOrigins([
-                    "http://localhost:3000/",
-                    "http://localhost:3001/",
-                    "http://localhost:3002/",
-                    "http://localhost:4000/",
-                    "http://localhost:4001/",
-                    "http://localhost:4002/"
-                    ])
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-#endif
+                       .AllowAnyHeader()
+                       .AllowCredentials();
             });
         });
     }
 
-    public static void AddApplicationOptions(this IServiceCollection services, IConfiguration configuration)
+    public static void AddApplicationOptions(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        ILogger<DITypeMarker> logger)
     {
-          // Key options parsing from appsettings.json
+        // Key options parsing from appsettings.json
         services.AddOptions<AttendanceKeyOptions>()
             .BindConfiguration(AttendanceKeyOptions.SectionName);
-
-
 
         // Conflict retry policy options parsing from appsettings.json
         services.AddOptions<ConflictRetryPolicyOptions>()
@@ -66,31 +52,22 @@ public static class ServiceInjections
         services.AddOptions<InviteKeyOptions>()
             .BindConfiguration(InviteKeyOptions.SectionName);
 
-        // Luuppi integration options
-        services.AddOptions<IntegrationOptions>()
-            .BindConfiguration(IntegrationOptions.SectionName);
-
-
         // Options that read secrets from environment variables
 
-        // Permissions
-        PermissionsOptions permissionsOptions = new();
-        
-
-        services.AddOptions<PermissionsOptions>()
-            .BindConfiguration(PermissionsOptions.SectionName);
-
         // Integration
-        IntegrationOptions integrationOptions = Options.GetIntegrationOptions(configuration);
+        IntegrationOptions integrationOptions = Options.GetIntegrationOptions(configuration, logger);
         services.AddSingleton<IOptions<IntegrationOptions>>(new OptionsContainer<IntegrationOptions>(integrationOptions));
 
         // Id
-        LarpakeIdOptions idOptions = Options.GetLarpakeIdOptions(configuration);
+        LarpakeIdOptions idOptions = Options.GetLarpakeIdOptions(configuration, logger);
         services.AddSingleton<IOptions<LarpakeIdOptions>>(new OptionsContainer<LarpakeIdOptions>(idOptions));
 
         // EntraId
-        EntraIdOptions entraIdOptions = Options.GetEntraIdOptions(configuration);
+        EntraIdOptions entraIdOptions = Options.GetEntraIdOptions(configuration, logger);
         services.AddSingleton<IOptions<EntraIdOptions>>(new OptionsContainer<EntraIdOptions>(entraIdOptions));
+
+        PermissionsOptions permissionsOptions = Options.GetPermissionsOptions(configuration, logger);
+        services.AddSingleton<IOptions<PermissionsOptions>>(new OptionsContainer<PermissionsOptions>(permissionsOptions));
     }
 
     public static void AddRateLimiters(this IServiceCollection services, IConfiguration configuration)
@@ -128,7 +105,10 @@ public static class ServiceInjections
             }));
     }
 
-    public static void AddAuthenticationServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddAuthenticationServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        ILogger<DITypeMarker> logger)
     {
         //This prevents 'sub' claim to be mapped incorrectly
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
@@ -138,25 +118,33 @@ public static class ServiceInjections
 
         //Larpake id scheme is used by default
         services.AddAuthentication(Env.Auth.LarpakeIdScheme)
-            .AddJwt(Env.Auth.LarpakeIdScheme, configuration)
-            .AddEntraAuthenticationService(Env.Auth.EntraIdScheme, configuration);
+            .AddJwt(Env.Auth.LarpakeIdScheme, configuration, logger)
+            .AddEntraAuthenticationService(Env.Auth.EntraIdScheme, configuration, logger);
     }
 
 
 
 
-    public static void AddPostgresDatabases(this IServiceCollection services, IConfiguration configuration)
+    public static void AddPostgresDatabases(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        ILogger<DITypeMarker> logger)
     {
-        string connectionString = 
-            Environment.GetEnvironmentVariable("POSTGRES_CONNECTION_STRING")
-            ?? configuration.GetConnectionString("PostgreSQL")
+        string? connectionString = configuration[Env.Environment.PostgresConnectionString];
+        if (connectionString is not null)
+        {
+            logger.LogInformation("Using Postgres connection string from environment variables.");
+        }
+
+        connectionString
+            ??= configuration.GetConnectionString("PostgreSQL")
             ?? configuration.GetConnectionString("Default")
-            ?? throw new InvalidOperationException("No connection string found.");
+            ?? throw new InvalidOperationException("Postgres connection string is null.");
 
         services.AddSingleton(new NpgsqlConnectionString(connectionString));
         SqlMapper.AddTypeHandler(new GuidTypeHandler());
         SqlMapper.AddTypeHandler(new DateTimeTypeHandler());
-        SqlMapper.SetTypeMap(typeof(Models.DatabaseModels.Attendance), 
+        SqlMapper.SetTypeMap(typeof(Models.DatabaseModels.Attendance),
             new ColumnAttributeTypeMapper<Models.DatabaseModels.Attendance>());
         DefaultTypeMap.MatchNamesWithUnderscores = true;
 
@@ -172,9 +160,12 @@ public static class ServiceInjections
         services.AddSingleton<IExternalDataDbService, ExternalDataDbService>();
     }
 
-    public static void AddServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        ILogger<DITypeMarker> logger)
     {
-        services.AddApplicationOptions(configuration);
+        services.AddApplicationOptions(configuration, logger);
 
         services.AddSingleton<CompletionMessageService>();
         services.AddSingleton(new ClientPoolConfiguration
@@ -187,13 +178,16 @@ public static class ServiceInjections
         services.AddSingleton<AttendanceKeyService>();
         services.AddSingleton<InviteKeyService>();
         services.AddSingleton<IExternalIntegrationService, LuuppiIntegrationService>();
-        services.AddHttpClients(configuration);
+        services.AddHttpClients(configuration, logger);
     }
 
 
-    private static IServiceCollection AddHttpClients(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddHttpClients(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        ILogger<DITypeMarker> logger)
     {
-        IntegrationOptions options = Options.GetIntegrationOptions(configuration);
+        IntegrationOptions options = Options.GetIntegrationOptions(configuration, logger);
         services.AddHttpClient(Env.HttpClients.IntegrationClient, client =>
         {
             client.BaseAddress = new Uri(options.BasePath);
@@ -204,11 +198,15 @@ public static class ServiceInjections
     }
 
 
-    private static AuthenticationBuilder AddJwt(this AuthenticationBuilder builder, string authenticationScheme, IConfiguration configuration)
+    private static AuthenticationBuilder AddJwt(
+        this AuthenticationBuilder builder,
+        string authenticationScheme,
+        IConfiguration configuration,
+        ILogger<DITypeMarker> logger)
     {
-        LarpakeIdOptions idOptions = Options.GetLarpakeIdOptions(configuration);
+        LarpakeIdOptions idOptions = Options.GetLarpakeIdOptions(configuration, logger);
         Guard.ThrowIfNull(idOptions.SecretBytes);
-        
+
         return builder.AddJwtBearer(authenticationScheme, options =>
         {
             options.TokenValidationParameters = new()
@@ -225,9 +223,12 @@ public static class ServiceInjections
     }
 
     public static AuthenticationBuilder AddEntraAuthenticationService(
-       this AuthenticationBuilder builder, string authenticationScheme, IConfiguration configuration)
+       this AuthenticationBuilder builder,
+       string authenticationScheme,
+       IConfiguration configuration,
+       ILogger<DITypeMarker> logger)
     {
-        EntraIdOptions options = Options.GetEntraIdOptions(configuration);
+        EntraIdOptions options = Options.GetEntraIdOptions(configuration, logger);
 
         builder.AddMicrosoftIdentityWebApi(_ => { }, config =>
         {
@@ -242,66 +243,107 @@ public static class ServiceInjections
 
     private static class Options
     {
-        internal static LarpakeIdOptions GetLarpakeIdOptions(IConfiguration configuration)
+        internal static LarpakeIdOptions GetLarpakeIdOptions(IConfiguration configuration, ILogger<DITypeMarker> logger)
         {
             LarpakeIdOptions options = new();
             configuration.GetSection(LarpakeIdOptions.SectionName).Bind(options);
 
             // Override with possible environment variable
-            options.OverrideFromEnvironment();
+            string? secret = configuration[Env.Environment.LarpakeIdSecret]; 
+            if (secret is not null)
+            {
+                logger.LogInformation("Overriding LarpakeId JWT secret from environment variables.");
+                options.SecretKey = secret;
+            }
+
+            string? issuer = configuration[Env.Environment.LarpakeIdIssuer];
+            if (issuer is not null)
+            {
+                logger.LogInformation("Overriding LarpakeId JWT issuer from environment variables.");
+                options.Issuer = issuer;
+            }
+
+            string? audience = configuration[Env.Environment.LarpakeIdAudience];
+            if (audience is not null)
+            {
+                logger.LogInformation("Overriding LarpakeId JWT audience from environment variables.");
+                options.Audience = audience;
+            }
+
+
+            logger.IfNull(options.SecretKey).LogInformation("LarpakeId secret key is null.");
+            logger.IfNull(options.Issuer).LogInformation("LarpakeId issuer is null.");
+            logger.IfNull(options.Audience).LogInformation("LarpakeId audience is null.");
+
+
             return options;
         }
 
 
-        internal static IntegrationOptions GetIntegrationOptions(IConfiguration configuration)
+        internal static IntegrationOptions GetIntegrationOptions(IConfiguration configuration, ILogger<DITypeMarker> logger)
         {
             IntegrationOptions options = new();
             configuration.GetSection(IntegrationOptions.SectionName).Bind(options);
 
             // Override with possible environment variable
-            options.OverrideFromEnvironment();
-            
-            Debug.WriteLineIf(options.ApiKey is null, "Integration api key is null");
+            string? apiKey = configuration[Env.Environment.LuuppiApiKey];
+            if (apiKey is not null)
+            {
+                logger.LogInformation("Overriding integration api key with environment variables.");
+                options.ApiKey = apiKey;
+            }
+
+            logger.IfNull(options.ApiKey).LogInformation("Integration api key is null.");
             return options;
         }
 
-        internal static EntraIdOptions GetEntraIdOptions(IConfiguration configuration)
+        internal static EntraIdOptions GetEntraIdOptions(IConfiguration configuration, ILogger<DITypeMarker> logger)
         {
             EntraIdOptions options = new();
             configuration.GetSection(EntraIdOptions.SectionName).Bind(options);
 
             // Override with possible environment variable
-            string? tenantId = Environment.GetEnvironmentVariable(Env.Environment.EntraTenantId);
+            string? tenantId = configuration[Env.Environment.EntraTenantId];
             if (tenantId is not null)
             {
+                logger.LogInformation("Overriding EntraId tenant id with environment variable.");
                 options.TenantId = tenantId;
             }
 
             // Override with possible environment variable
-            string? clientId = Environment.GetEnvironmentVariable(Env.Environment.EntraClientId);
+            string? clientId = configuration[Env.Environment.EntraClientId];
             if (clientId is not null)
             {
+                logger.LogInformation("Overriding EntraId client id with environment variable.");
                 options.ClientId = clientId;
             }
+
+
+            logger.IfNull(options.ClientId).LogInformation("Entra client id is null.");
+            logger.IfNull(options.TenantId).LogInformation("Entra tedant id is null.");
+
             return options;
         }
 
-        internal static PermissionsOptions GetPermissionsOptions(IConfiguration configuration)
+        internal static PermissionsOptions GetPermissionsOptions(IConfiguration configuration, ILogger<DITypeMarker> logger)
         {
             PermissionsOptions options = new();
             configuration.GetSection(PermissionsOptions.SectionName).Bind(options);
 
-            string? sudoUsers = Environment.GetEnvironmentVariable(Env.Environment.EntraSudoUsers);
+            string? sudoUsers = configuration[Env.Environment.EntraSudoUsers];
             if (sudoUsers is not null)
             {
+                logger.LogInformation("Overriding Entra sudo users with environment variable.");
                 options.AddSudoUsersFromString(sudoUsers.AsSpan());
             }
+
+            logger.IfNull(options.EntraSudoModeUsers).LogInformation("Entra sudo users is null.");
             return options;
         }
     }
 
 
-    
+
 
 
 }

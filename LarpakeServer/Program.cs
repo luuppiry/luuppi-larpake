@@ -5,6 +5,18 @@ using Scalar.AspNetCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddEnvironmentVariables(Constants.Environment.EnvVariablePrefix);
+
+using var loggerFactory = LoggerFactory.Create(config =>
+{
+    config.AddConsole();
+#if DEBUG
+    config.AddDebug();
+#endif
+});
+
+ILogger<DITypeMarker> logger = loggerFactory.CreateLogger<DITypeMarker>();
+
 
 // Order matters with hosted services (first is executed first)
 builder.Services.AddHostedService<PermissionsStartupService>();
@@ -17,10 +29,10 @@ builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<LarpakeIdBearerSecuritySchemeTransformer>();
 });
-builder.Services.AddAuthenticationServices(configuration);
+builder.Services.AddAuthenticationServices(configuration, logger);
 builder.Services.AddAuthorization();
-builder.Services.AddServices(configuration);
-builder.Services.AddPostgresDatabases(configuration);
+builder.Services.AddServices(configuration, logger);
+builder.Services.AddPostgresDatabases(configuration, logger);
 builder.Services.ConfigureCors();
 builder.Services.AddRateLimiters(configuration);
 
@@ -29,15 +41,17 @@ builder.Services.AddRouting(options =>
     options.LowercaseUrls = true;
 });
 
-
 var app = builder.Build();
-
 
 // Use openapi 
 app.MapOpenApi();
 app.MapScalarApiReference(options =>
 {
     options.WithTitle(configuration["Scalar-OpenApi:Title"]!);
+    options.Authentication = new ScalarAuthenticationOptions
+    {
+        PreferredSecurityScheme = "Bearer",
+    };
 });
 
 // TODO: Add exception handling middleware

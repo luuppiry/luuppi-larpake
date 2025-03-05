@@ -40,6 +40,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 m.group_id,
                 m.user_id,
                 m.is_hidden,
+                m.is_competing,
                 m.joined_at
             FROM freshman_groups g
                 LEFT JOIN freshman_group_members m
@@ -68,7 +69,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 if (member is not null)
                 {
                     resultGroup.Members ??= [];
-                    resultGroup.Members.Add(member.UserId);
+                    resultGroup.Members.Add(member);
                 }
                 return resultGroup;
             },
@@ -137,6 +138,10 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
             g.larpake_id = @{nameof(options.LarpakeId)}
             """);
+
+        query.IfNotNull(options.IsCompeting).AppendConditionLine($"""
+            m.is_competing = @{nameof(options.IsCompeting)}
+            """);
     }
 
     public async Task<FreshmanGroup?> GetGroup(long id)
@@ -153,8 +158,11 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             (group, member) =>
             {
                 result ??= group;
-                result.Members ??= [];
-                result.Members.Add(member.UserId);
+                if (member is not null)
+                {
+                    result.Members ??= [];
+                    result.Members.Add(member);
+                }
                 return group;
             },
             new { id },

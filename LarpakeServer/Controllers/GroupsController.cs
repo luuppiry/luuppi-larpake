@@ -14,7 +14,7 @@ namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/groups")]
 public class GroupsController : ExtendedControllerBase
 {
     record struct InviteKeyResponse(string InviteKey);

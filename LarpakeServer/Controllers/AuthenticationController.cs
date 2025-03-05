@@ -12,7 +12,7 @@ using DbUser = LarpakeServer.Models.DatabaseModels.User;
 namespace LarpakeServer.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/authentication")]
 [EnableRateLimiting(RateLimitingOptions.AuthPolicyName)]
 public class AuthenticationController : ExtendedControllerBase
 {

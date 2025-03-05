@@ -1,4 +1,6 @@
-﻿namespace LarpakeServer.Services.Options;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+
+namespace LarpakeServer.Services.Options;
 
 public class IntegrationOptions
 {
@@ -8,16 +10,4 @@ public class IntegrationOptions
     public string? ApiKey { get; set; } = "This value is undefined";
     public string CmsApiUrlGuess { get; set; } = Constants.Luuppi.CmsApi;
     public string EventHeader { get; set; } = Constants.Luuppi.EventHeader;
-
-    public bool OverrideFromEnvironment()
-    {
-        bool changed = false;
-        string? apiKey = Environment.GetEnvironmentVariable(Constants.Environment.LuuppiApiKey);
-        if (apiKey is not null)
-        {
-            ApiKey = apiKey;
-            changed = true;
-        }
-        return changed;
-    }
 }

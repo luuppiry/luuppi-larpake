@@ -8,7 +8,7 @@ namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/sse/[controller]")]
+[Route("api/sse/subscribe")]
 public class SubscribeController : ExtendedControllerBase
 {
     readonly CompletionMessageService _messageService;

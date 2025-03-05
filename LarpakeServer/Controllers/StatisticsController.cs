@@ -8,7 +8,7 @@ namespace LarpakeServer.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/statistics")]
 [RequiresPermissions(Permissions.CommonRead)]
 public class StatisticsController : ExtendedControllerBase
 {

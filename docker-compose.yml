@@ -27,6 +27,7 @@ services:
             - PGHOST=larpake_pg_production
             - PGPORT=5432
             - PGUSER=${POSTGRES_ADMIN_USERNAME}
+            - PGDATABASE=postgres
             - PGPASSWORD=${POSTGRES_ADMIN_PASSWORD}
             - PG_API_CLIENT_PASSWORD=${PG_API_CLIENT_PASSWORD}
             - PG_API_MIGRATIONS_PASSWORD=${PG_API_MIGRATIONS_PASSWORD}
@@ -45,8 +46,7 @@ services:
     larpake_migrations_production:
         container_name: larpake_migrations_production
         env_file: ".env"
-        build:
-            dockerfile: migrations.Dockerfile
+        image: luuppi.azurecr.io/larpake-prod-mig:latest
         networks:
             - weba-network
         environment:
@@ -60,21 +60,20 @@ services:
     larpake_api_production:
         container_name: larpake_api_production
         env_file: ".env"
-        build:
-            dockerfile: api.Dockerfile
+        image: luuppi.azurecr.io/larpake-prod:latest
         ports:
             - "127.0.0.1:5502:8080"
         networks:
             - weba-network
         environment:
-            - ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
-            - ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
-            - LUUPPI_API_KEY=${LUUPPI_API_KEY}
-            - JWT_SECRET=${JWT_SECRET}
-            - POSTGRES_CONNECTION_STRING=${POSTGRES_API_CONNECTION_STRING}
-            - ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
-            - JWT_ISSUER=${JWT_ISSUER}
-            - JWT_AUDIENCE=${JWT_AUDIENCE}
+            - LARPAKE_ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
+            - LARPAKE_ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
+            - LARPAKE_LUUPPI_API_KEY=${LUUPPI_API_KEY}
+            - LARPAKE_JWT_SECRET=${JWT_SECRET}
+            - LARPAKE_POSTGRES_CONNECTION_STRING=${POSTGRES_API_CONNECTION_STRING}
+            - LARPAKE_ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
+            - LARPAKE_JWT_ISSUER=${JWT_ISSUER}
+            - LARPAKE_JWT_AUDIENCE=${JWT_AUDIENCE}
         depends_on:
             larpake_migrations_production:
                 condition: service_completed_successfully
