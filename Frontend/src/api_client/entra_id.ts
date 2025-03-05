@@ -19,9 +19,9 @@ export default class EntraId {
         this.config = {
             auth: {
                 clientId: import.meta.env.VITE_ENTRA_CLIENT_ID,
-                authority: `https://${
-                    import.meta.env.VITE_ENTRA_SERVER
-                }.ciamlogin.com/${import.meta.env.VITE_ENTRA_TEDANT_ID}`,
+                authority: `https://${import.meta.env.VITE_ENTRA_SERVER}.ciamlogin.com/${
+                    import.meta.env.VITE_ENTRA_TEDANT_ID
+                }`,
                 redirectUri: import.meta.env.VITE_ENTRA_REDIRECT_URL,
             },
         };
@@ -46,7 +46,6 @@ export default class EntraId {
 
         try {
             const token = await this.msalInstance!.acquireTokenSilent(request);
-
             this.#addDistinctAccount(token.account);
             return token.accessToken;
         } catch (error) {
@@ -80,6 +79,17 @@ export default class EntraId {
         }
     }
 
+    async fetchAzureLogout() {
+        await this.#initialize();
+        try {
+            await this.msalInstance!.logoutPopup();
+            this.accounts = [];
+            return "Logout succesful";
+        } catch (error) {
+            console.log("Logout failed:", error);
+        }
+    }
+
     async #createRequest() {
         await this.#initialize();
 
@@ -99,10 +109,7 @@ export default class EntraId {
         //  Create client if not already initialized.
         if (this.msalInstance === null) {
             this.isInitialized = true;
-            this.msalInstance =
-                await PublicClientApplication.createPublicClientApplication(
-                    this.config
-                );
+            this.msalInstance = await PublicClientApplication.createPublicClientApplication(this.config);
             this.accounts = this.msalInstance.getAllAccounts() ?? [];
         }
     }

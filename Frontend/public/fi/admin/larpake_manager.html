@@ -1,11 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lärpäke - Admin</title>
-</head>
-<body>
-    Lärpäke manager
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lärpäke - Admin</title>
+        <link rel="stylesheet" href="/styles/admin/larpake_manager.css" />
+        <script src="/src/components/side-panel.ts"></script>
+        <script src="/src/components/form-container.ts"></script>
+        <script type="module" src="/src/components/ui-header.ts"></script>
+        <script>
+            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
+                window.location.replace("unauthorized.html");
+            }
+        </script>
+    </head>
+    <body style="margin-bottom: 100px">
+        <ui-header path-depth="1"></ui-header>
+        <side-panel path-depth="1"></side-panel>
+        <form-container>
+            <form style="padding: 20px">
+                <h2>Muokkaa Yleisiä Tietoja</h2>
+                <p>
+                    Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tämäm osion muokkaaminen ei vaikuta
+                    käyttäjätietoihin eivätkä esimerkiksi osallistumiset poistu olemassa olevista tapahtumista. Huomaa,
+                    että eri kielille on määritelty omat osionsa. Arvon tyhjäksi jättäminen määrittää oletusarvon
+                    käytettäväksi.
+                </p>
+
+                <div class="field">
+                    <div class="tooltipped-title">
+                        <label for="start-year">Aloitusvuosi</label>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Jätä tyhjäksi jos aloitusvuotta ei haluta määritellä</p>
+                    </div>
+                    <input
+                        id="start-year"
+                        class="text-field start-year-field"
+                        type="number"
+                        min="-1"
+                        max="2100"
+                        step="1"
+                        value="2025"
+                    />
+                </div>
+                <div class="larpake-divider">
+                    <div>
+                        <h3 class="no-margin">Suomeksi (oletus)</h3>
+                        <div class="field">
+                            <label for="title-fi">Nimi</label>
+                            <input id="title-fi" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                        </div>
+                        <div class="field">
+                            <label for="description-fi">Kuvaus</label>
+                            <textarea
+                                id="description-fi"
+                                class="description-field text-field"
+                                placeholder="kerro lyhyesti Lärpäkkeestä"
+                                maxlength="2000"
+                            ></textarea>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="no-margin">Englanniksi</h3>
+                        <div class="field">
+                            <label for="title-en">Nimi</label>
+                            <input id="title-en" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                        </div>
+                        <div class="field">
+                            <label for="description-en">Kuvaus</label>
+                            <textarea
+                                id="description-en"
+                                class="description-field text-field"
+                                placeholder="shortly in english"
+                                maxlength="2000"
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="send-options">
+                    <!-- type="button" to disable any default action -->
+                    <button type="button" id="commonCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
+                    <button type="button" id="commonSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+                </div>
+            </form>
+        </form-container>
+
+        <form-container>
+            <form>
+                <div style="padding: 20px">
+                    <h2>Osiot Ja Tehtävät</h2>
+                    <p>
+                        HUOM! VOIT MENETTÄÄ TIETOJA! Osion poistaminen poistaa myös kaikki sen tehtävät, jolloin dataa
+                        katoaa. Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tehtävän poistaminen ei
+                        poista tehtävää järjestelmästä, mutta poistaa siitä saatavat pisteet ja merkitsee sen
+                        peruutetuksi.
+                    </p>
+                    <ol id="section-container" class="section-list">
+                        <!-- Lärpäke sections and their tasks -->
+                    </ol>
+                    <div class="send-options">
+                        <button id="tasksCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
+                        <button id="tasksSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+                    </div>
+                </div>
+            </form>
+        </form-container>
+    </body>
+    <script type="module" src="/src/admin/larpake_manager.ts"></script>
 </html>

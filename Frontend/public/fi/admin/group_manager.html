@@ -1,11 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <link rel="stylesheet" href="/styles/admin/group_manager.css" />
+        <script src="/src/components/side-panel.ts"></script>
+        <script type="module" src="/src/components/ui-header.ts"></script>
+        <script>
+            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
+                window.location.replace("unauthorized.html");
+            }
+        </script>
+    </head>
+    <body>
+        <ui-header></ui-header>
+        <side-panel></side-panel>
+        <h2>Group manager</h2>
+        <div id="container"></div>
+    </body>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const groupId = params.get("groupId");
+        if (groupId){
+            document.getElementById("container").innerText = `Managing group: ${groupId}`;
+        }
+
+    </script>
 </html>

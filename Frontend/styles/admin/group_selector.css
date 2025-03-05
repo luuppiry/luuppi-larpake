@@ -1,0 +1,72 @@
+@import "../common.css";
+@import "../section.css";
+
+.title {
+    display: flex;
+    justify-content: center;
+}
+
+.title > h2 {
+    padding: 0;
+    margin: 0;
+}
+
+ul {
+    padding: 0;
+    gap: 10px;
+}
+
+li {
+    list-style: none;
+    margin: 0;
+}
+
+.link,
+.link:visited {
+    color: inherit;
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
+}
+
+.group-info-container {
+    display: flex;
+    flex-flow: row;
+    align-content: center;
+    gap: 10px;
+    padding: 20px 0;
+}
+
+.group-info-container > h3,
+.group-info-container > p {
+    margin: 0;
+    font-size: large;
+}
+
+.section-filler > div {
+    /* Overrride default style */
+    padding: 0px 30px !important;
+}
+
+.no-groups {
+    display: flex;
+    justify-content: center;
+}
+
+.hover-scale:hover {
+    transform: scale(1.015) !important;
+}
+
+.spacer {
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+}
+
+.goto-icon {
+    height: 30px;
+    width: 30px;
+    rotate: 90deg;
+    margin-top: auto;
+    margin-bottom: auto;
+}

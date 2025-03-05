@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lärpäke - Admin</title>
+        <link rel="stylesheet" href="/styles/admin/group_selector.css" />
+        <script src="/src/components/side-panel.ts"></script>
+        <script src="/src/components/form-container.ts"></script>
+        <script type="module" src="/src/components/ui-header.ts"></script>
+    </head>
+    <body>
+        <template id="group-template">
+            <li class="hover-scale">
+                <a href="group_manager.html" class="link">
+                    <form-container>
+                        <!-- Under score starting element class names are not for styles, only for query select -->
+                        <div class="spacer">
+                            <div class="group-info-container">
+                                <h3 style="text-wrap: wrap; word-wrap: break-word; max-width: 40vw;" class="_group-title">Group X</h3>
+                                <p class="_group-number">(N)</p>
+                                <p>&HorizontalLine;</p>
+                                <p class="_group-id">Id: X</p>
+                                <p>&HorizontalLine;</p>
+                                <p class="_larpake">Lärpäke: X</p>
+                            </div>
+                            <img src="/icons/menu_closed.svg" class="goto-icon" alt="go to icon" />
+                        </div>
+                    </form-container>
+                </a>
+            </li>
+        </template>
+        <ui-header path-depth="1"></ui-header>
+        <side-panel path-depth="1"></side-panel>
+        <div class="title">
+            <h2>Ryhmät</h2>
+        </div>
+        <ul id="groups-container">
+            <li class="no-groups">
+                <div>Yhtäkään ryhmää ei ole vielä lisätty</div>
+            </li>
+        </ul>
+    </body>
+    <script type="module" src="/src/admin/group_selector.ts"></script>
+</html>

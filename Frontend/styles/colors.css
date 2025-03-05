@@ -1,9 +1,10 @@
 :root {
-    --whitish-border: #F8F8F8; /* very very close to white */
-    --luuppi-gray: #F5F5FB; /* Bluish gray */
-    --backgroud-gray: #E7E7E7; /* Nearly white */
-    --section-background: #D5D5D5;    /* gray */
-    --non-highlight-gray: #6B7280; /* Darkish grey */
+    --border-whitish: #f8f8f8; /* very very close to white */
+    --luuppi-gray: #f5f5fb; /* Bluish gray */
+    --backgroud-gray: #e7e7e7; /* Nearly white */
+    --section-background: #d5d5d5; /* gray */
+    --text-border: #d5d5d5; /* gray */
+    --non-highlight: #6b7280; /* Darkish grey */
     --accent-blue: #787eba; /* header buttons background color */
-    --luuppi-blue: #5C61A3; /* luuppi header color */
+    --luuppi-blue: #5c61a3; /* luuppi header color */
 }

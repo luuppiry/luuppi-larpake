@@ -1,6 +1,7 @@
 @import "colors.css";
 @import "section.css";
 @import "tooltip.css";
+@import "common.css";
 
 .data-value {
     /* Value of data field like email value */

@@ -1,4 +1,6 @@
 @import "../common.css";
+@import "../section.css";
+@import "../tooltip.css";
 
 .larpake-container {
     display: grid;
@@ -52,4 +54,19 @@ p.line-breaking > span {
     cursor: pointer;
     text-decoration: none;
     color: initial;
+}
+
+.add-new-btn {
+    display: flex;
+    justify-content: center;
+    padding: 30px 0;
+    background-color: white;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.add-new-btn > a {
+    text-decoration: none;
+    padding: 0;
+    margin: 0;
 }

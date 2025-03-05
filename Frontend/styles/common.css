@@ -1,6 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import "colors.css";
 
+:root {
+    --side-panel-width: 250px;
+}
+
 body {
     font-family: Poppins;
     font-style: normal;
@@ -11,6 +15,7 @@ body {
     overflow-x: hidden;
 }
 
+/* Header thinks */
 .header {
     background-color: var(--luuppi-blue);
     color: white;
@@ -45,6 +50,33 @@ body {
     user-select: none;
 }
 
+/* The dropdown container */
+.profile-dropdown {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    top: 85px;
+    margin-right: 150px;
+    font-size: 20px;
+}
+
+.profile-dropdown a {
+    float: none;
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.profile-dropdown a:hover {
+    background-color: #ddd;
+}
+
+/* Body */
 .container {
     max-width: 600px;
     margin: 20px auto;
@@ -104,26 +136,27 @@ body {
     margin: 5px 0;
     font-size: 0.9rem;
     color: #555;
-    
 }
 
 /* Side panel styles */
 .side-panel {
     position: fixed;
     top: 0;
-    right: -270px; /* Initially off-screen to the right */
     height: 100%;
-    width: 250px;
     background-color: #787eba;
     color: white;
-    overflow-y: auto;
-    transition: 0.3s ease;
+    overflow-y: none;
     padding: 10px;
     z-index: 1000;
+    right: 0;
+    width: var(--side-panel-width);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
 }
 
 .side-panel.open {
-    right: 0; /* Slide in from the right */
+    transform: translateX(0);
+    transition: transform 0.3s ease;
 }
 
 .side-panel ul {
@@ -134,7 +167,7 @@ body {
 
 .side-panel ul li {
     margin: 10px 0;
-    padding: 5px 0;
+    padding: 5px 0px;
     font-size: 1rem;
 }
 
@@ -164,6 +197,11 @@ body {
     user-select: none;
 }
 
+.hor-center-content {
+    display: flex;
+    justify-content: center;
+}
+
 @media screen and (max-width: 660px) {
     .header h1 {
         color: var(--luuppi-blue);
@@ -172,4 +210,35 @@ body {
     .container {
         margin: 20px 10px;
     }
+}
+
+
+.primary-btn {
+
+    font-size: large;
+    background-color: var(--luuppi-blue);
+    color: white;
+    border-radius: 6px;
+    padding: 8px 16px;
+    border-style: none;
+    cursor: pointer;
+}
+
+.secondary-btn {
+    font-size: large;
+    border-radius: 6px;
+    background-color: white;
+    color: var(--luuppi-blue);
+    border: 2px var(--luuppi-blue) solid;
+    cursor: pointer;
+    padding: 8px 16px;
+}
+
+.hover-scale {
+    transition: transform 0.3s ease;
+    transform-origin: center;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
 }

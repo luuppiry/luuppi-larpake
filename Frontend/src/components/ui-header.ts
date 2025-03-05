@@ -1,33 +1,62 @@
+import EntraId from "../api_client/entra_id.ts";
+const auth = new EntraId();
+
 class Header extends HTMLElement {
     constructor() {
         super();
     }
 
     connectedCallback() {
+        const hasLanguageOptions: boolean = this.getAttribute("lang-options") === "false" ? false : true;
+        const indexPath = this.#add_path_correction("index.html");
+        const profilePath = this.#add_path_correction("profile.html");
+        const adminPath = this.#add_path_correction("admin/admin.html");
 
-        const index = this.#add_path_correction("index.html")
+        const loggedIn = Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"));
+        const currentLang = window.location.href.includes("/en/") ? "en" : "fi";
+
+        const adminBtn = currentLang === "fi" ? `<a href="${adminPath}">Ylläpito</a>` : "";
+
+        const langBtn = hasLanguageOptions
+            ? `
+                    <div
+                        class="menu-icon"
+                        id="ui-header-change-language-btn"
+                        style="display: flex; justify-content: center; align-items: center">
+                        <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
+                    </div>`
+            : "<!-- no other languages available -->";
+
+        const profileBtn = loggedIn
+            ? `<div
+                class="menu-icon"
+                id="ui-header-profile-btn"
+                style="display: flex; justify-content: center; align-items: center">
+                <img class="profile-icon" src="/icons/profile-icon.png" height="30px" width="auto" />
+                <div class="profile-dropdown" id="profileDropdown">
+                    <a href="${profilePath}">Profiili</a>
+                    ${adminBtn}
+                    <a href="#" style="color: red;">Kirjaudu ulos</a>
+                </div>
+            </div> `
+            : `<div
+                    class="menu-icon"
+                    id="ui-header-login-btn"
+                    style="display: flex; justify-content: center; align-items: center">
+                    <img class="login-icon" src="/icons/login-icon.png" height="30px" width="auto" />
+                </div> `;
 
         this.innerHTML = `
          <header class="header">
             <img
                 src="/luuppi.logo.svg"
-                onclick="window.location.href='${index}'"
+                onclick="window.location.href='${indexPath}'"
                 style="height: 60px; cursor: pointer"
                 alt="Luuppi Logo"
             />
             <h1>LÄRPÄKE</h1>
-            <div
-                class="menu-icon"
-                id="ui-header-change-language-btn"
-                style="display: flex; justify-content: center; align-items: center">
-                <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
-            </div>
-            <div
-                class="menu-icon"
-                id="ui-header-profile-btn"
-                style="display: flex; justify-content: center; align-items: center">
-                <img class="profile-icon" src="/icons/profile-icon.png" height="30px" width="auto" />
-            </div>
+            ${langBtn}
+            ${profileBtn}
             <div class="menu-icon" id="ui-header-open-menu-btn">☰</div>
         </header>
          `;
@@ -40,13 +69,33 @@ class Header extends HTMLElement {
             this.changeLanguage();
         });
 
-        const profileBtn = this.querySelector<HTMLDivElement>("#ui-header-profile-btn");
-        if (profileBtn == null) {
-            throw new Error("Profile button not found");
+        if (loggedIn) {
+            const profileBtn = this.querySelector<HTMLDivElement>("#ui-header-profile-btn");
+            if (profileBtn == null) {
+                throw new Error("Profile button not found");
+            }
+            profileBtn.addEventListener("click", (_) => {
+                this.profileDropdown();
+            });
+            const logoutBtn = this.querySelector<HTMLAnchorElement>(".profile-dropdown a[href='#']");
+            if (logoutBtn == null) {
+                throw new Error("Logout button not found");
+            }
+            logoutBtn.addEventListener("click", (event) => {
+                event.preventDefault(); // Prevent default anchor behavior
+                this.logout();
+            });
         }
-        profileBtn.addEventListener("click", (_) => {
-            this.toggle();
-        });
+
+        if (!loggedIn) {
+            const logInBtn = this.querySelector<HTMLDivElement>("#ui-header-login-btn");
+            if (logInBtn == null) {
+                throw new Error("Login button not found");
+            }
+            logInBtn.addEventListener("click", (_) => {
+                this.login();
+            });
+        }
 
         const menuBtn = this.querySelector<HTMLDivElement>("#ui-header-open-menu-btn");
         if (menuBtn == null) {
@@ -62,12 +111,23 @@ class Header extends HTMLElement {
 
     toggle() {
         const nameOverride = this.getAttribute("side-panel-name");
-        console.log(nameOverride);
         toggleSidePanelOutsider(nameOverride);
     }
 
     changeLanguage() {
         changeLanguage();
+    }
+
+    profileDropdown() {
+        profileDropdown();
+    }
+
+    login() {
+        login();
+    }
+
+    logout() {
+        logout();
     }
 
     #add_path_correction(path: string): string {
@@ -90,6 +150,64 @@ class Header extends HTMLElement {
 
         // Add correction
         return correction + path;
+    }
+}
+
+async function login() {
+    try {
+        const token = await auth.fetchAzureLogin();
+        if (token) {
+            console.log("Login successful.");
+            location.reload();
+        } else {
+            console.log("Login failed.");
+        }
+    } catch (error) {
+        console.error("Login Error:", error);
+    }
+}
+
+async function logout() {
+    try {
+        const token = await auth.fetchAzureLogout();
+        if (token) {
+            console.log("Access Token:", token);
+            location.reload();
+        } else {
+            console.log("Logout failed.");
+        }
+    } catch (error) {
+        console.error("Logout Error:", error);
+    }
+}
+
+function profileDropdown(): void {
+    const profileDropdown = document.getElementById("profileDropdown");
+    if (!profileDropdown) return;
+
+    // Detect current language
+    const currentLang = window.location.href.includes("/en/") ? "en" : "fi";
+
+    // Update the menu items based on language
+    const profileLink = profileDropdown.querySelector("a[href='profile.html']");
+    const adminLink = profileDropdown.querySelector("a[href='admin/admin.html']");
+    const logoutLink = profileDropdown.querySelector("a[href='#']");
+
+    if (profileLink) {
+        profileLink.textContent = currentLang === "en" ? "Profile" : "Profiili";
+    }
+    if (adminLink) {
+        adminLink.textContent = currentLang === "en" ? "Admin" : "Ylläpito";
+    }
+    if (logoutLink) {
+        logoutLink.textContent = currentLang === "en" ? "Logout" : "Kirjaudu ulos";
+    }
+
+    profileDropdown.style.display = profileDropdown.style.display === "block" ? "none" : "block";
+
+    if (profileDropdown.style.display === "block") {
+        // Add event listener to detect clicks outside the dropdown
+        document.addEventListener("click", closeDropdownOutside);
     }
 }
 
@@ -148,6 +266,19 @@ function toggleSidePanelOutsider(nameOverride: string | null = null): void {
     const panel: HTMLElement | null = document.getElementById(searchName);
     if (panel != null) {
         panel.classList.toggle("open");
+    }
+}
+
+function closeDropdownOutside(event: MouseEvent): void {
+    const profileDropdown = document.getElementById("profileDropdown");
+    const profileBtn = document.getElementById("ui-header-profile-btn");
+
+    if (!profileDropdown || !profileBtn) return;
+
+    // Check if the click is outside the dropdown and the profile button
+    if (!profileDropdown.contains(event.target as Node) && !profileBtn.contains(event.target as Node)) {
+        profileDropdown.style.display = "none";
+        document.removeEventListener("click", closeDropdownOutside);
     }
 }
 

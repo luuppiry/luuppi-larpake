@@ -16,15 +16,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Dapper" Version="2.1.35" />
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.1" />
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.1" />
-		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.1" />
-		<PackageReference Include="Npgsql" Version="9.0.2" />
-		<PackageReference Include="Scalar.AspNetCore" Version="1.2.76" />
-		<PackageReference Include="Microsoft.Identity.Web" Version="3.6.2" />
+		<PackageReference Include="Dapper" Version="2.1.66" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
+		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.2" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.2" />
+		<PackageReference Include="Npgsql" Version="9.0.3" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.0.22" />
+		<PackageReference Include="Microsoft.Identity.Web" Version="3.7.1" />
 	</ItemGroup>
 
 	<ItemGroup>

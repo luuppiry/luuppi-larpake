@@ -1,0 +1,184 @@
+@import "../common.css";
+@import "../section.css";
+@import "../common_settings.css";
+
+:root {
+    --hover-white: #eee;
+}
+
+.larpake-divider {
+    display: flex;
+    flex-flow: row;
+    gap: 40px;
+}
+
+.larpake-divider > div {
+    display: flex;
+    flex-flow: column;
+    gap: 14px;
+    flex: 1;
+    margin: 30px 0 0 0;
+}
+
+.field {
+    display: flex;
+    flex-flow: column;
+    gap: 2px;
+}
+
+.start-year-field {
+    max-width: 70px;
+}
+
+.description-field {
+    resize: vertical;
+    line-height: 1.5em;
+    min-height: calc(1.5em * 3);
+}
+
+.send-options {
+    display: flex;
+    justify-content: end;
+    gap: 8px;
+    /* Force bottom over because of form margin */
+    margin-top: 35px;
+    margin-bottom: -40px;
+}
+
+.section-list {
+    display: flex;
+    flex-flow: column;
+    list-style: none;
+    gap: 10px;
+    padding: 0;
+}
+
+.section-list > li {
+    background-color: white;
+    border-radius: 10px;
+}
+
+.larpake-section {
+    border-radius: 10px;
+    background-color: var(--luuppi-gray);
+    padding: 10px 20px;
+}
+
+.larpake-section > h3 {
+    padding: 0px;
+    margin: 0px;
+}
+
+.section-divider {
+    display: flex;
+    flex-flow: row;
+    gap: 40px;
+}
+
+.section-divider > * {
+    flex: 1;
+}
+
+.no-margin {
+    margin: 0px;
+}
+
+.task-list {
+    margin-top: 20px;
+}
+
+.task {
+    display: flex;
+    flex-flow: column;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.task-header {
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 10px;
+    user-select: none;
+}
+
+.task-header:hover {
+    background-color: var(--hover-white);
+    border-radius: 10px;
+}
+
+.task-header-titles {
+    display: flex;
+    flex-flow: row;
+    padding: 10px 0 10px 0;
+    gap: 10px;
+}
+.task-header-titles > h4,
+.task-header-titles > p {
+    font-size: medium;
+    margin: 0;
+}
+.task-header-titles > img {
+    height: 20px;
+    width: 20px;
+    padding: 5px;
+    margin: -5px -5px -5px 0;
+    border-radius: 5px;
+}
+
+.task-header-titles > img:hover {
+    background-color: #ffc2c5;
+}
+
+.task-header > img {
+    transition: transform 0.2s ease;
+    padding-top: 5px;
+    height: 30px;
+    width: 30px;
+}
+
+.task-content {
+    padding: 0px 16px 10px 16px;
+    display: none;
+    overflow: hidden;
+}
+
+.rotate-180deg {
+    transition: transform 0.2s ease;
+    transform: rotate(180deg);
+}
+
+.add-task {
+    cursor: pointer;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.add-task:hover {
+    background-color: var(--hover-white);
+}
+
+.add-task > img {
+    max-height: 40px;
+}
+
+@media screen and (max-width: 800px) {
+    .form-divider {
+        flex-flow: column;
+        gap: 0;
+    }
+
+    .form-divider > div {
+        gap: 8px;
+    }
+
+    .section-divider {
+        flex-flow: column;
+        gap: 8px;
+    }
+}
