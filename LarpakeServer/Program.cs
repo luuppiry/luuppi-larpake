@@ -48,6 +48,10 @@ app.MapOpenApi();
 app.MapScalarApiReference(options =>
 {
     options.WithTitle(configuration["Scalar-OpenApi:Title"]!);
+    options.Authentication = new ScalarAuthenticationOptions
+    {
+        PreferredSecurityScheme = "Bearer",
+    };
 });
 
 // TODO: Add exception handling middleware
