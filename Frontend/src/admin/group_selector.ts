@@ -31,38 +31,46 @@ if (container == null) {
     throw new Error("Group container is null, check naming.");
 }
 
-const template = document.getElementById("group-template") as HTMLTemplateElement;
-if (template == null) {
+const groupTemplate = document.getElementById("group-template") as HTMLTemplateElement;
+if (groupTemplate == null) {
     throw new Error("Group template is null, check naming");
 }
 
-// Sort by LärpäkeId, then GroupNumber
-data.sort((first, second) => {
-    if (first.larpakeId > second.larpakeId) {
-        return 1;
-    }
-    if (first.larpakeId < second.larpakeId) {
-        return -1;
-    }
-    if (first.groupNumber == second.groupNumber) {
-        return 0;
-    }
-    return first.groupNumber < second.groupNumber ? -1 : 1;
-});
-
-if (data.length > 0) {
-    // Remove any existing children
-    let child = container.firstElementChild;
-    while (child != null) {
-        container.removeChild(child);
-        child = container.firstElementChild;
-    }
+const addBtnTemplate = document.getElementById("add-new-template") as HTMLTemplateElement;
+if (addBtnTemplate == null) {
+    throw new Error("Group template is null, check naming");
 }
 
-data.forEach(setData);
+function main() {
+    // Sort by LärpäkeId, then GroupNumber
+    data.sort((first, second) => {
+        if (first.larpakeId > second.larpakeId) {
+            return 1;
+        }
+        if (first.larpakeId < second.larpakeId) {
+            return -1;
+        }
+        if (first.groupNumber == second.groupNumber) {
+            return 0;
+        }
+        return first.groupNumber < second.groupNumber ? -1 : 1;
+    });
+
+    if (data.length > 0) {
+        // Remove any existing children
+        let child = container.firstElementChild;
+        while (child != null) {
+            container.removeChild(child);
+            child = container.firstElementChild;
+        }
+    }
+
+    data.forEach(setData);
+    appendAddNew();
+}
 
 function setData(group: Group) {
-    const fragment = document.importNode(template.content, true);
+    const fragment = document.importNode(groupTemplate.content, true);
     container.appendChild(fragment);
     const node = container.children[container.children.length - 1];
 
@@ -94,3 +102,10 @@ function setData(group: Group) {
         larpakeField.innerText = `Lärpäke: ${larpake}`;
     }
 }
+
+function appendAddNew() {
+    const fragment = document.importNode(addBtnTemplate.content, true);
+    container.appendChild(fragment);
+}
+
+main();

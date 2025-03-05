@@ -19,12 +19,5 @@
         <h2>Group manager</h2>
         <div id="container"></div>
     </body>
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const groupId = params.get("groupId");
-        if (groupId){
-            document.getElementById("container").innerText = `Managing group: ${groupId}`;
-        }
-
-    </script>
+<script type="module" src="/src/admin/group_manager.ts"></script>
 </html>
