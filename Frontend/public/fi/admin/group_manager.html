@@ -14,10 +14,65 @@
         </script>
     </head>
     <body>
-        <ui-header></ui-header>
-        <side-panel></side-panel>
-        <h2>Group manager</h2>
-        <div id="container"></div>
+        <template id="user-template">
+            <!-- Changing template class naming might cause name mismatch in js side -->
+            <li class="hover-scale cursor-pointer">
+                <section class="user-info-section">
+                    <div class="name-info">
+                        <h3 class="username">XuserX</h3>
+                        <p class="name">
+                            <span class="first-name">Xfirstname</span>&nbsp;<span class="last-name">Xlastname</span>
+                        </p>
+                    </div>
+                    <p class="user-status">Status: <b class="status">Fuksi</b></p>
+                </section>
+            </li>
+        </template>
+        <ui-header path-depth="1"></ui-header>
+        <side-panel path-depth="1"></side-panel>
+        <div class="title">
+            <h2>Group manager</h2>
+        </div>
+
+        <form class="common-info-container">
+            <h3>Yleistä</h3>
+            <div class="common-info-container-content">
+                <div class="field group-name-field">
+                    <div class="tooltipped-title">
+                        <label for="group-name">Ryhmän nimi</label>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Jätä tyhjäksi jos aloitusvuotta ei haluta määritellä</p>
+                    </div>
+                    <input id="group-name" type="text" class="text-field" maxlength="80" />
+                </div>
+
+                <div class="field">
+                    <div class="tooltipped-title">
+                        <label for="group-number">Ryhmän numero</label>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Fuksiryhmälle valittu numero.</p>
+                    </div>
+                    <input id="group-number" type="text" class="text-field" />
+                </div>
+
+                <div class="field">
+                    <div class="tooltipped-title">
+                        <label for="larpake-id">Lärpäke id</label>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Mihin Lärpäkkeeseen ryhmä liitetään.</p>
+                    </div>
+                    <input id="larpake-id" type="text" class="text-field" />
+                </div>
+            </div>
+        </form>
+        <section class="common-info-container">
+            <h3>Jäsenet</h3>
+            <ul id="user-container" class="user-container">
+                <li class="no-users">
+                    <p>Ryhmään ei kuulu yhtäkään käyttäjää.</p>
+                </li>
+            </ul>
+        </section>
     </body>
-<script type="module" src="/src/admin/group_manager.ts"></script>
+    <script type="module" src="/src/admin/group_manager.ts"></script>
 </html>

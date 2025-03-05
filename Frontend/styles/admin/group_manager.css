@@ -1,1 +1,84 @@
 @import "../common.css";
+@import "../tooltip.css";
+@import "../common_settings.css";
+
+.title {
+    display: flex;
+    justify-content: center;
+}
+
+.common-info-container {
+    padding: 0 20px;
+
+}
+
+.common-info-container-content {
+    display: flex;
+    flex-flow: column;
+    gap: 10px;
+}
+
+
+
+#group-name{
+    max-width: 300px;
+    width: 100% !important;
+}
+
+.tooltipped-title  {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.user-info-section {
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px 30px;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    justify-content: space-between;
+    align-content: center;
+}
+
+.name-info {
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-flow: column;
+    align-content: center;
+}
+
+.user-status {
+    grid-row: 1;
+    margin: 0;
+}
+
+.username,
+.name,
+.first-name,
+.last-name {
+    font-size: medium;
+    margin: 0;
+}
+
+.user-container {
+    padding: 0;
+    display: flex;
+    flex-flow: column;
+    gap: 10px;
+}
+
+.user-container > li {
+    list-style: none;
+}
+
+.fuksi {
+    color: #53de31;
+}
+.tutor {
+    color: #fe678e;
+}
+
+.no-users {
+    display: flex;
+    justify-content: center;
+}
