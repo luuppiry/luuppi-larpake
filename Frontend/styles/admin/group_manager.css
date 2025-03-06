@@ -2,12 +2,11 @@
 @import "../tooltip.css";
 @import "../common_settings.css";
 
-
 .page-padding {
     padding: 10px 50px;
 }
 
-.gap-10{
+.gap-10 {
     gap: 10px;
 }
 
@@ -16,7 +15,78 @@
     width: 100%;
 }
 
-.members-container-header {
+.dialog {
+    padding: 0px;
+    border: none;
+    box-shadow: 0 4px 8px black;
+}
+
+.choose-user-dialog {
+    width: 400px;
+    max-width: 90%;
+    height: 700px;
+}
+
+.edit-user-dialog {
+    width: 500px;
+    max-width: 90%;
+    height: 350px;
+}
+
+.white-text > * {
+    color: white;
+}
+
+.dialog-header {
+    background-color: var(--luuppi-blue);
+    padding: 1px 30px;
+}
+
+.close-btn {
+    background-color: var(--dark-blue);
+}
+
+.choose-user-form {
+    margin: 30px 20px;
+    align-content: center;
+}
+
+.search-bar {
+    padding: 3px;
+    font-size: medium;
+    width: 60%;
+}
+
+.select-status {
+    max-width: 100px;
+}
+
+.delete-btn {
+    border: none;
+    background-color: var(--luuppi-blue);
+    border-radius: 10px;
+}
+
+.delete-btn > img {
+    height: 40px;
+    width: 40px;
+}
+
+.available-user {
+    background-color: var(--luuppi-blue);
+    border-radius: 10px;
+    padding: 0 20px;
+    list-style: none;
+    display: flex;
+    flex-flow: row;
+}
+
+.no-interact {
+    user-select: none;
+    pointer-events: none;
+}
+
+.flex-separate {
     display: flex;
     justify-content: space-between;
 }
@@ -30,8 +100,8 @@
     border-style: none;
     background-color: var(--luuppi-blue);
     padding: 8px;
-    height: 40px;
-    width: 40px;
+    height: 50px;
+    width: 50px;
 }
 
 #group-name {

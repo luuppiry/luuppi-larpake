@@ -88,7 +88,7 @@ class SidePanel extends HTMLElement {
 
         this.innerHTML = `
             <nav class="side-panel" id="side-panel-element">
-                <div class="close-btn" onclick="toggleSidePanel()" style="display:flex; justify-content: center; align-items: center;">
+                <div class="close-btn" onclick="toggleSidePanel()">
                     <img class="close-x" src="/icons/close-x.png" height="30px" width="auto">
                 </div>
                 <ul>${menuItems}</ul>

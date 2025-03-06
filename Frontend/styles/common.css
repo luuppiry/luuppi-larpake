@@ -178,7 +178,7 @@ body {
 }
 
 .side-panel ul li.active {
-    background-color: #3e3d75;
+    background-color: var(--dark-blue);
     padding-left: 10px;
     border-radius: 5px;
 }
@@ -192,9 +192,12 @@ body {
     width: 48px;
     height: 48px;
     text-align: center;
-    background-color: #5c61a3;
+    background-color: var(--luuppi-blue);
     color: #ffffff;
     user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .hor-center-content {
@@ -260,4 +263,21 @@ body {
 
 .cursor-pointer {
     cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Hide default list paddings and points */
+.no-list {
+    padding: 0;
+}
+
+.no-list > li {
+    list-style: none;
+}
+
+.page-end-margin {
+    margin-bottom: 170px;
 }

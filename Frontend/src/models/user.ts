@@ -1,16 +1,30 @@
 import { Point2D } from "./common.ts";
 
-export type User = {};
+// User, GroupMember and Group are used by group_manager.ts
+export type User = {
+    userId: string;
+    username: string | null;
+    firstName: string | null;
+    lastName: string | null;
+    permissions: number;
+};
+
+export type GroupMember = {
+    user: User;
+    isHidden: boolean;
+    isCompeting: boolean;
+};
 
 export type Group = {
     id: number;
     larpakeId: number;
     name: string;
-    groupNumber: number;
-    createdAt: Date;
-    updatedAt: Date;
-    members: string[];
+    groupNumber: number | null;
+    members: GroupMember[];
 };
+
+
+
 
 
 
@@ -27,3 +41,21 @@ export type Signature = {
         lineCap: string;
     };
 };
+
+
+export type GroupDto = {
+    id: number;
+    larpakeId: number;
+    name: string;
+    groupNumber: number;
+    //createdAt: Date;
+    //updatedAt: Date;
+    members: string[];
+};
+
+
+
+
+
+
+
