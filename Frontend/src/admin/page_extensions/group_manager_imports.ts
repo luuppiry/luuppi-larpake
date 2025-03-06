@@ -53,3 +53,13 @@ export const deleteUserBtn = document.getElementById("delete-user-btn") as HTMLB
 if (editUserDialog == null){
     throw new Error("Delete user dialog is null, check naming");
 }
+
+export const editOkBtn = document.getElementById("edit-ok-btn") as HTMLButtonElement;
+if (editUserDialog == null){
+    throw new Error("Edit ok button is null, check naming");
+}
+
+export const saveBtn = document.getElementById("save-btn") as HTMLButtonElement;
+if (saveBtn == null){
+    throw new Error("Save button is null, check naming");
+}

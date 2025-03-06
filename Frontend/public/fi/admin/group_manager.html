@@ -41,9 +41,10 @@
                 <h1>Muokkaa käyttäjää</h1>
             </div>
             <div class="choose-user-form">
-                <p>Käyttäjä: <span class="_username">UserName</span></p>
+                <p><b>Käyttäjä: </b><span class="_username">UserName</span></p>
                 <div class="flex-separate">
                     <div>
+                        <p class="_id hidden"></p>
                         <label for="user-status-selector"><b>Rooli:</b></label>
                         <select id="user-status-selector" class="_status select-status">
                             <option value="true">Fuksi</option>
@@ -55,6 +56,9 @@
                     </button>
                 </div>
                 <p>Käyttäjän poistaminen ryhmästä voi johtaa tietojen menettämiseen!</p>
+                <div id="edit-ok-btn" class="ok-btn-container">
+                    <button class="primary-btn ok-btn">Ok</button>
+                </div>
             </div>
         </dialog>
         <template id="available-user-template">
@@ -75,12 +79,15 @@
             <li class="hover-scale cursor-pointer">
                 <section class="user-info-section no-interact">
                     <div class="name-info">
-                        <h3 class="username">XuserX</h3>
+                        <p class="_id hidden"></p>
+                        <h3 class="_username username">XuserX</h3>
                         <p class="name">
-                            <span class="first-name">Xfirstname</span>&nbsp;<span class="last-name">Xlastname</span>
+                            <span class="_first-name first-name">Xfirstname</span>&nbsp;<span class="last-name"
+                                >Xlastname</span
+                            >
                         </p>
                     </div>
-                    <p class="user-status">Status: <b class="status">Fuksi</b></p>
+                    <p class="user-status">Status: <b class="_status">Fuksi</b></p>
                 </section>
             </li>
         </template>
@@ -137,6 +144,7 @@
                         </li>
                     </ul>
                 </section>
+                <button id="save-btn" class="primary-btn">Tallenna</button>
             </div>
         </div>
     </body>

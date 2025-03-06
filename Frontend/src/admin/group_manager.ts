@@ -6,11 +6,19 @@ import {
     cancelChooseUserBtn,
     cancelEditUserBtn,
     container,
+    deleteUserBtn,
+    editOkBtn,
     editUserDialog,
+    saveBtn,
     searchField,
     selectUserDialog,
     userTemplate,
 } from "./page_extensions/group_manager_imports.ts";
+
+const TUTOR = "Tutor";
+const FRESHMAN = "Fuksi";
+const FRESHMAN_CLASS = "fuksi";
+const TUTOR_CLASS = "tutor";
 
 // Section DATA
 const availableMembers = [
@@ -68,11 +76,6 @@ function fetchAllUsers() {
     return availableMembers.map((x) => x.user);
 }
 
-function fetchUser(userId: string): GroupMember | null {
-    const matching = availableMembers.filter((x) => x.user.userId == userId);
-    return matching.length > 0 ? matching[0] : null;
-}
-
 function main() {
     const params = new URLSearchParams(window.location.search);
     const groupId: number = parseInt(params.get("groupId") ?? "");
@@ -90,9 +93,20 @@ function main() {
         e.preventDefault();
         selectUserDialog.close();
     });
-    
+
     cancelEditUserBtn.addEventListener("click", (e) => {
         e.preventDefault();
+        editUserDialog.close();
+    });
+
+    deleteUserBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const userId = editUserDialog.querySelector<HTMLParagraphElement>("._id")?.id;
+        if (userId == null) {
+            throw new Error("User id to be deleted is null.");
+        }
+        removeUser(userId);
         editUserDialog.close();
     });
 
@@ -104,6 +118,15 @@ function main() {
     cancelEditUserBtn.addEventListener("click", (_) => {
         editUserDialog.close();
     });
+
+    editOkBtn.addEventListener("click", (_) => {
+        changeEdited();
+        editUserDialog.close();
+    });
+
+    saveBtn.addEventListener("click", (_) => {
+        SaveGroupState();
+    })
 }
 
 function startExistingGroup(groupId: number) {
@@ -116,21 +139,15 @@ function startExistingGroup(groupId: number) {
 
     // Add Group name
     const groupName = document.getElementById("group-name") as HTMLInputElement;
-    if (groupName) {
-        groupName.value = data.name;
-    }
+    groupName.value = data.name;
 
     // Add group number
     const groupNumber = document.getElementById("group-number") as HTMLInputElement;
-    if (groupNumber) {
-        groupNumber.value = data.groupNumber?.toString() ?? "";
-    }
+    groupNumber.value = data.groupNumber?.toString() ?? "";
 
     // Add larpake id
     const larpakeId = document.getElementById("larpake-id") as HTMLInputElement;
-    if (larpakeId) {
-        larpakeId.value = data.larpakeId?.toString() ?? "";
-    }
+    larpakeId.value = data.larpakeId?.toString() ?? "";
 
     data.members.sort(sortFunc).forEach(appendNewUser);
 }
@@ -142,44 +159,92 @@ function appendNewUser(user: GroupMember) {
     const node = container.children[container.children.length - 1];
 
     // Set username
-    const userName = node.querySelector<HTMLHeadingElement>(".username");
-    if (userName) {
-        userName.innerText = user.user.username ?? "N/A";
-    }
+    const userName = node.querySelector<HTMLHeadingElement>(".username")!;
+    userName.innerText = user.user.username ?? "N/A";
 
     // Set firstname
-    const firstName = node.querySelector<HTMLSpanElement>(".first-name");
-    if (firstName) {
-        firstName.innerText = user.user.firstName ?? "N/A";
-    }
+    const firstName = node.querySelector<HTMLSpanElement>(".first-name")!;
+    firstName.innerText = user.user.firstName ?? "N/A";
 
     // Set lastname
-    const lastName = node.querySelector<HTMLSpanElement>(".last-name");
-    if (lastName) {
-        lastName.innerText = user.user.lastName ?? "N/A";
-    }
+    const lastName = node.querySelector<HTMLSpanElement>(".last-name")!;
+    lastName.innerText = user.user.lastName ?? "N/A";
 
     // Set user status in group
-    const status = node.querySelector<HTMLBRElement>(".status");
-    if (status) {
-        const isFuksi = user.isCompeting;
-        status.classList.add(isFuksi ? "fuksi" : "tutor");
-        status.innerText = isFuksi ? "Fuksi" : "Tutor";
-    }
+    const status = node.querySelector<HTMLBRElement>("._status")!;
+    const isFuksi = user.isCompeting;
+    status.classList.add(isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
+    status.innerText = isFuksi ? FRESHMAN : TUTOR;
 
-    node.id = user.user.userId;
+    // Set id
+    const idField = node.querySelector<HTMLParagraphElement>("._id")!;
+    idField.id = user.user.userId;
+
     node.addEventListener("click", (e) => editUser(e.target as HTMLElement));
 }
 
 function editUser(target: HTMLElement): void {
-    const user = fetchUser(target.id);
-    if (user == null) {
+    const userId = target.querySelector<HTMLElement>("._id")?.id!;
+    const userElem = getFirstMatchingMember(userId);
+    if (userElem == null) {
         throw new Error("Selected user not found.");
     }
 
     editUserDialog.showModal();
-    const selector = editUserDialog.querySelector<HTMLSelectElement>("._status")!;
-    selector.value = user.isCompeting ? "true" : "false";
+
+    // Read data from group members container
+    const status = userElem.querySelector<HTMLElement>("._status")?.innerText;
+    const username = userElem.querySelector<HTMLElement>("._username")?.innerText;
+
+    // Set status
+    const statusField = editUserDialog.querySelector<HTMLSelectElement>("._status")!;
+    statusField.value = status === TUTOR ? "false" : "true";
+
+    // Set username
+    const usernameField = editUserDialog.querySelector<HTMLElement>("._username")!;
+    usernameField.innerText = username ?? "N/A";
+
+    // Set id
+    const idField = editUserDialog.querySelector<HTMLParagraphElement>("._id")!;
+    idField.id = userId;
+}
+
+function changeEdited() {
+    const userId = editUserDialog.querySelector<HTMLParagraphElement>("._id")?.id;
+    const status = editUserDialog.querySelector<HTMLSelectElement>("._status")?.value;
+    if (userId == null || userId == "") {
+        throw new Error("User to be edited cannot be null");
+    }
+    const user = getFirstMatchingMember(userId);
+    if (status != null) {
+        const statusField = user?.querySelector<HTMLBRElement>("._status")!;
+
+        const isFuksi = status === "true";
+        statusField.classList.remove(!isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
+        statusField.classList.add(isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
+        statusField.innerText = isFuksi ? FRESHMAN : TUTOR;
+    }
+}
+
+function removeUser(userId: string) {
+    if (userId == null) {
+        throw new Error("Trying to remove null user id");
+    }
+
+    const user = getFirstMatchingMember(userId);
+    if (user != null) {
+        container.removeChild(user);
+    }
+}
+
+function getFirstMatchingMember(userId: string) {
+    for (let i = 0; i < container.children.length; i++) {
+        const current = container.children.item(i)!;
+        const idField = current?.querySelector<HTMLParagraphElement>("._id");
+        if (idField?.id == userId) {
+            return current;
+        }
+    }
 }
 
 function sortFunc(first: GroupMember, second: GroupMember): number {
@@ -293,4 +358,25 @@ function contains(value: string | null, searchValue: string | null) {
     return value.toLowerCase().includes(searchValue.toLowerCase());
 }
 
+function readMemberData(){
+    // Read data from user container
+    // Remove duplicate users and use the one with least privilege
+    throw new Error("Function not implemented.");
+}
+
+
+function SaveGroupState() {
+    // Read common data
+    // Read member data
+    // Upload all to server
+
+    throw new Error("Function not implemented.");
+}
+
+
+
+
+
 main();
+
+
