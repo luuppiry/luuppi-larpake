@@ -30,49 +30,59 @@
         </template>
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
-        <div class="title">
+        <div class="hor-center-content">
             <h2>Group manager</h2>
         </div>
+        <div class="hor-center-content">
+            <div class="limit-width flex-col">
+                <section>
+                    <form>
+                        <h3>Yleistä</h3>
+                        <div class="gap-10 flex-col">
+                            <div class="field group-name-field">
+                                <div class="tooltipped-title">
+                                    <label for="group-name">Ryhmän nimi</label>
+                                    <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                                    <p class="tooltip">Jätä tyhjäksi jos aloitusvuotta ei haluta määritellä</p>
+                                </div>
+                                <input id="group-name" type="text" class="text-field" maxlength="80" />
+                            </div>
 
-        <form class="common-info-container">
-            <h3>Yleistä</h3>
-            <div class="common-info-container-content">
-                <div class="field group-name-field">
-                    <div class="tooltipped-title">
-                        <label for="group-name">Ryhmän nimi</label>
-                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                        <p class="tooltip">Jätä tyhjäksi jos aloitusvuotta ei haluta määritellä</p>
-                    </div>
-                    <input id="group-name" type="text" class="text-field" maxlength="80" />
-                </div>
+                            <div class="field">
+                                <div class="tooltipped-title">
+                                    <label for="group-number">Ryhmän numero</label>
+                                    <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                                    <p class="tooltip">Fuksiryhmälle valittu numero.</p>
+                                </div>
+                                <input id="group-number" type="text" class="text-field" />
+                            </div>
 
-                <div class="field">
-                    <div class="tooltipped-title">
-                        <label for="group-number">Ryhmän numero</label>
-                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                        <p class="tooltip">Fuksiryhmälle valittu numero.</p>
+                            <div class="field">
+                                <div class="tooltipped-title">
+                                    <label for="larpake-id">Lärpäke id</label>
+                                    <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                                    <p class="tooltip">Mihin Lärpäkkeeseen ryhmä liitetään.</p>
+                                </div>
+                                <input id="larpake-id" type="text" class="text-field" />
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <section class="members-container">
+                    <div class="members-container-header">
+                        <h3>Jäsenet</h3>
+                        <button id="add-member-btn" class="add-new-btn hover-scale-10">
+                            <img src="/icons/plus_icon.svg" alt="add icon" />
+                        </button>
                     </div>
-                    <input id="group-number" type="text" class="text-field" />
-                </div>
-
-                <div class="field">
-                    <div class="tooltipped-title">
-                        <label for="larpake-id">Lärpäke id</label>
-                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                        <p class="tooltip">Mihin Lärpäkkeeseen ryhmä liitetään.</p>
-                    </div>
-                    <input id="larpake-id" type="text" class="text-field" />
-                </div>
+                    <ul id="user-container" class="user-container">
+                        <li class="no-users">
+                            <p>Ryhmään ei kuulu yhtäkään käyttäjää.</p>
+                        </li>
+                    </ul>
+                </section>
             </div>
-        </form>
-        <section class="common-info-container">
-            <h3>Jäsenet</h3>
-            <ul id="user-container" class="user-container">
-                <li class="no-users">
-                    <p>Ryhmään ei kuulu yhtäkään käyttäjää.</p>
-                </li>
-            </ul>
-        </section>
+        </div>
     </body>
     <script type="module" src="/src/admin/group_manager.ts"></script>
 </html>

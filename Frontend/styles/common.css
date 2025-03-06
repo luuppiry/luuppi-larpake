@@ -202,6 +202,12 @@ body {
     justify-content: center;
 }
 
+/* Note that this does not work together with hor-center-content  */
+.flex-col {
+    display: flex;
+    flex-flow: column;
+}
+
 @media screen and (max-width: 660px) {
     .header h1 {
         color: var(--luuppi-blue);
@@ -212,9 +218,7 @@ body {
     }
 }
 
-
 .primary-btn {
-
     font-size: large;
     background-color: var(--luuppi-blue);
     color: white;
@@ -234,6 +238,7 @@ body {
     padding: 8px 16px;
 }
 
+/* Default scaling 1.05 */
 .hover-scale {
     transition: transform 0.3s ease;
     transform-origin: center;
@@ -241,6 +246,16 @@ body {
 
 .hover-scale:hover {
     transform: scale(1.05);
+}
+
+/* Larger scaling 1.1 */
+.hover-scale-10 {
+    transition: transform 0.3s ease;
+    transform-origin: center;
+}
+
+.hover-scale-10:hover {
+    transform: scale(1.1);
 }
 
 .cursor-pointer {

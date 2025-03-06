@@ -21,6 +21,7 @@ type Group = {
 };
 
 function fetchData(groupId: number): Group {
+    console.log(`Fetching group ${groupId}.`);
     return {
         id: 1,
         larpakeId: 4,
@@ -66,23 +67,24 @@ function fetchData(groupId: number): Group {
 
 const container = document.getElementById("user-container") as HTMLUListElement;
 if (container == null) {
-    throw new Error("User container is null");
+    throw new Error("User container is null, check naming");
 }
 
 const userTemplate = document.getElementById("user-template") as HTMLTemplateElement;
 if (userTemplate == null) {
-    throw new Error("User template is null");
+    throw new Error("User template is null, check naming");
+}
+
+const addMemberBtn = document.getElementById("add-member-btn") as HTMLButtonElement;
+if (addMemberBtn == null) {
+    throw new Error("Add member button is null, check naming");
 }
 
 const params = new URLSearchParams(window.location.search);
 const groupId: number = parseInt(params.get("groupId") ?? "");
-if (Number.isNaN(groupId)) {
-    startNewGroup();
-} else {
+if (!Number.isNaN(groupId)) {
     startExistingGroup(groupId);
 }
-
-function startNewGroup() {}
 
 function startExistingGroup(groupId: number) {
     const data = fetchData(groupId);

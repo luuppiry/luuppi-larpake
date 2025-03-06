@@ -2,30 +2,44 @@
 @import "../tooltip.css";
 @import "../common_settings.css";
 
-.title {
-    display: flex;
-    justify-content: center;
+
+.page-padding {
+    padding: 10px 50px;
 }
 
-.common-info-container {
-    padding: 0 20px;
-
-}
-
-.common-info-container-content {
-    display: flex;
-    flex-flow: column;
+.gap-10{
     gap: 10px;
 }
 
+.limit-width {
+    max-width: 1000px;
+    width: 100%;
+}
 
+.members-container-header {
+    display: flex;
+    justify-content: space-between;
+}
 
-#group-name{
+.add-new-btn {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    border-radius: 100px;
+    border-style: none;
+    background-color: var(--luuppi-blue);
+    padding: 8px;
+    height: 40px;
+    width: 40px;
+}
+
+#group-name {
     max-width: 300px;
     width: 100% !important;
 }
 
-.tooltipped-title  {
+.tooltipped-title {
     margin: 0 !important;
     padding: 0 !important;
 }
