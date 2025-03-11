@@ -13,7 +13,7 @@ export default class SectionEditor extends HTMLElement {
     idNumber: number | null = null;
     titleFiField: HTMLInputElement | null = null;
     titleEnField: HTMLInputElement | null = null;
-    serverTaskId: number | null = null;
+    serverSectionId: number | null = null;
     tasksContainer: HTMLOListElement | null = null;
 
     constructor() {
@@ -107,7 +107,7 @@ export default class SectionEditor extends HTMLElement {
     }
 
     setData(data: SectionData) {
-        this.serverTaskId = data.id;
+        this.serverSectionId = data.id;
 
         if (this.titleFiField) {
             this.titleFiField.value = data.titleFi;
@@ -117,6 +117,38 @@ export default class SectionEditor extends HTMLElement {
         }
 
         data.tasks.forEach((task) => this.appendTask(task));
+    }
+
+    getData(): SectionData {
+        // Validate field values exist
+        if (this.titleFiField?.value == undefined) {
+            throw new Error("Section title (fi) cannot be empty.");
+        }
+        if (this.titleEnField?.value == undefined) {
+            throw new Error("Section title (en) cannot be empty.");
+        }
+
+        const container = this.tasksContainer;
+        if (container == null) {
+            throw new Error("Task container is null");
+        }
+
+        // Parse tasks
+        const tasks: TaskData[] = [];
+        for (let i = 0; i < container.children.length; i++) {
+            const editor = container.children.item(i);
+            if (editor instanceof TaskEditor) {
+                const task = (editor as TaskEditor).getData();
+                tasks.push(task);
+            }
+        }
+
+        return {
+            id: this.serverSectionId ?? -1,
+            titleFi: this.titleFiField.value,
+            titleEn: this.titleEnField.value,
+            tasks: tasks,
+        };
     }
 }
 

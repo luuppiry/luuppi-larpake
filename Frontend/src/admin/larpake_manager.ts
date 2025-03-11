@@ -3,25 +3,37 @@ import SectionEditor, { SectionData } from "../components/section-editor";
 document.getElementById("common-info-cancel-btn")?.addEventListener("click", (event) => {
     event.preventDefault();
 
-    const path = window.location.href.split("?")[0];
-    window.location.href = path;
+    updatePageIfOk();
 });
 
 document.getElementById("common-info-submit-btn")?.addEventListener("click", (event) => {
     event.preventDefault();
 
     // Validate and send new values to server
+
+    const dialog = document.getElementById("common-data-saved-dialog") as HTMLDialogElement;
+    dialog.showModal();
+    dialog.querySelector("._close-btn")?.addEventListener("click", (_) => {
+        dialog.close();
+    });
 });
 
 document.getElementById("tasks-cancel-btn")?.addEventListener("click", (event) => {
     event.preventDefault();
 
-    const path = window.location.href.split("?")[0];
-    window.location.href = path;
+    updatePageIfOk();
 });
+
+
 
 document.getElementById("tasks-submit-btn")?.addEventListener("click", (event) => {
     event.preventDefault();
+
+    const dialog = document.getElementById("tasks-saved-dialog") as HTMLDialogElement;
+    dialog.showModal();
+    dialog.querySelector("._close-btn")?.addEventListener("click", (_) => {
+        dialog.close();
+    });
 });
 
 document.getElementById("add-section-btn")?.addEventListener("click", (event) => {
@@ -90,10 +102,32 @@ function render() {
         throw new Error("Section container is null.");
     }
 
-    data.forEach((sectionData) => {
-        const editor = new SectionEditor();
-        container?.appendChild(editor);
-        editor.setData(sectionData);
+    const url = window.location.href;
+    const query = url.split("?");
+    if (query.length > 1) {
+        const params = new URLSearchParams(query[1]);
+        const larpakeId = params.get("larpakeId");
+        if (larpakeId != null) {
+            // Set existing data to UI
+            data.forEach((sectionData) => {
+                const editor = new SectionEditor();
+                container?.appendChild(editor);
+                editor.setData(sectionData);
+            });
+        }
+    }
+}
+
+
+function updatePageIfOk(){
+    const dialog = document.getElementById("are-you-sure-dialog") as HTMLDialogElement;
+    dialog.showModal();
+
+    dialog.querySelector("._cancel")?.addEventListener("click", (_) => {
+        dialog.close();
+    });
+    dialog.querySelector("._ok")?.addEventListener("click", (_) => {
+        window.location.href = window.location.href;
     });
 }
 

@@ -206,6 +206,10 @@ export default class TaskEditor extends HTMLElement {
     addAllEventListeners() {
         addTaskEventListeners();
     }
+
+    getData(): TaskData {
+        throw new Error("")
+    }
 }
 
 if ("customElements" in window) {

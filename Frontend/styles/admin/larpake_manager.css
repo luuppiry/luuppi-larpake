@@ -185,6 +185,14 @@
     border-color: red;
 }
 
+.max-width-400 {
+    max-width: 400px;
+}
+
+.align-right {
+    float: right;
+}
+
 @media screen and (max-width: 800px) {
     .form-divider {
         flex-flow: column;

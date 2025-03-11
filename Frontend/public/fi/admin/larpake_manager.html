@@ -14,6 +14,31 @@
             }
         </script>
     </head>
+    <dialog id="common-data-saved-dialog" class="max-width-400">
+        <h1>Yleiset tiedot tallennettu</h1>
+        <p>
+            Lärpäkkeen yleiset tiedot (otsikko, vuosi, kuvaus) on tallennettu järjestelmään. Huomaa, että osioita ja
+            <b>tehtäviä ei tallennettu nyt</b>.
+        </p>
+        <button class="_close-btn primary-btn align-right hover-scale">OK</button>
+    </dialog>
+    <dialog id="tasks-saved-dialog" class="max-width-400">
+        <h1>Yleiset tiedot tallennettu</h1>
+        <p>
+            Lärpäkkeen osiot ja tehtävät on tallennettu järjestelmään. Huomaa, että Lärpäkkeen
+            <b>yleisiä tietoja ei tallennettu nyt. </b> Yleisiä tietoja ovat esim. Lärpäkkeen otsikko tai vuosi.
+        </p>
+        <button class="_close-btn primary-btn align-right hover-scale">OK</button>
+    </dialog>
+    <dialog id="are-you-sure-dialog" class="max-width-400">
+        <h1>Oletko varma?</h1>
+        <p>Haluatko päivittää nettisivun? <b>Menetät kaikki tallentamattomat muutokset.</b></p>
+        <div class="flex-row gap-10 align-right">
+            <button class="_cancel primary-btn align-right hover-scale">Peruuta</button>
+            <button class="_ok secondary-btn align-right hover-scale">OK</button>
+        </div>
+    </dialog>
+
     <body style="margin-bottom: 100px">
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
