@@ -15,13 +15,6 @@
         </script>
     </head>
     <body>
-        <template id="add-new-template">
-            <li>
-                <a class="add-new-btn hover-scale" href="larpake_manager.html?new=true">
-                    <img src="/icons/plus_icon.svg" alt="plus icon" />
-                </a>
-            </li>
-        </template>
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
         <div style="margin-bottom: 100px">
@@ -29,7 +22,13 @@
                 <h2 style="font-size: xx-large">Lärpäkkeet</h2>
             </div>
             <div style="display: flex; justify-content: center">
-                <ul id="larpake-container" class="larpake-container" style="padding: 0px"></ul>
+                <ul id="larpake-container" class="larpake-container" style="padding: 0px">
+                    <li class="flex-last" style="width: 100%;">
+                        <a class="add-new-btn hover-scale" href="larpake_manager.html?new=true">
+                            <img src="/icons/plus_icon.svg" alt="plus icon" />
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </body>

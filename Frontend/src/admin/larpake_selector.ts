@@ -1,4 +1,5 @@
-import LarpakePreview, { PreviewData } from "../components/larpake-previewer";
+import LarpakeClient from "../api_client/larpake_client.ts";
+import LarpakePreview, { PreviewData } from "../components/larpake-previewer.ts";
 
 const data: PreviewData[] = [
     {
@@ -27,15 +28,40 @@ const data: PreviewData[] = [
     },
 ];
 
+async function main() {
+    // data.forEach((larpake) => {
+    //     const item = new LarpakePreview();
+    //     container.appendChild(item);
+    //     item.addData(larpake);
+    // });
+
+    const client = new LarpakeClient();
+    const larpakkeet = await client.getAll(false);
+
+    if (larpakkeet == null) {
+        return;
+    }
+
+
+    larpakkeet!.forEach((larpake) => {
+        const item = new LarpakePreview();
+        container.appendChild(item);
+
+        item.addData({
+            id: larpake.id,
+            titleFi: larpake.textData[0].title,
+            year: null,
+            sections: larpake.sections?.length ?? -1,
+            tasks: -1,
+            points: -1,
+            groups: -1,
+            createdAt: larpake.createdAt,
+            updatedAt: larpake.updatedAt,
+            imgUrl: "/kiasa.png",
+        });
+    });
+}
+
 const container = document.getElementById("larpake-container") as HTMLUListElement;
 
-data.forEach((larpake) => {
-    const item = new LarpakePreview();
-    container.appendChild(item);
-    item.addData(larpake);
-});
-
-const addNewBtn = document.getElementById("add-new-template") as HTMLTemplateElement;
-if (addNewBtn) {
-    container.appendChild(addNewBtn.content);
-}
+main();

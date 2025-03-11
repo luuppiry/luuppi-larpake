@@ -294,3 +294,7 @@ body {
 .gap-20 {
     gap: 20px;
 }
+
+.flex-last {
+    order: 1;
+}

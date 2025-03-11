@@ -168,7 +168,6 @@
 
 .add-section {
     /* Stays always last in flex box */
-    order: 1;
     background-color: var(--luuppi-gray);
 }
 
@@ -191,6 +190,10 @@
 
 .align-right {
     float: right;
+}
+
+.border-red {
+    border-color: red;
 }
 
 @media screen and (max-width: 800px) {

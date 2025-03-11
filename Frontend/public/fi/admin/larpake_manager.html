@@ -38,6 +38,14 @@
             <button class="_ok secondary-btn align-right hover-scale">OK</button>
         </div>
     </dialog>
+    <dialog id="invalid-data-dialog" class="max-width-400 border-red">
+        <h1>Puuttuvia arvoja</h1>
+        <p>
+            Jotkin arvot ovat joko väärässä formaatissa tai puuttuvat kokonaan. Katso konsolia lisätietoja varten (F12
+            -> konsoli).
+        </p>
+        <button class="_close-btn primary-btn align-right hover-scale">OK</button>
+    </dialog>
 
     <body style="margin-bottom: 100px">
         <ui-header path-depth="1"></ui-header>
@@ -73,7 +81,7 @@
                         <h3 class="no-margin">Suomeksi (oletus)</h3>
                         <div class="field">
                             <label for="title-fi">Nimi</label>
-                            <input id="title-fi" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                            <input id="title-fi" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" required />
                         </div>
                         <div class="field">
                             <label for="description-fi">Kuvaus</label>
@@ -89,7 +97,7 @@
                         <h3 class="no-margin">Englanniksi</h3>
                         <div class="field">
                             <label for="title-en">Nimi</label>
-                            <input id="title-en" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                            <input id="title-en" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" required />
                         </div>
                         <div class="field">
                             <label for="description-en">Kuvaus</label>
@@ -122,7 +130,7 @@
                     </p>
                     <ol id="section-container" class="section-list">
                         <!-- Lärpäke sections and their tasks -->
-                        <button id="add-section-btn" class="add-section add-btn">
+                        <button id="add-section-btn" class="add-section add-btn flex-last">
                             <img src="/icons/plus_icon.svg" alt="add section icon" />
                         </button>
                     </ol>

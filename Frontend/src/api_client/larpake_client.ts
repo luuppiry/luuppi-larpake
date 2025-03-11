@@ -13,6 +13,19 @@ export default class LarpakeClient {
         this.client = new HttpClient();
     }
 
+    async getAll(minimize: boolean): Promise<Larpake[] | null> {
+        const query = new URLSearchParams();
+        query.append("DoMinimize", minimize ? "true" : "false");
+
+        const response = await this.client.get("api/larpakkeet", query);
+        if (!response.ok){
+            console.error("Failed to fetch Lärpäkkeet");
+            return null;
+        }
+        const container: Container<Larpake[]> = await response.json();
+        return container.data;
+    }
+
     async getOwn(): Promise<Larpake[] | null> {
         const query = new URLSearchParams();
         query.append("minimize", "false");
@@ -52,11 +65,9 @@ export default class LarpakeClient {
             throw new Error("Task id must be defined.");
         }
 
-        const response = await this.client.get(
-            `/api/larpake-events/${taskId}/attendance-opportunities`
-        );
+        const response = await this.client.get(`/api/larpake-events/${taskId}/attendance-opportunities`);
 
-        if (!response.ok){
+        if (!response.ok) {
             console.warn(response);
             return null;
         }

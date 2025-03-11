@@ -1,3 +1,5 @@
+import { isEmpty } from "../helpers";
+
 export type TaskData = {
     id: number;
     titleFi: string;
@@ -199,7 +201,7 @@ export default class TaskEditor extends HTMLElement {
         const deleteBtn = document.getElementById(`delete-task-${this.idNumber}-btn`);
         deleteBtn?.addEventListener("click", (event) => {
             this.parentElement?.removeChild(this);
-            event.stopPropagation();    // To no route click to parent handlers
+            event.stopPropagation(); // To no route click to parent handlers
         });
     }
 
@@ -208,7 +210,28 @@ export default class TaskEditor extends HTMLElement {
     }
 
     getData(): TaskData {
-        throw new Error("")
+        if (isEmpty(this.titleFiField?.value)) {
+            throw new Error(`Task ${this.idNumber} title (fi) cannot be null`);
+        }
+        if (isEmpty(this.titleEnField?.value)) {
+            throw new Error(`Task ${this.idNumber} title (en) cannot be null`);
+        }
+        if (isEmpty(this.pointsField?.value)) {
+            throw new Error(`Task ${this.idNumber} points cannot be null`);
+        }
+        const points = parseInt(this.pointsField!.value);
+        if (Number.isNaN(points)) {
+            throw new Error(`Task ${this.idNumber} points must have numeric value`);
+        }
+
+        return {
+            id: this.serverTaskId ?? -1,
+            titleFi: this.titleFiField!.value,
+            titleEn: this.titleEnField!.value,
+            bodyFi: this.bodyFiField?.value ?? "",
+            bodyEn: this.bodyEnField?.value ?? "",
+            points: points,
+        };
     }
 }
 

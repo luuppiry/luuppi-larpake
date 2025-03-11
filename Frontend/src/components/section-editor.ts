@@ -1,3 +1,4 @@
+import { isEmpty } from "../helpers";
 import TaskEditor, { TaskData } from "./task-editor";
 
 const idStart = "section-editor-";
@@ -121,10 +122,10 @@ export default class SectionEditor extends HTMLElement {
 
     getData(): SectionData {
         // Validate field values exist
-        if (this.titleFiField?.value == undefined) {
+        if ( isEmpty(this.titleFiField?.value)) {
             throw new Error("Section title (fi) cannot be empty.");
         }
-        if (this.titleEnField?.value == undefined) {
+        if (isEmpty(this.titleEnField?.value)) {
             throw new Error("Section title (en) cannot be empty.");
         }
 
@@ -145,8 +146,8 @@ export default class SectionEditor extends HTMLElement {
 
         return {
             id: this.serverSectionId ?? -1,
-            titleFi: this.titleFiField.value,
-            titleEn: this.titleEnField.value,
+            titleFi: this.titleFiField!.value,
+            titleEn: this.titleEnField!.value,
             tasks: tasks,
         };
     }

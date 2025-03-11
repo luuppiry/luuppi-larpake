@@ -89,7 +89,9 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
                 permissions,
                 start_year,
                 created_at,
-                updated_at
+                updated_at,
+                entra_id,
+                entra_username
             FROM users 
             WHERE entra_id = @{nameof(entraId)} LIMIT 1;
             """, new { entraId });

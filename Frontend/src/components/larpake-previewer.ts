@@ -106,10 +106,10 @@ export default class LarpakePreview extends HTMLLIElement {
             this.groups.innerText = data.groups.toString();
         }
         if (this.created) {
-            this.created.innerText = data.createdAt.toLocaleString();
+            this.created.innerText = data.createdAt.toLocaleString("yyyy-mm-dd");
         }
         if (this.edited) {
-            this.edited.innerText = data.updatedAt.toLocaleString();
+            this.edited.ariaValueMax = data.updatedAt.toLocaleString("yyyy-mm-dd");
         }
     }
 
