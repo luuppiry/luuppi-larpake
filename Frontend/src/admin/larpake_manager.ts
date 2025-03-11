@@ -1,11 +1,38 @@
 import SectionEditor, { SectionData } from "../components/section-editor";
 
-document.getElementById("commonCancelBtn")?.addEventListener("click", (_) => {
-    // Cancel to default values
+document.getElementById("common-info-cancel-btn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    const path = window.location.href.split("?")[0];
+    window.location.href = path;
 });
 
-document.getElementById("commonSaveBtn")?.addEventListener("click", (_) => {
+document.getElementById("common-info-submit-btn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+
     // Validate and send new values to server
+});
+
+document.getElementById("tasks-cancel-btn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    const path = window.location.href.split("?")[0];
+    window.location.href = path;
+});
+
+document.getElementById("tasks-submit-btn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+});
+
+document.getElementById("add-section-btn")?.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    const container = document.getElementById("section-container");
+    if (container == null) {
+        throw new Error("Could not find section container, check naming.");
+    }
+
+    container.appendChild(new SectionEditor());
 });
 
 function render() {

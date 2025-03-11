@@ -51,12 +51,14 @@ export default class TaskEditor extends HTMLElement {
                     </div>
                     <input
                         id="task-${idNum}-points"
+                        name="points"
                         class="text-field start-year-field"
                         type="number"
                         min="1"
                         max="100"
                         step="1"
                         value="3"
+                        required
                     />
                 </div>
             </div>
@@ -70,18 +72,23 @@ export default class TaskEditor extends HTMLElement {
                         <label for="task-${idNum}-title-fi">Otsikko</label>
                         <input
                             id="task-${idNum}-title-fi"
+                            name="title-en"
                             class="text-field"
-                            placeholder="Kaupunkikävely"
+                            placeholder="otsikko suomeksi"
                             maxlength="80"
+                            minlenght="3"
+                            required
                         />
                     </div>
                     <div class="field">
                         <label for="task-${idNum}-body-fi">Selitys</label>
                         <textarea
                             id="task-${idNum}-body-fi"
+                            name="body-fi"
                             class="description-field text-field"
-                            placeholder="kuvaus"
+                            placeholder="kuvaus suomeksi"
                             maxlength="800"
+                            minlenght="3"
                         ></textarea>
                     </div>
                 </div>
@@ -92,18 +99,23 @@ export default class TaskEditor extends HTMLElement {
                         <label for="task-${idNum}-title-en">Otsikko</label>
                         <input
                             id="task-${idNum}-title-en"
+                            name="title-en"
                             class="text-field"
-                            placeholder="Kaupunkikävely"
+                            placeholder="title in english"
                             maxlength="80"
+                            minlenght="3"
+                            required
                         />
                     </div>
                     <div class="field">
                         <label for="task-${idNum}-body-en">Selitys</label>
                         <textarea
                             id="task-${idNum}-body-en"
+                            name="body-en"
                             class="description-field text-field"
-                            placeholder="body"
+                            placeholder="body in english"
                             maxlength="800"
+                            minlenght="3"
                         ></textarea>
                     </div>
                 </div>
@@ -185,8 +197,9 @@ export default class TaskEditor extends HTMLElement {
         });
 
         const deleteBtn = document.getElementById(`delete-task-${this.idNumber}-btn`);
-        deleteBtn?.addEventListener("click", (_) => {
+        deleteBtn?.addEventListener("click", (event) => {
             this.parentElement?.removeChild(this);
+            event.stopPropagation();    // To no route click to parent handlers
         });
     }
 

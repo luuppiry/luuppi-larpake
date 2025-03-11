@@ -33,27 +33,33 @@ export default class SectionEditor extends HTMLElement {
                             <label for="section-${idNum}-title-fi">Otsikko (fi, oletus)</label>
                             <input
                                 id="section-${idNum}-title-fi"
+                                name="section-title-fi"
                                 class="text-field"
-                                placeholder="Tanpereella"
+                                placeholder="Osion otsikko"
                                 maxlength="80"
+                                minlenght="3"
+                                required
                             />
                         </div>
                         <div class="field">
                             <label for="section-${idNum}-title-en">Otsikko (en)</label>
                             <input
                                 id="section-${idNum}-title-en"
+                                name="section-title-en"
                                 class="text-field"
-                                placeholder="In Tampere"
+                                placeholder="Section title"
                                 maxlength="80"
+                                minlenght="3"
+                                required
                             />
                         </div>
                     </div>
                     <ol id="section-${idNum}-tasks-container" class="section-list task-list">
                         <!-- Tasks in this section -->
                     </ol>
-                    <div id="add-task-${idNum}-btn" class="add-task">
+                    <button id="add-task-${idNum}-btn" class="add-task add-btn">
                         <img src="/icons/plus_icon.svg" alt="add new icon">
-                    </div>
+                    </button>
                 </div>
             </li>
             `;
@@ -63,7 +69,8 @@ export default class SectionEditor extends HTMLElement {
         this.titleEnField = document.getElementById(`section-${idNum}-title-en`) as HTMLInputElement;
         this.tasksContainer = document.getElementById(`section-${idNum}-tasks-container`) as HTMLOListElement;
 
-        document.getElementById(`add-task-${idNum}-btn`)?.addEventListener("click", (_) => {
+        document.getElementById(`add-task-${idNum}-btn`)?.addEventListener("click", (event) => {
+            event.preventDefault();
             this.appendTask({
                 id: -1,
                 titleFi: "Uusi Tehtävä",
