@@ -20,27 +20,15 @@ export default class HttpClient {
         return await this.makeRequest(endpoint, "GET", null, null, query);
     }
 
-    async post(
-        endpoint: string,
-        body: any | null = null,
-        headers: Headers | null = null
-    ) {
+    async post(endpoint: string, body: any | null = null, headers: Headers | null = null) {
         return await this.makeRequest(endpoint, "POST", body, headers, null);
     }
 
-    async put(
-        endpoint: string,
-        body: any | null = null,
-        headers: Headers | null = null
-    ) {
+    async put(endpoint: string, body: any | null = null, headers: Headers | null = null) {
         return await this.makeRequest(endpoint, "PUT", body, headers, null);
     }
 
-    async delete(
-        endpoint: string,
-        body: any | null = null,
-        headers: Headers | null = null
-    ) {
+    async delete(endpoint: string, body: any | null = null, headers: Headers | null = null) {
         return await this.makeRequest(endpoint, "DELETE", body, headers, null);
     }
 
@@ -66,13 +54,7 @@ export default class HttpClient {
             return await this.#fetchDev(endpoint, method, body, headers, query);
         }
 
-        return await this.#makeRequestMiddleware(
-            endpoint,
-            method,
-            body,
-            headers,
-            query
-        );
+        return await this.#makeRequestMiddleware(endpoint, method, body, headers, query);
     }
 
     async #fetchDev(
@@ -83,21 +65,11 @@ export default class HttpClient {
         query: URLSearchParams | null = null
     ): Promise<Response> {
         const devClient = new DevHttpClient();
-        if (
-            this.accessToken == null ||
-            this.accessToken.accessTokenExpiresAt < new Date()
-        ) {
+        if (this.accessToken == null || this.accessToken.accessTokenExpiresAt < new Date()) {
             // Reauthenticate if needed
             this.accessToken = await devClient.authenticate();
         }
-        return await devClient.makeDevRequest(
-            this.accessToken,
-            endpoint,
-            method,
-            body,
-            headers,
-            query
-        );
+        return await devClient.makeDevRequest(this.accessToken, endpoint, method, body, headers, query);
     }
 
     async #makeRequestMiddleware(
@@ -114,15 +86,9 @@ export default class HttpClient {
         // First attempt
         headers ??= new Headers();
         headers.append("Content-Type", "application/json");
-        headers.append(
-            "Authorization",
-            `Bearer ${this.accessToken?.accessToken}`
-        );
+        headers.append("Authorization", `Bearer ${this.accessToken?.accessToken}`);
 
-        const url =
-            query == null
-                ? `${this.baseUrl}${endpoint}`
-                : `${this.baseUrl}${endpoint}?${query.toString()}`;
+        const url = query == null ? `${this.baseUrl}${endpoint}` : `${this.baseUrl}${endpoint}?${query.toString()}`;
 
         console.log("fetch first");
 
@@ -141,9 +107,7 @@ export default class HttpClient {
 
         // If not unauthorized (some error)
         if (response.status != 401) {
-            console.log(
-                `Request to '${endpoint}' failed with status ${response.status}.`
-            );
+            console.log(`Request to '${endpoint}' failed with status ${response.status}.`);
             return response;
         }
 
@@ -152,10 +116,7 @@ export default class HttpClient {
             return response;
         }
 
-        headers.append(
-            "Authorization",
-            `Bearer ${this.accessToken?.accessToken}`
-        );
+        headers.append("Authorization", `Bearer ${this.accessToken?.accessToken}`);
 
         console.log("fetch second");
         return await fetch(url, {
@@ -166,10 +127,13 @@ export default class HttpClient {
     }
 
     async #ensureAccessToken(): Promise<boolean> {
-        const now = new Date();
+        // const now = new Date();
         if (
-            this.accessToken !== null &&
-            this.accessToken.accessTokenExpiresAt > now
+            this.accessToken != null &&
+            this.accessToken.accessToken != null
+            /* This motherf***ker does not work, because API uses UTC time and javascript just cannot comprehend it 
+                How I cannot easily just accept both, this is just fu**ing stupid.  */
+            // && this.accessToken.accessTokenExpiresAt > now
         ) {
             // Valid token exists
             return true;
@@ -205,22 +169,15 @@ export default class HttpClient {
         headers.append("Authorization", `Bearer ${entraToken}`);
         headers.append("Accept", "*/*");
 
-     
-
-        const response = await fetch(
-            `${this.baseUrl}api/authentication/login`,
-            {
-                method: "POST",
-                headers: headers,
-                credentials: "include",
-            }
-        );
+        const response = await fetch(`${this.baseUrl}api/authentication/login`, {
+            method: "POST",
+            headers: headers,
+            credentials: "include",
+        });
 
         console.log(response);
         if (!response.ok) {
-            console.log(
-                "Failed to login to API with new entra id access token."
-            );
+            console.log("Failed to login to API with new entra id access token.");
             return null;
         }
         const token = await response.json();
@@ -228,13 +185,10 @@ export default class HttpClient {
     }
 
     async #fetchRefresh(): Promise<AccessToken | null> {
-        const response = await fetch(
-            `${this.baseUrl}api/authentication/token/refresh`,
-            {
-                method: "GET",
-                credentials: "include",
-            }
-        );
+        const response = await fetch(`${this.baseUrl}api/authentication/token/refresh`, {
+            method: "GET",
+            credentials: "include",
+        });
         if (!response.ok) {
             console.log("No refresh token exists.");
             return null;

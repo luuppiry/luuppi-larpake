@@ -1,6 +1,14 @@
 import LarpakeClient from "../api_client/larpake_client.ts";
 import SectionEditor from "../components/section-editor.ts";
-import mapChildren, { getInputNumericByDocId, isEmpty, LANG_EN, LANG_FI, SectionSortFunc, ToDictionary } from "../helpers.ts";
+import mapChildren, {
+    getInputNumericByDocId,
+    isEmpty,
+    LANG_EN,
+    LANG_FI,
+    overwriteQueryParam,
+    SectionSortFunc,
+    ToDictionary,
+} from "../helpers.ts";
 import { Larpake, Section } from "../models/larpake.ts";
 
 const client = new LarpakeClient();
@@ -91,18 +99,17 @@ function addPageEventListeners() {
     document.getElementById("common-info-submit-btn")?.addEventListener("click", async (event) => {
         event.preventDefault();
 
-        // Validate and send new values to server
-
+        // Validation is currently made in UI element data parsing + API level
         const data: Larpake = readCommonData();
 
         console.log(data);
-        await client.uploadLarpakeCommonData(data);        
-        
-        const dialog = document.getElementById("common-data-saved-dialog") as HTMLDialogElement;
-        dialog.showModal();
-        dialog.querySelector("._close-btn")?.addEventListener("click", (_) => {
-            dialog.close();
-        });
+        const id = await client.uploadLarpakeCommonDataOnly(data);
+        if (id >= 0) {
+            overwriteQueryParam("larpakeId", id.toString());
+            showCommonStateDialog("common-data-saved-dialog");
+        } else {
+            showCommonStateDialog("action-failed");
+        }
     });
 
     document.getElementById("tasks-cancel-btn")?.addEventListener("click", (event) => {
@@ -111,22 +118,30 @@ function addPageEventListeners() {
         confirmAndRefreshPage();
     });
 
-    document.getElementById("tasks-submit-btn")?.addEventListener("click", (event) => {
+    document.getElementById("tasks-submit-btn")?.addEventListener("click", async (event) => {
         event.preventDefault();
 
         const data = readSectionData();
         if (data == null) {
             return;
         }
+        const id = getInputNumericByDocId("id-field");
+        
         console.log(data);
-
-        /* Upload section/task data here */
-
-        const dialog = document.getElementById("tasks-saved-dialog") as HTMLDialogElement;
-        dialog.showModal();
-        dialog.querySelector("._close-btn")?.addEventListener("click", (_) => {
-            dialog.close();
+        const newId = await client.uploadLarpakeSectionsOnly({
+            id: Number.isNaN(id) ? -1 : id,
+            year: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            sections: data,
+            textData: []
         });
+        if (newId >= 0) {
+            overwriteQueryParam("larpakeId", newId.toString());
+            showCommonStateDialog("tasks-saved-dialog");
+        } else {
+            showCommonStateDialog("action-failed");
+        }
     });
 
     document.getElementById("add-section-btn")?.addEventListener("click", (event) => {
@@ -227,6 +242,12 @@ function readCommonData(): Larpake {
     };
 }
 
-
+function showCommonStateDialog(dialogName: string) {
+    const dialog = document.getElementById(dialogName) as HTMLDialogElement;
+    dialog.showModal();
+    dialog.querySelector("._close-btn")?.addEventListener("click", (_) => {
+        dialog.close();
+    });
+}
 
 main();

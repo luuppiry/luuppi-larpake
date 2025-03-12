@@ -11,7 +11,7 @@ export type Section = {
     updatedAt: Date;
     textData: SectionTextData[];
     /* Tasks are only here for POST requests */
-    Tasks: LarpakeTask[];
+    tasks: LarpakeTask[];
 };
 
 export type LarpakeTextData = {

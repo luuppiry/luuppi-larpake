@@ -60,3 +60,20 @@ export function SectionSortFunc(first: Section, second: Section): number {
 export function getInputNumericByDocId(fieldName: string) {
     return parseInt((document.getElementById(fieldName) as HTMLInputElement)?.value);
 }
+
+export function overwriteQueryParam(name: string, value: string) {
+    const pieced = window.location.href.split("?");
+    const url = pieced[0];
+
+    const params = new URLSearchParams(pieced[1] ?? "");
+    params.append(name, value);
+
+    // Change page url without reloading. Good for changes in query parameters
+    window.history.pushState(
+        {
+            change: `update page url with query param  '${name}': '${value}'`,
+        },
+        "",
+        `${url}?${params}`
+    );
+}

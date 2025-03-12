@@ -159,7 +159,7 @@ export default class SectionEditor extends HTMLElement {
                     languageCode: LANG_EN,
                 },
             ],
-        Tasks: tasks
+        tasks: tasks
         };
     }
 }

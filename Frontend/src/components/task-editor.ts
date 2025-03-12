@@ -71,7 +71,7 @@ export default class TaskEditor extends HTMLElement {
                             class="text-field"
                             placeholder="otsikko suomeksi"
                             maxlength="80"
-                            minlenght="3"
+                            minlength="5"
                             required
                         />
                     </div>
@@ -83,7 +83,6 @@ export default class TaskEditor extends HTMLElement {
                             class="description-field text-field"
                             placeholder="kuvaus suomeksi"
                             maxlength="800"
-                            minlenght="3"
                         ></textarea>
                     </div>
                 </div>
@@ -98,7 +97,7 @@ export default class TaskEditor extends HTMLElement {
                             class="text-field"
                             placeholder="title in english"
                             maxlength="80"
-                            minlenght="3"
+                            minlength="5"
                             required
                         />
                     </div>
@@ -110,7 +109,6 @@ export default class TaskEditor extends HTMLElement {
                             class="description-field text-field"
                             placeholder="body in english"
                             maxlength="800"
-                            minlenght="3"
                         ></textarea>
                     </div>
                 </div>

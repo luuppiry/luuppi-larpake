@@ -1,5 +1,5 @@
 import HttpClient from "./http_client.ts";
-import { Larpake, LarpakeTask } from "../models/larpake.ts";
+import { Larpake, LarpakeTask, Section } from "../models/larpake.ts";
 import { Container } from "../models/common.ts";
 import { ThrowIfNull } from "../helpers.ts";
 
@@ -104,15 +104,90 @@ export default class LarpakeClient {
         return events.ids;
     }
 
+    async uploadLarpakeCommonDataOnly(Larpake: Larpake): Promise<number> {
+        ThrowIfNull(Larpake);
 
-
-    async uploadLarpakeCommonData(Larpake: Larpake): Promise<boolean>{
-
-        return true;
+        return -1;
     }
 
-    async uploadLarpake(Larpake: Larpake){
+    async uploadLarpakeSectionsOnly(larpake: Larpake): Promise<number> {
+        ThrowIfNull(larpake);
 
+        const existing = await this.getById(larpake.id);
+        if (!existing) {
+            throw new Error(
+                "Save common data first, to create Larpake." +
+                    " If you have already sent common data first or larpake should exists, there might be a bug."
+            );
+        }
+
+        const existingIds = new Set(existing.sections?.map((x) => x.id));
+        const updateables = larpake.sections?.filter((x) => existingIds.has(x.id)) ?? [];
+
+        const countUpdated = await this.#updateSections(larpake.id, updateables);
+        console.log(`Updated ${countUpdated} existing sections`);
+
+        const newOnes = larpake.sections?.filter((x) => !existingIds.has(x.id)) ?? [];
+        const countCreated = await this.#createSections(larpake.id, newOnes);
+
+        console.log(`Created ${countCreated} new sections`);
+        return countUpdated + countCreated;
     }
 
+    async #createSections(larpakeId: number, sections: Section[]): Promise<number> {
+        for (let i = 0; i < sections.length; i++) {
+            const response = await this.client.post(`api/larpakkeet/${larpakeId}/sections`, sections[i]);
+            if (!response.ok) {
+                throw new Error(await response.json());
+            }
+        }
+        return sections.length;
+    }
+
+    async #updateSections(larpakeId: number, sections: Section[]): Promise<number> {
+        for (const section of sections) {
+            const response = await this.client.put(`api/larpakkeet/${larpakeId}/sections`, section);
+            if (!response.ok) {
+                throw new Error(await response.json());
+            }
+
+            for (const task of section.tasks) {
+                await this.#uploadTask(section.id, task);
+                console.log(`Uploaded task ${task.textData[0]?.title}`)
+            }
+        }
+        return sections.length;
+    }
+
+    async #uploadTask(sectionId: number, task: LarpakeTask) {
+        task.larpakeSectionId = sectionId;
+        if (task.id < 0) {
+            this.#createTask(task);
+        }
+        if (await this.#taskExists(task.id)) {
+            await this.#updateTask(task);
+        }
+        await this.#createTask(task);
+    }
+
+    async #createTask(task: LarpakeTask) {
+        const response = await this.client.post(`api/larpake-tasks`, task);
+        if (!response.ok) {
+            const error = await response.json()
+
+            throw new Error(error);
+        }
+    }
+
+    async #updateTask(task: LarpakeTask) {
+        const response = await this.client.put(`api/larpake-tasks/${task.id}`, task);
+        if (!response.ok) {
+            throw new Error(await response.json());
+        }
+    }
+
+    async #taskExists(taskId: number) {
+        const response = await this.client.get(`api/larpake-tasks/${taskId}`);
+        return response.ok;
+    }
 }
