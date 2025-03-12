@@ -21,9 +21,9 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 l.created_at,
                 l.updated_at,
                 ll.larpake_id,
-                GetLanguageCode(ll.language_id) AS languge_code,
                 ll.title,
-                ll.description
+                ll.description,
+                GetLanguageCode(ll.language_id) AS language_code
             FROM larpakkeet l
                 LEFT JOIN larpake_localizations ll
                     ON l.id = ll.larpake_id
@@ -81,7 +81,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 s.created_at,
                 s.updated_at,
                 sl.larpake_section_id,
-                GetLanguageCode(sl.language_id) AS languge_code,
+                GetLanguageCode(sl.language_id) AS language_code,
                 sl.title
             FROM larpake_sections s
                 LEFT JOIN larpake_section_localizations sl
@@ -118,7 +118,8 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 l.created_at,
                 l.updated_at,
                 ll.title,
-                ll.description
+                ll.description,
+                GetLanguageCode(ll.language_id) AS language_code
             FROM larpakkeet l
                 LEFT JOIN larpake_localizations ll
                     ON l.id = ll.larpake_id
