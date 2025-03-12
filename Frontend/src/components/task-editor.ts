@@ -1,13 +1,5 @@
-import { isEmpty } from "../helpers";
-
-export type TaskData = {
-    id: number;
-    titleFi: string;
-    titleEn: string;
-    bodyFi: string;
-    bodyEn: string;
-    points: number;
-};
+import { isEmpty, LANG_EN, LANG_FI } from "../helpers";
+import { LarpakeTask } from "../models/larpake";
 
 export default class TaskEditor extends HTMLElement {
     titleFiField: HTMLInputElement | null = null;
@@ -19,6 +11,7 @@ export default class TaskEditor extends HTMLElement {
     headerPointsField: HTMLParagraphElement | null = null;
     idNumber: number | null = null;
     serverTaskId: number | null = null;
+    orderingWeightNumber: number = -1;
 
     constructor() {
         super();
@@ -159,26 +152,30 @@ export default class TaskEditor extends HTMLElement {
         return i;
     }
 
-    setData(data: TaskData) {
+    setData(data: LarpakeTask) {
         this.serverTaskId = data.id;
+        this.orderingWeightNumber = data.orderingWeightNumber;
+
+        const textFi = data.textData.filter((x) => x.languageCode == LANG_FI)[0];
+        const textEn = data.textData.filter((x) => x.languageCode == LANG_EN)[0];
 
         if (this.titleFiField) {
-            this.titleFiField.value = data.titleFi;
+            this.titleFiField.value = textFi?.title ?? "";
         }
         if (this.titleEnField) {
-            this.titleEnField.value = data.titleEn;
+            this.titleEnField.value = textEn?.title ?? "";
         }
         if (this.bodyFiField) {
-            this.bodyFiField.value = data.bodyFi;
+            this.bodyFiField.value = textFi?.body ?? "";
         }
         if (this.bodyEnField) {
-            this.bodyEnField.value = data.bodyEn;
+            this.bodyEnField.value = textEn?.body ?? "";
         }
         if (this.pointsField) {
             this.pointsField.value = data.points.toString();
         }
         if (this.headerTitleField) {
-            this.headerTitleField.innerText = data.titleFi;
+            this.headerTitleField.innerText = textFi?.title ?? "Uusi tehtävä";
         }
         if (this.headerPointsField) {
             this.headerPointsField.innerText = `${data.points}p`;
@@ -209,7 +206,7 @@ export default class TaskEditor extends HTMLElement {
         addTaskEventListeners();
     }
 
-    getData(): TaskData {
+    getData(): LarpakeTask {
         if (isEmpty(this.titleFiField?.value)) {
             throw new Error(`Task ${this.idNumber} title (fi) cannot be null`);
         }
@@ -226,11 +223,24 @@ export default class TaskEditor extends HTMLElement {
 
         return {
             id: this.serverTaskId ?? -1,
-            titleFi: this.titleFiField!.value,
-            titleEn: this.titleEnField!.value,
-            bodyFi: this.bodyFiField?.value ?? "",
-            bodyEn: this.bodyEnField?.value ?? "",
+            larpakeSectionId: -1,
             points: points,
+            orderingWeightNumber: -1,
+            cancelledAt: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            textData: [
+                {
+                    title: this.titleFiField!.value,
+                    body: this.bodyFiField?.value ?? "",
+                    languageCode: LANG_FI,
+                },
+                {
+                    title: this.titleEnField!.value,
+                    body: this.bodyEnField?.value ?? "",
+                    languageCode: LANG_EN,
+                },
+            ],
         };
     }
 }

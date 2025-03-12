@@ -1,14 +1,8 @@
-import { isEmpty } from "../helpers";
-import TaskEditor, { TaskData } from "./task-editor";
+import { isEmpty, LANG_EN, LANG_FI } from "../helpers";
+import { LarpakeTask, Section } from "../models/larpake";
+import TaskEditor from "./task-editor";
 
 const idStart = "section-editor-";
-
-export type SectionData = {
-    id: number;
-    titleFi: string;
-    titleEn: string;
-    tasks: TaskData[];
-};
 
 export default class SectionEditor extends HTMLElement {
     idNumber: number | null = null;
@@ -73,12 +67,14 @@ export default class SectionEditor extends HTMLElement {
         document.getElementById(`add-task-${idNum}-btn`)?.addEventListener("click", (event) => {
             event.preventDefault();
             this.appendTask({
-                id: -1,
-                titleFi: "Uusi Tehtävä",
-                titleEn: "",
-                bodyFi: "",
-                bodyEn: "",
+                id: 0,
+                larpakeSectionId: 0,
                 points: 0,
+                orderingWeightNumber: 0,
+                cancelledAt: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                textData: [],
             });
         });
     }
@@ -96,7 +92,7 @@ export default class SectionEditor extends HTMLElement {
         return i;
     }
 
-    appendTask(task: TaskData) {
+    appendTask(task: LarpakeTask) {
         const editor = new TaskEditor();
         this.tasksContainer?.appendChild(editor);
         editor.setData(task);
@@ -107,22 +103,25 @@ export default class SectionEditor extends HTMLElement {
         this.tasksContainer?.removeChild(task);
     }
 
-    setData(data: SectionData) {
+    setData(data: Section, tasks: LarpakeTask[]) {
+        const textFi = data.textData.filter((x) => x.languageCode == LANG_FI)[0];
+        const textEn = data.textData.filter((x) => x.languageCode == LANG_EN)[0];
+
         this.serverSectionId = data.id;
 
         if (this.titleFiField) {
-            this.titleFiField.value = data.titleFi;
+            this.titleFiField.value = textFi?.title ?? "";
         }
         if (this.titleEnField) {
-            this.titleEnField.value = data.titleEn;
+            this.titleEnField.value = textEn?.title ?? "";
         }
 
-        data.tasks.forEach((task) => this.appendTask(task));
+        tasks.forEach((task) => this.appendTask(task));
     }
 
-    getData(): SectionData {
+    getData(): Section {
         // Validate field values exist
-        if ( isEmpty(this.titleFiField?.value)) {
+        if (isEmpty(this.titleFiField?.value)) {
             throw new Error("Section title (fi) cannot be empty.");
         }
         if (isEmpty(this.titleEnField?.value)) {
@@ -135,20 +134,32 @@ export default class SectionEditor extends HTMLElement {
         }
 
         // Parse tasks
-        const tasks: TaskData[] = [];
+        const tasks: LarpakeTask[] = [];
         for (let i = 0; i < container.children.length; i++) {
             const editor = container.children.item(i);
             if (editor instanceof TaskEditor) {
                 const task = (editor as TaskEditor).getData();
+                task.larpakeSectionId = this.serverSectionId ?? -1;
                 tasks.push(task);
             }
         }
-
         return {
             id: this.serverSectionId ?? -1,
-            titleFi: this.titleFiField!.value,
-            titleEn: this.titleEnField!.value,
-            tasks: tasks,
+            larpakeId: -1,
+            orderingweightNumber: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            textData: [
+                {
+                    title: this.titleFiField!.value,
+                    languageCode: LANG_FI,
+                },
+                {
+                    title: this.titleEnField!.value,
+                    languageCode: LANG_EN,
+                },
+            ],
+        Tasks: tasks
         };
     }
 }

@@ -10,6 +10,8 @@ export type Section = {
     createdAt: Date;
     updatedAt: Date;
     textData: SectionTextData[];
+    /* Tasks are only here for POST requests */
+    Tasks: LarpakeTask[];
 };
 
 export type LarpakeTextData = {
