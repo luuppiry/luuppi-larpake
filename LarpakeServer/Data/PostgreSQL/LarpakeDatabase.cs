@@ -311,7 +311,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 title = @{nameof(LarpakeSectionLocalization.Title)}
             WHERE larpake_section_id = @{nameof(record.Id)}
                 AND language_id = getlanguageid(@{nameof(LarpakeSectionLocalization.LanguageCode)});
-            """, record.TextData);
+            """, records);
 
         await transaction.CommitAsync();
         return rowsAffected;

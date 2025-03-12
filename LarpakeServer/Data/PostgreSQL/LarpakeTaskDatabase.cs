@@ -83,6 +83,9 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)};
             """);
+
+        string q = query.ToString();
+
         using var connection = GetConnection();
         var records = await connection.QueryLocalizedAsync<LarpakeTask, LarpakeTaskLocalization>(
             query.ToString(),
@@ -104,10 +107,10 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 e.created_at,
                 e.updated_at,
                 e.cancelled_at,
-                l.title,
-                l.body
-                l.language_code
-                l.larpake_event_id
+                loc.title,
+                loc.body,
+                GetLanguageCode(loc.language_id) AS language_code,
+                loc.larpake_event_id
             FROM larpake_events e
                 LEFT JOIN larpake_event_localizations loc
                     ON e.id = loc.larpake_event_id

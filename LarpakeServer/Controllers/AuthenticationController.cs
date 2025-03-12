@@ -151,6 +151,8 @@ public class AuthenticationController : ExtendedControllerBase
             return Unauthorized();
         }
 
+       Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
+
         // Get tokens and validate not empty
 
         if (string.IsNullOrEmpty(refreshToken))
