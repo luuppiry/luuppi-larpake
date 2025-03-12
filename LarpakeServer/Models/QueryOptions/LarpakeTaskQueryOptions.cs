@@ -7,5 +7,5 @@ public class LarpakeTaskQueryOptions : QueryOptions
     public long? SectionId { get; set; }
     public long? LarpakeId { get; set; }
     public bool? IsCancelled { get; set; } = null;
-    public long[]? LarpakeTaskIds { get; set; } = [];
+    public long[]? LarpakeTaskIds { get; set; } = null;
 }

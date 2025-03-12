@@ -48,6 +48,10 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             year = @{nameof(options.Year)} 
             """);
 
+        larpakeQuery.IfNotNull(options.LarpakeIds).AppendConditionLine($"""
+            l.id = ANY(@{nameof(options.LarpakeIds)})
+            """);
+
         // Search for title
         larpakeQuery.IfNotNull(options.Title).AppendConditionLine($"""
             title ILIKE @{nameof(options.TitleQueryValue)}

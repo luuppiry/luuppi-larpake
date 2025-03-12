@@ -54,7 +54,7 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             )
             """);
 
-        query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
+        query.IfNotNull(options.LarpakeTaskIds).AppendConditionLine($"""
             e.id = ANY(@{nameof(options.LarpakeTaskIds)})
             """);
 
