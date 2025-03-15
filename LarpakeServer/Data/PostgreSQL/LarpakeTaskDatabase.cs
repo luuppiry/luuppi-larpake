@@ -178,12 +178,20 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             """, record);
 
         rowsAffected += await connection.ExecuteAsync($"""
-            UPDATE larpake_event_localizations
-            SET
+            INSERT INTO larpake_event_localizations (
+                title,
+                body, 
+                larpake_event_id,
+                language_id
+            ) VALUES (
+                @{nameof(LarpakeTaskLocalization.Title)},
+                @{nameof(LarpakeTaskLocalization.Body)},
+                @{nameof(record.Id)},
+                GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)})
+            ) ON CONFLICT (larpake_event_id, language_id)
+            DO UPDATE SET
                 title = @{nameof(LarpakeTaskLocalization.Title)},
-                body = @{nameof(LarpakeTaskLocalization.Body)}
-            WHERE larpake_event_id = @{nameof(record.Id)}
-                AND language_id = GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)});
+                body = @{nameof(LarpakeTaskLocalization.Body)};
             """, record.TextData.Select(x => new { x.Title, x.Body, record.Id, x.LanguageCode }));
 
         await transaction.CommitAsync();
@@ -251,11 +259,11 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
     }
 
 
-    private static async Task InsertLocalizations(
+    private static async Task<long> InsertLocalizations(
         NpgsqlConnection connection, long eventId,
         IEnumerable<LarpakeTaskLocalization> localizations)
     {
-        await connection.ExecuteAsync($"""
+        int rowsAffected = await connection.ExecuteAsync($"""
             INSERT INTO larpake_event_localizations (
                 larpake_event_id,
                 title,
@@ -275,6 +283,7 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 x.Body,
                 x.LanguageCode
             }));
+        return rowsAffected;
     }
 
 }
