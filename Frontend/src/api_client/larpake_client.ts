@@ -1,6 +1,6 @@
 import HttpClient from "./http_client.ts";
 import { Larpake, LarpakeTask, Section } from "../models/larpake.ts";
-import { Container } from "../models/common.ts";
+import { Container, IdObject } from "../models/common.ts";
 import { ThrowIfNull } from "../helpers.ts";
 
 type Ids = {
@@ -67,18 +67,21 @@ export default class LarpakeClient {
         return tasks.data;
     }
 
-    async getTasks(): Promise<LarpakeTask[] | null> {
-        // const query = new URLSearchParams();
+    async getTasks(larpakeId: number | null = null): Promise<LarpakeTask[] | null> {
+        const query = new URLSearchParams();
         // Different search params
         // query.append("userId", "<guid>");
         // query.append("groupId", "<num>");
         // query.append("sectionId", "<num>");
-        // query.append("larpakeId", "<num>");
         // query.append("isCancelled", "<num>");
         // query.append("pageSize", "<num>");
         // query.append("pageOffset", "<num>");
 
-        const response = await this.client.get("api/larpake-events");
+        if (larpakeId != null) {
+            query.append("LarpakeId", larpakeId.toString());
+        }
+
+        const response = await this.client.get("api/larpake-tasks", query);
         if (!response.ok) {
             console.warn(response);
             return null;
@@ -104,9 +107,26 @@ export default class LarpakeClient {
         return events.ids;
     }
 
-    async uploadLarpakeCommonDataOnly(Larpake: Larpake): Promise<number> {
-        ThrowIfNull(Larpake);
+    async uploadLarpakeCommonDataOnly(larpake: Larpake): Promise<number> {
+        ThrowIfNull(larpake);
 
+        if (larpake.id > 0) {
+            // UPDATE Existing
+            const response = await this.client.put(`api/larpakkeet/${larpake.id}`, larpake);
+            if (response.ok) {
+                return larpake.id;
+            }
+            console.warn(await response.json());
+            return -1;
+        }
+
+        // Insert new
+        const response = await this.client.post("api/larpakkeet", larpake);
+        if (response.ok) {
+            const id: IdObject = await response.json();
+            return id.id;
+        }
+        console.warn(await response.json());
         return -1;
     }
 
@@ -153,9 +173,34 @@ export default class LarpakeClient {
 
             for (const task of section.tasks) {
                 await this.#uploadTask(section.id, task);
-                console.log(`Uploaded task ${task.textData[0]?.title}`)
+                console.log(`Uploaded task ${task.textData[0]?.title}`);
             }
         }
+
+        // Calculate which should be deleted
+        const existingTasks: LarpakeTask[] | null = await this.getTasks(larpakeId);
+        if (existingTasks == null) {
+            return sections.length;
+        }
+
+        // Cancel deleted tasks
+        const validIds = new Set(
+            sections
+                .flatMap((x) => x.tasks)
+                .filter((x) => x != undefined)
+                .filter((x) => x.id > 0)
+                .map((x) => x.id)
+        );
+
+        const deletedIds = existingTasks.map((x) => x.id).filter((x) => !validIds.has(x));
+        for (const taskId of deletedIds) {
+            const deleted = await this.client.post(`api/larpake-tasks/${taskId}/cancel`);
+            if (!deleted.ok) {
+                console.warn(`Failed to delete task ${taskId}.`);
+                console.log(await deleted.json());
+            }
+        }
+
         return sections.length;
     }
 
@@ -173,7 +218,7 @@ export default class LarpakeClient {
     async #createTask(task: LarpakeTask) {
         const response = await this.client.post(`api/larpake-tasks`, task);
         if (!response.ok) {
-            const error = await response.json()
+            const error = await response.json();
 
             throw new Error(error);
         }

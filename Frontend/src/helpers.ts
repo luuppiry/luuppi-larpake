@@ -65,7 +65,7 @@ export function overwriteQueryParam(name: string, value: string) {
     const pieced = window.location.href.split("?");
     const url = pieced[0];
 
-    const params = new URLSearchParams(pieced[1] ?? "");
+    const params = new URLSearchParams();
     params.append(name, value);
 
     // Change page url without reloading. Good for changes in query parameters

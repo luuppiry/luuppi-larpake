@@ -28,6 +28,7 @@ export default class TaskEditor extends HTMLElement {
                     <p>&HorizontalLine;</p>
                     <p id="task-${idNum}-header-points">Xp</p>
                     <img id="delete-task-${idNum}-btn" src="/icons/bin.svg" alt="delete icon" />
+                    <p class="_cancelled hidden">&HorizontalLine; (PERUUTETTU)</p>
                 </div>
                 <img id="task-${idNum}-opened-img" src="/icons/menu_closed.svg" alt="menu closed icon" />
             </div>
@@ -177,6 +178,9 @@ export default class TaskEditor extends HTMLElement {
         }
         if (this.headerPointsField) {
             this.headerPointsField.innerText = `${data.points}p`;
+        }
+        if (data.cancelledAt != null) {
+            this.querySelector("._cancelled")?.classList.remove("hidden");
         }
     }
 

@@ -1,7 +1,7 @@
 export type SectionTextData = {
-    title: string,
-    languageCode: string
-}
+    title: string;
+    languageCode: string;
+};
 
 export type Section = {
     id: number;
@@ -17,7 +17,7 @@ export type Section = {
 export type LarpakeTextData = {
     title: string;
     description: string;
-    languageCode: string;
+    languageCode: "fi" | "en";
 };
 
 export type Larpake = {
@@ -33,16 +33,15 @@ export type LarpakeTaskTextData = {
     title: string;
     body: string;
     languageCode: string;
-}
+};
 
 export type LarpakeTask = {
     id: number;
     larpakeSectionId: number;
-    points: number; 
+    points: number;
     orderingWeightNumber: number;
     cancelledAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
     textData: LarpakeTaskTextData[];
-}
-
+};
