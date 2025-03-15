@@ -217,25 +217,25 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
         }
     }
 
-    public Task<int> UnsyncOrganizationEvent(long larpakeEventId, long organizationEventId)
+    public async Task<int> UnsyncOrganizationEvent(long larpakeEventId, long organizationEventId)
     {
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             DELETE FROM event_map
             WHERE larpake_event_id = @{nameof(larpakeEventId)}
                 AND organization_event_id = @{nameof(organizationEventId)};
             """, new { larpakeEventId, organizationEventId });
     }
 
-    public Task<int> Cancel(long id)
+    public async Task<int> Cancel(long id)
     {
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             UPDATE larpake_events 
             SET
                 cancelled_at = NOW()
             WHERE id = @{nameof(id)}
-                AND cancelled_at = NULL;
+                AND cancelled_at IS NULL;
             """, new { id });
     }
 

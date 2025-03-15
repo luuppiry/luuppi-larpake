@@ -3,6 +3,7 @@ using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
+using static System.Collections.Specialized.BitVector32;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -131,7 +132,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     public async Task<Result<long>> InsertLarpake(Larpake record)
     {
         using var connection = GetConnection();
-        connection.Open();
+        await connection.OpenAsync();
         using var transaction = connection.BeginTransaction();
 
         // Insert the larpake and default localization
@@ -156,6 +157,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     public async Task<Result<int>> UpdateLarpake(Larpake record)
     {
         using var connection = GetConnection();
+        await connection.OpenAsync();
         using var transaction = connection.BeginTransaction();
 
         // Update larpake
@@ -172,10 +174,10 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             UPDATE larpake_localizations 
             SET 
                 title = @{nameof(LarpakeLocalization.Title)},
-                description = @{nameof(LarpakeLocalization.Description)},
+                description = @{nameof(LarpakeLocalization.Description)}
             WHERE larpake_id = @{nameof(record.Id)}
                 AND language_id = getlanguageid(@{nameof(LarpakeLocalization.LanguageCode)});
-            """, record);
+            """, record.TextData.Select(x => new { x.Description, x.Title, x.LanguageCode, record.Id }));
 
         await transaction.CommitAsync();
         return rowsAffected;
@@ -304,14 +306,22 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             WHERE id = @{nameof(record.Id)};
             """, record);
 
-        var records = record.TextData.Select(x => new { record.Id, x.LanguageCode, x.Title });
-        rowsAffected += await connection.ExecuteAsync($"""
-            UPDATE larpake_section_localizations
-            SET 
+        string query = $"""
+            INSERT INTO larpake_section_localizations (
+                larpake_section_id,
+                language_id,
+                title)
+            VALUES (
+                @{nameof(record.Id)},
+                (SELECT getlanguageid(@{nameof(LarpakeSectionLocalization.LanguageCode)})),
+                @{nameof(LarpakeSectionLocalization.Title)})
+            ON CONFLICT (larpake_section_id, language_id)   
+            DO UPDATE SET 
                 title = @{nameof(LarpakeSectionLocalization.Title)}
-            WHERE larpake_section_id = @{nameof(record.Id)}
-                AND language_id = getlanguageid(@{nameof(LarpakeSectionLocalization.LanguageCode)});
-            """, records);
+            """;
+
+        var records = record.TextData.Select(x => new { record.Id, x.LanguageCode, x.Title }).ToArray();
+        rowsAffected += await connection.ExecuteAsync(query, records);
 
         await transaction.CommitAsync();
         return rowsAffected;
@@ -324,10 +334,6 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             DELETE FROM larpake_sections WHERE id = @{nameof(sectionId)};
             """, new { sectionId });
     }
-
-
-
-
 
 
 
