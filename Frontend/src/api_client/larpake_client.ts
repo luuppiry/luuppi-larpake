@@ -56,6 +56,7 @@ export default class LarpakeClient {
 
         const params = new URLSearchParams();
         params.append("LarpakeId", larpakeId.toString());
+        params.append("pageSize", "100");
 
         const response = await this.client.get("api/larpake-tasks", params);
 
@@ -211,6 +212,7 @@ export default class LarpakeClient {
         }
         if (await this.#taskExists(task.id)) {
             await this.#updateTask(task);
+            return;
         }
         await this.#createTask(task);
     }
