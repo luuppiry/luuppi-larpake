@@ -3,7 +3,6 @@ using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
-using static System.Collections.Specialized.BitVector32;
 
 namespace LarpakeServer.Data.PostgreSQL;
 

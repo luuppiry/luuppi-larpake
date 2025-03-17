@@ -1,0 +1,92 @@
+@import "common.css";
+@import "event_previewer.css";
+@import "section.css";
+
+article {
+    margin: 0;
+    padding: 0;
+}
+
+.larpake {
+    padding: 0 20px;
+}
+
+.larpake > a {
+    text-decoration: none;
+}
+
+.larpake-front > img {
+    max-width: 100%;
+    border-radius: 10px;
+    background-color: blueviolet;
+}
+
+.larpake-front > h2 {
+    text-align: center;
+    margin: 10px 0 0;
+    color: var(--luuppi-blue);
+    font-size: 1.2rem;
+}
+
+.larpake-front > a {
+    text-align: right;
+    width: 100%;
+    margin-right: 0;
+}
+
+.main-site-button {
+    background-color: var(--luuppi-blue);
+    color: white;
+    text-align: right;
+    padding: 10px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 40px;
+    width: 100%;
+    max-width: 300px;
+}
+
+/* Body */
+
+#larpake-container {
+    list-style: none;
+    padding: 0;
+}
+
+
+.container h2 {
+    color: var(--luuppi-blue);
+    margin-bottom: 10px;
+}
+
+.event-container {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-flow: column;
+    gap:16px;
+}
+
+body {
+    padding-bottom: 150px;
+}
+
+.upcoming-events-btn {
+    background-color: var(--luuppi-blue);
+    color: white;
+    justify-content: space-between;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 0px 20px;
+    border-radius: 5px 50px 50px 5px;
+}
+
+.events-button-text {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+
+.bigger-icon {
+    font-size: 50px;
+}

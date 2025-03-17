@@ -2,6 +2,7 @@ import { Section } from "./models/larpake";
 
 export const LANG_FI = "fi";
 export const LANG_EN = "en";
+export const LANG_ATTRIBUTE_NAME = "lang";
 
 export default function mapChildren<T>(children: HTMLCollection, func: (elem: Element) => T | null): T[] {
     /* Generic method to map children */
@@ -76,4 +77,41 @@ export function overwriteQueryParam(name: string, value: string) {
         "",
         `${url}?${params}`
     );
+}
+
+export function formatDate(date: Date) {
+    if (!date) {
+        return "";
+    }
+    if (typeof date === "string") {
+        date = new Date(date);
+    }
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${day}.${month}.${year}`;
+}
+
+export function formatDateTime(date: Date) {
+    const day = formatTime(date);
+    const time = formatTime(date);
+    return `${day} ${time}`;
+}
+
+export function formatTime(date: Date) {
+    if (!date) {
+        return "";
+    }
+    if (typeof date === "string") {
+        date = new Date(date);
+    }
+
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+}
+
+export function getDocumentLangCode(){
+    // Default to finnish
+    return document.documentElement.lang == LANG_EN ? LANG_EN : LANG_FI;
 }

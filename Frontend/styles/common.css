@@ -76,7 +76,8 @@ body {
     background-color: #ddd;
 }
 
-/* Body */
+
+
 .container {
     max-width: 600px;
     margin: 20px auto;
@@ -86,57 +87,6 @@ body {
     padding: 20px;
 }
 
-.image-section {
-    text-align: center;
-    padding: 20px;
-}
-
-.image-section img {
-    max-width: 100%;
-    border-radius: 8px;
-}
-
-.image-section h2 {
-    margin: 10px 0 0;
-    color: var(--luuppi-blue);
-    font-size: 1rem;
-}
-
-.main-site-button {
-    display: block;
-    background-color: var(--luuppi-blue);
-    color: white;
-    text-align: right;
-    padding: 10px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 40px;
-    margin: 15px auto;
-    width: 100%;
-    max-width: 300px;
-}
-
-.events-section h2 {
-    color: var(--luuppi-blue);
-    margin-bottom: 10px;
-}
-
-.event {
-    border-radius: 5px;
-    background-color: var(--luuppi-gray);
-}
-
-.event h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: #333;
-}
-
-.event p {
-    margin: 5px 0;
-    font-size: 0.9rem;
-    color: #555;
-}
 
 /* Side panel styles */
 .side-panel {
@@ -247,6 +197,8 @@ body {
 }
 
 /* Default scaling 1.05 */
+.hover-scale-10,
+.hover-scale-03,
 .hover-scale {
     transition: transform 0.3s ease;
     transform-origin: center;
@@ -256,14 +208,12 @@ body {
     transform: scale(1.05);
 }
 
-/* Larger scaling 1.1 */
-.hover-scale-10 {
-    transition: transform 0.3s ease;
-    transform-origin: center;
-}
-
 .hover-scale-10:hover {
     transform: scale(1.1);
+}
+
+.hover-scale-03:hover {
+    transform: scale(1.03);
 }
 
 .cursor-pointer {
@@ -297,4 +247,8 @@ body {
 
 .flex-last {
     order: 1;
+}
+
+.width-100 {
+    width: 100%;
 }

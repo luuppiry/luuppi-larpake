@@ -23,6 +23,7 @@ export type LarpakeTextData = {
 export type Larpake = {
     id: number;
     year: number | null;
+    image_url: string | null;
     createdAt: Date;
     updatedAt: Date;
     sections: Section[] | null;

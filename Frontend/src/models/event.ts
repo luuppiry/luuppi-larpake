@@ -1,22 +1,23 @@
-export type EventTextData = {
-    title: string;
-    body: string;
-    websiteUrl: string | null;
-    imageUrl: string | null;
-    languageCode: string;
-}
+export type CancellationInfo = {
+    deletedAt: Date;
+    reason: string;
+};
 
-export type Event = {
+export type EventLocalization = {
+    title: string;
+    location: string;
+    body: string;
+    websiteUrl: string;
+    imageUrl: string;
+    languageCode: "fi" | "en";
+};
+
+export type OrgEvent = {
     id: number;
     startsAt: Date;
-    endsAt: Date | null;
+    endsAt: Date;
     createdAt: Date;
     updatedAt: Date;
-    textData: EventTextData[];
-    cancellationInfo: {
-        deletedAt: Date;
-        reason: string;
-    } | null;
-
-
-}
+    cancellationInfo: CancellationInfo | null;
+    textData: EventLocalization[];
+};
