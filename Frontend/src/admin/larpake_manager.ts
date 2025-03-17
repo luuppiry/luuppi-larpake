@@ -61,6 +61,14 @@ async function loadExternal(larpakeId: number): Promise<void> {
 
     setCommonLarpakeData(larpake);
 
+    // Make copy of children to handle children changed during removal
+    // #MemoryEfficiency
+    for (const child of [...container.children]) {
+        if (child instanceof SectionEditor) {
+            container.removeChild(child);
+        }
+    }
+
     // Map sections and render
     larpake.sections?.sort(SectionSortFunc).forEach((section) => {
         const editor = new SectionEditor();
@@ -126,22 +134,24 @@ function addPageEventListeners() {
             return;
         }
         const id = getInputNumericByDocId("id-field");
-        
+
         console.log(data);
-        const newId = await client.uploadLarpakeSectionsOnly({
+        const rowsAffected = await client.uploadLarpakeSectionsOnly({
             id: Number.isNaN(id) ? -1 : id,
             year: null,
             createdAt: new Date(),
             updatedAt: new Date(),
             sections: data,
-            textData: []
+            textData: [],
         });
-        if (newId >= 0) {
-            overwriteQueryParam("larpakeId", newId.toString());
+        if (rowsAffected >= 0) {
+            overwriteQueryParam("larpakeId", id.toString());
             showCommonStateDialog("tasks-saved-dialog");
         } else {
             showCommonStateDialog("action-failed");
         }
+
+        await loadExternal(id);
     });
 
     document.getElementById("add-section-btn")?.addEventListener("click", (event) => {
@@ -214,12 +224,6 @@ function readCommonData(): Larpake {
 
     const id = getInputNumericByDocId("id-field");
     const startYear = getInputNumericByDocId("start-year");
-
-    // year: Number.isNaN(startYear) ? null : startYear,
-    // titleFi: titleFi.value,
-    // descriptionFi: descFi.value,
-    // titleEn: titleEn.value,
-    // descriptionEn: descEn.value,
 
     return {
         id: Number.isNaN(id) ? -1 : id,

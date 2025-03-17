@@ -156,16 +156,29 @@ export default class LarpakeClient {
     }
 
     async #createSections(larpakeId: number, sections: Section[]): Promise<number> {
-        for (let i = 0; i < sections.length; i++) {
-            const response = await this.client.post(`api/larpakkeet/${larpakeId}/sections`, sections[i]);
+        for (const section of sections) {
+            const response = await this.client.post(`api/larpakkeet/${larpakeId}/sections`, section);
             if (!response.ok) {
                 throw new Error(await response.json());
             }
+
+            const sectionId: IdObject = await response.json();
+            for (const task of section.tasks) {
+                task.larpakeSectionId = sectionId.id;
+                this.#createTask(task);
+            }
         }
+
         return sections.length;
     }
 
     async #updateSections(larpakeId: number, sections: Section[]): Promise<number> {
+        // Calculate which should be deleted, load before adding new ones
+        const existingTasks: LarpakeTask[] | null = await this.getTasks(larpakeId);
+        if (existingTasks == null) {
+            return sections.length;
+        }
+
         for (const section of sections) {
             const response = await this.client.put(`api/larpakkeet/${larpakeId}/sections`, section);
             if (!response.ok) {
@@ -176,12 +189,6 @@ export default class LarpakeClient {
                 await this.#uploadTask(section.id, task);
                 console.log(`Uploaded task ${task.textData[0]?.title}`);
             }
-        }
-
-        // Calculate which should be deleted
-        const existingTasks: LarpakeTask[] | null = await this.getTasks(larpakeId);
-        if (existingTasks == null) {
-            return sections.length;
         }
 
         // Cancel deleted tasks
