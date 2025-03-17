@@ -1,9 +1,9 @@
 import LarpakeClient from "./api_client/larpake_client.ts";
 
-document.getElementById("auth-btn")?.addEventListener("click", getToken);
+const client = new LarpakeClient();
 
-async function getToken() {
-    const client = new LarpakeClient();
-    const larpakkeet =  await client.getOwn();
-    console.log(larpakkeet)
+async function render() {
+    const larpakkeet = await client.getOwn();
 }
+
+render();
