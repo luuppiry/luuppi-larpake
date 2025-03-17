@@ -138,17 +138,17 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                     @{nameof(def.Body)},
                     @{nameof(def.LanguageCode)}
                 );
-                """, new 
-            { 
+                """, new
+            {
                 record.LarpakeSectionId,
                 record.Points,
                 record.OrderingWeightNumber,
                 def.Title,
                 def.Body,
-                def.LanguageCode
+                def.LanguageCode,
             });
 
-            await InsertLocalizations(connection, id, 
+            await InsertLocalizations(connection, id,
                 record.TextData.Where(x => x.LanguageCode != def.LanguageCode));
 
             await transaction.CommitAsync();
@@ -277,12 +277,12 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 (SELECT GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)}))
             );
             """, localizations.Select(x => new
-            {
-                eventId,
-                x.Title,
-                x.Body,
-                x.LanguageCode
-            }));
+        {
+            eventId,
+            x.Title,
+            x.Body,
+            x.LanguageCode
+        }));
         return rowsAffected;
     }
 

@@ -11,6 +11,9 @@ public class Constants
     public const string PermissionsFieldName = "permissions";
     public const string StartYearFieldName = "start_year";
 
+    // Url
+    public const int MaxUrlLength = 150;
+
     // Localization
     public const string LangFin = "fi";
     public const string LangEng = "en";

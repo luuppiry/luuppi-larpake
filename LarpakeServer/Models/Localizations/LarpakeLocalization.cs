@@ -10,4 +10,7 @@ public class LarpakeLocalization : LocalizationBase
 
     [MaxLength(Constants.MaxLarpakeDescriptionLength)]
     public required string Description { get; set; }
+
+    [MaxLength(Constants.MaxUrlLength)]
+    public string? ImageUrl { get; set; }
 }
