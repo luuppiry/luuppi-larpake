@@ -10,14 +10,18 @@ internal class SelectQuery
     /// Same as <see cref="StringBuilder.AppendLine(string?)"/>
     /// </summary>
     /// <param name="line"></param>
-    internal virtual void AppendLine(string line) => _builder.AppendLine(line);
+    internal virtual SelectQuery AppendLine(string line)
+    {
+        _builder.AppendLine(line);
+        return this;
+    }
 
     /// <summary>
     /// Append a condition line to the query.
     /// Automatically chooses whether to append WHERE or AND if already conditions appended.
     /// </summary>
     /// <param name="condition"></param>
-    internal virtual void AppendConditionLine(string condition)
+    internal virtual SelectQuery AppendConditionLine(string condition)
     {
         if (_hasWhere is false)
         {
@@ -29,6 +33,7 @@ internal class SelectQuery
             _builder.Append("AND ");
         }
         _builder.AppendLine(condition);
+        return this;
     }
     internal string Build()
     {
@@ -43,12 +48,14 @@ internal class SelectQuery
     {
         /* These functions should not do anything */
 
-        internal override void AppendConditionLine(string condition)
+        internal override NullQuery AppendConditionLine(string condition)
         {
+            return this;
         }
 
-        internal override void AppendLine(string line)
+        internal override NullQuery AppendLine(string line)
         {
+            return this;
         }
     }
 

@@ -35,6 +35,16 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 ON a.completion_id = c.id
             """);
 
+        query.IfNotNull(options.LarpakeId).AppendLine($"""
+            LEFT JOIN larpake_events e
+                ON a.larpake_event_id = e.id
+            LEFT JOIN larpake_sections s
+                ON s.id = e.larpake_section_id
+            """)
+            .AppendConditionLine($"""
+            s.larpake_id = @{nameof(options.LarpakeId)}
+            """);
+
         // Search specific user
         query.IfNotNull(options.UserId).AppendConditionLine($"""
             a.user_id = @{nameof(options.UserId)}
@@ -176,7 +186,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         }
         return Error.Conflict("Key generation failed, retry with same parameters.");
     }
-    
+
     public async Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion)
     {
         /* Requirements to successfully complete:
@@ -387,7 +397,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     AND larpake_event_id = @{nameof(completion.EventId)};
                 """, completion);
 
-            Logger.LogInformation("User {userId} completed event {eventId}.", 
+            Logger.LogInformation("User {userId} completed event {eventId}.",
                 completion.UserId, completion.EventId);
 
             return new AttendedCreated
