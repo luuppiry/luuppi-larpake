@@ -45,11 +45,10 @@ public class AttendancesController : ExtendedControllerBase
         /* Everyone can read their own attendances,
          * all attendances can be read from tutor upwards
          */
-        Permissions permissions = _claimsReader.ReadAuthorizedUserPermissions(Request);
-        bool readSelfOnly = permissions.Has(Permissions.Tutor) is false;
+        bool readSelfOnly = GetRequestPermissions().Has(Permissions.Tutor) is false;
         if (readSelfOnly)
         {
-            options.UserId = _claimsReader.ReadAuthorizedUserId(Request);
+            options.UserId = GetRequestUserId();
         }
 
         var records = await _db.Get(options);
