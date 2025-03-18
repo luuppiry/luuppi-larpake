@@ -27,7 +27,7 @@ public class LarpakkeetController : ExtendedControllerBase
     }
 
     [HttpGet]
-    [RequiresPermissions(Permissions.ReadAllData)]
+    [RequiresPermissions(Permissions.CommonRead)]
     [ProducesResponseType(typeof(LarpakeetGetDto), 200)]
     public async Task<IActionResult> Get([FromQuery] LarpakeQueryOptions options)
     {
@@ -35,11 +35,21 @@ public class LarpakkeetController : ExtendedControllerBase
          * Actually you can add as many wildcards in the search as you want
          */
 
-        bool isLimitedSearch = GetRequestPermissions().Has(Permissions.Admin) is false;
+        Permissions permissions = GetRequestPermissions();
+
+        bool isLimitedSearch = permissions.Has(Permissions.Admin) is false;
         if (isLimitedSearch)
         {
             options.Title = null;
         }
+
+        bool isOwnSearch = permissions.Has(Permissions.ReadAllData) is false;
+        if (isOwnSearch)
+        {
+            options.ContainsUser = GetRequestUserId();
+        }
+
+
 
         var records = await _db.GetLarpakkeet(options);
 
@@ -51,6 +61,10 @@ public class LarpakkeetController : ExtendedControllerBase
         if (isLimitedSearch)
         {
             result.Details.Add("Search limited outside search by title.");
+        }
+        if (isOwnSearch)
+        {
+            result.Details.Add("Search limited to only own larpakkeet.");
         }
         return Ok(result);
     }
