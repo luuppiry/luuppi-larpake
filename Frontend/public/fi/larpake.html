@@ -15,23 +15,51 @@
         <script src="/src/components/side-panel.ts"></script>
     </head>
     <body>
+        <template id="task-template">
+            <article class="button-wrapper">
+                <button class="_btn button">
+                    <h3 class="_title button-text"></h3>
+                    <div class="button-image">
+                        <img class="_img" alt="Suoritetun tehtävän signeeraus" />
+                    </div>
+                </button>
+            </article>
+        </template>
+
+        <template id="title-template">
+            <article class="button-wrapper">
+                <button class="button">
+                    <h3 class="_title button-text section-title"></h3>
+                </button>
+            </article>
+        </template>
+
+        <template id="cancelled-task">
+            <article class="button-wrapper">
+                <button class="button">
+                    <h3 class="_title button-text"></h3>
+                    <p class="button-image disabled">PERUUTETTU</p>
+                </button>
+            </article>
+        </template>
+
         <ui-header side-panel-name="side-panel-element"></ui-header>
         <side-panel lang="en"></side-panel>
         <div class="container">
-            <div id="larpake-page-name">Lärpäke</div>
-            <div id="larpake-button-container">
+            <h2 id="larpake-page-name">Lärpäke</h2>
+            <ul id="larpake-button-container">
                 <!-- Buttons will be dynamically generated here -->
                 <button class="button">
                     <div class="button-text">error</div>
                     <div class="button-image">ERROR: Page not found!</div>
                 </button>
-            </div>
+            </ul>
             <div class="pagination">
-                <button id="prev-page" onclick="changePage(-1)" disabled>&lt;</button>
+                <button id="prev-page" disabled>&lt;</button>
                 <span id="page-info">1 / 1</span>
-                <button id="next-page" onclick="changePage(1)">&gt;</button>
+                <button id="next-page">&gt;</button>
             </div>
         </div>
     </body>
-    <script src="/src/larpake.ts"></script>
+    <script type="module" src="/src/larpake.ts"></script>
 </html>

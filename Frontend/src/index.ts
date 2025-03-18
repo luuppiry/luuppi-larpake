@@ -1,7 +1,7 @@
 import { EventClient } from "./api_client/event_client.ts";
 import LarpakeClient from "./api_client/larpake_client.ts";
 import EventPreviewer from "./components/event-previewer.ts";
-import { getDocumentLangCode } from "./helpers.ts";
+import { appendTemplateElement, getDocumentLangCode } from "./helpers.ts";
 
 const eventClient = new EventClient();
 const larpakeClient = new LarpakeClient();
@@ -23,7 +23,7 @@ async function loadLarpakkeet() {
     }
 
     for (const larpake of larpakkeet) {
-        const element = getAppendedLarpakeElementReference(container);
+        const element = appendTemplateElement<HTMLElement>("larpake-template", container);
 
         const lang = getDocumentLangCode();
         const text = larpake.textData.filter((x) => x.languageCode == lang)[0] ?? larpake.textData[0];
@@ -55,11 +55,8 @@ async function loadComingEvents() {
     }
 }
 
-function getAppendedLarpakeElementReference(container: HTMLElement): HTMLElement {
-    const template = document.getElementById("larpake-template") as HTMLTemplateElement;
-    const node = document.importNode(template.content, true);
-    container.appendChild(node);
-    return container.querySelector(":last-child") as HTMLElement;
-}
+
+
+
 
 render();

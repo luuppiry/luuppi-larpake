@@ -14,9 +14,9 @@ export default class LarpakeClient {
         this.client = new HttpClient();
     }
 
-    async getById(id: number): Promise<Larpake | null> {
+    async getById(id: number, minimize: boolean = false): Promise<Larpake | null> {
         const query = new URLSearchParams();
-        query.append("DoMinimize", "false");
+        query.append("DoMinimize", minimize ? "true" : "false");
         query.append("LarpakeIds", id.toString());
 
         const response = await this.client.get(`api/larpakkeet`, query);

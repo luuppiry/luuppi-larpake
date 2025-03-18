@@ -1,5 +1,9 @@
 @import "common.css";
 
+body {
+    padding-bottom: 150px;
+}
+
 .button {
     display: block;
     width: 100%;
@@ -61,4 +65,8 @@
 .pagination button:disabled {
     color: #ccc;
     cursor: not-allowed;
+}
+
+.section-title {
+    font-size: 25px;
 }

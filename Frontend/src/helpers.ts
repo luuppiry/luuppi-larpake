@@ -1,4 +1,4 @@
-import { Section } from "./models/larpake";
+import { LarpakeTask, Section } from "./models/larpake";
 
 export const LANG_FI = "fi";
 export const LANG_EN = "en";
@@ -49,10 +49,26 @@ export function SectionSortFunc(first: Section, second: Section): number {
      * - bigger id
      */
 
-    if (first.orderingweightNumber > second.orderingweightNumber) {
+    if (first.orderingWeightNumber > second.orderingWeightNumber) {
         return -1;
     }
-    if (second.orderingweightNumber < first.orderingweightNumber) {
+    if (second.orderingWeightNumber < first.orderingWeightNumber) {
+        return 1;
+    }
+    return first.id > second.id ? -1 : 1;
+}
+
+
+export function TaskSortFunc(first: LarpakeTask, second: LarpakeTask): number {
+    /* Sort by
+     * - bigger ordering weight
+     * - bigger id
+     */
+
+    if (first.orderingWeightNumber > second.orderingWeightNumber) {
+        return -1;
+    }
+    if (second.orderingWeightNumber < first.orderingWeightNumber) {
         return 1;
     }
     return first.id > second.id ? -1 : 1;
@@ -111,7 +127,29 @@ export function formatTime(date: Date) {
     return `${hours}:${minutes}`;
 }
 
-export function getDocumentLangCode(){
+export function getDocumentLangCode() {
     // Default to finnish
     return document.documentElement.lang == LANG_EN ? LANG_EN : LANG_FI;
+}
+
+export function removeChildren(elem: HTMLElement) {
+    const children = [...elem.children];
+    for (const child of children) {
+        elem.removeChild(child);
+    }
+}
+
+export function throwIfAnyNull(elems: HTMLElement[]){
+    for (const elem of elems){
+        if (elem == null){
+            throw new Error("Element cannot be null");
+        }
+    }
+}
+
+export function appendTemplateElement<TAppended>(id: string, container: HTMLElement){
+    const template = document.getElementById(id) as HTMLTemplateElement;
+    const node = document.importNode(template.content, true);
+    container.appendChild(node);
+    return container.children[container.children.length - 1] as TAppended;
 }

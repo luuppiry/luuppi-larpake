@@ -146,7 +146,7 @@ export default class SectionEditor extends HTMLElement {
         return {
             id: this.serverSectionId ?? -1,
             larpakeId: -1,
-            orderingweightNumber: 0,
+            orderingWeightNumber: 0,
             createdAt: new Date(),
             updatedAt: new Date(),
             textData: [
