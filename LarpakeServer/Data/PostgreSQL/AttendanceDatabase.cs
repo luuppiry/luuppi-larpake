@@ -30,7 +30,21 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
     {
         SelectQuery query = new();
         query.AppendLine($"""
-            SELECT * FROM attendances a
+            SELECT
+                a.user_id,
+                a.larpake_event_id AS larpake_task_id,
+                a.completion_id,
+                a.created_at,
+                a.updated_at,
+                a.qr_code_key,
+                a.key_invalid_at,
+                c.id,
+                c.signer_id,
+                c.signature_id,
+                c.completed_at,
+                c.created_at,
+                c.updated_at
+            FROM attendances a
             LEFT JOIN completions c
                 ON a.completion_id = c.id
             """);
@@ -39,9 +53,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             LEFT JOIN larpake_events e
                 ON a.larpake_event_id = e.id
             LEFT JOIN larpake_sections s
-                ON s.id = e.larpake_section_id
-            """)
-            .AppendConditionLine($"""
+                ON e.larpake_section_id = s.id
+            """).AppendConditionLine($"""
             s.larpake_id = @{nameof(options.LarpakeId)}
             """);
 
@@ -90,6 +103,8 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)}
             """);
+
+        string q = query.ToString();
 
         using var connection = GetConnection();
         var records = await connection.QueryAsync<Attendance, Completion, Attendance>(

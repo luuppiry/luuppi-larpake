@@ -46,7 +46,7 @@ public class AttendancesController : ExtendedControllerBase
          * all attendances can be read from tutor upwards
          */
         bool readSelfOnly = GetRequestPermissions().Has(Permissions.Tutor) is false;
-        if (readSelfOnly)
+        if (readSelfOnly || options.LimitToSelfOnly)
         {
             options.UserId = GetRequestUserId();
         }

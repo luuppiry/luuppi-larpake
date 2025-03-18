@@ -10,6 +10,7 @@ public class AttendanceQueryOptions : QueryOptions
     public long? LarpakeTaskId { get; set; } = null;
     public Guid? UserId { get; set; } = null;
     public bool? IsCompleted { get; set; } = null;
+    public bool LimitToSelfOnly { get; set; } = false;
 
 
 
