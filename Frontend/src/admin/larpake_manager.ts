@@ -7,6 +7,7 @@ import mapChildren, {
     LANG_FI,
     overwriteQueryParam,
     SectionSortFunc,
+    TaskSortFunc,
     ToDictionary,
 } from "../helpers.ts";
 import { Larpake, Section } from "../models/larpake.ts";
@@ -73,7 +74,7 @@ async function loadExternal(larpakeId: number): Promise<void> {
     larpake.sections?.sort(SectionSortFunc).forEach((section) => {
         const editor = new SectionEditor();
         container?.appendChild(editor);
-        editor.setData(section, tasks.get(section.id) ?? []);
+        editor.setData(section, tasks.get(section.id)?.sort(TaskSortFunc) ?? []);
     });
 }
 
@@ -142,6 +143,7 @@ function addPageEventListeners() {
             createdAt: new Date(),
             updatedAt: new Date(),
             sections: data,
+            image_url: null,
             textData: [],
         });
         if (rowsAffected >= 0) {
@@ -228,6 +230,7 @@ function readCommonData(): Larpake {
     return {
         id: Number.isNaN(id) ? -1 : id,
         year: Number.isNaN(startYear) ? null : startYear,
+        image_url: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         sections: null,

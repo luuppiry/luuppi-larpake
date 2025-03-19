@@ -2,186 +2,23 @@ import AttendanceClient from "./api_client/attendance_client";
 import LarpakeClient from "./api_client/larpake_client";
 import {
     appendTemplateElement,
+    getDocumentLangCode,
+    isEmpty,
+    LANG_EN,
     removeChildren,
     SectionSortFunc,
     TaskSortFunc,
     throwIfAnyNull,
     ToDictionary,
+    ToOverwriteDictionary,
 } from "./helpers";
 import { Attendance, Completion as Completion } from "./models/attendance";
-import { getSectionText, getTaskText, Larpake, LarpakeTask,  Section } from "./models/larpake";
+import { getSectionText, getTaskText, Larpake, LarpakeTask, Section } from "./models/larpake";
+import { Signature } from "./models/user";
+import SignatureRenderer from "./services/signature_renderer";
 
-// Parse query string to get page number
-
-const PAGE_SIZE = 6;
-
-const pages = [
-    {
-        header: "Lärpäke / Ensi askeleet",
-        buttons: [
-            "ENSI ASKELEET - OTSIKKO",
-            "TUTUSTUMISILTA 19.8 5P",
-            "KAUPUNKIKÄVELY 3P",
-            "TUTUSTUMISSAUNA 20.8 5P",
-            "PUISTOHENGAILU 3P - PERUUTETTU",
-            "KAMPUSKIERROS 3P",
-        ],
-    },
-    {
-        header: "Lärpäke / Ensi askeleet",
-        buttons: [
-            "KÄY PÄÄAINEESI ALOITUSLUENNOLLA 2P",
-            "OSALLISTU TREY:N FUKSISUUNNISTUKSEEN 5P",
-            "LÄRPÄKKEEN PÄÄLLYSTYS TAI KORISTELU 2P",
-            "KERÄÄ VIIDELTÄ TUUTORILTA ALLEKIRJOITUS 5P",
-            "FUKSIRYHMÄN TAPAHTUMA 5P",
-            "KUMMIRYHMÄN TAPAHTUMA 5P",
-        ],
-    },
-    {
-        header: "Lärpäke / Ensi askeleet",
-        buttons: [
-            "PUBIRUNDI 3P",
-            "LAULA KARAOKESSA 2P",
-            "FUKSIKEILAUS 4P",
-            "PIENEN PIENI LUUPPILAINEN - OTSIKKO",
-            "LIITY LUUPIN JÄSENEKSI 20P",
-            "TILAA HAALARIT 10P",
-        ],
-    },
-    {
-        header: "Lärpäke / Pienen pieni luuppilainen",
-        buttons: [
-            "OSTA LUUPIN HAALARIMERKKI 2P",
-            "JUTTELE KYYKÄSTÄ DDRNV:N JÄSENEN KANSSA TAI OSTA HAALARIMERKKI 2P",
-            "OSTA LUUPPI-TUOTE (pl. Luuppi-haalarimekki) 3P",
-            "OMPELE 5 HAALARIMERKKIÄ 6P",
-            "OSALLISTU KOPO-TAPAHTUMAAN 5P",
-            "KIERTOAJELU 5P",
-        ],
-    },
-    {
-        header: "Lärpäke / Pii-Klubilla tapahtuu",
-        buttons: [
-            "KASTAJAISET 5P",
-            "PII-KLUBILLA TAPAHTUU - OTSIKKO",
-            "KÄY TOIMISTOLLA 2P",
-            "KEITÄ PANNULLINEN KAHVIA 3P",
-            "PULLAPÄIVÄ 2P",
-            "OSALLISTU TALKOOPÄIVÄÄN 3P",
-        ],
-    },
-    {
-        header: "Lärpäke / Normipäivä",
-        buttons: [
-            "NORMIPÄIVÄ - OTSIKKO",
-            "ENNAKKOLIPPU KOLMIOILLE 3P",
-            "OSALLISTU KOLMIOIDEN VIRALLISILLE ETKOILLE 26.9 3P",
-            "KOTIBILEET/ETKOT (OMAT/LUUPPILAISEN) 2P",
-            "SITSIT 3P",
-            "PELI-ILTA 3P",
-        ],
-    },
-    {
-        header: "Lärpäke / Normipäivä",
-        buttons: [
-            "LAUTAPELI-ILTA 3P",
-            "LANIT 2P",
-            "MUU TAPAHTUMA 5P",
-            "YLIOPISTOELÄMÄÄ - OTSIKKO",
-            "SELVITÄ KOULUTUSASIANTUNTIJASI NIMI 2P",
-            "LUO OMA HOPS 5P",
-        ],
-    },
-    {
-        header: "Lärpäke / Yliopistoelämää",
-        buttons: [
-            "SIVUAINEPANEELI 5P",
-            "MTT-TIE-KAHVIT 3P",
-            "KÄY LASKUTUVASSA TAI LUUPIN OPINTOPIIRISSÄ 3P",
-            "KÄY SYÖMÄSSÄ 4 ERI OPISKELIJARAVINTOLASSA 4P",
-            "VIERAILE TOISEN AINEJÄRJESTÖN/KILLAN/KERHON TILOISSA 2P",
-            "HANKI TOISEN TOISEN AINEJÄRJESTÖN/KILLAN/KERHON HAALARIMERKKI 2P",
-        ],
-    },
-    {
-        header: "Lärpäke / Yliopistoelämää",
-        buttons: [
-            "OSALLISTU YLIOPISTON TUTKIMUKSEEN 6P",
-            "VAIKUTUSVALTAA - OTSIKKO",
-            "KYSY SPONSORIA HAALAREIHIN 5P",
-            "SAA SPONSORI HAALAREIHIN 15P",
-            "NAKKEILE TAPAHTUMASSA 5P",
-            "OSALLISTU LUUPIN HALLITUKSEN KOKOUKSEN 5P",
-        ],
-    },
-    {
-        header: "Lärpäke / Vaikutusvaltaa",
-        buttons: [
-            "JUTTU LUUPPISANOMIIN 7P",
-            "LUUPIN HAALARIMERKKIKISA 2P",
-            "OSALLISTU HALLITUSINFO-TAPAHTUMAAN 5P",
-            "OSALLISTU HALLITUSPANEELLIIN 3P",
-            "SÄÄNTÖMÄÄRÄINEN VUOSIKOKOUS 5P",
-            "ÄÄNESTÄ TREY:N EDUSTAJISTOVAALEISSA 2P",
-        ],
-    },
-    {
-        header: "Lärpäke / Liikunnallista",
-        buttons: [
-            "LIIKUNNALLISTA - OTSIKKO",
-            "FUKSIKYYKKÄ (ALKULOHKOT) 5P",
-            "FUKSIKYYKKÄ (FINAALI) 5P",
-            "LUUPIN LIIKUNTAVUORO 3P",
-            "LASERTAISTELU 3P",
-            "METSÄRETKI 3P",
-        ],
-    },
-    {
-        header: "Lärpäke / Kaikenlaista",
-        buttons: [
-            "LIIKUNTAHAASTE 3P",
-            "MUU LIIKUNTATAPAHTUMA 3P",
-            "KAIKENLAISTA - OTSIKKO",
-            "TEK-INFO 2P",
-            "LOIMU-INFO 2P",
-            "SEURAA LUUPIN SOMEA (TG/IG/TT) 2P",
-        ],
-    },
-    {
-        header: "Lärpäke / Kaikenlaista",
-        buttons: [
-            "OSALLISTU ATK-YTP:LLE 5P",
-            "OSALLISTU INTEGRAATIOFESTEILLE 5P",
-            "KULTTUURITAPAHTUMA 4P",
-            "POIKKITIETEELLINEN TAPAHTUMA TAMPEREELLA 3P",
-            "LUUPIN PELITURNAUS 3P",
-            "YRITYSTAPAHTUMA 3P",
-        ],
-    },
-    {
-        header: "Lärpäke / Tanpereella",
-        buttons: [
-            "KESKUSTAEXCU 3P",
-            "SELVITÄ LUUPIN KIASA-NORSUN TAUSTATARINA 1P",
-            "TANPEREELLA - OTSIKKO",
-            "KÄY PYYNIKIN NÄKÖTORNILLA 2P",
-            "KÄY HERVANNAN VESITORNILLA 2P",
-            "SYÖ SIIPIÄ, VEGESIIPIÄ, MUSTAMAKKARAA TAI PYYNIKIN MUNKKEJA 2P",
-        ],
-    },
-    {
-        header: "Lärpäke / Tanpereella",
-        buttons: [
-            "KÄY MUSEOSSA TAMPEREELLA 2P",
-            "KÄY HOTELLI TORNIN HUIPULLA 2P",
-            "KÄY NÄSINNEULALLA 2P",
-            "RATIKKA-AJELU 5P",
-            "KÄY JOKAISELLA YLIOPISTON KAMPUKSELLA 3P",
-            "- TYHJÄ",
-        ],
-    },
-];
+const PAGE_SIZE = 7;
+const TASK_LINE_LENGTH = 55;
 
 class Title {
     title: string;
@@ -195,37 +32,37 @@ class Task {
     id: number;
     title: string;
     isCancelled: boolean;
+    isCompleted: boolean;
     signatureId: string | null;
+    points: number;
 
-    constructor(id: number, title: string, isCancelled: boolean, signatureId: string | null) {
+    constructor(
+        id: number,
+        title: string,
+        isCancelled: boolean,
+        isCompleted: boolean,
+        points: number,
+        signatureId: string | null
+    ) {
         this.id = id;
         this.title = title;
         this.isCancelled = isCancelled;
+        this.isCompleted = isCompleted;
         this.signatureId = signatureId;
+        this.points = points;
     }
 }
+class Filler {}
 
 type Page = {
     header: string;
-    tasks: (Task | Title)[];
+    tasks: (Task | Title | Filler)[];
 };
 
-function getSignatureImage() {
-    const signature_list = [
-        "",
-        "",
-        "",
-        "/signatures/test.png",
-        "/signatures/signature_HV_2.png",
-        "/signatures/signature_HV_3.png",
-        "/signatures/signature_JK_2.png",
-        "/signatures/signature_JK_1.png",
-        "/signatures/signature_JK_3.png",
-    ];
-    return signature_list[Math.floor(Math.random() * signature_list.length)];
-}
+const client = new LarpakeClient();
+const attendanceClient = new AttendanceClient(client.client);
 
-async function getLarpake(client: LarpakeClient, larpakeId: number): Promise<Larpake> {
+async function getLarpake(larpakeId: number): Promise<Larpake> {
     if (!Number.isNaN(larpakeId)) {
         const result = await client.getById(larpakeId, false);
         if (result) {
@@ -240,27 +77,33 @@ async function getLarpake(client: LarpakeClient, larpakeId: number): Promise<Lar
 }
 
 async function main() {
+    // Parse query string to get page number
     const urlParams = new URLSearchParams(window.location.search);
     const larpakeId = parseInt(urlParams.get("LarpakeId") ?? "");
     const pageNum = parseInt(urlParams.get("Page") ?? "0");
 
-    // Load data
-    const client = new LarpakeClient();
-    const larpake = await getLarpake(client, larpakeId);
+    // Load larpake and sections
+    const larpake = await getLarpake(larpakeId);
 
+    // Load tasks
     const unmappedTasks = (await client.getTasksByLarpakeId(larpake.id)) ?? [];
-    const tasks = ToDictionary<number, LarpakeTask>(unmappedTasks, (x) => x.id);
-
+    const tasks = ToDictionary<number, LarpakeTask>(unmappedTasks, (x) => x.larpakeSectionId);
     for (const section of larpake.sections ?? []) {
         section.tasks = tasks.get(section.id) ?? [];
     }
 
-    const attendanceClient = new AttendanceClient();
-    const attendances = await attendanceClient.get(larpake.id);
+    // Load attendances
+    const attendances = (await attendanceClient.get(larpake.id)) ?? [];
+
+    // Load signatures
+    const signatureIds: string[] = attendances
+        .filter((x) => x.completed?.signatureId != null)
+        .map((x) => x.completed!.signatureId!);
+    const signatures = await attendanceClient.getSignatures(signatureIds);
 
     // Render
     const renderer = new PageRenderer();
-    renderer.setup(larpake.sections ?? [], attendances ?? []);
+    renderer.setup(larpake.sections ?? [], attendances, signatures);
     if (!Number.isNaN(pageNum)) {
         renderer.setPage(pageNum);
     }
@@ -275,14 +118,16 @@ class PageRenderer {
     nextBtn: HTMLButtonElement;
     previousBtn: HTMLButtonElement;
     pages: Page[];
+    signatures: Map<string, Signature>;
 
     constructor() {
         this.header = document.getElementById("larpake-page-name") as HTMLHeadingElement;
-        this.taskContainer = document.getElementById("larpake-button-container") as HTMLUListElement;
+        this.taskContainer = document.getElementById("larpake-task-container") as HTMLUListElement;
         this.indexer = document.getElementById("page-info") as HTMLParagraphElement;
         this.nextBtn = document.getElementById("next-page") as HTMLButtonElement;
         this.previousBtn = document.getElementById("prev-page") as HTMLButtonElement;
         this.pages = [];
+        this.signatures = new Map<string, Signature>();
 
         throwIfAnyNull([this.header, this.taskContainer, this.indexer, this.nextBtn, this.previousBtn]);
 
@@ -301,8 +146,9 @@ class PageRenderer {
         }
     }
 
-    setup(sections: Section[], attendances: Attendance[]) {
+    setup(sections: Section[], attendances: Attendance[], signatures: Signature[]) {
         this.pages = [];
+        this.signatures = ToOverwriteDictionary(signatures, (x) => x.id);
 
         const completions = new Map<number, Completion>();
         for (const attendance of attendances) {
@@ -313,40 +159,103 @@ class PageRenderer {
 
         const pieces = sections.sort(SectionSortFunc).flatMap((s) => {
             const sectionTitle = getSectionText(s).title;
-            const tasks = s.tasks
-                .sort(TaskSortFunc)
-                .map(
-                    (t) =>
-                        new Task(
-                            t.id,
-                            getTaskText(t).title,
-                            t.cancelledAt != null,
-                            completions.get(t.id)?.signatureId ?? null
-                        )
+            const tasks = s.tasks.sort(TaskSortFunc).map((task) => {
+                const completion = completions.get(task.id);
+                return new Task(
+                    task.id,
+                    getTaskText(task).title,
+                    task.cancelledAt != null,
+                    completion != undefined,
+                    task.points,
+                    completion?.signatureId ?? null
                 );
+            });
 
             return [new Title(sectionTitle), ...tasks];
         });
 
-        let lastTitle: string = "";
-        let span: (Title | Task)[] = [];
-        for (const piece of pieces) {
-            if (span.length >= PAGE_SIZE - 1) {
-                this.pages.push({
-                    header: `Lärpäke/${lastTitle}`,
-                    tasks: span,
-                });
-                span = [];
+        const formatTitle = (title: string) => {
+            return isEmpty(title) ? "Lärpäke" : `Lärpäke / ${title}`;
+        };
+
+        const pushFinalizedPage = (page: Page, lastTitle: string) => {
+            if (isEmpty(page.header)) {
+                page.header = lastTitle;
             }
-            span.push(piece);
+            this.pages.push(page);
+        };
+
+        const createNewPage = (tasks: (Task | Title | Filler)[] | null = null): Page => {
+            const title = tasks?.find((x) => x instanceof Title);
+            return { header: title?.title ?? "", tasks: tasks ?? [] };
+        };
+
+        const isPageFull = (page: Page): boolean => {
+            return page.tasks.length >= PAGE_SIZE;
+        };
+
+        // Iterate over tasks and fill pages
+        let lastTitle: string = "Lärpäke";
+        let page: Page = { header: "", tasks: [] };
+
+        const pushTask = (elem: Task | Title) => {
+            page.tasks.push(elem);
+
+            // Nice guard clauses
+            const titleOversize = elem.title.length > TASK_LINE_LENGTH;
+            if (!titleOversize) {
+                return;
+            }
+
+            if (isPageFull(page)) {
+                return;
+            }
+
+            // Maximum of 2 fillers
+            const fillerCount = page.tasks.filter((x) => x instanceof Filler).length;
+            const containsMaxFillers = fillerCount >= 2;
+            if (containsMaxFillers) {
+                return;
+            }
+
+            // If 2 title, only 1 filler
+            const titleCount = page.tasks.filter((x) => x instanceof Title).length;
+            if (fillerCount !== 0 && titleCount >= 2) {
+                return;
+            }
+
+            /* Filler is not rendered.
+             * I only makes room if multi line tasks. */
+            page.tasks.push(new Filler());
+        };
+
+        pieces.forEach((piece) => {
+            // Add page title if no title already exists
+            if (piece instanceof Title) {
+                lastTitle = formatTitle(piece.title);
+                if (isEmpty(page.header)) {
+                    page.header = lastTitle;
+                }
+            }
+
+            // Append full page
+            if (isPageFull(page)) {
+                if (page.tasks[-1] instanceof Title) {
+                    const moveTitle = page.tasks.pop()!;
+                    pushFinalizedPage(page, lastTitle);
+                    page = createNewPage([moveTitle]);
+                } else {
+                    pushFinalizedPage(page, lastTitle);
+                    page = createNewPage();
+                }
+            }
+            pushTask(piece);
+        });
+
+        // Add partially empty page
+        if (page.tasks.length > 0) {
+            pushFinalizedPage(page, lastTitle);
         }
-        if (span.length > 0){
-            this.pages.push({
-                header: `Lärpäke/${lastTitle}`,
-                tasks: span,
-            });
-        }
-        
     }
 
     render() {
@@ -368,10 +277,16 @@ class PageRenderer {
 
         const elements = this.pages[this.currentPage]?.tasks ?? [];
         for (const elem of elements) {
-            if (elem instanceof Task) {
-                this.#appendTask(elem as Task);
-            } else {
-                this.#appendTitle(elem as Title);
+            switch (true) {
+                case elem instanceof Task:
+                    this.#appendTask(elem as Task);
+                    break;
+                case elem instanceof Filler:
+                    // No need to act
+                    break;
+                default:
+                    this.#appendTitle(elem as Title);
+                    break;
             }
         }
     }
@@ -385,18 +300,52 @@ class PageRenderer {
     #appendTask(task: Task) {
         const element = appendTemplateElement<HTMLElement>("task-template", this.taskContainer);
 
-        if (task.isCancelled) {
-            element.classList.add("disabled");
-            return;
-        }
-
         element.querySelector<HTMLHeadingElement>("._title")!.innerText = task.title;
-        const img = element.querySelector<HTMLImageElement>("._img")!;
-        img.src = getSignatureImage();
-
+        element.querySelector<HTMLHeadingElement>("._points")!.innerText = `${task.points ?? 0}P`;
         element.addEventListener("click", (_) => {
             window.location.href = `event_marking.html?EventId=${task.id}`;
         });
+
+        if (task.isCancelled) {
+            this.#taskStateCancelled(element);
+            return;
+        }
+
+        const signatureContainer = element.querySelector<HTMLDivElement>("._signature")!;
+        /* Default task state is completed, so it should be only
+         * Overwritten if task was completed with signature or
+         * task was cancelled.
+         */
+        if (task.isCompleted) {
+            this.#taskStateCompleted(task, signatureContainer);
+        } else {
+            removeChildren(signatureContainer);
+        }
+    }
+
+    #taskStateCompleted(task: Task, container: HTMLDivElement) {
+        const signature = task.signatureId ? this.signatures.get(task.signatureId) : null;
+        if (signature) {
+            removeChildren(container);
+            const data = signature.signature;
+            const sign = new SignatureRenderer(data.data, {
+                stroke: data.strokeStyle,
+                fill: "black",
+                strokeWidth: data.lineWidth,
+                strokeLinecap: data.lineCap,
+            });
+            sign.compile();
+            sign.renderTo(container);
+        }
+    }
+
+    #taskStateCancelled(elem: HTMLElement) {
+        const state = getDocumentLangCode() === LANG_EN ? "CANCELLED" : "PERUUTETTU";
+        elem.querySelector<HTMLHeadingElement>("._state")!.innerText = state;
+
+        const btn = elem.querySelector<HTMLElement>("._btn")!;
+        btn.classList.add("cancelled");
+        btn.classList.remove("hover-scale-03");
     }
 
     #appendTitle(title: Title) {

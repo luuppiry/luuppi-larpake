@@ -43,6 +43,18 @@ export function ToDictionary<TKey, TValue>(values: TValue[], selector: (value: T
     return result;
 }
 
+export function ToOverwriteDictionary<TKey, TValue>(
+    values: TValue[],
+    selector: (value: TValue) => TKey
+): Map<TKey, TValue> {
+    const result = new Map<TKey, TValue>();
+    values.forEach((x) => {
+        const key = selector(x);
+        result.set(key, x);
+    });
+    return result;
+}
+
 export function SectionSortFunc(first: Section, second: Section): number {
     /* Sort by
      * - bigger ordering weight
@@ -55,9 +67,8 @@ export function SectionSortFunc(first: Section, second: Section): number {
     if (second.orderingWeightNumber < first.orderingWeightNumber) {
         return 1;
     }
-    return first.id > second.id ? -1 : 1;
+    return first.id > second.id ? 1 : -1;
 }
-
 
 export function TaskSortFunc(first: LarpakeTask, second: LarpakeTask): number {
     /* Sort by
@@ -71,7 +82,7 @@ export function TaskSortFunc(first: LarpakeTask, second: LarpakeTask): number {
     if (second.orderingWeightNumber < first.orderingWeightNumber) {
         return 1;
     }
-    return first.id > second.id ? -1 : 1;
+    return first.id > second.id ? 1 : -1;
 }
 
 export function getInputNumericByDocId(fieldName: string) {
@@ -139,17 +150,21 @@ export function removeChildren(elem: HTMLElement) {
     }
 }
 
-export function throwIfAnyNull(elems: HTMLElement[]){
-    for (const elem of elems){
-        if (elem == null){
+export function throwIfAnyNull(elems: HTMLElement[]) {
+    for (const elem of elems) {
+        if (elem == null) {
             throw new Error("Element cannot be null");
         }
     }
 }
 
-export function appendTemplateElement<TAppended>(id: string, container: HTMLElement){
+export function appendTemplateElement<TAppended>(id: string, container: HTMLElement) {
     const template = document.getElementById(id) as HTMLTemplateElement;
     const node = document.importNode(template.content, true);
     container.appendChild(node);
     return container.children[container.children.length - 1] as TAppended;
+}
+
+export function encodeArrayToQueryString(key: string, array: string[]): string {
+    return array.map((x) => `${key}=${encodeURIComponent(x)}`).join("&");
 }

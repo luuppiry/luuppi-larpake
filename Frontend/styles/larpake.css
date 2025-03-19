@@ -24,15 +24,7 @@ body {
     font-size: 25px;
 }
 
-.button-image img {
-    max-height: 80px;
-    max-width: 100%;
-    margin: 0;
-}
 
-.button:hover {
-    background-color: #f0f0f0;
-}
 
 .button.disabled {
     background-color: #ddd;
@@ -40,26 +32,89 @@ body {
     cursor: not-allowed;
 }
 
-.signature-picture {
-    height: 30px;
-    width: auto;
+
+
+
+
+
+
+
+
+
+
+
+
+.page {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    min-height: 800px;
+    display: flex;
+    flex-flow: column;
 }
 
 #larpake-page-name {
     text-align: left;
+    font-size: medium;
+    font-weight: 200;
+    margin: 0;
 }
+
+.task-container{
+    display: flex;
+    flex-flow: column;
+    list-style: none;
+    padding: 0 20px;
+    gap: 10px;
+}
+
+.task-btn {
+    height: 70px;
+    background-color: white;
+    width: 100%;
+    border: 2px solid #000;
+}
+
+.task-btn:hover {
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
+
+.cancelled {
+    background-color: #f0f0f0;
+}
+
+.section-title {
+    font-size: 25px;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+}
+
+.task-title{
+    text-align: center;
+    margin: 0px 0 5px 0;
+}
+
+
+
+
+
 
 .pagination {
     display: flex;
     justify-content: space-between;
-    margin-top: 20px;
+    margin: auto 20px 10px 20px;
 }
 
 .pagination button {
     border: none;
     background: none;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 24px;
 }
 
 .pagination button:disabled {
@@ -67,6 +122,3 @@ body {
     cursor: not-allowed;
 }
 
-.section-title {
-    font-size: 25px;
-}

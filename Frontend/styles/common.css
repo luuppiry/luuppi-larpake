@@ -199,6 +199,7 @@ body {
 /* Default scaling 1.05 */
 .hover-scale-10,
 .hover-scale-03,
+.hover-scale-01,
 .hover-scale {
     transition: transform 0.3s ease;
     transform-origin: center;
@@ -214,6 +215,10 @@ body {
 
 .hover-scale-03:hover {
     transform: scale(1.03);
+}
+
+.hover-scale-01:hover {
+    transform: scale(1.01);
 }
 
 .cursor-pointer {
