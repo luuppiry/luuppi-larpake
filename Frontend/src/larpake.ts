@@ -20,6 +20,12 @@ import SignatureRenderer from "./services/signature_renderer";
 const PAGE_SIZE = 7;
 const TASK_LINE_LENGTH = 55;
 
+// Query parameters
+const Q_LARPAKE_ID = "LarpakeId";
+const Q_PAGE = "Page";
+const Q_EVENT_ID = "EventId";
+const Q_LAST_PAGE = "LastPage";
+
 class Title {
     title: string;
 
@@ -79,8 +85,9 @@ async function getLarpake(larpakeId: number): Promise<Larpake> {
 async function main() {
     // Parse query string to get page number
     const urlParams = new URLSearchParams(window.location.search);
-    const larpakeId = parseInt(urlParams.get("LarpakeId") ?? "");
-    const pageNum = parseInt(urlParams.get("Page") ?? "0");
+    const larpakeId: number = parseInt(urlParams.get(Q_LARPAKE_ID) ?? "");
+    const pageNum: number = parseInt(urlParams.get(Q_PAGE) ?? "0");
+    const isLastPage: boolean = urlParams.get(Q_LAST_PAGE)?.toLowerCase() === "true";
 
     // Load larpake and sections
     const larpake = await getLarpake(larpakeId);
@@ -104,8 +111,11 @@ async function main() {
     // Render
     const renderer = new PageRenderer();
     renderer.setup(larpake.sections ?? [], attendances, signatures);
-    if (!Number.isNaN(pageNum)) {
+    if (!Number.isNaN(pageNum) && !isLastPage) {
         renderer.setPage(pageNum);
+    }
+    if (isLastPage) {
+        renderer.goToLastPage();
     }
     renderer.render();
 }
@@ -119,6 +129,7 @@ class PageRenderer {
     previousBtn: HTMLButtonElement;
     pages: Page[];
     signatures: Map<string, Signature>;
+    larpakeId: number | null = null;
 
     constructor() {
         this.header = document.getElementById("larpake-page-name") as HTMLHeadingElement;
@@ -146,7 +157,12 @@ class PageRenderer {
         }
     }
 
+    goToLastPage() {
+        this.setPage(this.pages.length);
+    }
+
     setup(sections: Section[], attendances: Attendance[], signatures: Signature[]) {
+        this.larpakeId = sections[0].larpakeId;
         this.pages = [];
         this.signatures = ToOverwriteDictionary(signatures, (x) => x.id);
 
@@ -260,7 +276,7 @@ class PageRenderer {
 
     render() {
         if (this.currentPage >= this.pages.length && this.pages.length !== 0) {
-            window.open("statistics.html", "_self");
+            window.location.href = `statistics.html?${Q_LARPAKE_ID}=${this.larpakeId}&${Q_LAST_PAGE}=true`;
         }
 
         // Update header
@@ -291,19 +307,13 @@ class PageRenderer {
         }
     }
 
-    goToPage(index: number) {
-        // Use this after first render if you want to change the page
-        this.setPage(index);
-        this.render();
-    }
-
     #appendTask(task: Task) {
         const element = appendTemplateElement<HTMLElement>("task-template", this.taskContainer);
 
         element.querySelector<HTMLHeadingElement>("._title")!.innerText = task.title;
         element.querySelector<HTMLHeadingElement>("._points")!.innerText = `${task.points ?? 0}P`;
         element.addEventListener("click", (_) => {
-            window.location.href = `event_marking.html?EventId=${task.id}`;
+            window.location.href = `event_marking.html?${Q_EVENT_ID}=${task.id}&${Q_LARPAKE_ID}=${this.larpakeId}`;
         });
 
         if (task.isCancelled) {
@@ -314,8 +324,7 @@ class PageRenderer {
         const signatureContainer = element.querySelector<HTMLDivElement>("._signature")!;
         /* Default task state is completed, so it should be only
          * Overwritten if task was completed with signature or
-         * task was cancelled.
-         */
+         * task was cancelled. */
         if (task.isCompleted) {
             this.#taskStateCompleted(task, signatureContainer);
         } else {
