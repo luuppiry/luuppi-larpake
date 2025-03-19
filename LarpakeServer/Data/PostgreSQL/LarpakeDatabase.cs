@@ -342,7 +342,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
 
     private static async Task InsertLarpakeLocalizations(NpgsqlConnection connection, long larpakeId, IEnumerable<LarpakeLocalization> loc)
     {
-        var records = loc.Select(x => new { larpakeId, x.LanguageCode, x.Title, x.Description });
+        var records = loc.Select(x => new { larpakeId, x.LanguageCode, x.Title, x.Description, x.ImageUrl });
         await connection.ExecuteAsync($"""
             INSERT INTO larpake_localizations (
                 larpake_id,
