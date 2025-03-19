@@ -277,7 +277,10 @@ class PageRenderer {
     render() {
         if (this.currentPage >= this.pages.length && this.pages.length !== 0) {
             window.location.href = `statistics.html?${Q_LARPAKE_ID}=${this.larpakeId}&${Q_LAST_PAGE}=true`;
+            return;
         }
+
+        this.#updatePageQuery();
 
         // Update header
         this.header.innerText = this.pages[this.currentPage]?.header ?? "Error loading title";
@@ -375,6 +378,14 @@ class PageRenderer {
 
         this.currentPage += step;
         this.render();
+    }
+
+    #updatePageQuery(){
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search)
+        params.set(Q_PAGE, this.currentPage.toString())
+        url.search = params.toString();
+        window.history.pushState({}, "", url)
     }
 }
 
