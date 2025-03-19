@@ -1,0 +1,37 @@
+
+.page {
+    max-width: 600px;
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    min-height: 800px;
+    display: flex;
+    flex-flow: column;
+}
+
+#larpake-page-name {
+    text-align: left;
+    font-size: medium;
+    font-weight: 200;
+    margin: 0;
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    margin: auto 20px 10px 20px;
+}
+
+.pagination button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.pagination button:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+}

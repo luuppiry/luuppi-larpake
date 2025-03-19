@@ -29,7 +29,6 @@
                     <h3 class="task-title">
                         <span class="_title"></span>
                         <span class="_points">0</span>
-                      
                     </h3>
                     <button class="_btn _signature task-btn hover-scale-03">
                         <h4 class="_state">SUORITETTU</h4>
@@ -38,18 +37,16 @@
             </li>
         </template>
 
-       
-
         <ui-header side-panel-name="side-panel-element"></ui-header>
         <side-panel lang="en"></side-panel>
         <div class="page">
             <h2 id="larpake-page-name">Lärpäke</h2>
             <ul id="larpake-task-container" class="task-container">
                 <!-- Buttons will be dynamically generated here -->
-                <button class="button">
-                    <div class="button-text">error</div>
-                    <div class="button-image">ERROR: Page not found!</div>
-                </button>
+                <section class="error">
+                    <h3>Virhe!</h3>
+                    <p>Joko Lärpäkkeen lataaminen palvelimelta epäonnistui tai et ole vielä osallisena yhteenkään...</p>
+                </section>
             </ul>
             <div class="pagination">
                 <button id="prev-page" disabled>&lt;</button>

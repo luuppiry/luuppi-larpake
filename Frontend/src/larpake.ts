@@ -16,15 +16,12 @@ import { Attendance, Completion as Completion } from "./models/attendance";
 import { getSectionText, getTaskText, Larpake, LarpakeTask, Section } from "./models/larpake";
 import { Signature } from "./models/user";
 import SignatureRenderer from "./services/signature_renderer";
+import { Q_EVENT_ID, Q_LARPAKE_ID, Q_LAST_PAGE, Q_PAGE, Q_OF_PAGES } from "./constants"
 
 const PAGE_SIZE = 7;
 const TASK_LINE_LENGTH = 55;
 
-// Query parameters
-const Q_LARPAKE_ID = "LarpakeId";
-const Q_PAGE = "Page";
-const Q_EVENT_ID = "EventId";
-const Q_LAST_PAGE = "LastPage";
+
 
 class Title {
     title: string;
@@ -158,7 +155,7 @@ class PageRenderer {
     }
 
     goToLastPage() {
-        this.setPage(this.pages.length);
+        this.setPage(this.pages.length - 1);
     }
 
     setup(sections: Section[], attendances: Attendance[], signatures: Signature[]) {
@@ -276,7 +273,8 @@ class PageRenderer {
 
     render() {
         if (this.currentPage >= this.pages.length && this.pages.length !== 0) {
-            window.location.href = `statistics.html?${Q_LARPAKE_ID}=${this.larpakeId}&${Q_LAST_PAGE}=true`;
+            window.location.href = `statistics.html?${Q_LARPAKE_ID}=${this.larpakeId}&${Q_LAST_PAGE}=true`+
+             `&${Q_PAGE}=${this.currentPage + 1}&${Q_OF_PAGES}=${this.currentPage + 1}`;
             return;
         }
 
@@ -383,6 +381,7 @@ class PageRenderer {
     #updatePageQuery(){
         const url = new URL(window.location.href);
         const params = new URLSearchParams(url.search)
+        params.set(Q_LARPAKE_ID, this.larpakeId?.toString() ?? "-1")
         params.set(Q_PAGE, this.currentPage.toString())
         url.search = params.toString();
         window.history.pushState({}, "", url)
