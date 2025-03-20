@@ -1,19 +1,14 @@
-import TaskEditor, { TaskData } from "./task-editor";
+import { isEmpty, LANG_EN, LANG_FI } from "../helpers";
+import { LarpakeTask, Section } from "../models/larpake";
+import TaskEditor from "./task-editor";
 
 const idStart = "section-editor-";
-
-export type SectionData = {
-    id: number;
-    titleFi: string;
-    titleEn: string;
-    tasks: TaskData[];
-};
 
 export default class SectionEditor extends HTMLElement {
     idNumber: number | null = null;
     titleFiField: HTMLInputElement | null = null;
     titleEnField: HTMLInputElement | null = null;
-    serverTaskId: number | null = null;
+    serverSectionId: number | null = null;
     tasksContainer: HTMLOListElement | null = null;
 
     constructor() {
@@ -33,27 +28,33 @@ export default class SectionEditor extends HTMLElement {
                             <label for="section-${idNum}-title-fi">Otsikko (fi, oletus)</label>
                             <input
                                 id="section-${idNum}-title-fi"
+                                name="section-title-fi"
                                 class="text-field"
-                                placeholder="Tanpereella"
+                                placeholder="Osion otsikko"
                                 maxlength="80"
+                                minlenght="3"
+                                required
                             />
                         </div>
                         <div class="field">
                             <label for="section-${idNum}-title-en">Otsikko (en)</label>
                             <input
                                 id="section-${idNum}-title-en"
+                                name="section-title-en"
                                 class="text-field"
-                                placeholder="In Tampere"
+                                placeholder="Section title"
                                 maxlength="80"
+                                minlenght="3"
+                                required
                             />
                         </div>
                     </div>
                     <ol id="section-${idNum}-tasks-container" class="section-list task-list">
                         <!-- Tasks in this section -->
                     </ol>
-                    <div id="add-task-${idNum}-btn" class="add-task">
+                    <button id="add-task-${idNum}-btn" class="add-task add-btn">
                         <img src="/icons/plus_icon.svg" alt="add new icon">
-                    </div>
+                    </button>
                 </div>
             </li>
             `;
@@ -63,14 +64,17 @@ export default class SectionEditor extends HTMLElement {
         this.titleEnField = document.getElementById(`section-${idNum}-title-en`) as HTMLInputElement;
         this.tasksContainer = document.getElementById(`section-${idNum}-tasks-container`) as HTMLOListElement;
 
-        document.getElementById(`add-task-${idNum}-btn`)?.addEventListener("click", (_) => {
+        document.getElementById(`add-task-${idNum}-btn`)?.addEventListener("click", (event) => {
+            event.preventDefault();
             this.appendTask({
-                id: -1,
-                titleFi: "Uusi Tehtävä",
-                titleEn: "",
-                bodyFi: "",
-                bodyEn: "",
+                id: 0,
+                larpakeSectionId: 0,
                 points: 0,
+                orderingWeightNumber: 0,
+                cancelledAt: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                textData: [],
             });
         });
     }
@@ -88,7 +92,7 @@ export default class SectionEditor extends HTMLElement {
         return i;
     }
 
-    appendTask(task: TaskData) {
+    appendTask(task: LarpakeTask) {
         const editor = new TaskEditor();
         this.tasksContainer?.appendChild(editor);
         editor.setData(task);
@@ -99,17 +103,64 @@ export default class SectionEditor extends HTMLElement {
         this.tasksContainer?.removeChild(task);
     }
 
-    setData(data: SectionData) {
-        this.serverTaskId = data.id;
+    setData(data: Section, tasks: LarpakeTask[]) {
+        const textFi = data.textData.filter((x) => x.languageCode == LANG_FI)[0];
+        const textEn = data.textData.filter((x) => x.languageCode == LANG_EN)[0];
+
+        this.serverSectionId = data.id;
 
         if (this.titleFiField) {
-            this.titleFiField.value = data.titleFi;
+            this.titleFiField.value = textFi?.title ?? "";
         }
         if (this.titleEnField) {
-            this.titleEnField.value = data.titleEn;
+            this.titleEnField.value = textEn?.title ?? "";
         }
 
-        data.tasks.forEach((task) => this.appendTask(task));
+        tasks.forEach((task) => this.appendTask(task));
+    }
+
+    getData(): Section {
+        // Validate field values exist
+        if (isEmpty(this.titleFiField?.value)) {
+            throw new Error("Section title (fi) cannot be empty.");
+        }
+        if (isEmpty(this.titleEnField?.value)) {
+            throw new Error("Section title (en) cannot be empty.");
+        }
+
+        const container = this.tasksContainer;
+        if (container == null) {
+            throw new Error("Task container is null");
+        }
+
+        // Parse tasks
+        const tasks: LarpakeTask[] = [];
+        for (let i = 0; i < container.children.length; i++) {
+            const editor = container.children.item(i);
+            if (editor instanceof TaskEditor) {
+                const task = (editor as TaskEditor).getData();
+                task.larpakeSectionId = this.serverSectionId ?? -1;
+                tasks.push(task);
+            }
+        }
+        return {
+            id: this.serverSectionId ?? -1,
+            larpakeId: -1,
+            orderingWeightNumber: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            textData: [
+                {
+                    title: this.titleFiField!.value,
+                    languageCode: LANG_FI,
+                },
+                {
+                    title: this.titleEnField!.value,
+                    languageCode: LANG_EN,
+                },
+            ],
+        tasks: tasks
+        };
     }
 }
 

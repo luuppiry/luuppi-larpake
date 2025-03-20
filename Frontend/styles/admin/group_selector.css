@@ -70,3 +70,9 @@ li {
     margin-top: auto;
     margin-bottom: auto;
 }
+
+.box-30px {
+    height: 46px;
+    width: 46px;
+    padding: 10px 0;
+}

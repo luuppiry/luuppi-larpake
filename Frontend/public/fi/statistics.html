@@ -9,35 +9,44 @@
         <script type="module" src="/src/components/ui-header.ts"></script>
     </head>
     <body>
+        <template id="statistics-value">
+            <li class="stat-section">
+                <section>
+                    <h3 class="_title">STATISTIC TITLE</h3>
+                    <p>
+                        <span class="_value">X</span>
+                        <span>/</span>
+                        <span class="_max">Y</span>
+                    </p>
+                </section>
+            </li>
+        </template>
         <ui-header></ui-header>
         <side-panel lang="fi"></side-panel>
-        <div class="container">
-            <div align="left">Lärpäke / Oma statistiikka</div>
+        <div class="page">
+            <h2 id="larpake-page-name">Lärpäke / Oma statistiikka</h2>
             <p class="greeting">Tervehdys arvon fuksi, olet mahtavassa vauhdissa!</p>
-            <ul class="stats-list">
-                <li>ENSI ASKELEET <span class="stat-value">21 / 49</span></li>
-                <li>PIENEN PIENI LUUPPILAINEN <span class="stat-value">17 / 58</span></li>
-                <li>PII-KLUBILLA TAPAHTUU <span class="stat-value">5 / 10</span></li>
-                <li>NORMIPÄIVÄ <span class="stat-value">20 / 23</span></li>
-                <li>YLIOPISTOELÄMÄÄ <span class="stat-value">8 / 32</span></li>
-                <li>VAIKUTUSVALTAA <span class="stat-value">35 / 54</span></li>
-                <li>LIIKUNNALISTA <span class="stat-value">13 / 25</span></li>
-                <li>KAIKENLAISTA <span class="stat-value">24 / 33</span></li>
-                <li>TANPEREELLA <span class="stat-value">18 / 20</span></li>
+            <ul id="statistics-container" class="stats-list">
+                <li>
+                    <section class="error">
+                        <h3>Virhe!</h3>
+                        <p>
+                            Statistiikan hakeminen palvelimelta epäonnistui, tai et ole vielä osallisena yhdessäkään
+                            Lärpäkkeessä.
+                        </p>
+                    </section>
+                </li>
             </ul>
             <div class="total">YHTEENSÄ: <span class="total-value">161 / 304</span></div>
             <div class="pagination">
-                <a href="larpake.html?page=14"><button id="prev-page" onclick="goToPage(14)">&lt;</button></a>
-                <span id="page-info">16 / 16</span>
+                <a id="back-btn" href="larpake.html">
+                    <button id="prev-page">&lt;</button>
+                </a>
+                <p id="page-info">16 / 16</p>
                 <button id="next-page" disabled>&gt;</button>
             </div>
         </div>
 
-        <script>
-            function toggleSidePanel() {
-                const panel = document.getElementById("side-panel-element");
-                panel.classList.toggle("open");
-            }
-        </script>
+        <script type="module" src="/src/statistics.ts"></script>
     </body>
 </html>

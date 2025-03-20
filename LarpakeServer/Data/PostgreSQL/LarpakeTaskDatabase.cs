@@ -54,7 +54,7 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             )
             """);
 
-        query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
+        query.IfNotNull(options.LarpakeTaskIds).AppendConditionLine($"""
             e.id = ANY(@{nameof(options.LarpakeTaskIds)})
             """);
 
@@ -83,6 +83,9 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)};
             """);
+
+        string q = query.ToString();
+
         using var connection = GetConnection();
         var records = await connection.QueryLocalizedAsync<LarpakeTask, LarpakeTaskLocalization>(
             query.ToString(),
@@ -104,10 +107,10 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 e.created_at,
                 e.updated_at,
                 e.cancelled_at,
-                l.title,
-                l.body
-                l.language_code
-                l.larpake_event_id
+                loc.title,
+                loc.body,
+                GetLanguageCode(loc.language_id) AS language_code,
+                loc.larpake_event_id
             FROM larpake_events e
                 LEFT JOIN larpake_event_localizations loc
                     ON e.id = loc.larpake_event_id
@@ -135,17 +138,17 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                     @{nameof(def.Body)},
                     @{nameof(def.LanguageCode)}
                 );
-                """, new 
-            { 
+                """, new
+            {
                 record.LarpakeSectionId,
                 record.Points,
                 record.OrderingWeightNumber,
                 def.Title,
                 def.Body,
-                def.LanguageCode
+                def.LanguageCode,
             });
 
-            await InsertLocalizations(connection, id, 
+            await InsertLocalizations(connection, id,
                 record.TextData.Where(x => x.LanguageCode != def.LanguageCode));
 
             await transaction.CommitAsync();
@@ -175,12 +178,20 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             """, record);
 
         rowsAffected += await connection.ExecuteAsync($"""
-            UPDATE larpake_event_localizations
-            SET
+            INSERT INTO larpake_event_localizations (
+                title,
+                body, 
+                larpake_event_id,
+                language_id
+            ) VALUES (
+                @{nameof(LarpakeTaskLocalization.Title)},
+                @{nameof(LarpakeTaskLocalization.Body)},
+                @{nameof(record.Id)},
+                GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)})
+            ) ON CONFLICT (larpake_event_id, language_id)
+            DO UPDATE SET
                 title = @{nameof(LarpakeTaskLocalization.Title)},
-                body = @{nameof(LarpakeTaskLocalization.Body)}
-            WHERE larpake_event_id = @{nameof(record.Id)}
-                AND language_id = GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)});
+                body = @{nameof(LarpakeTaskLocalization.Body)};
             """, record.TextData.Select(x => new { x.Title, x.Body, record.Id, x.LanguageCode }));
 
         await transaction.CommitAsync();
@@ -214,25 +225,25 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
         }
     }
 
-    public Task<int> UnsyncOrganizationEvent(long larpakeEventId, long organizationEventId)
+    public async Task<int> UnsyncOrganizationEvent(long larpakeEventId, long organizationEventId)
     {
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             DELETE FROM event_map
             WHERE larpake_event_id = @{nameof(larpakeEventId)}
                 AND organization_event_id = @{nameof(organizationEventId)};
             """, new { larpakeEventId, organizationEventId });
     }
 
-    public Task<int> Cancel(long id)
+    public async Task<int> Cancel(long id)
     {
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             UPDATE larpake_events 
             SET
                 cancelled_at = NOW()
             WHERE id = @{nameof(id)}
-                AND cancelled_at = NULL;
+                AND cancelled_at IS NULL;
             """, new { id });
     }
 
@@ -248,11 +259,11 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
     }
 
 
-    private static async Task InsertLocalizations(
+    private static async Task<long> InsertLocalizations(
         NpgsqlConnection connection, long eventId,
         IEnumerable<LarpakeTaskLocalization> localizations)
     {
-        await connection.ExecuteAsync($"""
+        int rowsAffected = await connection.ExecuteAsync($"""
             INSERT INTO larpake_event_localizations (
                 larpake_event_id,
                 title,
@@ -266,12 +277,13 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 (SELECT GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)}))
             );
             """, localizations.Select(x => new
-            {
-                eventId,
-                x.Title,
-                x.Body,
-                x.LanguageCode
-            }));
+        {
+            eventId,
+            x.Title,
+            x.Body,
+            x.LanguageCode
+        }));
+        return rowsAffected;
     }
 
 }

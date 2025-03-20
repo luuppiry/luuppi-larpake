@@ -6,6 +6,7 @@
         <title>Document</title>
         <link rel="stylesheet" href="/styles/admin/group_manager.css" />
         <script src="/src/components/side-panel.ts"></script>
+        <script src="/src/components/form-container.ts"></script>
         <script type="module" src="/src/components/ui-header.ts"></script>
         <script>
             if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
@@ -14,17 +15,139 @@
         </script>
     </head>
     <body>
-        <ui-header></ui-header>
-        <side-panel></side-panel>
-        <h2>Group manager</h2>
-        <div id="container"></div>
-    </body>
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const groupId = params.get("groupId");
-        if (groupId){
-            document.getElementById("container").innerText = `Managing group: ${groupId}`;
-        }
+        <p>Note: this page is not wired up and is static</p>
+        <dialog id="choose-user-dialog" class="dialog choose-user-dialog white-text">
+            <div class="dialog-header">
+                <div id="cancel-choose-user-btn" class="close-btn">
+                    <img class="close-x" src="/icons/close-x.png" height="30px" width="auto" />
+                </div>
+                <h1>Valitse käyttäjä</h1>
+            </div>
+            <form class="choose-user-form">
+                <input
+                    id="user-search-term"
+                    class="search-bar text-field"
+                    type="search"
+                    placeholder="hakusana"
+                    autofocus
+                />
+                <ul id="available-users-container" class="flex-col gap-10 no-list"></ul>
+            </form>
+        </dialog>
+        <dialog id="edit-user-dialog" class="dialog edit-user-dialog">
+            <div class="dialog-header white-text">
+                <div id="cancel-edit-btn" class="close-btn">
+                    <img class="close-x" src="/icons/close-x.png" height="30px" width="auto" />
+                </div>
+                <h1>Muokkaa käyttäjää</h1>
+            </div>
+            <div class="choose-user-form">
+                <p><b>Käyttäjä: </b><span class="_username">UserName</span></p>
+                <div class="flex-separate">
+                    <div>
+                        <p class="_id hidden"></p>
+                        <label for="user-status-selector"><b>Rooli:</b></label>
+                        <select id="user-status-selector" class="_status select-status">
+                            <option value="true">Fuksi</option>
+                            <option value="false">Tutor</option>
+                        </select>
+                    </div>
+                    <button id="delete-user-btn" class="delete-btn cursor-pointer hover-scale">
+                        <img src="/icons/bin.svg" alt="delete icon" />
+                    </button>
+                </div>
+                <p>Käyttäjän poistaminen ryhmästä voi johtaa tietojen menettämiseen!</p>
+                <div id="edit-ok-btn" class="ok-btn-container">
+                    <button class="primary-btn ok-btn">Ok</button>
+                </div>
+            </div>
+        </dialog>
+        <template id="available-user-template">
+            <!-- classes starting with underscore are for identification only, no styling -->
+            <li class="available-user hover-scale cursor-pointer flex-col">
+                <p class="_id hidden no-interact"></p>
+                <p class="no-interact"><b class="_username">Username</b></p>
+                <p class="no-interact">&HorizontalLine;</p>
+                <p class="no-interact">
+                    <span class="_first-name">FirstName</span>
+                    <span>&nbsp;</span>
+                    <span class="_last-name">LastName</span>
+                </p>
+            </li>
+        </template>
+        <template id="user-template">
+            <!-- Changing template class naming might cause name mismatch in js side -->
+            <li class="hover-scale cursor-pointer">
+                <section class="user-info-section no-interact">
+                    <div class="name-info">
+                        <p class="_id hidden"></p>
+                        <h3 class="_username username">XuserX</h3>
+                        <p class="name">
+                            <span class="_first-name first-name">Xfirstname</span>&nbsp;<span class="last-name"
+                                >Xlastname</span
+                            >
+                        </p>
+                    </div>
+                    <p class="user-status">Status: <b class="_status">Fuksi</b></p>
+                </section>
+            </li>
+        </template>
+        <ui-header path-depth="1"></ui-header>
+        <side-panel path-depth="1"></side-panel>
+        <div class="hor-center-content">
+            <h2>Ryhmähoitelija</h2>
+        </div>
+        <div class="hor-center-content page-padding page-end-margin">
+            <div class="limit-width flex-col">
+                <section>
+                    <form>
+                        <h3>Yleistä</h3>
+                        <div class="gap-10 flex-col">
+                            <div class="field group-name-field">
+                                <div class="tooltipped-title">
+                                    <label for="group-name">Ryhmän nimi</label>
+                                    <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                                    <p class="tooltip">Jätä tyhjäksi jos aloitusvuotta ei haluta määritellä</p>
+                                </div>
+                                <input id="group-name" type="text" class="text-field" maxlength="80" />
+                            </div>
 
-    </script>
+                            <div class="field">
+                                <div class="tooltipped-title">
+                                    <label for="group-number">Ryhmän numero</label>
+                                    <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                                    <p class="tooltip">Fuksiryhmälle valittu numero.</p>
+                                </div>
+                                <input id="group-number" type="text" class="text-field" />
+                            </div>
+
+                            <div class="field">
+                                <div class="tooltipped-title">
+                                    <label for="larpake-id">Lärpäke id</label>
+                                    <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                                    <p class="tooltip">Mihin Lärpäkkeeseen ryhmä liitetään.</p>
+                                </div>
+                                <input id="larpake-id" type="text" class="text-field" />
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <section class="members-container">
+                    <div class="flex-separate">
+                        <h3>Jäsenet</h3>
+                        <button id="add-member-btn" class="add-new-btn hover-scale-10">
+                            <img src="/icons/plus_icon.svg" alt="add icon" />
+                        </button>
+                    </div>
+                    <ul id="user-container" class="user-container">
+                        <li id="no-members-label" class="no-users">
+                            <p>Ryhmään ei kuulu yhtäkään käyttäjää.</p>
+                        </li>
+                    </ul>
+                </section>
+                <button id="save-btn" class="primary-btn">Tallenna</button>
+            </div>
+        </div>
+    </body>
+    <script type="module" src="/src/admin/group_manager.ts"></script>
 </html>

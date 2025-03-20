@@ -1,1 +1,176 @@
 @import "../common.css";
+@import "../tooltip.css";
+@import "../common_settings.css";
+
+.page-padding {
+    padding: 10px 50px;
+}
+
+.gap-10 {
+    gap: 10px;
+}
+
+.limit-width {
+    max-width: 1000px;
+    width: 100%;
+}
+
+.dialog {
+    padding: 0px;
+    border: none;
+    box-shadow: 0 4px 8px black;
+}
+
+.choose-user-dialog {
+    width: 400px;
+    max-width: 90%;
+    height: 700px;
+}
+
+.edit-user-dialog {
+    width: 500px;
+    max-width: 90%;
+    height: 380px;
+}
+
+.white-text > * {
+    color: white;
+}
+
+.dialog-header {
+    background-color: var(--luuppi-blue);
+    padding: 1px 30px;
+}
+
+.close-btn {
+    background-color: var(--dark-blue);
+}
+
+.choose-user-form {
+    margin: 30px 20px;
+    align-content: center;
+}
+
+.search-bar {
+    padding: 3px;
+    font-size: medium;
+    width: 60%;
+}
+
+.select-status {
+    max-width: 100px;
+    font-size: medium;
+    padding: 5px 10px;
+}
+
+.delete-btn {
+    border: none;
+    background-color: var(--luuppi-blue);
+    border-radius: 10px;
+}
+
+.delete-btn > img {
+    height: 40px;
+    width: 40px;
+}
+
+.ok-btn-container {
+    display: flex;
+    justify-content: right;
+}
+
+
+.available-user {
+    background-color: var(--luuppi-blue);
+    border-radius: 10px;
+    padding: 0 20px;
+    list-style: none;
+    display: flex;
+    flex-flow: row;
+}
+
+.no-interact {
+    user-select: none;
+    pointer-events: none;
+}
+
+.flex-separate {
+    display: flex;
+    justify-content: space-between;
+}
+
+.add-new-btn {
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    border-radius: 100px;
+    border-style: none;
+    background-color: var(--luuppi-blue);
+    padding: 8px;
+    height: 50px;
+    width: 50px;
+}
+
+#group-name {
+    max-width: 300px;
+    width: 100% !important;
+}
+
+.tooltipped-title {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.user-info-section {
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px 30px;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    justify-content: space-between;
+    align-content: center;
+}
+
+.name-info {
+    grid-row: 1 / span 2;
+    display: flex;
+    flex-flow: column;
+    align-content: center;
+}
+
+.user-status {
+    grid-row: 1;
+    margin: 0;
+}
+
+.username,
+.name,
+.first-name,
+.last-name {
+    font-size: medium;
+    margin: 0;
+}
+
+.user-container {
+    padding: 0;
+    display: flex;
+    flex-flow: column;
+    gap: 10px;
+}
+
+.user-container > li {
+    list-style: none;
+}
+
+.fuksi {
+    color: #53de31;
+}
+.tutor {
+    color: #fe678e;
+}
+
+.no-users {
+    display: flex;
+    justify-content: center;
+}

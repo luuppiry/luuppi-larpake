@@ -56,13 +56,13 @@ public class LarpakeTasksController : ExtendedControllerBase
         return Ok(result);
     }
 
-    [HttpGet("{eventId}")]
+    [HttpGet("{taskId}")]
     [RequiresPermissions(Permissions.ReadAllData)]
     [ProducesResponseType(typeof(LarpakeTaskGetDto), 200)]
     [ProducesResponseType(404)]
-    public async Task<IActionResult> Get(long eventId)
+    public async Task<IActionResult> Get(long taskId)
     {
-        var record = await _db.GetTask(eventId);
+        var record = await _db.GetTask(taskId);
         if (record is null)
         {
             return IdNotFound();
@@ -84,14 +84,14 @@ public class LarpakeTasksController : ExtendedControllerBase
             error: FromError);
     }
 
-    [HttpPut("{eventId}")]
+    [HttpPut("{taskId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
-    public async Task<IActionResult> Update(long eventId, [FromBody] LarpakeTaskPutDto record)
+    public async Task<IActionResult> Update(long taskId, [FromBody] LarpakeTaskPutDto record)
     {
         LarpakeTask mapped = LarpakeTask.From(record);
-        mapped.Id = eventId;
+        mapped.Id = taskId;
 
         var rowsAffected = await _db.Update(mapped);
         return rowsAffected.MatchToResponse(
@@ -99,41 +99,41 @@ public class LarpakeTasksController : ExtendedControllerBase
             error: FromError);
     }
     
-    [HttpPost("{eventId}/cancel")]
+    [HttpPost("{taskId}/cancel")]
     [RequiresPermissions(Permissions.DeleteEvent)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    public async Task<IActionResult> Cancel(long eventId)
+    public async Task<IActionResult> Cancel(long taskId)
     {
-        int rowsAffected = await _db.Cancel(eventId);
+        int rowsAffected = await _db.Cancel(taskId);
         return OkRowsAffected(rowsAffected);
     }
 
-    [HttpPost("{eventId}/attendance-opportunities/{orgEventId}")]
+    [HttpPost("{taskId}/attendance-opportunities/{orgEventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
-    public async Task<IActionResult> SyncOrganizationEvent(long eventId, long orgEventId)
+    public async Task<IActionResult> SyncOrganizationEvent(long taskId, long orgEventId)
     {
-        Result result = await _db.SyncOrganizationEvent(eventId, orgEventId);
+        Result result = await _db.SyncOrganizationEvent(taskId, orgEventId);
         return result.IsOk 
             ? Ok() : FromError(result);
     }
     
-    [HttpDelete("{eventId}/attendance-opportunities/{orgEventId}")]
+    [HttpDelete("{taskId}/attendance-opportunities/{orgEventId}")]
     [RequiresPermissions(Permissions.CreateEvent)]
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
-    public async Task<IActionResult> UnsyncOrganizationEvent(long eventId, long orgEventId)
+    public async Task<IActionResult> UnsyncOrganizationEvent(long taskId, long orgEventId)
     {
-        int rowsAffected = await _db.UnsyncOrganizationEvent(eventId, orgEventId);
+        int rowsAffected = await _db.UnsyncOrganizationEvent(taskId, orgEventId);
         return OkRowsAffected(rowsAffected);
     }
 
-    [HttpGet("{eventId}/attendance-opportunities")]
+    [HttpGet("{taskId}/attendance-opportunities")]
     [RequiresPermissions(Permissions.CommonRead)]
     [ProducesResponseType(typeof(OrgEventIdsResponse), 200)]
-    public async Task<IActionResult> GetAttendanceOpportunies(long eventId)
+    public async Task<IActionResult> GetAttendanceOpportunies(long taskId)
     {
-        long[] orgEvents = await _db.GetRefOrganizationEvents(eventId);
+        long[] orgEvents = await _db.GetRefOrganizationEvents(taskId);
         return Ok(new OrgEventIdsResponse(orgEvents));
     }
     

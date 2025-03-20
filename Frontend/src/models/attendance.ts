@@ -1,4 +1,4 @@
-export type Completed = {
+export type Completion = {
     id: string;
     signerId: string;
     signatureId: string | null;
@@ -15,7 +15,7 @@ export type AttendanceKey = {
 export type Attendance = {
     userId: string;
     larpakeEventId: number;
-    completed: Completed | null;
+    completed: Completion | null;
     createdAt: Date;
     updatedAt: Date;
     key: AttendanceKey | null;

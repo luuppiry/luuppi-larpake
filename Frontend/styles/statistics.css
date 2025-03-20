@@ -1,42 +1,17 @@
 @import "common.css";
+@import "larpake_common.css";
 
-.container {
-    max-width: 600px;
-    margin: 20px auto;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
-    text-align: center;
-    padding: 20px;
-}
-
-#larpake-page-name {
-    text-align: left;
-}
-
-.stats-section {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-}
-
-.stats-section h2 {
-    font-size: 1.5rem;
-    color: #4a4a97;
-    margin-bottom: 10px;
+body {
+    margin-bottom: 100px;
 }
 
 .greeting {
+    text-align: center;
     font-size: 30px;
     font-weight: 600;
     color: #555;
     margin-top: 50px;
-    margin-bottom: 50px;
+    margin-bottom: 30px;
 }
 
 .stats-list {
@@ -46,36 +21,37 @@
     padding-right: 10px;
 }
 
-.stats-list li {
-    display: flex;
-    justify-content: space-between;
+.stat-section {
     padding: 10px;
     border-bottom: 1px solid #eee;
     font-weight: bold;
     font-size: 0.9rem;
 }
 
+.stat-section > section {
+    display: flex;
+    justify-content: space-between;
+}
+
+.stat-section > section > p,
+.stat-section > section > h3 {
+    padding: 0;
+    margin: 0;
+    font-size: medium;
+}
+
 .total {
     font-size: 1.2rem;
     font-weight: bold;
     color: #5c61a3;
-    margin-bottom: 88px;
+    text-align: center;
 }
 
-.pagination {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
+.error {
+    padding: 30px;
 }
 
-.pagination button {
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.pagination button:disabled {
-    color: #ccc;
-    cursor: not-allowed;
+.error > p,
+.error > h3 {
+    text-align: center;
 }

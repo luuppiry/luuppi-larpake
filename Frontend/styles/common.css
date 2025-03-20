@@ -76,7 +76,8 @@ body {
     background-color: #ddd;
 }
 
-/* Body */
+
+
 .container {
     max-width: 600px;
     margin: 20px auto;
@@ -86,57 +87,6 @@ body {
     padding: 20px;
 }
 
-.image-section {
-    text-align: center;
-    padding: 20px;
-}
-
-.image-section img {
-    max-width: 100%;
-    border-radius: 8px;
-}
-
-.image-section h2 {
-    margin: 10px 0 0;
-    color: var(--luuppi-blue);
-    font-size: 1rem;
-}
-
-.main-site-button {
-    display: block;
-    background-color: var(--luuppi-blue);
-    color: white;
-    text-align: right;
-    padding: 10px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 40px;
-    margin: 15px auto;
-    width: 100%;
-    max-width: 300px;
-}
-
-.events-section h2 {
-    color: var(--luuppi-blue);
-    margin-bottom: 10px;
-}
-
-.event {
-    border-radius: 5px;
-    background-color: var(--luuppi-gray);
-}
-
-.event h3 {
-    margin: 0;
-    font-size: 1rem;
-    color: #333;
-}
-
-.event p {
-    margin: 5px 0;
-    font-size: 0.9rem;
-    color: #555;
-}
 
 /* Side panel styles */
 .side-panel {
@@ -178,7 +128,7 @@ body {
 }
 
 .side-panel ul li.active {
-    background-color: #3e3d75;
+    background-color: var(--dark-blue);
     padding-left: 10px;
     border-radius: 5px;
 }
@@ -192,14 +142,28 @@ body {
     width: 48px;
     height: 48px;
     text-align: center;
-    background-color: #5c61a3;
+    background-color: var(--luuppi-blue);
     color: #ffffff;
     user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .hor-center-content {
     display: flex;
     justify-content: center;
+}
+
+/* Note that this does not work together with hor-center-content  */
+.flex-col {
+    display: flex;
+    flex-flow: column;
+}
+
+.flex-row {
+    display: flex;
+    flex-flow: row;
 }
 
 @media screen and (max-width: 660px) {
@@ -212,9 +176,7 @@ body {
     }
 }
 
-
 .primary-btn {
-
     font-size: large;
     background-color: var(--luuppi-blue);
     color: white;
@@ -234,6 +196,10 @@ body {
     padding: 8px 16px;
 }
 
+/* Default scaling 1.05 */
+.hover-scale-10,
+.hover-scale-03,
+.hover-scale-01,
 .hover-scale {
     transition: transform 0.3s ease;
     transform-origin: center;
@@ -241,4 +207,53 @@ body {
 
 .hover-scale:hover {
     transform: scale(1.05);
+}
+
+.hover-scale-10:hover {
+    transform: scale(1.1);
+}
+
+.hover-scale-03:hover {
+    transform: scale(1.03);
+}
+
+.hover-scale-01:hover {
+    transform: scale(1.01);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Hide default list paddings and points */
+.no-list {
+    padding: 0;
+}
+
+.no-list > li {
+    list-style: none;
+}
+
+.page-end-margin {
+    margin-bottom: 170px;
+}
+
+.gap-10 {
+    gap: 10px;
+}
+
+.gap-20 {
+    gap: 20px;
+}
+
+.flex-last {
+    order: 1;
+}
+
+.width-100 {
+    width: 100%;
 }

@@ -1,4 +1,5 @@
 import { Container } from "../models/common.ts";
+import { OrgEvent } from "../models/event.ts";
 import HttpClient from "./http_client.ts";
 
 export class EventClient {
@@ -8,7 +9,28 @@ export class EventClient {
         this.client = new HttpClient();
     }
 
-    async getAll() : Promise<Event[] | null> {
+
+    async nextComing(): Promise<OrgEvent[] | null> {
+        const today = new Date();
+        const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+     
+        const query = new URLSearchParams();
+        query.append("doMinimize", "false");
+        query.append("pageSize", "8");
+        query.append("after", date.toISOString())
+
+        const response = await this.client.get("api/org-events", query);
+        if (!response.ok){
+            console.warn(await response.json());
+            return null;
+        }
+        const events: Container<OrgEvent[]> = await response.json();
+        return events.data;
+
+
+    }
+
+    async getAll() : Promise<OrgEvent[] | null> {
         const query = new URLSearchParams();
         query.append("doMinimize", "false");
         query.append("pageSize", "100");
@@ -25,12 +47,12 @@ export class EventClient {
             console.warn(response);
             return null;
         }
-        const events: Container<Event[]> = await response.json();
+        const events: Container<OrgEvent[]> = await response.json();
         return events.data;
     }
 
 
-    async getSpecific(id: number) : Promise<Event | null> {
+    async getSpecific(id: number) : Promise<OrgEvent | null> {
         if (id == null){
             throw new Error("Event id must be defined.")
         }
@@ -40,7 +62,7 @@ export class EventClient {
             console.warn(response);
             return null;
         }
-        const event: Event | null = await response.json();
+        const event: OrgEvent | null = await response.json();
         return event;
     }
 }

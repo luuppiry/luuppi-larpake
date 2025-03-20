@@ -14,6 +14,44 @@
             }
         </script>
     </head>
+    <dialog id="common-data-saved-dialog" class="max-width-400">
+        <h1>Yleiset tiedot tallennettu</h1>
+        <p>
+            Lärpäkkeen yleiset tiedot (otsikko, vuosi, kuvaus) on tallennettu järjestelmään. Huomaa, että osioita ja
+            <b>tehtäviä ei tallennettu nyt</b>.
+        </p>
+        <button class="_close-btn primary-btn align-right hover-scale">OK</button>
+    </dialog>
+    <dialog id="tasks-saved-dialog" class="max-width-400">
+        <h1>Tehtävät tallennettu</h1>
+        <p>
+            Lärpäkkeen osiot ja tehtävät on tallennettu järjestelmään. Huomaa, että Lärpäkkeen
+            <b>yleisiä tietoja ei tallennettu nyt. </b> Yleisiä tietoja ovat esim. Lärpäkkeen otsikko tai vuosi.
+        </p>
+        <button class="_close-btn primary-btn align-right hover-scale">OK</button>
+    </dialog>
+    <dialog id="are-you-sure-dialog" class="max-width-400">
+        <h1>Oletko varma?</h1>
+        <p>Haluatko päivittää nettisivun? <b>Menetät kaikki tallentamattomat muutokset.</b></p>
+        <div class="flex-row gap-10 align-right">
+            <button class="_cancel primary-btn align-right hover-scale">Peruuta</button>
+            <button class="_ok secondary-btn align-right hover-scale">OK</button>
+        </div>
+    </dialog>
+    <dialog id="invalid-data-dialog" class="max-width-400 border-red">
+        <h1>Puuttuvia arvoja</h1>
+        <p>
+            Jotkin arvot ovat joko väärässä formaatissa tai puuttuvat kokonaan. Katso konsolia lisätietoja varten (F12
+            -> konsoli).
+        </p>
+        <button class="_close-btn primary-btn align-right hover-scale">OK</button>
+    </dialog>
+    <dialog id="action-failed" class="max-width-400 border-red">
+        <h1>Viimeisin toiminto kusi!</h1>
+        <p>Jotain meni pieleen viimeisimmässä toiminnossa... Katso konsolia lisätietoja varten (F12 -> konsoli).</p>
+        <button class="_close-btn primary-btn align-right hover-scale">OK</button>
+    </dialog>
+
     <body style="margin-bottom: 100px">
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
@@ -28,6 +66,7 @@
                 </p>
 
                 <div class="field">
+                    <input id="id-field" hidden />
                     <div class="tooltipped-title">
                         <label for="start-year">Aloitusvuosi</label>
                         <img src="/icons/tooltip.svg" alt="tooltip icon" />
@@ -48,7 +87,13 @@
                         <h3 class="no-margin">Suomeksi (oletus)</h3>
                         <div class="field">
                             <label for="title-fi">Nimi</label>
-                            <input id="title-fi" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                            <input
+                                id="title-fi"
+                                class="text-field"
+                                placeholder="Lärpäke 20xx"
+                                maxlength="80"
+                                required
+                            />
                         </div>
                         <div class="field">
                             <label for="description-fi">Kuvaus</label>
@@ -64,7 +109,13 @@
                         <h3 class="no-margin">Englanniksi</h3>
                         <div class="field">
                             <label for="title-en">Nimi</label>
-                            <input id="title-en" class="text-field" placeholder="Lärpäke 20xx" maxlength="80" />
+                            <input
+                                id="title-en"
+                                class="text-field"
+                                placeholder="Lärpäke 20xx"
+                                maxlength="80"
+                                required
+                            />
                         </div>
                         <div class="field">
                             <label for="description-en">Kuvaus</label>
@@ -79,8 +130,8 @@
                 </div>
                 <div class="send-options">
                     <!-- type="button" to disable any default action -->
-                    <button type="button" id="commonCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
-                    <button type="button" id="commonSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+                    <button type="button" id="common-info-cancel-btn" class="secondary-btn hover-scale">Peruuta</button>
+                    <button type="button" id="common-info-submit-btn" class="primary-btn hover-scale">Lähetä</button>
                 </div>
             </form>
         </form-container>
@@ -97,10 +148,13 @@
                     </p>
                     <ol id="section-container" class="section-list">
                         <!-- Lärpäke sections and their tasks -->
+                        <button id="add-section-btn" class="add-section add-btn flex-last">
+                            <img src="/icons/plus_icon.svg" alt="add section icon" />
+                        </button>
                     </ol>
                     <div class="send-options">
-                        <button id="tasksCancelBtn" class="secondary-btn hover-scale">Peruuta</button>
-                        <button id="tasksSaveBtn" class="primary-btn hover-scale">Lähetä</button>
+                        <button id="tasks-cancel-btn" class="secondary-btn hover-scale">Peruuta</button>
+                        <button id="tasks-submit-btn" class="primary-btn hover-scale">Lähetä</button>
                     </div>
                 </div>
             </form>

@@ -1,11 +1,5 @@
-export type TaskData = {
-    id: number;
-    titleFi: string;
-    titleEn: string;
-    bodyFi: string;
-    bodyEn: string;
-    points: number;
-};
+import { isEmpty, LANG_EN, LANG_FI } from "../helpers";
+import { LarpakeTask } from "../models/larpake";
 
 export default class TaskEditor extends HTMLElement {
     titleFiField: HTMLInputElement | null = null;
@@ -17,6 +11,7 @@ export default class TaskEditor extends HTMLElement {
     headerPointsField: HTMLParagraphElement | null = null;
     idNumber: number | null = null;
     serverTaskId: number | null = null;
+    orderingWeightNumber: number = -1;
 
     constructor() {
         super();
@@ -33,6 +28,7 @@ export default class TaskEditor extends HTMLElement {
                     <p>&HorizontalLine;</p>
                     <p id="task-${idNum}-header-points">Xp</p>
                     <img id="delete-task-${idNum}-btn" src="/icons/bin.svg" alt="delete icon" />
+                    <p class="_cancelled hidden">&HorizontalLine; (PERUUTETTU)</p>
                 </div>
                 <img id="task-${idNum}-opened-img" src="/icons/menu_closed.svg" alt="menu closed icon" />
             </div>
@@ -51,12 +47,14 @@ export default class TaskEditor extends HTMLElement {
                     </div>
                     <input
                         id="task-${idNum}-points"
+                        name="points"
                         class="text-field start-year-field"
                         type="number"
                         min="1"
                         max="100"
                         step="1"
                         value="3"
+                        required
                     />
                 </div>
             </div>
@@ -70,17 +68,21 @@ export default class TaskEditor extends HTMLElement {
                         <label for="task-${idNum}-title-fi">Otsikko</label>
                         <input
                             id="task-${idNum}-title-fi"
+                            name="title-en"
                             class="text-field"
-                            placeholder="Kaupunkikävely"
+                            placeholder="otsikko suomeksi"
                             maxlength="80"
+                            minlength="5"
+                            required
                         />
                     </div>
                     <div class="field">
                         <label for="task-${idNum}-body-fi">Selitys</label>
                         <textarea
                             id="task-${idNum}-body-fi"
+                            name="body-fi"
                             class="description-field text-field"
-                            placeholder="kuvaus"
+                            placeholder="kuvaus suomeksi"
                             maxlength="800"
                         ></textarea>
                     </div>
@@ -92,17 +94,21 @@ export default class TaskEditor extends HTMLElement {
                         <label for="task-${idNum}-title-en">Otsikko</label>
                         <input
                             id="task-${idNum}-title-en"
+                            name="title-en"
                             class="text-field"
-                            placeholder="Kaupunkikävely"
+                            placeholder="title in english"
                             maxlength="80"
+                            minlength="5"
+                            required
                         />
                     </div>
                     <div class="field">
                         <label for="task-${idNum}-body-en">Selitys</label>
                         <textarea
                             id="task-${idNum}-body-en"
+                            name="body-en"
                             class="description-field text-field"
-                            placeholder="body"
+                            placeholder="body in english"
                             maxlength="800"
                         ></textarea>
                     </div>
@@ -145,29 +151,36 @@ export default class TaskEditor extends HTMLElement {
         return i;
     }
 
-    setData(data: TaskData) {
+    setData(data: LarpakeTask) {
         this.serverTaskId = data.id;
+        this.orderingWeightNumber = data.orderingWeightNumber;
+
+        const textFi = data.textData.filter((x) => x.languageCode == LANG_FI)[0];
+        const textEn = data.textData.filter((x) => x.languageCode == LANG_EN)[0];
 
         if (this.titleFiField) {
-            this.titleFiField.value = data.titleFi;
+            this.titleFiField.value = textFi?.title ?? "";
         }
         if (this.titleEnField) {
-            this.titleEnField.value = data.titleEn;
+            this.titleEnField.value = textEn?.title ?? "";
         }
         if (this.bodyFiField) {
-            this.bodyFiField.value = data.bodyFi;
+            this.bodyFiField.value = textFi?.body ?? "";
         }
         if (this.bodyEnField) {
-            this.bodyEnField.value = data.bodyEn;
+            this.bodyEnField.value = textEn?.body ?? "";
         }
         if (this.pointsField) {
             this.pointsField.value = data.points.toString();
         }
         if (this.headerTitleField) {
-            this.headerTitleField.innerText = data.titleFi;
+            this.headerTitleField.innerText = textFi?.title ?? "Uusi tehtävä";
         }
         if (this.headerPointsField) {
             this.headerPointsField.innerText = `${data.points}p`;
+        }
+        if (data.cancelledAt != null) {
+            this.querySelector("._cancelled")?.classList.remove("hidden");
         }
     }
 
@@ -185,13 +198,52 @@ export default class TaskEditor extends HTMLElement {
         });
 
         const deleteBtn = document.getElementById(`delete-task-${this.idNumber}-btn`);
-        deleteBtn?.addEventListener("click", (_) => {
+        deleteBtn?.addEventListener("click", (event) => {
             this.parentElement?.removeChild(this);
+            event.stopPropagation(); // To no route click to parent handlers
         });
     }
 
     addAllEventListeners() {
         addTaskEventListeners();
+    }
+
+    getData(): LarpakeTask {
+        if (isEmpty(this.titleFiField?.value)) {
+            throw new Error(`Task ${this.idNumber} title (fi) cannot be null`);
+        }
+        if (isEmpty(this.titleEnField?.value)) {
+            throw new Error(`Task ${this.idNumber} title (en) cannot be null`);
+        }
+        if (isEmpty(this.pointsField?.value)) {
+            throw new Error(`Task ${this.idNumber} points cannot be null`);
+        }
+        const points = parseInt(this.pointsField!.value);
+        if (Number.isNaN(points)) {
+            throw new Error(`Task ${this.idNumber} points must have numeric value`);
+        }
+
+        return {
+            id: this.serverTaskId ?? -1,
+            larpakeSectionId: -1,
+            points: points,
+            orderingWeightNumber: -1,
+            cancelledAt: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            textData: [
+                {
+                    title: this.titleFiField!.value,
+                    body: this.bodyFiField?.value ?? "",
+                    languageCode: LANG_FI,
+                },
+                {
+                    title: this.titleEnField!.value,
+                    body: this.bodyEnField?.value ?? "",
+                    languageCode: LANG_EN,
+                },
+            ],
+        };
     }
 }
 

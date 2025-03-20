@@ -1,6 +1,7 @@
 @import "../common.css";
 @import "../section.css";
 @import "../common_settings.css";
+@import "../tooltip.css";
 
 :root {
     --hover-white: #eee;
@@ -149,22 +150,50 @@
     transform: rotate(180deg);
 }
 
-.add-task {
+.add-btn {
+    width: 100%;
     cursor: pointer;
-    margin-top: 10px;
+    
     padding: 10px;
-    background-color: white;
     display: flex;
     justify-content: center;
     border-radius: 10px;
+    outline: none;
+    border-style: none;
 }
 
-.add-task:hover {
+.add-btn > img {
+    max-height: 40px;
+}
+
+.add-section {
+    /* Stays always last in flex box */
+    background-color: var(--luuppi-gray);
+}
+
+.add-task {
+    background-color: white;
+    margin-top: 10px;
+}
+
+.add-btn:hover {
     background-color: var(--hover-white);
 }
 
-.add-task > img {
-    max-height: 40px;
+*:invalid {
+    border-color: red;
+}
+
+.max-width-400 {
+    max-width: 400px;
+}
+
+.align-right {
+    float: right;
+}
+
+.border-red {
+    border-color: red;
 }
 
 @media screen and (max-width: 800px) {

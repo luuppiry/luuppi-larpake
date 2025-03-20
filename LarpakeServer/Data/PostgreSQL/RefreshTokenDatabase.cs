@@ -144,12 +144,12 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
             """, new { userId });
     }
 
-    public Task<int> RevokeFamily(Guid tokenFamilyId)
+    public async Task<int> RevokeFamily(Guid tokenFamilyId)
     {
         Logger.LogInformation("Revoking all tokens in token family {id}.", tokenFamilyId);
 
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             UPDATE refresh_tokens
             SET invalidated_at = NOW()
             WHERE token_family = @{nameof(tokenFamilyId)};

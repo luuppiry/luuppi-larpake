@@ -14,6 +14,7 @@ public class LarpakeQueryOptions : QueryOptions
     public string? Title { get; set; } = null;
     public Guid? ContainsUser { get; set; } = null;
     public bool DoMinimize { get; set; } = true;
+    public long[]? LarpakeIds { get; set; }
 
 
     [JsonIgnore]

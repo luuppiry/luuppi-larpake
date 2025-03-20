@@ -21,9 +21,10 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 l.created_at,
                 l.updated_at,
                 ll.larpake_id,
-                GetLanguageCode(ll.language_id) AS languge_code,
                 ll.title,
-                ll.description
+                ll.description,
+                GetLanguageCode(ll.language_id) AS language_code,
+                ll.image_url
             FROM larpakkeet l
                 LEFT JOIN larpake_localizations ll
                     ON l.id = ll.larpake_id
@@ -46,6 +47,10 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
         // Search for year 
         larpakeQuery.IfNotNull(options.Year).AppendConditionLine($"""
             year = @{nameof(options.Year)} 
+            """);
+
+        larpakeQuery.IfNotNull(options.LarpakeIds).AppendConditionLine($"""
+            l.id = ANY(@{nameof(options.LarpakeIds)})
             """);
 
         // Search for title
@@ -77,7 +82,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 s.created_at,
                 s.updated_at,
                 sl.larpake_section_id,
-                GetLanguageCode(sl.language_id) AS languge_code,
+                GetLanguageCode(sl.language_id) AS language_code,
                 sl.title
             FROM larpake_sections s
                 LEFT JOIN larpake_section_localizations sl
@@ -114,7 +119,9 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 l.created_at,
                 l.updated_at,
                 ll.title,
-                ll.description
+                ll.description,
+                GetLanguageCode(ll.language_id) AS language_code,
+                ll.image_url
             FROM larpakkeet l
                 LEFT JOIN larpake_localizations ll
                     ON l.id = ll.larpake_id
@@ -126,7 +133,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     public async Task<Result<long>> InsertLarpake(Larpake record)
     {
         using var connection = GetConnection();
-        connection.Open();
+        await connection.OpenAsync();
         using var transaction = connection.BeginTransaction();
 
         // Insert the larpake and default localization
@@ -136,8 +143,9 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 @{nameof(def.Title)},
                 @{nameof(record.Year)},
                 @{nameof(def.Description)},
-                @{nameof(def.LanguageCode)});
-            """, new { def.Title, record.Year, def.Description, def.LanguageCode },
+                @{nameof(def.LanguageCode)},
+                @{nameof(def.ImageUrl)});
+            """, new { def.Title, record.Year, def.Description, def.LanguageCode, def.ImageUrl },
             transaction);
 
         // Insert rest of the localizations, filter default away
@@ -151,6 +159,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     public async Task<Result<int>> UpdateLarpake(Larpake record)
     {
         using var connection = GetConnection();
+        await connection.OpenAsync();
         using var transaction = connection.BeginTransaction();
 
         // Update larpake
@@ -168,9 +177,10 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             SET 
                 title = @{nameof(LarpakeLocalization.Title)},
                 description = @{nameof(LarpakeLocalization.Description)},
+                image_url = @{nameof(LarpakeLocalization.ImageUrl)}
             WHERE larpake_id = @{nameof(record.Id)}
                 AND language_id = getlanguageid(@{nameof(LarpakeLocalization.LanguageCode)});
-            """, record);
+            """, record.TextData.Select(x => new { x.Description, x.Title, x.LanguageCode, x.ImageUrl, record.Id }));
 
         await transaction.CommitAsync();
         return rowsAffected;
@@ -299,14 +309,22 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             WHERE id = @{nameof(record.Id)};
             """, record);
 
-        var records = record.TextData.Select(x => new { record.Id, x.LanguageCode, x.Title });
-        rowsAffected += await connection.ExecuteAsync($"""
-            UPDATE larpake_section_localizations
-            SET 
+        string query = $"""
+            INSERT INTO larpake_section_localizations (
+                larpake_section_id,
+                language_id,
+                title)
+            VALUES (
+                @{nameof(record.Id)},
+                (SELECT getlanguageid(@{nameof(LarpakeSectionLocalization.LanguageCode)})),
+                @{nameof(LarpakeSectionLocalization.Title)})
+            ON CONFLICT (larpake_section_id, language_id)   
+            DO UPDATE SET 
                 title = @{nameof(LarpakeSectionLocalization.Title)}
-            WHERE larpake_section_id = @{nameof(record.Id)}
-                AND language_id = getlanguageid(@{nameof(LarpakeSectionLocalization.LanguageCode)});
-            """, record.TextData);
+            """;
+
+        var records = record.TextData.Select(x => new { record.Id, x.LanguageCode, x.Title }).ToArray();
+        rowsAffected += await connection.ExecuteAsync(query, records);
 
         await transaction.CommitAsync();
         return rowsAffected;
@@ -322,24 +340,22 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
 
 
 
-
-
-
-
     private static async Task InsertLarpakeLocalizations(NpgsqlConnection connection, long larpakeId, IEnumerable<LarpakeLocalization> loc)
     {
-        var records = loc.Select(x => new { larpakeId, x.LanguageCode, x.Title, x.Description });
+        var records = loc.Select(x => new { larpakeId, x.LanguageCode, x.Title, x.Description, x.ImageUrl });
         await connection.ExecuteAsync($"""
             INSERT INTO larpake_localizations (
                 larpake_id,
                 language_id,
                 title,
-                description)
+                description,
+                image_url)
             VALUES (
                 @{nameof(larpakeId)},
                 (SELECT getlanguageid(@{nameof(LarpakeLocalization.LanguageCode)})),
                 @{nameof(LarpakeLocalization.Title)},
-                @{nameof(LarpakeLocalization.Description)}
+                @{nameof(LarpakeLocalization.Description)},
+                @{nameof(LarpakeLocalization.ImageUrl)}
             );
             """, records);
     }
