@@ -1,7 +1,7 @@
 import { EventClient } from "./api_client/event_client.ts";
 import LarpakeClient from "./api_client/larpake_client.ts";
 import EventPreviewer from "./components/event-previewer.ts";
-import { appendTemplateElement, getDocumentLangCode } from "./helpers.ts";
+import { appendTemplateElement, getDocumentLangCode, removeChildren } from "./helpers.ts";
 
 const eventClient = new EventClient();
 const larpakeClient = new LarpakeClient();
@@ -22,6 +22,7 @@ async function loadLarpakkeet() {
         throw new Error("Could not load larpakkeet from server.");
     }
 
+    removeChildren(container);
     for (const larpake of larpakkeet) {
         const element = appendTemplateElement<HTMLElement>("larpake-template", container);
 
@@ -54,9 +55,5 @@ async function loadComingEvents() {
         elem.setData(event);
     }
 }
-
-
-
-
 
 render();
