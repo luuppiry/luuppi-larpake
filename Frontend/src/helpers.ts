@@ -143,16 +143,18 @@ export function getDocumentLangCode() {
     return document.documentElement.lang == LANG_EN ? LANG_EN : LANG_FI;
 }
 
-export function removeChildren(elem: HTMLElement) {
+export function removeChildren(elem: HTMLElement, predicate: null | ((elem: Element) => boolean) = null) {
     const children = [...elem.children];
     for (const child of children) {
-        elem.removeChild(child);
+        if (predicate == null || predicate(child)) {
+            elem.removeChild(child);
+        }
     }
 }
 
 export function throwIfAnyNull(elems: HTMLElement[]) {
     for (const elem of elems) {
-        if (elem == null) {
+        if (!elem) {
             throw new Error("Element cannot be null");
         }
     }

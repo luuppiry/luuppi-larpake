@@ -15,7 +15,18 @@
     </head>
     <body>
         <template id="user-template">
-            <section></section>
+            <tr>
+                <td class="_email">email</td>
+                <td class="_username">username</td>
+                <td class="_first-name">first name</td>
+                <td class="_last-name">last name</td>
+                <td class="_permissions">X</td>
+                <td class="_startYear"></td>
+                <td class="_id"></td>
+                <td class="_entra-id"></td>
+                <td class="_id-full" hidden></td>
+                <td class="_entra-id-full" hidden></td>
+            </tr>
         </template>
 
         <ui-header path-depth="1"></ui-header>
@@ -31,12 +42,12 @@
                             nimen tai käyttäjänimen perusteella, sinun tulee hyödyntää päänettisivujen ylläpito
                             -toimintoa.
                         </p>
-                        <input class="search-field" type="search" placeholder="Hae" />
+                        <input id="search-field" class="search-field" type="search" placeholder="Hae" />
                     </div>
                 </div>
                 <div class="user-table-padding">
                     <table class="user-table">
-                        <tbody>
+                        <tbody id="user-container">
                             <tr class="column-titles">
                                 <th>Sähköposti</th>
                                 <th>Käyttäjänimi</th>
@@ -48,41 +59,23 @@
                                 <th>Entra Id</th>
                             </tr>
 
-                            <tr>
-                                <td>henri.m.vainio@gmail.com</td>
-                                <td>henrivain</td>
-                                <td>Henri</td>
-                                <td>Vainio</td>
-                                <td>2147483647</td>
-                                <td>2024</td>
-                                <td>...018ea7</td>
-                                <td>...ffe02c</td>
-                            </tr>
+                            
 
-                            <tr>
-                                <td>juliusz.kotelba@gmail.com</td>
-                                <td>julle</td>
-                                <td>Juliusz</td>
-                                <td>Kotelba</td>
-                                <td>2147483647</td>
-                                <td>2024</td>
-                                <td>...67ef80</td>
-                                <td>...9801ea</td>
-                            </tr>
+                           
                         </tbody>
                     </table>
                 </div>
                 <div class="table-footer">
                     <p class="item-counter">
-                        <span id="from-count">11</span>
+                        <span id="from-count">X</span>
                         <span>-</span>
-                        <span id="to-count">45</span>
+                        <span id="to-count">Y</span>
                         <span>/</span>
-                        <span id="out-of">70</span>
+                        <span id="out-of">MAX</span>
                     </p>
                     <div class="table-navigation">
-                        <button class="primary-btn">&lt;</button>
-                        <button class="primary-btn">&gt;</button>
+                        <button id="prev-btn" class="primary-btn hover-scale select-none" disabled>&lt;</button>
+                        <button id="next-btn" class="primary-btn hover-scale select-none">&gt;</button>
                     </div>
                 </div>
             </section>

@@ -2,11 +2,14 @@ import { Point2D } from "./common.ts";
 
 // User, GroupMember and Group are used by group_manager.ts
 export type User = {
-    userId: string;
+    id: string;
+    entraId: string | null;
+    entraUsername: string | null;
     username: string | null;
     firstName: string | null;
     lastName: string | null;
     permissions: number;
+    startYear: number | null;
 };
 
 export type GroupMember = {

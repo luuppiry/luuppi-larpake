@@ -160,7 +160,7 @@ function appendNewUser(user: GroupMember) {
 
     // Set username
     const userName = node.querySelector<HTMLHeadingElement>(".username")!;
-    userName.innerText = user.user.username ?? "N/A";
+    userName.innerText = user.user.entraId ?? "N/A";
 
     // Set firstname
     const firstName = node.querySelector<HTMLSpanElement>(".first-name")!;
@@ -178,7 +178,7 @@ function appendNewUser(user: GroupMember) {
 
     // Set id
     const idField = node.querySelector<HTMLParagraphElement>("._id")!;
-    idField.id = user.user.userId;
+    idField.id = user.user.id;
 
     node.addEventListener("click", (e) => editUser(e.target as HTMLElement));
 }
@@ -251,13 +251,13 @@ function sortFunc(first: GroupMember, second: GroupMember): number {
     if (first.isCompeting && !second.isCompeting) {
         return 1;
     }
-    if (first.user.username == null) {
+    if (first.user.entraId == null) {
         return -1;
     }
-    if (second.user.username == null) {
+    if (second.user.entraId == null) {
         return 1;
     }
-    return first.user.username > second.user.username ? 1 : -1;
+    return first.user.entraId > second.user.entraId ? 1 : -1;
 }
 
 function hidNoUsersLabel() {
@@ -288,7 +288,7 @@ function updateSearchMatches(searchTerm: string | null) {
 
     const predicate = (u: User) => {
         return (
-            contains(u.firstName, searchTerm) || contains(u.lastName, searchTerm) || contains(u.username, searchTerm)
+            contains(u.firstName, searchTerm) || contains(u.lastName, searchTerm) || contains(u.entraId, searchTerm)
         );
     };
 
@@ -306,7 +306,7 @@ function appendSearchListUser(user: User) {
     const node = availableUsersContainer.children[availableUsersContainer.children.length - 1] as HTMLElement;
 
     const username = node.querySelector<HTMLParagraphElement>("._username")!;
-    username.innerText = user.username ?? "N/A";
+    username.innerText = user.entraId ?? "N/A";
 
     const firstName = node.querySelector<HTMLParagraphElement>("._first-name")!;
     firstName.innerText = user.firstName ?? "N/A";
@@ -314,7 +314,7 @@ function appendSearchListUser(user: User) {
     const lastName = node.querySelector<HTMLParagraphElement>("._last-name")!;
     lastName.innerText = user.lastName ?? "N/A";
 
-    node.id = user.userId;
+    node.id = user.id;
     node.addEventListener("click", (e) => selectUser(e));
 }
 
@@ -332,7 +332,7 @@ function selectUser(event: MouseEvent) {
         availableUsers = fetchAllUsers();
     }
 
-    const matchingUsers = availableUsers!.filter((x) => x.userId === userId);
+    const matchingUsers = availableUsers!.filter((x) => x.id === userId);
     const user: User | null = matchingUsers.length > 0 ? matchingUsers[0] : null;
     if (user == null) {
         throw new Error(`Selected user ${userId} does not exist.`);

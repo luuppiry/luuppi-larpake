@@ -61,12 +61,14 @@ body {
 
 .user-table-padding {
     overflow-x: auto;
+    min-height: 350px;
 }
 
 .user-table {
     width: 100%;
     border-spacing: 0;
     padding-bottom: 20px;
+    margin-bottom: auto;
 }
 
 th {
@@ -114,4 +116,13 @@ td {
     gap: 10px;
     margin-top: auto;
     margin-bottom: 30px;
+}
+
+.primary-btn:disabled {
+    background-color: #e2e2e9;
+}
+
+.hover-scale:disabled:hover {
+    transform: none;
+    cursor: not-allowed;
 }

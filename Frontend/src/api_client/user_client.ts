@@ -9,8 +9,16 @@ export class UserClient {
         this.client = new HttpClient();
     }
 
+
+    
+
+
+
+
+
     async getOwnGroups(): Promise<Group[] | null> {
         const query = new URLSearchParams();
+        
         query.append("doMinimize", "false");
 
         const response = await this.client.get("api/groups/own", query);
