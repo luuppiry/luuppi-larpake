@@ -7,7 +7,7 @@ namespace LarpakeServer.Models.GetDtos;
 public class AttendanceGetDto : IMappable<Attendance, AttendanceGetDto>
 {
     public required Guid UserId { get; set; }
-    public required long LarpakeEventId { get; set; }
+    public required long LarpakeTaskId { get; set; }
     public CompletionGetDto? Completed { get; set; } = null;
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
@@ -18,7 +18,7 @@ public class AttendanceGetDto : IMappable<Attendance, AttendanceGetDto>
         return new AttendanceGetDto
         {
             UserId = attendance.UserId,
-            LarpakeEventId = attendance.LarpakeTaskId,
+            LarpakeTaskId = attendance.LarpakeTaskId,
             Completed = attendance.Completion is null ?
                 null : CompletionGetDto.From(attendance.Completion),
             CreatedAt = attendance.CreatedAt,

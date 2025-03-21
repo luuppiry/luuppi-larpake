@@ -166,9 +166,9 @@ export function appendTemplateElement<TAppended>(id: string, container: HTMLElem
 }
 
 export function encodeArrayToQueryString(key: string, array: string[]): string {
-    return array.map((x) => `${key}=${encodeURIComponent(x)}`).join("&");
+    return array.map((x) => `${key}[]=${encodeURIComponent(x)}`).join("&");
 }
 
-export function getSearchParams(){
+export function getSearchParams() {
     return new URLSearchParams(new URL(window.location.href).search);
 }

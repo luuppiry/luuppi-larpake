@@ -11,19 +11,30 @@ export default class AttendanceClient {
         this.client = client ?? new HttpClient();
     }
 
-    async get(larpakeId: number): Promise<Attendance[] | null> {
+    async get(
+        larpakeId: number | null = null,
+        isSelfOnly: boolean = true,
+        isCompleted: boolean | null = null,
+        pageSize: number = 100,
+        pageOffset: number = 0
+    ): Promise<Attendance[] | null> {
         const query = new URLSearchParams();
         // query.append("before", "<date>")
         // query.append("completedBefore", "<date>")
         // query.append("after", "<date>")
         // query.append("completedAfter", "<date>")
-        query.append("LarpakeId", larpakeId.toString());
-        query.append("LimitToSelfOnly", "false");
+
         // query.append("larpakeEventId", "<number>")
         // query.append("userId", "<guid>")
-        // query.append("isCompleted", "<bool>")
-        query.append("pageSize", "100");
-        // query.append("pageOffset", "<number>")
+        if (larpakeId) {
+            query.append("LarpakeId", larpakeId.toString());
+        }
+        if (isCompleted != null) {
+            query.append("isCompleted", isCompleted === true ? "true" : "false");
+        }
+        query.append("LimitToSelfOnly", isSelfOnly === true ? "true" : "false");
+        query.append("pageSize", pageSize.toString());
+        query.append("pageOffset", pageOffset.toString());
 
         const response = await this.client.get("api/attendances", query);
         if (!response.ok) {
@@ -50,8 +61,8 @@ export default class AttendanceClient {
     async getSignatures(signatureIds: string[]): Promise<Signature[]> {
         const ids = encodeArrayToQueryString("SignatureIds", signatureIds);
         const response = await this.client.get(`api/signatures?${ids}`);
-        if (!response.ok){
-            console.warn(await response.json())
+        if (!response.ok) {
+            console.warn(await response.json());
             return [];
         }
         const signatures: Container<Signature[]> = await response.json();

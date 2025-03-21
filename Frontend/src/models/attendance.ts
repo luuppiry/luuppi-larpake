@@ -5,18 +5,18 @@ export type Completion = {
     completedAt: Date;
     createdAt: Date;
     updatedAt: Date;
-}
+};
 
 export type AttendanceKey = {
     qrCodeKey: string;
     keyInvalidAt: Date;
-}
+};
 
 export type Attendance = {
     userId: string;
-    larpakeEventId: number;
+    larpakeTaskId: number;
     completed: Completion | null;
     createdAt: Date;
     updatedAt: Date;
     key: AttendanceKey | null;
-}
+};

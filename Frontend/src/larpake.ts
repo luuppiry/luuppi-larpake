@@ -16,12 +16,11 @@ import { Attendance, Completion as Completion } from "./models/attendance";
 import { getSectionText, getTaskText, Larpake, LarpakeTask, Section } from "./models/larpake";
 import { Signature } from "./models/user";
 import SignatureRenderer from "./services/signature_renderer";
-import { Q_EVENT_ID, Q_LARPAKE_ID, Q_LAST_PAGE, Q_PAGE, Q_OF_PAGES } from "./constants"
+import { Q_EVENT_ID, Q_LARPAKE_ID, Q_LAST_PAGE, Q_PAGE, Q_OF_PAGES } from "./constants";
 
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 6;
 const TASK_LINE_LENGTH = 55;
-
-
+const MAX_FILLERS = 1;
 
 class Title {
     title: string;
@@ -166,7 +165,7 @@ class PageRenderer {
         const completions = new Map<number, Completion>();
         for (const attendance of attendances) {
             if (attendance.completed) {
-                completions.set(attendance.larpakeEventId, attendance.completed);
+                completions.set(attendance.larpakeTaskId, attendance.completed);
             }
         }
 
@@ -226,20 +225,22 @@ class PageRenderer {
 
             // Maximum of 2 fillers
             const fillerCount = page.tasks.filter((x) => x instanceof Filler).length;
-            const containsMaxFillers = fillerCount >= 2;
+            const containsMaxFillers = fillerCount >= MAX_FILLERS;
             if (containsMaxFillers) {
                 return;
             }
 
-            // If 2 title, only 1 filler
             const titleCount = page.tasks.filter((x) => x instanceof Title).length;
-            if (fillerCount !== 0 && titleCount >= 2) {
-                return;
+            const oversizedCount = page.tasks.filter(
+                (x) => x instanceof Task && x.title.length > TASK_LINE_LENGTH
+            ).length;
+
+            if (oversizedCount === 1 && titleCount === 0) {
+                page.tasks.push(new Filler());
             }
 
             /* Filler is not rendered.
              * I only makes room if multi line tasks. */
-            page.tasks.push(new Filler());
         };
 
         pieces.forEach((piece) => {
@@ -273,8 +274,9 @@ class PageRenderer {
 
     render() {
         if (this.currentPage >= this.pages.length && this.pages.length !== 0) {
-            window.location.href = `statistics.html?${Q_LARPAKE_ID}=${this.larpakeId}&${Q_LAST_PAGE}=true`+
-             `&${Q_PAGE}=${this.currentPage + 1}&${Q_OF_PAGES}=${this.currentPage + 1}`;
+            window.location.href =
+                `statistics.html?${Q_LARPAKE_ID}=${this.larpakeId}&${Q_LAST_PAGE}=true` +
+                `&${Q_PAGE}=${this.currentPage + 1}&${Q_OF_PAGES}=${this.currentPage + 1}`;
             return;
         }
 
@@ -378,13 +380,13 @@ class PageRenderer {
         this.render();
     }
 
-    #updatePageQuery(){
+    #updatePageQuery() {
         const url = new URL(window.location.href);
-        const params = new URLSearchParams(url.search)
-        params.set(Q_LARPAKE_ID, this.larpakeId?.toString() ?? "-1")
-        params.set(Q_PAGE, this.currentPage.toString())
+        const params = new URLSearchParams(url.search);
+        params.set(Q_LARPAKE_ID, this.larpakeId?.toString() ?? "-1");
+        params.set(Q_PAGE, this.currentPage.toString());
         url.search = params.toString();
-        window.history.pushState({}, "", url)
+        window.history.pushState({}, "", url);
     }
 }
 

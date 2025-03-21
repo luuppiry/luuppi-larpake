@@ -146,7 +146,7 @@ export default class HttpClient {
     async #renewAccessToken(tryRefresh: boolean = true): Promise<boolean> {
         console.log("getting token");
 
-        if (tryRefresh) {
+        if (!tryRefresh) {
             this.accessToken = await this.#fetchRefresh();
             if (this.accessToken != null) {
                 return true;

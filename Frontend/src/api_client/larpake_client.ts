@@ -68,7 +68,7 @@ export default class LarpakeClient {
         return tasks.data;
     }
 
-    async getTasks(larpakeId: number | null = null): Promise<LarpakeTask[] | null> {
+    async getTasks(larpakeId: number | null = null, taskIds: number[] | null = null): Promise<LarpakeTask[] | null> {
         const query = new URLSearchParams();
         // Different search params
         // query.append("userId", "<guid>");
@@ -78,8 +78,11 @@ export default class LarpakeClient {
         // query.append("pageSize", "<num>");
         // query.append("pageOffset", "<num>");
 
-        if (larpakeId != null) {
+        if (larpakeId) {
             query.append("LarpakeId", larpakeId.toString());
+        }
+        if (taskIds) {
+            taskIds.forEach((x) => query.append("LarpakeTaskIds[]", x.toString()));
         }
 
         const response = await this.client.get("api/larpake-tasks", query);
