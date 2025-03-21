@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography.Pkcs;
-using LarpakeServer.Data;
+﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using LarpakeServer.Models.External;
@@ -69,20 +68,27 @@ public class UsersController : ExtendedControllerBase
 
 
         // Append external information
-        foreach (Result<ExternalUserInformation> user in await Task.WhenAll(externalTasks))
+        await foreach (Task<Result<ExternalUserInformation>> user in Task.WhenEach(externalTasks))
         {
-            if (user.IsError && ((Error)user).ApplicationErrorCode is ErrorCode.IdNotFound)
+            if (user.IsFaulted)
+            {
+                _logger.LogWarning("Exception thrown during external user retrieval: {ex}.", user.Exception);
+                return InternalServerError("Exception thrown during user external user retrieval");
+            }
+            Result<ExternalUserInformation> taskResult = await user;
+            if (taskResult.IsError && (Error)taskResult is { ApplicationErrorCode: ErrorCode.IdNotFound })
             {
                 continue;
             }
-            if (user.IsError)
+            if (taskResult.IsError)
             {
-                return FromError(user);
+                return FromError(taskResult);
             }
-            var value = (ExternalUserInformation)user;
-            if (entraUsers.TryGetValue(value.EntraId, out UserGetDto? userDto))
+
+            var userInfo = (ExternalUserInformation)taskResult;
+            if (entraUsers.TryGetValue(userInfo.EntraId, out UserGetDto? userDto))
             {
-                userDto.Append(value);
+                userDto.Append(userInfo);
             }
         }
 
