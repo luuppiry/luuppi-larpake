@@ -1,17 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script>
-        if (!Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"))){
-            window.location.replace("unauthorized.html");
-        }
-    </script>
-</head>
-<body>
-    <p>Note: this page is not wired up and is static</p>
-    
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <script>
+            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
+                window.location.replace("unauthorized.html");
+            }
+        </script>
+        <link rel="stylesheet" href="/styles/admin/user_manager.css" />
+        <script src="/src/components/side-panel.ts"></script>
+        <script type="module" src="/src/components/ui-header.ts"></script>
+    </head>
+    <body>
+        <template id="user-template">
+            <section></section>
+        </template>
+
+        <ui-header path-depth="1"></ui-header>
+        <side-panel path-depth="1"></side-panel>
+        <div class="top-level-container">
+            <section class="content">
+                <div class="page-information">
+                    <h2>Käyttäjien ylläpito</h2>
+                    <div class="search">
+                        <p>
+                            Selaa järjestelmän käyttäjiä ja muokkaa oikeuksia. Haulla voit etsiä käyttäjää sähköpostin,
+                            tunnisteen, entra tunnisteen, aloitusvuoden tai oikeuksien perusteella. Jos haluat etsiä
+                            nimen tai käyttäjänimen perusteella, sinun tulee hyödyntää päänettisivujen ylläpito
+                            -toimintoa.
+                        </p>
+                        <input class="search-field" type="search" placeholder="Hae" />
+                    </div>
+                </div>
+                <div class="user-table-padding">
+                    <table class="user-table">
+                        <tbody>
+                            <tr class="column-titles">
+                                <th>Sähköposti</th>
+                                <th>Käyttäjänimi</th>
+                                <th>Etunimi</th>
+                                <th>Sukunimi</th>
+                                <th>Oikeudet</th>
+                                <th>Aloitusvuosi</th>
+                                <th>Id</th>
+                                <th>Entra Id</th>
+                            </tr>
+
+                            <tr>
+                                <td>henri.m.vainio@gmail.com</td>
+                                <td>henrivain</td>
+                                <td>Henri</td>
+                                <td>Vainio</td>
+                                <td>2147483647</td>
+                                <td>2024</td>
+                                <td>...018ea7</td>
+                                <td>...ffe02c</td>
+                            </tr>
+
+                            <tr>
+                                <td>juliusz.kotelba@gmail.com</td>
+                                <td>julle</td>
+                                <td>Juliusz</td>
+                                <td>Kotelba</td>
+                                <td>2147483647</td>
+                                <td>2024</td>
+                                <td>...67ef80</td>
+                                <td>...9801ea</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <p class="item-counter">
+                        <span id="from-count">11</span>
+                        <span>-</span>
+                        <span id="to-count">45</span>
+                        <span>/</span>
+                        <span id="out-of">70</span>
+                    </p>
+                    <div class="table-navigation">
+                        <button class="primary-btn">&lt;</button>
+                        <button class="primary-btn">&gt;</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </body>
+    <script type="module" src="/src/admin/user_manager.ts"></script>
 </html>
