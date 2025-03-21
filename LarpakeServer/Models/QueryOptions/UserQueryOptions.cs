@@ -9,6 +9,8 @@ public class UserQueryOptions : QueryOptions
     public int? StartedAfter { get; set; } = null;
 
     public int? Permissions { get; set; } = null;
+
+    public bool IsORQuery { get; set; } = false;
     
     public Guid[]? UserIds { get; set; }
     

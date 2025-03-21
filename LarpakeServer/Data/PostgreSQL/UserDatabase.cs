@@ -24,32 +24,35 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
             FROM users
             """);
 
+        SelectQuery.ConditionOperand operand = options.IsORQuery ? SelectQuery.ConditionOperand.Or : SelectQuery.ConditionOperand.And;
+
+
         query.IfNotNull(options.EntraIds).AppendConditionLine($"""
             entra_id = ANY(@{nameof(options.EntraIds)})
-            """);
+            """, operand);
 
         query.IfNotNull(options.UserIds).AppendConditionLine($"""
             id = ANY(@{nameof(options.UserIds)})
-            """);
+            """, operand);
 
         query.IfNotNull(options.EntraUsername).AppendConditionLine($"""
             entra_username ILIKE @{nameof(options.EntraUsernameQueryValue)}
-            """);
+            """, operand);
 
         // If has at least permissions
         query.IfNotNull(options.Permissions).AppendConditionLine($"""
             permissions & @{nameof(options.Permissions)} = @{nameof(options.Permissions)}
-            """);
+            """, operand);
 
         // If start year after
         query.IfNotNull(options.StartedAfter).AppendConditionLine($"""
             start_year > @{nameof(options.StartedAfter)}
-            """);
+            """, operand);
 
         // If start year before
         query.IfNotNull(options.StartedBefore).AppendConditionLine($"""
             start_year < @{nameof(options.StartedBefore)}
-            """);
+            """, operand);
 
         query.AppendLine($"""
             ORDER BY start_year, id ASC
