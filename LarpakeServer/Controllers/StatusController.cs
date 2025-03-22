@@ -42,4 +42,19 @@ public class StatusController : ExtendedControllerBase
 
         return Ok(new ServerInfo(version, authors, copyright, mode, name));
     }
+
+    [HttpGet("permissions")]
+    public IActionResult GetPermissionsValues()
+    {
+        return Ok(new
+        {
+            Roles = new
+            {
+                Permissions.Freshman,
+                Permissions.Tutor,
+                Permissions.Admin,
+                Permissions.Sudo,
+            }
+        });
+    }
 }

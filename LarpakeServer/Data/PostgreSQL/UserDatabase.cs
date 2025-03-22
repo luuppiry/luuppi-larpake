@@ -138,7 +138,6 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
         return await connection.ExecuteAsync($"""
             UPDATE users
             SET
-                permissions = @{nameof(User.Permissions)},
                 start_year = @{nameof(User.StartYear)},
                 updated_at = NOW()
             WHERE id = @{nameof(User.Id)};
