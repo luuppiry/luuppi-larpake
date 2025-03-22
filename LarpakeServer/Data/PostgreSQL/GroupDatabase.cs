@@ -30,18 +30,13 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         SelectQuery query = new();
         query.AppendLine($"""
-            SELECT 
+            SELECT DISTINCT ON (g.id)
                 g.id,
                 g.larpake_id,
                 g.name,
                 g.group_number,
                 g.created_at,
-                g.updated_at,
-                m.group_id,
-                m.user_id,
-                m.is_hidden,
-                m.is_competing,
-                m.joined_at
+                g.updated_at
             FROM freshman_groups g
                 LEFT JOIN freshman_group_members m
                     ON g.id = m.group_id
@@ -52,7 +47,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         AddWhereClauses(ref query, options);
 
         query.AppendLine($"""
-            ORDER BY l.year ASC, g.larpake_id, g.group_number ASC
+            ORDER BY g.id, g.larpake_id, g.group_number ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);
@@ -60,23 +55,31 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         string q = query.ToString();
 
         using var connection = GetConnection();
-        Dictionary<long, FreshmanGroup> groups = [];
-        await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>(
-            query.ToString(),
-            (group, member) =>
-            {
-                FreshmanGroup resultGroup = groups.GetOrAdd(group.Id, group)!;
-                if (member is not null)
-                {
-                    resultGroup.Members ??= [];
-                    resultGroup.Members.Add(member);
-                }
-                return resultGroup;
-            },
-            options,
-            splitOn: "group_id");
 
-        return groups.Values.ToArray();
+        var rawGroups = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
+        var groups = rawGroups.ToArray();
+
+        var rawMembers = await connection.QueryAsync<FreshmanGroupMember>($"""
+            SELECT 
+                m.group_id,
+                m.user_id,
+                m.is_hidden,
+                m.is_competing,
+                m.joined_at
+            FROM freshman_group_members m
+            WHERE group_id = ANY(@Ids);
+            """, new { Ids = groups.Select(x => x.Id).ToArray() });
+
+        // Map members to groups
+        Dictionary<long, List<FreshmanGroupMember>> memberMap = rawMembers.GroupBy(x => x.GroupId).ToDictionary(x => x.Key, x => x.ToList());
+        foreach (var group in groups)
+        {
+            if (memberMap.TryGetValue(group.Id, out var value))
+            {
+                group.Members = value;
+            }
+        }
+        return groups;
     }
 
 
@@ -114,36 +117,47 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
     private static void AddWhereClauses(ref SelectQuery query, in FreshmanGroupQueryOptions options)
     {
-        // Search only groups user is in
-        query.IfNotNull(options.ContainsUser).AppendConditionLine($"""
-            m.user_id = @{nameof(options.ContainsUser)}
-            """);
-
-        // Match groups with name including case-insensitive string
-        query.IfNotNull(options.GroupName).AppendConditionLine($"""
-            g.name ILIKE %@{nameof(options.GroupName)}%
-            """);
-
-        // Match groups with specific start year
-        query.IfNotNull(options.StartYear).AppendConditionLine($"""
-            l.year = @{nameof(options.StartYear)}
-            """);
+        SelectQuery.ConditionOperand operand = options.IsORQuery ?
+            SelectQuery.ConditionOperand.Or : SelectQuery.ConditionOperand.And;
 
         // Are hidden members included?
         query.IfFalse(options.IncludeHiddenMembers).AppendConditionLine($"""
             m.is_hidden IS FALSE
             """);
 
+        // Search only groups user is in
+        query.IfNotNull(options.ContainsUser).AppendConditionLine($"""
+            m.user_id = @{nameof(options.ContainsUser)}
+            """, operand);
+
+        // Match groups with name including case-insensitive string
+        query.IfNotNull(options.GroupNameSearchValue).AppendConditionLine($"""
+            g.name ILIKE @{nameof(options.GroupNameSearchValue)}
+            """, operand);
+
+        // Match groups with specific start year
+        query.IfNotNull(options.StartYear).AppendConditionLine($"""
+            l.year = @{nameof(options.StartYear)}
+            """, operand);
+
         // Is participating in larpake
         query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
             g.larpake_id = @{nameof(options.LarpakeId)}
-            """);
+            """, operand);
 
+        // Group number
+        query.IfNotNull(options.GroupNumber).AppendConditionLine($"""
+            g.group_number = @{nameof(options.GroupNumber)}
+            """, operand);
+
+        // User search
         query.IfNotNull(options.ContainsUser)
-             .IfNotNull(options.IsSearchMemberCompeting)
-             .AppendConditionLine($"""
-            m.is_competing = @{nameof(options.IsSearchMemberCompeting)}
-            """);
+          .IfNotNull(options.IsSearchMemberCompeting)
+          .AppendConditionLine($"""
+                m.is_competing = @{nameof(options.IsSearchMemberCompeting)}
+                """, operand);
+
+ 
     }
 
     public async Task<FreshmanGroup?> GetGroup(long id)
