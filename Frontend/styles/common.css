@@ -261,3 +261,7 @@ body {
 .select-none {
     user-select: none;
 }
+
+.margin-auto {
+    margin: auto;
+}

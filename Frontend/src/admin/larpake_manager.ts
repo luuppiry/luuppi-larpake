@@ -1,16 +1,16 @@
 import LarpakeClient from "../api_client/larpake_client.ts";
 import SectionEditor from "../components/section-editor.ts";
+import { Q_LARPAKE_ID } from "../constants.ts";
 import mapChildren, {
     getInputNumericByDocId,
     isEmpty,
     LANG_EN,
     LANG_FI,
-    overwriteQueryParam,
-    SectionSortFunc,
-    TaskSortFunc,
+    pushUrlState,
     ToDictionary,
 } from "../helpers.ts";
 import { Larpake, Section } from "../models/larpake.ts";
+import { SectionSortFunc, TaskSortFunc } from "../sortFunctions.ts";
 
 const client = new LarpakeClient();
 
@@ -32,7 +32,7 @@ async function render() {
     const query = url.split("?");
     if (query.length > 1) {
         const params = new URLSearchParams(query[1]);
-        const larpakeId = parseInt(params.get("larpakeId") ?? "");
+        const larpakeId = parseInt(params.get(Q_LARPAKE_ID) ?? "");
         if (!Number.isNaN(larpakeId)) {
             // Loadable larpake found, load and show it
             await loadExternal(larpakeId);
@@ -114,7 +114,10 @@ function addPageEventListeners() {
         console.log(data);
         const id = await client.uploadLarpakeCommonDataOnly(data);
         if (id >= 0) {
-            overwriteQueryParam("larpakeId", id.toString());
+            
+            pushUrlState((params: URLSearchParams) => {
+                params.set(Q_LARPAKE_ID, id.toString());
+            })
             showCommonStateDialog("common-data-saved-dialog");
         } else {
             showCommonStateDialog("action-failed");
@@ -147,7 +150,10 @@ function addPageEventListeners() {
             textData: [],
         });
         if (rowsAffected >= 0) {
-            overwriteQueryParam("larpakeId", id.toString());
+            pushUrlState(params => {
+                params.set(Q_LARPAKE_ID, id.toString())
+            })
+
             showCommonStateDialog("tasks-saved-dialog");
         } else {
             showCommonStateDialog("action-failed");

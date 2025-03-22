@@ -1,351 +1,336 @@
-import { User, Group, GroupMember } from "../models/user";
+import { UserClient } from "../api_client/user_client.ts";
+import { Q_GROUP_ID } from "../constants.ts";
 import {
-    addMemberBtn,
-    availableUsersContainer,
-    availableUserTemplate,
-    cancelChooseUserBtn,
-    cancelEditUserBtn,
-    container,
-    deleteUserBtn,
-    editOkBtn,
-    editUserDialog,
-    saveBtn,
-    searchField,
-    selectUserDialog,
-    userTemplate,
-} from "./page_extensions/group_manager_imports.ts";
+    appendTemplateElement,
+    isEmpty,
+    pushUrlState,
+    removeChildren,
+    showOkDialog,
+    ToOverwriteDictionary,
+} from "../helpers.ts";
+import { User, Group, GroupMember } from "../models/user";
+import { groupMemberSortFunc } from "../sortFunctions.ts";
+import GroupManagerUI from "./ui-model/group_manager_ui.ts";
 
 const TUTOR = "Tutor";
 const FRESHMAN = "Fuksi";
 const FRESHMAN_CLASS = "fuksi";
 const TUTOR_CLASS = "tutor";
 
+const MAX_SEARCH_RESULTS = 20;
+const DEBOUNCH_TIMEOUT = 500;
+
 // Section DATA
-const availableMembers = [
-    {
-        user: {
-            userId: "guid-1",
-            username: "user123",
-            firstName: "Jaakko",
-            lastName: "User",
-            permissions: 987132,
-        },
-        isHidden: false,
-        isCompeting: false,
-    },
-    {
-        user: {
-            userId: "guid-2",
-            username: "jorma987",
-            firstName: "Jorma",
-            lastName: "Jurnukka",
-            permissions: 546,
-        },
-        isHidden: false,
-        isCompeting: true,
-    },
-    {
-        user: {
-            userId: "guid-3",
-            username: "third",
-            firstName: "Veeti",
-            lastName: "Koivunen",
-            permissions: 106,
-        },
-        isHidden: false,
-        isCompeting: true,
-    },
-];
+const userClient = new UserClient();
 
-let availableUsers: User[] | null = null;
+class GroupManager extends GroupManagerUI {
+    allUsers: Map<string, User>;
+    group: Group;
+    debounchTimerId: number | null = null;
 
-function fetchData(groupId: number): Group {
-    console.log(`Fetching group ${groupId}.`);
-    return {
-        id: 1,
-        larpakeId: 4,
-        name: "Superfuksit",
-        groupNumber: 12,
-        members: availableMembers,
-    };
-}
+    uploadFunc: (group: Group) => Promise<boolean>;
 
-// Section LOGIC
+    constructor(group: Group | null, users: User[], uploadFunc: (group: Group) => Promise<boolean>) {
+        super();
 
-function fetchAllUsers() {
-    return availableMembers.map((x) => x.user);
-}
-
-function main() {
-    const params = new URLSearchParams(window.location.search);
-    const groupId: number = parseInt(params.get("groupId") ?? "");
-
-    if (!Number.isNaN(groupId)) {
-        startExistingGroup(groupId);
+        this.group = group ?? {
+            id: -1,
+            larpakeId: -1,
+            name: "",
+            groupNumber: null,
+            members: [],
+        };
+        this.allUsers = ToOverwriteDictionary(users, (x) => x.id);
+        this.uploadFunc = uploadFunc;
     }
 
-    addMemberBtn.addEventListener("click", (_) => {
-        selectUserDialog.showModal();
-        updateSearchMatches(null);
-    });
+    render() {
+        this.groupNameInput.value = this.group.name ?? "";
+        this.groupNumberInput.value = this.group.groupNumber?.toString() ?? "";
+        this.larpakeIdInput.value = this.group.larpakeId?.toString() ?? "";
+        this.group.members?.sort(groupMemberSortFunc).forEach((x) => this.#appendNewUser(x));
+        this.#addEventListeners();
+    }
 
-    cancelChooseUserBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        selectUserDialog.close();
-    });
+    #appendNewUser(member: GroupMember) {
+        const user = this.allUsers.get(member.userId);
 
-    cancelEditUserBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        editUserDialog.close();
-    });
+        // Add new member
+        const elem = appendTemplateElement<HTMLElement>("member-template", this.memberContainer);
+        elem.querySelector<HTMLHeadingElement>("._username")!.innerText = user?.entraUsername ?? member.userId ?? "N/A";
+        elem.querySelector<HTMLSpanElement>("._first-name")!.innerText = user?.firstName ?? "N/A";
+        elem.querySelector<HTMLSpanElement>("._last-name")!.innerText = user?.lastName ?? "N/A";
+        elem.querySelector<HTMLParagraphElement>("._id")!.innerText = member.userId;
 
-    deleteUserBtn.addEventListener("click", (e) => {
-        e.preventDefault();
+        // Set user status in group
+        const status = elem.querySelector<HTMLBRElement>("._status")!;
+        const isFuksi = member.isCompeting;
+        status.classList.add(isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
+        status.innerText = isFuksi ? FRESHMAN : TUTOR;
 
-        const userId = editUserDialog.querySelector<HTMLParagraphElement>("._id")?.id;
+        elem.addEventListener("click", (e) => this.#editUser(e.target as HTMLElement));
+    }
+
+    #editUser(target: HTMLElement): void {
+        const userId = target.querySelector<HTMLElement>("._id")?.innerText!;
+        const userElem = this.#getFirstMatchingMember(userId);
+        if (userElem == null) {
+            throw new Error("Selected user not found.");
+        }
+
+        this.editUserDialog.showModal();
+
+        // Read data from group members container
+        const status = userElem.querySelector<HTMLElement>("._status")?.innerText;
+        const username = userElem.querySelector<HTMLElement>("._username")?.innerText;
+
+        this.editUserDialog.querySelector<HTMLSelectElement>("._status")!.value = status === TUTOR ? "false" : "true";
+        this.editUserDialog.querySelector<HTMLElement>("._username")!.innerText = username ?? "N/A";
+        this.editUserDialog.querySelector<HTMLParagraphElement>("._id")!.innerText = userId;
+    }
+
+    #changeEdited() {
+        const userId = this.editUserDialog.querySelector<HTMLParagraphElement>("._id")?.innerText;
+        const status = this.editUserDialog.querySelector<HTMLSelectElement>("._status")?.value;
+        if (userId == null || userId == "") {
+            throw new Error("User to be edited cannot be null");
+        }
+        const user = this.#getFirstMatchingMember(userId);
+        if (status != null) {
+            const statusField = user?.querySelector<HTMLBRElement>("._status")!;
+
+            const isFuksi = status === "true";
+            statusField.classList.remove(!isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
+            statusField.classList.add(isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
+            statusField.innerText = isFuksi ? FRESHMAN : TUTOR;
+        }
+    }
+
+    removeUser(userId: string) {
+        if (!userId) {
+            throw new Error("Trying to remove null user id");
+        }
+
+        const user = this.#getFirstMatchingMember(userId);
+        if (user) {
+            this.memberContainer.removeChild(user);
+        }
+    }
+
+    #updateSearchMatches(searchTerm: string | null) {
+        removeChildren(this.availableUsersContainer);
+
+        // No search, show all
+        if (isEmpty(searchTerm)) {
+            this.#getAllUsers()
+                .slice(0, MAX_SEARCH_RESULTS)
+                .forEach((x) => this.#appendSearchListUser(x));
+            return;
+        }
+
+        const predicate = (u: User) =>
+            contains(u.firstName, searchTerm) ||
+            contains(u.lastName, searchTerm) ||
+            contains(u.entraId, searchTerm) ||
+            contains(u.entraUsername, searchTerm) ||
+            contains(u.startYear?.toString() ?? "", searchTerm) ||
+            contains(u.username, searchTerm) ||
+            contains(u.id, searchTerm) ||
+            contains(u.permissions.toString(), searchTerm);
+
+        this.#getAllUsers()
+            .filter(predicate)
+            .slice(0, MAX_SEARCH_RESULTS)
+            .map((x) => this.#appendSearchListUser(x));
+    }
+
+    #appendSearchListUser(user: User) {
+        const elem = appendTemplateElement<HTMLElement>("available-user-template", this.availableUsersContainer);
+
+        elem.querySelector<HTMLParagraphElement>("._id")!.innerText = user.id;
+        elem.querySelector<HTMLParagraphElement>("._email")!.innerText = user.entraUsername ?? "N/A";
+        elem.querySelector<HTMLParagraphElement>("._username")!.innerText = user.username ?? "N/A";
+        elem.querySelector<HTMLParagraphElement>("._first-name")!.innerText = user.firstName ?? "N/A";
+        elem.querySelector<HTMLParagraphElement>("._last-name")!.innerText = user.lastName ?? "N/A";
+
+        elem.addEventListener("click", (e) => this.selectUser(e));
+    }
+
+    selectUser(event: MouseEvent) {
+        const target = event.target as HTMLElement;
+        const userId = target.querySelector<HTMLElement>("._id")!.innerText;
         if (userId == null) {
-            throw new Error("User id to be deleted is null.");
+            throw new Error("Selected target does not containe user id.");
         }
-        removeUser(userId);
-        editUserDialog.close();
-    });
+        if (userId == "") {
+            return;
+        }
 
-    searchField.addEventListener("input", (event) => {
-        const value = (event.target as HTMLInputElement)?.value;
-        updateSearchMatches(value);
-    });
+        const matchingUsers = this.#getAllUsers().filter((x) => x.id === userId);
+        const user: User | null = matchingUsers.length > 0 ? matchingUsers[0] : null;
+        if (user == null) {
+            throw new Error(`Selected user ${userId} does not exist.`);
+        }
 
-    cancelEditUserBtn.addEventListener("click", (_) => {
-        editUserDialog.close();
-    });
+        this.#appendNewUser({
+            userId: user.id,
+            isHidden: false,
+            isCompeting: true,
+        });
 
-    editOkBtn.addEventListener("click", (_) => {
-        changeEdited();
-        editUserDialog.close();
-    });
-
-    saveBtn.addEventListener("click", (_) => {
-        SaveGroupState();
-    })
-}
-
-function startExistingGroup(groupId: number) {
-    const data = fetchData(groupId);
-
-    // Remove no data field
-    if (data.members.length > 0) {
-        hidNoUsersLabel();
+        this.selectUserDialog.close();
     }
 
-    // Add Group name
-    const groupName = document.getElementById("group-name") as HTMLInputElement;
-    groupName.value = data.name;
+    async SaveGroupState() {
+        // Read common data
+        const groupName = this.groupNameInput.value;
+        if (isEmpty(groupName)) {
+            this.#showUploadErrorDialog("Group name cannot be empty (minlength 3).");
+            return;
+        }
+        const larpakeId = parseInt(this.larpakeIdInput.value);
+        if (Number.isNaN(larpakeId)) {
+            this.#showUploadErrorDialog(`'${this.larpakeIdInput.value}' is not valid larpake id.`);
+            return;
+        }
+        let groupNumber: number | null = parseInt(this.groupNumberInput.value);
+        groupNumber = Number.isNaN(groupNumber) ? null : groupNumber;
 
-    // Add group number
-    const groupNumber = document.getElementById("group-number") as HTMLInputElement;
-    groupNumber.value = data.groupNumber?.toString() ?? "";
+        // Read member data
+        const members: GroupMember[] = [];
+        for (const child of this.memberContainer.children) {
+            if (!child.classList.contains("_member")) {
+                // This is probably not correct ui elemnt, so skip it
+                continue;
+            }
+            const id = child.querySelector<HTMLParagraphElement>("._id")!.innerText;
+            const status = child.querySelector<HTMLParagraphElement>("._status")!.innerText;
+            if (!id) {
+                throw new Error(`Parsed invalid user id '${id}'`);
+            }
 
-    // Add larpake id
-    const larpakeId = document.getElementById("larpake-id") as HTMLInputElement;
-    larpakeId.value = data.larpakeId?.toString() ?? "";
+            members.push({
+                isHidden: false,
+                isCompeting: status !== TUTOR,
+                userId: id,
+            });
+        }
 
-    data.members.sort(sortFunc).forEach(appendNewUser);
-}
-
-function appendNewUser(user: GroupMember) {
-    // Add new member
-    const fragment = document.importNode(userTemplate.content, true);
-    container.appendChild(fragment);
-    const node = container.children[container.children.length - 1];
-
-    // Set username
-    const userName = node.querySelector<HTMLHeadingElement>(".username")!;
-    userName.innerText = user.user.entraId ?? "N/A";
-
-    // Set firstname
-    const firstName = node.querySelector<HTMLSpanElement>(".first-name")!;
-    firstName.innerText = user.user.firstName ?? "N/A";
-
-    // Set lastname
-    const lastName = node.querySelector<HTMLSpanElement>(".last-name")!;
-    lastName.innerText = user.user.lastName ?? "N/A";
-
-    // Set user status in group
-    const status = node.querySelector<HTMLBRElement>("._status")!;
-    const isFuksi = user.isCompeting;
-    status.classList.add(isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
-    status.innerText = isFuksi ? FRESHMAN : TUTOR;
-
-    // Set id
-    const idField = node.querySelector<HTMLParagraphElement>("._id")!;
-    idField.id = user.user.id;
-
-    node.addEventListener("click", (e) => editUser(e.target as HTMLElement));
-}
-
-function editUser(target: HTMLElement): void {
-    const userId = target.querySelector<HTMLElement>("._id")?.id!;
-    const userElem = getFirstMatchingMember(userId);
-    if (userElem == null) {
-        throw new Error("Selected user not found.");
-    }
-
-    editUserDialog.showModal();
-
-    // Read data from group members container
-    const status = userElem.querySelector<HTMLElement>("._status")?.innerText;
-    const username = userElem.querySelector<HTMLElement>("._username")?.innerText;
-
-    // Set status
-    const statusField = editUserDialog.querySelector<HTMLSelectElement>("._status")!;
-    statusField.value = status === TUTOR ? "false" : "true";
-
-    // Set username
-    const usernameField = editUserDialog.querySelector<HTMLElement>("._username")!;
-    usernameField.innerText = username ?? "N/A";
-
-    // Set id
-    const idField = editUserDialog.querySelector<HTMLParagraphElement>("._id")!;
-    idField.id = userId;
-}
-
-function changeEdited() {
-    const userId = editUserDialog.querySelector<HTMLParagraphElement>("._id")?.id;
-    const status = editUserDialog.querySelector<HTMLSelectElement>("._status")?.value;
-    if (userId == null || userId == "") {
-        throw new Error("User to be edited cannot be null");
-    }
-    const user = getFirstMatchingMember(userId);
-    if (status != null) {
-        const statusField = user?.querySelector<HTMLBRElement>("._status")!;
-
-        const isFuksi = status === "true";
-        statusField.classList.remove(!isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
-        statusField.classList.add(isFuksi ? FRESHMAN_CLASS : TUTOR_CLASS);
-        statusField.innerText = isFuksi ? FRESHMAN : TUTOR;
-    }
-}
-
-function removeUser(userId: string) {
-    if (userId == null) {
-        throw new Error("Trying to remove null user id");
-    }
-
-    const user = getFirstMatchingMember(userId);
-    if (user != null) {
-        container.removeChild(user);
-    }
-}
-
-function getFirstMatchingMember(userId: string) {
-    for (let i = 0; i < container.children.length; i++) {
-        const current = container.children.item(i)!;
-        const idField = current?.querySelector<HTMLParagraphElement>("._id");
-        if (idField?.id == userId) {
-            return current;
+        // Upload all to server
+        const success = await this.uploadFunc({
+            id: this.group.id,
+            larpakeId: larpakeId,
+            name: groupName,
+            groupNumber: groupNumber,
+            members: members,
+        });
+        if (success) {
+            showOkDialog("success-dialog", () => {
+                window.location.reload();
+            });
+            
+        } else {
+            this.#showUploadErrorDialog();
         }
     }
+
+    #addEventListeners() {
+        this.addMemberBtn.addEventListener("click", (_) => {
+            this.selectUserDialog.showModal();
+            this.#updateSearchMatches(null);
+        });
+
+        this.cancelChooseUserBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.selectUserDialog.close();
+        });
+
+        this.cancelEditUserBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            this.editUserDialog.close();
+        });
+
+        this.deleteUserBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+
+            const userId = this.editUserDialog.querySelector<HTMLParagraphElement>("._id")?.innerText;
+            if (userId == null) {
+                throw new Error("User id to be deleted is null.");
+            }
+            this.removeUser(userId);
+            this.editUserDialog.close();
+        });
+
+        this.searchField.addEventListener("input", (event) => {
+            clearTimeout(this.debounchTimerId ?? undefined);
+
+            this.debounchTimerId = setTimeout(() => {
+                const value = (event.target as HTMLInputElement)?.value;
+                this.#updateSearchMatches(value);
+            }, DEBOUNCH_TIMEOUT);
+        });
+
+        this.cancelEditUserBtn.addEventListener("click", (_) => {
+            this.editUserDialog.close();
+        });
+
+        this.editOkBtn.addEventListener("click", (_) => {
+            this.#changeEdited();
+            this.editUserDialog.close();
+        });
+
+        this.saveBtn.addEventListener("click", async (_) => {
+            await this.SaveGroupState();
+        });
+    }
+
+    #getFirstMatchingMember(userId: string): Element | null {
+        for (const child of this.memberContainer.children) {
+            const idField = child?.querySelector<HTMLParagraphElement>("._id");
+            if (idField?.innerText == userId) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    #getAllUsers() {
+        return Array.from(this.allUsers.values());
+    }
+
+    #showUploadErrorDialog(message: string | null = null) {
+        const dialog = document.getElementById("upload-error-dialog") as HTMLDialogElement;
+        dialog.showModal();
+
+        if (message) {
+            dialog.querySelector<HTMLParagraphElement>("._msg")!.innerText = message;
+        }
+
+        dialog.querySelector<HTMLButtonElement>("._ok")?.addEventListener("click", (_) => {
+            dialog.close();
+        });
+    }
 }
 
-function sortFunc(first: GroupMember, second: GroupMember): number {
-    if (first.isCompeting && !second.isCompeting) {
-        return 1;
-    }
-    if (first.user.entraId == null) {
-        return -1;
-    }
-    if (second.user.entraId == null) {
-        return 1;
-    }
-    return first.user.entraId > second.user.entraId ? 1 : -1;
-}
+async function main() {
+    const params = new URLSearchParams(window.location.search);
+    const groupId: number = parseInt(params.get(Q_GROUP_ID) ?? "");
 
-function hidNoUsersLabel() {
-    const label = document.getElementById("no-members-label");
-    if (label == null) {
-        throw new Error("No members label is null, check naming");
-    }
-    if (!label.classList.contains("hidden")) {
-        label.classList.add("hidden");
-    }
-}
-
-function updateSearchMatches(searchTerm: string | null) {
-    // Empty container
-    while (availableUsersContainer.children.length > 0) {
-        const target = availableUsersContainer.children[0];
-        availableUsersContainer.removeChild(target);
-    }
-    if (availableUsers == null) {
-        availableUsers = fetchAllUsers();
+    const allUsers = await userClient.getAllUnpaged();
+    if (!allUsers) {
+        throw new Error("Could not fetch all available users.");
     }
 
-    // No search, show all
-    if (searchTerm == null || searchTerm == "") {
-        availableUsers.forEach((x) => appendSearchListUser(x));
-        return;
+    let group = null;
+    if (!Number.isNaN(groupId)) {
+        group = await userClient.getGroupById(groupId);
+        if (!group) {
+            throw new Error(`Could not load group ${groupId} from the server.`);
+        }
     }
 
-    const predicate = (u: User) => {
-        return (
-            contains(u.firstName, searchTerm) || contains(u.lastName, searchTerm) || contains(u.entraId, searchTerm)
-        );
-    };
-
-    availableUsers.filter(predicate).map(appendSearchListUser);
-}
-
-function appendSearchListUser(user: User) {
-    if (availableUsersContainer.children.length > 20) {
-        return;
-    }
-
-    // Add new member
-    const fragment = document.importNode(availableUserTemplate.content, true);
-    availableUsersContainer.appendChild(fragment);
-    const node = availableUsersContainer.children[availableUsersContainer.children.length - 1] as HTMLElement;
-
-    const username = node.querySelector<HTMLParagraphElement>("._username")!;
-    username.innerText = user.entraId ?? "N/A";
-
-    const firstName = node.querySelector<HTMLParagraphElement>("._first-name")!;
-    firstName.innerText = user.firstName ?? "N/A";
-
-    const lastName = node.querySelector<HTMLParagraphElement>("._last-name")!;
-    lastName.innerText = user.lastName ?? "N/A";
-
-    node.id = user.id;
-    node.addEventListener("click", (e) => selectUser(e));
-}
-
-function selectUser(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    const userId = target.id;
-    if (userId == null) {
-        throw new Error("Selected target does not containe user id.");
-    }
-    if (userId == "") {
-        return;
-    }
-
-    if (availableUsers == null) {
-        availableUsers = fetchAllUsers();
-    }
-
-    const matchingUsers = availableUsers!.filter((x) => x.id === userId);
-    const user: User | null = matchingUsers.length > 0 ? matchingUsers[0] : null;
-    if (user == null) {
-        throw new Error(`Selected user ${userId} does not exist.`);
-    }
-
-    hidNoUsersLabel();
-    appendNewUser({
-        user: user,
-        isHidden: false,
-        isCompeting: true,
-    });
-
-    selectUserDialog.close();
+    const manager = new GroupManager(group, allUsers, uploadGroup);
+    manager.render();
 }
 
 function contains(value: string | null, searchValue: string | null) {
@@ -358,25 +343,21 @@ function contains(value: string | null, searchValue: string | null) {
     return value.toLowerCase().includes(searchValue.toLowerCase());
 }
 
-function readMemberData(){
-    // Read data from user container
-    // Remove duplicate users and use the one with least privilege
-    throw new Error("Function not implemented.");
+async function uploadGroup(group: Group): Promise<boolean> {
+    if (group.larpakeId <= 0) {
+        console.error("Group must belong to valid larpake id.");
+        return false;
+    }
+    const id = await userClient.uploadGroup(group);
+    if (!id) {
+        console.error("Failed to upload group into database, see errors (warnings) above");
+        return false;
+    }
+
+    pushUrlState((params) => {
+        params.set(Q_GROUP_ID, id.toString());
+    });
+    return true;
 }
-
-
-function SaveGroupState() {
-    // Read common data
-    // Read member data
-    // Upload all to server
-
-    throw new Error("Function not implemented.");
-}
-
-
-
-
 
 main();
-
-

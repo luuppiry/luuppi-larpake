@@ -13,9 +13,9 @@ export type User = {
 };
 
 export type GroupMember = {
-    user: User;
     isHidden: boolean;
     isCompeting: boolean;
+    userId: string;
 };
 
 export type Group = {

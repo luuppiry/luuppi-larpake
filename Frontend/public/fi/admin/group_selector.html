@@ -10,7 +10,6 @@
         <script type="module" src="/src/components/ui-header.ts"></script>
     </head>
     <body>
-        <p>Note: this page is not wired up and is static</p>
         <template id="group-template">
             <li class="hover-scale">
                 <a href="group_manager.html" class="link">
@@ -20,7 +19,7 @@
                             <div class="group-info-container">
                                 <h3
                                     style="text-wrap: wrap; word-wrap: break-word; max-width: 40vw"
-                                    class="_group-title"
+                                    class="_group-name"
                                 >
                                     Group X
                                 </h3>
@@ -37,27 +36,29 @@
             </li>
         </template>
 
-        <template id="add-new-template">
-            <li class="hover-scale">
-                <a href="group_manager.html?new=true" class="link">
-                    <form-container>
-                        <div class="hor-center-content">
-                            <img src="/icons/plus_icon.svg" class="box-30px" alt="go to icon" />
-                        </div>
-                    </form-container>
-                </a>
-            </li>
-        </template>
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
-        <div class="title">
-            <h2>Ryhmät</h2>
-        </div>
-        <ul id="groups-container">
-            <li class="no-groups">
-                <div>Yhtäkään ryhmää ei ole vielä lisätty</div>
-            </li>
-        </ul>
+        <section class="content-container">
+            <h2 class="title">Ryhmät</h2>
+            <p>
+                Alla on lista järjestelmässä olevista ryhmistä. Siirry muokkaamaan ryhmää klikkaamalla ryhmän
+                kohdalta. Voit myös lisätä uuden ryhmän klikkaamalla plus -painiketta.
+            </p>
+            <ul id="groups-container">
+                <li class="no-groups">
+                    <div>Yhtäkään ryhmää ei ole vielä lisätty</div>
+                </li>
+                <li class="_no-remove hover-scale flex-last">
+                    <a href="group_manager.html?New=true" class="link">
+                        <form-container>
+                            <div class="hor-center-content">
+                                <img src="/icons/plus_icon.svg" class="plus-icon" alt="go to icon" />
+                            </div>
+                        </form-container>
+                    </a>
+                </li>
+            </ul>
+        </section>
     </body>
     <script type="module" src="/src/admin/group_selector.ts"></script>
 </html>

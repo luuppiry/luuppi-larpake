@@ -1,14 +1,8 @@
 import { UserClient } from "../api_client/user_client";
 import { Q_PAGE_OFFSET, Q_PAGE_SIZE, Q_SEARCH } from "../constants";
-import {
-    appendTemplateElement,
-    getDocumentLangCode,
-    isEmpty,
-    LANG_EN,
-    removeChildren,
-    throwIfAnyNull,
-} from "../helpers";
+import { appendTemplateElement, getDocumentLangCode, isEmpty, LANG_EN, pushUrlState, removeChildren } from "../helpers";
 import { User } from "../models/user";
+import UserManagerUI from "./ui-model/user_manager_ui";
 
 const VISIBLE_ID_LENGTH = 6;
 const DEFAULT_PAGE_SIZE = 25;
@@ -27,41 +21,18 @@ type Paging = {
     searchValue: string | null;
 };
 
-class UserBrowser {
+class UserBrowser extends UserManagerUI {
     allUsers: User[] = [];
     filtered: User[] = [];
-    container: HTMLElement;
-    nextPageBtn: HTMLButtonElement;
-    prevPageBtn: HTMLButtonElement;
     offset: number;
     pageSize: number;
-    fromIndexElem: HTMLSpanElement;
-    toIndexElem: HTMLSpanElement;
-    maxIndexElem: HTMLSpanElement;
-    searchField: HTMLInputElement;
     filter: string | null = null;
     debounchTimerId: number | null = null;
 
     constructor(options: Paging) {
+        super();
         this.offset = options.pageOffset;
         this.pageSize = options.pageSize;
-        this.container = document.getElementById("user-container") as HTMLElement;
-        this.prevPageBtn = document.getElementById("prev-btn") as HTMLButtonElement;
-        this.nextPageBtn = document.getElementById("next-btn") as HTMLButtonElement;
-        this.fromIndexElem = document.getElementById("from-count") as HTMLSpanElement;
-        this.toIndexElem = document.getElementById("to-count") as HTMLSpanElement;
-        this.maxIndexElem = document.getElementById("out-of") as HTMLSpanElement;
-        this.searchField = document.getElementById("search-field") as HTMLInputElement;
-
-        throwIfAnyNull([
-            this.container,
-            this.prevPageBtn,
-            this.nextPageBtn,
-            this.maxIndexElem,
-            this.toIndexElem,
-            this.fromIndexElem,
-            this.searchField,
-        ]);
 
         // Bind function to point to correct "this" in event handlers
         this.renderNext = this.renderNext.bind(this);
@@ -122,7 +93,10 @@ class UserBrowser {
         const endIndex = Math.min(allUsers.length, offset + this.pageSize);
         this.#renderUsers(allUsers.slice(offset, endIndex));
 
-        pushPageQuery(this.pageSize, offset);
+        pushUrlState((params) => {
+            params.set(Q_PAGE_SIZE, this.pageSize.toString());
+            params.set(Q_PAGE_OFFSET, offset.toString());
+        });
 
         this.offset = offset;
         this.#updateIndexes(offset, Math.min(allUsers.length, offset + this.pageSize), allUsers.length);
@@ -180,15 +154,6 @@ async function main() {
     loadPermissionValues();
 }
 
-function pushPageQuery(size: number, offset: number) {
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
-    params.set(Q_PAGE_SIZE, size.toString());
-    params.set(Q_PAGE_OFFSET, offset.toString());
-    url.search = params.toString();
-    window.history.pushState({}, "", url);
-}
-
 function pushSearchValue(value: string | null) {
     const url = new URL(window.location.href);
     const params = new URLSearchParams(url.search);
@@ -225,7 +190,7 @@ function truncateId(id: string | null): string {
 }
 
 async function fetchUsers(): Promise<User[]> {
-    const users = await userClient.getAll();
+    const users = await userClient.getAllUnpaged();
     if (!users) {
         throw new Error("Failed to fetch users from server.");
     }
@@ -374,14 +339,13 @@ async function loadPermissionValues() {
     }
 
     const container = document.getElementById("permissions-container") as HTMLElement;
-    
-    removeChildren(container, x => !x.classList.contains("column-titles"))
+
+    removeChildren(container, (x) => !x.classList.contains("column-titles"));
 
     addRole("Fuksi", "Freshman", permissions.roles.freshman);
     addRole("Tutor", "Tutor", permissions.roles.tutor);
     addRole("Admin", "Admin", permissions.roles.admin);
     addRole("Sudo (Täytyy asettaa muualla)", "Sudo (Set on separate config)", permissions.roles.sudo);
-
 
     function addRole(keyFi: string, keyEn: string, value: number) {
         const freshman = appendTemplateElement<HTMLElement>("role-template", container);

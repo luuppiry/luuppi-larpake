@@ -1,5 +1,3 @@
-import { LarpakeTask, Section } from "./models/larpake";
-
 export const LANG_FI = "fi";
 export const LANG_EN = "en";
 export const LANG_ATTRIBUTE_NAME = "lang";
@@ -55,55 +53,18 @@ export function ToOverwriteDictionary<TKey, TValue>(
     return result;
 }
 
-export function SectionSortFunc(first: Section, second: Section): number {
-    /* Sort by
-     * - bigger ordering weight
-     * - bigger id
-     */
-
-    if (first.orderingWeightNumber > second.orderingWeightNumber) {
-        return -1;
-    }
-    if (second.orderingWeightNumber < first.orderingWeightNumber) {
-        return 1;
-    }
-    return first.id > second.id ? 1 : -1;
-}
-
-export function TaskSortFunc(first: LarpakeTask, second: LarpakeTask): number {
-    /* Sort by
-     * - bigger ordering weight
-     * - bigger id
-     */
-
-    if (first.orderingWeightNumber > second.orderingWeightNumber) {
-        return -1;
-    }
-    if (second.orderingWeightNumber < first.orderingWeightNumber) {
-        return 1;
-    }
-    return first.id > second.id ? 1 : -1;
-}
-
 export function getInputNumericByDocId(fieldName: string) {
     return parseInt((document.getElementById(fieldName) as HTMLInputElement)?.value);
 }
 
-export function overwriteQueryParam(name: string, value: string) {
-    const pieced = window.location.href.split("?");
-    const url = pieced[0];
+export function pushUrlState(manipulate: (params: URLSearchParams) => void) {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
 
-    const params = new URLSearchParams();
-    params.append(name, value);
+    manipulate(params);
 
-    // Change page url without reloading. Good for changes in query parameters
-    window.history.pushState(
-        {
-            change: `update page url with query param  '${name}': '${value}'`,
-        },
-        "",
-        `${url}?${params}`
-    );
+    url.search = params.toString();
+    window.history.pushState({}, "", url);
 }
 
 export function formatDate(date: Date) {
@@ -173,4 +134,16 @@ export function encodeArrayToQueryString(key: string, array: string[]): string {
 
 export function getSearchParams() {
     return new URLSearchParams(new URL(window.location.href).search);
+}
+
+export function showOkDialog(id: string, afterClose: null | (() => void) = null): HTMLDialogElement {
+    const dialog = document.getElementById(id) as HTMLDialogElement;
+    dialog.showModal();
+    dialog.querySelector<HTMLButtonElement>("._ok")?.addEventListener("click", (_) => {
+        dialog.close();
+        if (afterClose) {
+            afterClose();
+        }
+    });
+    return dialog;
 }
