@@ -46,7 +46,8 @@ public class GroupsController : ExtendedControllerBase
          * Searching by group name is limited to admin and up.
          */
         options.ContainsUser = GetRequestUserId();
-        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
+        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers) 
+            && options.IncludeHiddenMembers;
 
         if (GetRequestPermissions().Has(Permissions.Admin))
         {
@@ -64,7 +65,8 @@ public class GroupsController : ExtendedControllerBase
     {
         /* Tutors can see all groups and members.
          */
-        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
+        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers) 
+            && options.IncludeHiddenMembers;
 
         FreshmanGroups groups = await GetResultGroups(options);
         return Ok(groups);
@@ -92,7 +94,7 @@ public class GroupsController : ExtendedControllerBase
     public async Task<IActionResult> GetMembers(long groupId)
     {
         var members = await _db.GetMembers(groupId);
-        return members is null 
+        return members is null
             ? IdNotFound() : Ok(new MembersResponse(members));
     }
 
@@ -115,7 +117,7 @@ public class GroupsController : ExtendedControllerBase
     {
         var key = await _db.RefreshInviteKey(groupId);
         return key is null
-            ? IdNotFound() 
+            ? IdNotFound()
             : Ok(new InviteKeyMsgResponse((string)key, "Old invite keys revoked."));
     }
 
@@ -137,7 +139,7 @@ public class GroupsController : ExtendedControllerBase
     [HttpPost("join/{key}")]    // No permissions required
     [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
-    public async Task<IActionResult> JoinByInvite([Required]string key)
+    public async Task<IActionResult> JoinByInvite([Required] string key)
     {
         // Anyone authenticated should be able to join
         Guid userId = GetRequestUserId();
@@ -180,7 +182,7 @@ public class GroupsController : ExtendedControllerBase
         if (validation.IsError)
         {
             Guid userId = GetRequestUserId();
-            _logger.LogInformation("Insufficent permissions for {userId} to add members to group {groupId}.", 
+            _logger.LogInformation("Insufficent permissions for {userId} to add members to group {groupId}.",
                 userId, groupId);
             return FromError(validation);
         }
@@ -221,7 +223,7 @@ public class GroupsController : ExtendedControllerBase
         if (validation.IsError)
         {
             Guid userId = GetRequestUserId();
-            _logger.LogInformation("Insufficent permissions for {userId} to update group {groupId}.", 
+            _logger.LogInformation("Insufficent permissions for {userId} to update group {groupId}.",
                 userId, groupId);
             return FromError(validation);
         }
@@ -271,11 +273,11 @@ public class GroupsController : ExtendedControllerBase
     public async Task<IActionResult> DeleteGroup(long groupId)
     {
         int result = await _db.Delete(groupId);
-        
+
         _logger.IfPositive(result)
-            .LogInformation("Group {groupId} deleted by {authorId}.", 
+            .LogInformation("Group {groupId} deleted by {authorId}.",
                 groupId, GetRequestUserId());
-      
+
         return OkRowsAffected(result);
     }
 

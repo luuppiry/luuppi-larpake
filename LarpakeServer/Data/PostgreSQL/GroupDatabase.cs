@@ -131,7 +131,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         // Are hidden members included?
         query.IfFalse(options.IncludeHiddenMembers).AppendConditionLine($"""
-            m.is_hidden IS NOT TRUE
+            m.is_hidden IS FALSE
             """);
 
         // Is participating in larpake
@@ -139,8 +139,10 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             g.larpake_id = @{nameof(options.LarpakeId)}
             """);
 
-        query.IfNotNull(options.IsCompeting).AppendConditionLine($"""
-            m.is_competing = @{nameof(options.IsCompeting)}
+        query.IfNotNull(options.ContainsUser)
+             .IfNotNull(options.IsSearchMemberCompeting)
+             .AppendConditionLine($"""
+            m.is_competing = @{nameof(options.IsSearchMemberCompeting)}
             """);
     }
 
@@ -150,7 +152,19 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         FreshmanGroup? result = null;
         await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>($"""
-            SELECT * FROM freshman_groups g
+            SELECT 
+                g.id,
+                g.larpake_id,
+                g.name,
+                g.group_number,
+                g.created_at,
+                g.updated_at,
+                m.group_id,
+                m.user_id,
+                m.is_hidden,
+                m.is_competing,
+                m.joined_at
+            FROM freshman_groups g
             LEFT JOIN freshman_group_members m
                 ON g.id = m.group_id
             WHERE g.id = @{nameof(id)};
@@ -166,7 +180,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 return group;
             },
             new { id },
-            splitOn: "id");
+            splitOn: "group_id");
 
         return result;
     }
@@ -263,10 +277,13 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             VALUES (
                 @{nameof(InsertModel2.Id)},
                 @{nameof(InsertModel2.UserId)},
-                @{nameof(InsertModel2.IsHidden)}
+                @{nameof(InsertModel2.IsHidden)},
                 FALSE
             )
-            ON CONFLICT DO NOTHING;
+            ON CONFLICT (group_id, user_id) DO UPDATE
+                SET 
+                    is_competing = FALSE,
+                    is_hidden = @{nameof(InsertModel2.IsHidden)};
             """,
                 records);
         }
@@ -291,7 +308,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                     group_number = @{nameof(record.GroupNumber)},
                     updated_at = NOW()
                 WHERE id = @{nameof(record.Id)}
-                """);
+                """, record);
         }
         catch (PostgresException ex)
         {
@@ -325,9 +342,9 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         return await connection.ExecuteAsync($"""
             DELETE FROM freshman_group_members
             WHERE group_id = @{nameof(id)}
-                AND user_id IN (@{nameof(members)});
+                AND user_id IN (@x);
             """,
-            new { id, members });
+            members.Select(x => new { id, x }));
     }
 
     public async Task<Result<string>> GetInviteKey(long groupId)

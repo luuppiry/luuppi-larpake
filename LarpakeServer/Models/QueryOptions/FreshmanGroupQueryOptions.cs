@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace LarpakeServer.Models.QueryOptions;
 
@@ -12,12 +11,6 @@ public class FreshmanGroupQueryOptions : QueryOptions
     public int? StartYear { get; set; }
     public long? LarpakeId { get; set; }
     public bool DoMinimize { get; set; } = true;
-    public bool? IsCompeting { get; set; }
-
-    [JsonIgnore]
-    public bool IncludeHiddenMembers { get; set; } = false;
-
-
-
-
+    public bool? IsSearchMemberCompeting { get; set; }
+    public bool IncludeHiddenMembers { get; set; } = true;
 }
