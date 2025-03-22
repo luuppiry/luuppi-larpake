@@ -26,7 +26,14 @@ export type Group = {
     members: GroupMember[];
 };
 
-
+export type PermissionData = {
+    roles: {
+        freshman: number;
+        tutor: number;
+        admin: number;
+        sudo: number;
+    }
+}
 
 
 

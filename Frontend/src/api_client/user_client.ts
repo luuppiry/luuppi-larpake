@@ -1,5 +1,5 @@
 import { Container, RowsAffected } from "../models/common.ts";
-import { Group, Signature, User } from "../models/user.ts";
+import { Group, PermissionData, Signature, User } from "../models/user.ts";
 import HttpClient from "./http_client.ts";
 
 const FETCH_CHUNK_SIZE = 100;
@@ -101,6 +101,15 @@ export class UserClient {
         const response = await this.client.get(`api/signatures/${id}`);
         if (!response.ok) {
             console.warn(response);
+            return null;
+        }
+        return await response.json();
+    }
+
+    async getPermissionMetadata(): Promise<PermissionData | null> {
+        const response = await this.client.get("api/status/permissions");
+        if (!response.ok) {
+            console.warn("Failed to fetch permission metadata", await response.json());
             return null;
         }
         return await response.json();

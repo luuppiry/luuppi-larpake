@@ -175,9 +175,8 @@ export default class HttpClient {
             credentials: "include",
         });
 
-        console.log(response);
         if (!response.ok) {
-            console.log("Failed to login to API with new entra id access token.");
+            console.warn("Failed to login to API with new entra id access token.");
             return null;
         }
         const token = await response.json();

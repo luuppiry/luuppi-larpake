@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -70,6 +70,12 @@
                 <td class="_entra-id"></td>
             </tr>
         </template>
+        <template id="role-template">
+            <tr class="permission-value">
+                <td class="_role">RoleName</td>
+                <td class="_value">X</td>
+            </tr>
+        </template>
 
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
@@ -80,33 +86,22 @@
                     <div class="permissions-notice">
                         <p class="permissions-info">
                             Oikeuksien päivittäminen tulee tulevaisuudessa selkeytymään, mutta kirjoittamisen hetkellä
-                            (22.3.2025 klo 2.12) oikeuksien antamisessa tulee noudattaa sivulla näkyvää taulukkoa. Jos tämän
-                            tekstin kirjoittamisesta on kulunut kauan (yli 1kk) suosittelen varmistamaan oikeat arvot
-                            kehitystiimiltä.
+                            (22.3.2025 klo 2.12) oikeuksien antamisessa tulee noudattaa sivulla näkyvää taulukkoa. Jos
+                            tämän tekstin kirjoittamisesta on kulunut kauan (yli 1kk) suosittelen varmistamaan oikeat
+                            arvot kehitystiimiltä, sillä numerot eivät ole vain "random" arvoja, vaan jokainen bitti
+                            merkitsee oikeutta.
                         </p>
                         <table class="permissions-table">
-                            <tbody >
+                            <tbody id="permissions-container">
                                 <tr class="column-titles permission-value">
                                     <th>Rooli</th>
                                     <th>Arvo</th>
                                 </tr>
-                                <tr class="permission-value">
-                                    <td>Fuksi</td>
-                                    <td>6</td>
-                                </tr>
-                                <tr class="permission-value">
-                                    <td>Tuutori</td>
-                                    <td>766</td>
-                                </tr>
-                                <tr class="permission-value">
-                                    <td>Admin</td>
-                                    <td>4194302</td>
-                                </tr>
-                                <tr class="permission-value">
-                                    <td>Sudo (Täytyy asettaa muualla)</td>
-                                    <td>2147483647</td>
+                                <tr>
+                                <td class="permission-value" colspan="2">Arvojen hakeminen epäonnistui</td>
                                 </tr>
                             </tbody>
+                            
                         </table>
                     </div>
                     <div class="search">

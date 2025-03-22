@@ -1,6 +1,13 @@
 import { UserClient } from "../api_client/user_client";
 import { Q_PAGE_OFFSET, Q_PAGE_SIZE, Q_SEARCH } from "../constants";
-import { appendTemplateElement, isEmpty, removeChildren, throwIfAnyNull } from "../helpers";
+import {
+    appendTemplateElement,
+    getDocumentLangCode,
+    isEmpty,
+    LANG_EN,
+    removeChildren,
+    throwIfAnyNull,
+} from "../helpers";
 import { User } from "../models/user";
 
 const VISIBLE_ID_LENGTH = 6;
@@ -169,6 +176,8 @@ async function main() {
     const browser = new UserBrowser(options);
     browser.setAvailableUsers(allUsers);
     browser.renderCurrent();
+
+    loadPermissionValues();
 }
 
 function pushPageQuery(size: number, offset: number) {
@@ -285,6 +294,9 @@ function addUserDialogListener(user: User, elem: HTMLElement) {
 
         setUserInformation(user, dialog, false);
 
+        dialog.addEventListener("close", (_) => {
+            document.body.classList.remove("no-scroll");
+        });
         dialog.querySelector<HTMLButtonElement>("._ok")?.addEventListener("click", async (e) => {
             // Do somehting
             e.preventDefault();
@@ -297,7 +309,6 @@ function addUserDialogListener(user: User, elem: HTMLElement) {
                 data
             );
             dialog.close();
-            document.body.classList.remove("no-scroll");
 
             const setStartYear = data.startYear != user.startYear;
             if (setStartYear) {
@@ -334,12 +345,10 @@ function addUserDialogListener(user: User, elem: HTMLElement) {
 
             user.startYear = data.permissions;
             user.permissions = data.permissions;
-
         });
         dialog.querySelector<HTMLButtonElement>("._cancel")?.addEventListener("click", (e) => {
             e.preventDefault();
             dialog.close();
-            document.body.classList.remove("no-scroll");
         });
     });
 }
@@ -352,6 +361,33 @@ function showDialog(dialogName: string, message: string) {
     successDialog.querySelector<HTMLButtonElement>("._ok")!.addEventListener("click", (_) => {
         successDialog.close();
     });
+}
+
+async function loadPermissionValues() {
+    const lang = getDocumentLangCode();
+    const permissions = await userClient.getPermissionMetadata();
+    if (!permissions) {
+        console.error(
+            "Failed to fetch permission values. If this keeps happening, ask you service maintainer for instructions."
+        );
+        return;
+    }
+
+    const container = document.getElementById("permissions-container") as HTMLElement;
+    
+    removeChildren(container, x => !x.classList.contains("column-titles"))
+
+    addRole("Fuksi", "Freshman", permissions.roles.freshman);
+    addRole("Tutor", "Tutor", permissions.roles.tutor);
+    addRole("Admin", "Admin", permissions.roles.admin);
+    addRole("Sudo (Täytyy asettaa muualla)", "Sudo (Set on separate config)", permissions.roles.sudo);
+
+
+    function addRole(keyFi: string, keyEn: string, value: number) {
+        const freshman = appendTemplateElement<HTMLElement>("role-template", container);
+        freshman.querySelector<HTMLElement>("._role")!.innerText = lang === LANG_EN ? keyEn : keyFi;
+        freshman.querySelector<HTMLElement>("._value")!.innerText = value.toString();
+    }
 }
 
 main();
