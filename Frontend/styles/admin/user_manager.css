@@ -189,14 +189,7 @@ td {
     margin-bottom: 30px;
 }
 
-.primary-btn:disabled {
-    background-color: #e2e2e9;
-}
 
-.hover-scale:disabled:hover {
-    transform: none;
-    cursor: not-allowed;
-}
 
 @media screen and (max-width: 800px) {
     .search {

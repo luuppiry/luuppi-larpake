@@ -186,6 +186,15 @@ body {
     cursor: pointer;
 }
 
+.primary-btn:disabled {
+    background-color: #e2e2e9;
+}
+
+.hover-scale:disabled:hover {
+    transform: none;
+    cursor: not-allowed;
+}
+
 .secondary-btn {
     font-size: large;
     border-radius: 6px;
@@ -264,4 +273,8 @@ body {
 
 .margin-auto {
     margin: auto;
+}
+
+.margin-left {
+    margin-left: auto;
 }

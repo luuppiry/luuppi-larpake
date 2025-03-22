@@ -3,6 +3,8 @@ import { Group, GroupMember, PermissionData, Signature, User } from "../models/u
 import HttpClient from "./http_client.ts";
 
 const FETCH_CHUNK_SIZE = 100;
+const MIN_SEARCH_LENGTH = 3;
+const MAX_SEARCH_LENGTH = 30;
 
 type NonCompetingGroupMember = {
     userId: string;
@@ -123,27 +125,57 @@ export class UserClient {
         return await response.json();
     }
 
-    async getGroups(minimize: boolean = true): Promise<Group[] | null> {
+    async getGroupsPaged(
+        minimize: boolean = true,
+        search: string | null = null,
+        pageSize: number = 20,
+        pageOffset: number = 0,
+        isOrQuery: boolean = true
+    ): Promise<Container<Group[]> | null> {
         const query = new URLSearchParams();
         query.append("DoMinimize", minimize ? "true" : "false");
         query.append("IncludeHiddenMembers", "true");
-
-        // query.append("GroupName", <string>)
+        query.append("PageSize", pageSize.toString());
+        query.append("PageOffset", pageOffset.toString());
         // query.append("ContainsUser", <string>)
-        // query.append("StartYear", <number>)
-        // query.append("LarpakeId", <number>)
-        // query.append("IsCompeting", <boolean>)
-        query.append("PageSize", "100")
-        // query.append("PageOffset", <number>)
+        // query.append("IncludeHiddenMembers", <boolean>)
+        // query.append("IsSearchMemberCompeting", <boolean>)
+
+        if (search && search.length >= MIN_SEARCH_LENGTH && search.length <= MAX_SEARCH_LENGTH) {
+            query.append("GroupName", search);
+        }
+        if (search) {
+            query.append("IsORQuery", isOrQuery ? "true" : "false");
+            const numeric = parseInt(search);
+            if (!Number.isNaN(numeric)) {
+                query.append("StartYear", numeric.toString());
+                query.append("LarpakeId", numeric.toString());
+                query.append("GroupNumber", numeric.toString());
+            }
+        }
 
         const response = await this.client.get("api/groups", query);
         if (!response.ok) {
-            console.warn("Failed to fetch groups");
+            console.warn("Failed to fetch groups", await response.json());
             return null;
         }
 
         const groups: Container<Group[]> = await response.json();
-        return groups.data;
+        return groups;
+    }
+
+    async getGroups(
+        minimize: boolean = true,
+        search: string | null = null,
+        pageSize: number = 20,
+        pageOffset: number = 0,
+        isOrQuery: boolean = true
+    ): Promise<Group[] | null> {
+        const paged = await this.getGroupsPaged(minimize, search, pageSize, pageOffset, isOrQuery);
+        if (paged) {
+            return paged.data;
+        }
+        return null;
     }
 
     async getGroupById(groupId: number): Promise<Group | null> {

@@ -1,8 +1,19 @@
 @import "../common.css";
 @import "../section.css";
+@import "../common_settings.css";
+
+body {
+    padding-bottom: 150px;
+}
 
 .content-container {
+    max-width: 1100px;
+    width: 100%;
     margin: 0 30px;
+}
+
+#search {
+    font-size: large;
 }
 
 #groups-container {
@@ -55,10 +66,6 @@
     padding: 0px 20px !important;
 }
 
-.no-groups {
-    display: flex;
-    justify-content: center;
-}
 
 .hover-scale:hover {
     transform: scale(1.015) !important;
@@ -83,3 +90,18 @@
     width: 46px;
     padding: 10px 0;
 }
+
+
+
+/* This css selector was made in co-operation with Github copilot 
+ * Show .no-groups only if there are more than 2 children */
+#groups-container:has(> li:nth-child(3)) .no-groups {
+    display: none;
+}
+
+.no-groups:not(:nth-child(3)) {
+    display: flex;
+    justify-content: center;
+}
+
+
