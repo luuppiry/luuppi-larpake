@@ -4,6 +4,8 @@ using LarpakeServer.Services.Implementations;
 using Scalar.AspNetCore;
 
 
+
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables(Constants.Environment.EnvVariablePrefix);
 

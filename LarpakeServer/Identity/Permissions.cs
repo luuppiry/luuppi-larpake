@@ -183,7 +183,7 @@ public enum Permissions : int
     /// Also has all the permissions of User.
     /// </summary>
     Tutor = Freshman | CompleteAttendance | CreateSignature
-        | AddGroupMembers | CreateGroupEvent | ReadAllData,
+        | AddGroupMembers | CreateGroupEvent | ReadAllData | EditGroup,
 
     /// <summary>
     /// Permission allows to create, update and delete any event

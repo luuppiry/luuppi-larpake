@@ -59,7 +59,7 @@ public static class EnumExtensions
     internal static bool IsMoreThan(this Permissions value, Permissions reference)
     {
         // Does value have more flags than reference?
-        return (value & reference) < value;
+        return (value & ~reference) != 0;
     }
 
  
