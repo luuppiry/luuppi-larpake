@@ -1,9 +1,108 @@
+@import "../section.css";
 @import "../common.css";
+@import "../common_settings.css";
 
 body {
     background-color: white;
     padding-bottom: 150px;
 }
+
+th {
+    font-size: small;
+    font-weight: 600;
+}
+
+td,
+th {
+    padding: 10px 20px;
+    font-size: small;
+    color: black;
+}
+
+td {
+    font-weight: 400;
+}
+
+/* Dialogs */
+#user-dialog {
+    width: 100%;
+    max-width: 600px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+}
+
+#user-dialog > form-container {
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    font-size: medium;
+    margin: 0 !important;
+}
+
+#user-dialog h3 {
+    margin: 0;
+    font-size: medium;
+}
+
+#user-dialog p {
+    margin: 0;
+}
+
+#user-dialog footer {
+    display: flex;
+    justify-content: end;
+    gap: 6px;
+}
+
+.dialog-content {
+    display: flex;
+    flex-flow: column;
+    gap: 10px;
+}
+
+.dialog-title {
+    margin: 0 0 20px 0;
+}
+
+.section {
+    margin: 0;
+}
+
+.section-filler > div {
+    padding: 20px 30px !important;
+}
+
+.text-field {
+    max-width: 200px;
+}
+
+.no-scroll {
+    overflow: hidden;
+}
+
+/* Permissions info table */
+
+.permissions-notice {
+    display: flex;
+}
+
+.permissions-info {
+    max-width: 60%;
+}
+
+.permissions-table {
+    padding: 20px;
+}
+
+.permission-value > td,
+.permission-value > th {
+    padding: 2px 5px;
+}
+
+.permissions-header {
+    text-align: start;
+}
+
+/* UI main content*/
 
 .top-level-container {
     display: flex;
@@ -48,17 +147,6 @@ body {
     margin-top: auto;
 }
 
-@media screen and (max-width: 800px) {
-    .search {
-        flex-flow: column;
-        gap: 10px;
-    }
-
-    .search-field {
-        margin: 0 auto 0 0;
-    }
-}
-
 .user-table-padding {
     overflow-x: auto;
     min-height: 350px;
@@ -71,30 +159,9 @@ body {
     margin-bottom: auto;
 }
 
-th {
-    font-size: small;
-    font-weight: 600;
-}
-
-td,
-th {
-    padding: 10px 20px;
-    font-size: small;
-    color: black;
-}
-
-td {
-    font-weight: 400;
-}
-
-
 .column-titles > th {
     text-align: start;
     color: var(--non-highlight);
-}
-
-.item-counter {
-    font-size: small;
 }
 
 .user-table tr:nth-of-type(2n + 2) {
@@ -111,6 +178,10 @@ td {
     justify-content: space-between;
 }
 
+.item-counter {
+    font-size: small;
+}
+
 .table-navigation {
     display: flex;
     gap: 10px;
@@ -125,4 +196,23 @@ td {
 .hover-scale:disabled:hover {
     transform: none;
     cursor: not-allowed;
+}
+
+@media screen and (max-width: 800px) {
+    .search {
+        flex-flow: column;
+        gap: 10px;
+    }
+
+    .search-field {
+        margin: 0 auto 0 0;
+    }
+
+    .permissions-notice {
+        flex-flow: column;
+    }
+
+    .permissions-info {
+        max-width: 100%;
+    }
 }

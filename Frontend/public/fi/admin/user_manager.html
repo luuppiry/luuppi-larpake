@@ -12,8 +12,52 @@
         <link rel="stylesheet" href="/styles/admin/user_manager.css" />
         <script src="/src/components/side-panel.ts"></script>
         <script type="module" src="/src/components/ui-header.ts"></script>
+        <script type="module" src="/src/components/form-container.ts"></script>
     </head>
     <body>
+        <dialog id="user-dialog">
+            <form-container>
+                <header>
+                    <h2 class="dialog-title">Muokkaa käyttäjätietoja</h2>
+                </header>
+
+                <section class="dialog-content">
+                    <h3>Sähköposti</h3>
+                    <p class="_email"></p>
+                    <h3>Käyttäjänimi</h3>
+                    <p class="_username"></p>
+                    <h3>Etunimi</h3>
+                    <p class="_first-name"></p>
+                    <h3>Sukunimi</h3>
+                    <p class="_last-name"></p>
+                    <h3>Oikeudet (Rooli)</h3>
+                    <p><i>Tarkistathan, että ole antamassa oikeuksia oikealle henkilöille!</i></p>
+                    <input class="_permissions text-field" type="number" />
+                    <h3>Aloitusvuosi</h3>
+                    <input class="_start-year text-field" type="number" />
+                    <h3>Id (Lärpäkkeen sisäinen tunniste)</h3>
+                    <p class="_id"></p>
+                    <h3>Entra id (luuppi käyttäjä tunniste)</h3>
+                    <p class="_entra-id"></p>
+                </section>
+                <footer>
+                    <button class="_ok primary-btn">Tallenna</button>
+                    <button class="_cancel secondary-btn">Peruuta</button>
+                </footer>
+            </form-container>
+        </dialog>
+
+        <dialog id="error-dialog">
+            <h2>Päivittäminen epäonnistui!</h2>
+            <p class="_message">error message</p>
+            <button class="_ok primary-btn">OK</button>
+        </dialog>
+
+        <dialog id="success-dialog">
+            <h2>Tietojen päivittäminen onnistui!</h2>
+            <p class="_message">success message</p>
+            <button class="_ok primary-btn">OK</button>
+        </dialog>
         <template id="user-template">
             <tr>
                 <td class="_email">email</td>
@@ -21,11 +65,9 @@
                 <td class="_first-name">first name</td>
                 <td class="_last-name">last name</td>
                 <td class="_permissions">X</td>
-                <td class="_startYear"></td>
+                <td class="_start-year"></td>
                 <td class="_id"></td>
                 <td class="_entra-id"></td>
-                <td class="_id-full" hidden></td>
-                <td class="_entra-id-full" hidden></td>
             </tr>
         </template>
 
@@ -35,12 +77,42 @@
             <section class="content">
                 <div class="page-information">
                     <h2>Käyttäjien ylläpito</h2>
+                    <div class="permissions-notice">
+                        <p class="permissions-info">
+                            Oikeuksien päivittäminen tulee tulevaisuudessa selkeytymään, mutta kirjoittamisen hetkellä
+                            (22.3.2025 klo 2.12) oikeuksien antamisessa tulee noudattaa sivulla näkyvää taulukkoa. Jos tämän
+                            tekstin kirjoittamisesta on kulunut kauan (yli 1kk) suosittelen varmistamaan oikeat arvot
+                            kehitystiimiltä.
+                        </p>
+                        <table class="permissions-table">
+                            <tbody >
+                                <tr class="column-titles permission-value">
+                                    <th>Rooli</th>
+                                    <th>Arvo</th>
+                                </tr>
+                                <tr class="permission-value">
+                                    <td>Fuksi</td>
+                                    <td>6</td>
+                                </tr>
+                                <tr class="permission-value">
+                                    <td>Tuutori</td>
+                                    <td>766</td>
+                                </tr>
+                                <tr class="permission-value">
+                                    <td>Admin</td>
+                                    <td>4194302</td>
+                                </tr>
+                                <tr class="permission-value">
+                                    <td>Sudo (Täytyy asettaa muualla)</td>
+                                    <td>2147483647</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <div class="search">
                         <p>
                             Selaa järjestelmän käyttäjiä ja muokkaa oikeuksia. Haulla voit etsiä käyttäjää sähköpostin,
-                            tunnisteen, entra tunnisteen, aloitusvuoden tai oikeuksien perusteella. Jos haluat etsiä
-                            nimen tai käyttäjänimen perusteella, sinun tulee hyödyntää päänettisivujen ylläpito
-                            -toimintoa.
+                            tunnisteen, luuppi tunnisteen, aloitusvuoden, nimien tai oikeuksien perusteella.
                         </p>
                         <input id="search-field" class="search-field" type="search" placeholder="Hae" />
                     </div>
@@ -58,10 +130,6 @@
                                 <th>Id</th>
                                 <th>Entra Id</th>
                             </tr>
-
-                            
-
-                           
                         </tbody>
                     </table>
                 </div>

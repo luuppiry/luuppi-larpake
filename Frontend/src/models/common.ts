@@ -19,3 +19,7 @@ export type Point2D = {
 export type IdObject = {
     id: number;
 };
+
+export type RowsAffected = {
+    rowsAffected: number;
+};

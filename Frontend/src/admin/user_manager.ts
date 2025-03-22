@@ -7,34 +7,18 @@ const VISIBLE_ID_LENGTH = 6;
 const DEFAULT_PAGE_SIZE = 25;
 const DEBOUNCH_TIMEOUT = 500;
 
+const userClient = new UserClient();
+
+type ChangableUserData = {
+    permissions: number;
+    startYear: number;
+};
+
 type Paging = {
     pageSize: number;
     pageOffset: number;
     searchValue: string | null;
 };
-
-const data: User[] = [
-    {
-        id: "01951002-aaa9-7175-a89b-153eff018ea7",
-        entraId: "cffd39ef-6d20-459d-8c34-bf94fbffe02c",
-        firstName: "Henri",
-        lastName: "Vainio",
-        permissions: 2147483647,
-        entraUsername: "henri.m.vainio@gmail.com",
-        username: "henrivain",
-        startYear: 2024,
-    },
-    {
-        id: "0194ad9a-c487-7f0d-b0be-a9b12e6d44d3",
-        entraId: "0194ad9a-c487-705e-90c0-2a046022a0c0",
-        firstName: "Juliusz",
-        lastName: "Kotelba",
-        permissions: 2147483647,
-        entraUsername: "juliusz.kotelba@gmail.com",
-        username: "julle",
-        startYear: 2024,
-    },
-];
 
 class UserBrowser {
     allUsers: User[] = [];
@@ -73,7 +57,7 @@ class UserBrowser {
         ]);
 
         // Bind function to point to correct "this" in event handlers
-        this.renderFiltered = this.renderFiltered.bind(this);
+        this.renderNext = this.renderNext.bind(this);
         this.renderPrevious = this.renderPrevious.bind(this);
         this.renderFiltered = this.renderFiltered.bind(this);
 
@@ -92,6 +76,10 @@ class UserBrowser {
         this.#filter();
     }
 
+    renderFirst() {
+        this.#render(0, this.filtered);
+    }
+
     renderNext() {
         this.#render(this.offset + this.pageSize, this.filtered);
     }
@@ -108,7 +96,7 @@ class UserBrowser {
         const func = () => {
             pushSearchValue(this.searchField.value);
             this.#filter();
-            this.renderCurrent();
+            this.renderFirst();
         };
 
         clearTimeout(this.debounchTimerId ?? undefined);
@@ -138,17 +126,8 @@ class UserBrowser {
 
         for (const user of users) {
             const elem = appendTemplateElement<HTMLTableRowElement>("user-template", this.container);
-
-            elem.querySelector<HTMLTableCellElement>("._email")!.innerText = user.entraUsername ?? "N/A";
-            elem.querySelector<HTMLTableCellElement>("._username")!.innerText = user.username ?? "-";
-            elem.querySelector<HTMLTableCellElement>("._first-name")!.innerText = user.firstName ?? "-";
-            elem.querySelector<HTMLTableCellElement>("._last-name")!.innerText = user.lastName ?? "-";
-            elem.querySelector<HTMLTableCellElement>("._permissions")!.innerText = user.permissions.toString() ?? "-";
-            elem.querySelector<HTMLTableCellElement>("._startYear")!.innerText = user.startYear?.toString() ?? "-";
-            elem.querySelector<HTMLTableCellElement>("._id")!.innerText = truncateId(user.id);
-            elem.querySelector<HTMLTableCellElement>("._entra-id")!.innerText = truncateId(user.entraId);
-            elem.querySelector<HTMLTableCellElement>("._id-full")!.innerText = user.id ?? "";
-            elem.querySelector<HTMLTableCellElement>("._entra-id-full")!.innerText = user.entraId ?? "";
+            setUserInformation(user, elem, true);
+            addUserDialogListener(user, elem);
         }
     }
 
@@ -237,7 +216,11 @@ function truncateId(id: string | null): string {
 }
 
 async function fetchUsers(): Promise<User[]> {
-    return data;
+    const users = await userClient.getAll();
+    if (!users) {
+        throw new Error("Failed to fetch users from server.");
+    }
+    return users;
 }
 
 function largestMultipleLessThanOrEqualTo(threshold: number, num: number) {
@@ -246,6 +229,129 @@ function largestMultipleLessThanOrEqualTo(threshold: number, num: number) {
         return 0;
     }
     return Math.floor(threshold / num) * num;
+}
+
+function setUserInformation(user: User, rootElem: HTMLElement, truncateIds: boolean) {
+    rootElem.querySelector<HTMLTableCellElement>("._email")!.innerText = user.entraUsername ?? "N/A";
+    rootElem.querySelector<HTMLTableCellElement>("._username")!.innerText = user.username ?? "-";
+    rootElem.querySelector<HTMLTableCellElement>("._first-name")!.innerText = user.firstName ?? "-";
+    rootElem.querySelector<HTMLTableCellElement>("._last-name")!.innerText = user.lastName ?? "-";
+    const permissions = rootElem.querySelector<HTMLTableCellElement>("._permissions");
+    if (permissions instanceof HTMLInputElement) {
+        (permissions as HTMLInputElement).value = user.permissions.toString() ?? "-";
+    } else {
+        permissions!.innerText = user.permissions.toString() ?? "-";
+    }
+
+    const startYear = rootElem.querySelector<HTMLElement>("._start-year");
+    if (startYear instanceof HTMLInputElement) {
+        (startYear as HTMLInputElement).value = user.startYear?.toString() ?? "-";
+    } else {
+        startYear!.innerText = user.startYear?.toString() ?? "-";
+    }
+
+    rootElem.querySelector<HTMLInputElement>("._start-year")!.value = user.startYear?.toString() ?? "-";
+    rootElem.querySelector<HTMLTableCellElement>("._id")!.innerText = truncateIds
+        ? truncateId(user.id)
+        : user.id ?? "N/A";
+    rootElem.querySelector<HTMLTableCellElement>("._entra-id")!.innerText = truncateIds
+        ? truncateId(user.entraId)
+        : user.entraId ?? "N/A";
+}
+
+function readUserData(rootElem: HTMLElement): ChangableUserData {
+    const permissions = parseInt(rootElem.querySelector<HTMLInputElement>("._permissions")!.value);
+    if (Number.isNaN(permissions)) {
+        throw new Error("Invalid permissions value");
+    }
+
+    const startYear = parseInt(rootElem.querySelector<HTMLInputElement>("._start-year")!.value);
+    if (Number.isNaN(startYear)) {
+        throw new Error("Invalid start year value");
+    }
+
+    return {
+        permissions: permissions,
+        startYear: startYear,
+    };
+}
+
+function addUserDialogListener(user: User, elem: HTMLElement) {
+    elem.addEventListener("click", (_) => {
+        const dialog = document.getElementById("user-dialog") as HTMLDialogElement;
+
+        dialog.showModal();
+        document.body.classList.add("no-scroll");
+
+        setUserInformation(user, dialog, false);
+
+        dialog.querySelector<HTMLButtonElement>("._ok")?.addEventListener("click", async (e) => {
+            // Do somehting
+            e.preventDefault();
+
+            const data = readUserData(dialog);
+            console.log(
+                `User ${user.id} updated from`,
+                { permissions: user.permissions, startYear: user.startYear },
+                " to ",
+                data
+            );
+            dialog.close();
+            document.body.classList.remove("no-scroll");
+
+            const setStartYear = data.startYear != user.startYear;
+            if (setStartYear) {
+                const success = await userClient.updateUser(user.id, data.startYear);
+                if (!success) {
+                    showDialog(
+                        "error-dialog",
+                        "Aloitusvuoden päivittäminen epäonnistui, katso konsoli (F12 -> console)"
+                    );
+                    return;
+                }
+            }
+
+            const setPermissions = data.permissions != user.permissions;
+            if (setPermissions) {
+                const success = await userClient.setPermissions(user.id, data.permissions);
+                if (!success) {
+                    showDialog("error-dialog", "Oikeuksien päivittäminen epäonnistui, katso konsoli (F12 -> console)");
+                    return;
+                }
+            }
+
+            if (setPermissions || setStartYear) {
+                showDialog(
+                    "success-dialog",
+                    `Päivitettiin onnistuneesti käyttäjän tiedot: ${setPermissions ? "oikeudet" : ""} ${
+                        setStartYear ? "aloitusvuosi" : ""
+                    }`
+                );
+            }
+
+            elem.querySelector<HTMLElement>("._permissions")!.innerText = data.permissions.toString();
+            elem.querySelector<HTMLElement>("._start-year")!.innerText = data.startYear.toString();
+
+            user.startYear = data.permissions;
+            user.permissions = data.permissions;
+
+        });
+        dialog.querySelector<HTMLButtonElement>("._cancel")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            dialog.close();
+            document.body.classList.remove("no-scroll");
+        });
+    });
+}
+
+function showDialog(dialogName: string, message: string) {
+    const successDialog = document.getElementById(dialogName) as HTMLDialogElement;
+    successDialog.showModal();
+    successDialog.querySelector<HTMLParagraphElement>("._message")!.innerText = message;
+
+    successDialog.querySelector<HTMLButtonElement>("._ok")!.addEventListener("click", (_) => {
+        successDialog.close();
+    });
 }
 
 main();
