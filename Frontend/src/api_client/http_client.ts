@@ -32,6 +32,25 @@ export default class HttpClient {
         return await this.makeRequest(endpoint, "DELETE", body, headers, null);
     }
 
+    async logout(): Promise<boolean> {
+        const response = await this.post("api/authentication/token/invalidate");
+        if (!response.ok) {
+            console.warn("Failed to invalidate refresh token on Lärpäke API:", await response.json());
+        }
+
+        const entra = new EntraId();
+        const entraSuccess = await entra.fetchAzureLogout();
+        if (!entraSuccess) {
+            console.warn("Failed to logout from entra");
+        }
+        return entraSuccess !== undefined;
+    }
+
+    async login(): Promise<string | null> {
+        const entra = new EntraId();
+        return await entra.fetchAzureLogin();
+    }
+
     /**
      * Makes an HTTP request to the specified endpoint with the given method, headers, and query parameters.
      * Ensures valid access tokens if can get one, asks user credentials if needed.

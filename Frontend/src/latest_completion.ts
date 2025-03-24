@@ -76,3 +76,5 @@ function renderIdOnlyItem(elem: HTMLElement, taskId: number, completedAt: Date, 
     const completed = formatDateTime(completedAt);
     elem.querySelector<HTMLParagraphElement>("._time")!.innerText = isEmpty(completed) ? "N/A" : completed;
 }
+
+main();

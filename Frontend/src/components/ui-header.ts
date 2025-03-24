@@ -1,9 +1,10 @@
-import EntraId from "../api_client/entra_id.ts";
-const auth = new EntraId();
+import HttpClient from "../api_client/http_client";
 
 class Header extends HTMLElement {
+    client: HttpClient;
     constructor() {
         super();
+        this.client = new HttpClient();
     }
 
     connectedCallback() {
@@ -122,14 +123,33 @@ class Header extends HTMLElement {
         profileDropdown();
     }
 
-    login() {
-        login();
+    async login() {
+        try {
+            const token = await this.client.login();
+            if (token) {
+                console.log("Login successful.");
+                location.reload();
+            } else {
+                console.log("Login failed.");
+            }
+        } catch (error) {
+            console.error("Login Error:", error);
+        }
     }
 
-    logout() {
-        logout();
+    async logout() {
+        try {
+            const token = await this.client.logout();
+            if (token) {
+                console.log("Access Token:", token);
+                location.reload();
+            } else {
+                console.log("Logout failed.");
+            }
+        } catch (error) {
+            console.error("Logout Error:", error);
+        }
     }
-
     #add_path_correction(path: string): string {
         /* Path depth should be positive number
          * For example 2 = ../../<path>
@@ -150,34 +170,6 @@ class Header extends HTMLElement {
 
         // Add correction
         return correction + path;
-    }
-}
-
-async function login() {
-    try {
-        const token = await auth.fetchAzureLogin();
-        if (token) {
-            console.log("Login successful.");
-            location.reload();
-        } else {
-            console.log("Login failed.");
-        }
-    } catch (error) {
-        console.error("Login Error:", error);
-    }
-}
-
-async function logout() {
-    try {
-        const token = await auth.fetchAzureLogout();
-        if (token) {
-            console.log("Access Token:", token);
-            location.reload();
-        } else {
-            console.log("Logout failed.");
-        }
-    } catch (error) {
-        console.error("Logout Error:", error);
     }
 }
 
