@@ -192,6 +192,9 @@ public class AuthenticationController : ExtendedControllerBase
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         int rowsAffected = await _refreshTokenDb.RevokeUserTokens(userId);
+
+        Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
+
         return OkRowsAffected(rowsAffected);
     }
 
@@ -203,6 +206,9 @@ public class AuthenticationController : ExtendedControllerBase
     public async Task<IActionResult> InvalidateTokenFamily(Guid tokenFamily)
     {
         int rowsAffected = await _refreshTokenDb.RevokeFamily(tokenFamily);
+
+        Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
+
         return OkRowsAffected(rowsAffected);
     }
 

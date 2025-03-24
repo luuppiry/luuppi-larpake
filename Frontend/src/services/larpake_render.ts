@@ -4,14 +4,13 @@ import {
     isEmpty,
     LANG_EN,
     removeChildren,
-    SectionSortFunc,
-    TaskSortFunc,
     throwIfAnyNull,
     ToOverwriteDictionary,
 } from "../helpers";
 import { Attendance, Completion } from "../models/attendance";
 import { getSectionText, getTaskText, Section } from "../models/larpake";
 import { Signature } from "../models/user";
+import { SectionSortFunc, TaskSortFunc } from "../sortFunctions";
 import SignatureRenderer from "./signature_renderer";
 
 const PAGE_SIZE = 7;
