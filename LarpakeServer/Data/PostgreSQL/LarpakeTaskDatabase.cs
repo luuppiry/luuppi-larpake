@@ -3,12 +3,23 @@ using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using Npgsql;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
 public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogger<LarpakeTaskDatabase> logger)
     : PostgresDb(connectionString, logger), ILarpakeTaskDatabase
 {
+    public class LocalizationGet
+    {
+        public long LarpakeEventId { get; set; }
+        public string Title { get; set; } = "";
+        public string Body { get; set; } = "";
+        public string LanguageCode { get; set; } = "";
+    }
+
+
     public async Task<LarpakeTask[]> GetTasks(LarpakeTaskQueryOptions options)
     {
         SelectQuery query = new();
@@ -20,14 +31,9 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 e.ordering_weight_number,
                 e.created_at,
                 e.updated_at,
-                e.cancelled_at,
-                loc.title,
-                loc.body,
-                GetLanguageCode(loc.language_id) AS language_code,
-                loc.larpake_event_id
+                e.cancelled_at         
             FROM larpake_events e
-                LEFT JOIN larpake_event_localizations loc
-                    ON e.id = loc.larpake_event_id
+
             """);
 
         bool requireSections = options.LarpakeId is not null || options.UserId is not null;
@@ -84,16 +90,46 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             OFFSET @{nameof(options.PageOffset)};
             """);
 
-        string q = query.ToString();
 
+        // Query tasks
+        string parsed = query.ToString();
         using var connection = GetConnection();
-        var records = await connection.QueryLocalizedAsync<LarpakeTask, LarpakeTaskLocalization>(
-            query.ToString(),
-            options,
-            splitOn: "title");
+        var records = await connection.QueryAsync<LarpakeTask>(parsed, options);
 
-        return records.Values.ToArray();
+
+        // Query localizations
+        long[] eventIds = records.Select(x => x.Id).ToArray();
+        var localizations = await connection.QueryAsync<LocalizationGet>($"""
+            SELECT 
+                 title,
+                 body,
+                 GetLanguageCode(language_id) AS language_code,
+                 larpake_event_id
+            FROM larpake_event_localizations 
+                WHERE larpake_event_id = ANY(@{nameof(eventIds)});
+            """, new { eventIds });
+
+        Dictionary<long, List<LarpakeTaskLocalization>> dict = localizations
+            .GroupBy(x => x.LarpakeEventId)
+            .ToDictionary(
+                x => x.Key, x => x.Select(x => new LarpakeTaskLocalization
+                {
+                    Title = x.Title,
+                    Body = x.Body,
+                    LanguageCode = x.LanguageCode
+                }).ToList()
+            );
+
+        return records.Select(x =>
+        {
+            if (dict.TryGetValue(x.Id, out List<LarpakeTaskLocalization>? locs))
+            {
+                x.TextData = locs;
+            }
+            return x;
+        }).ToArray();
     }
+
 
     public async Task<LarpakeTask?> GetTask(long id)
     {
@@ -177,6 +213,10 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             WHERE id = @{nameof(record.Id)};
             """, record);
 
+        var localizations = record.TextData
+            .Select(x => new { x.Title, x.Body, record.Id, x.LanguageCode })
+            .ToArray();
+
         rowsAffected += await connection.ExecuteAsync($"""
             INSERT INTO larpake_event_localizations (
                 title,
@@ -192,7 +232,9 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             DO UPDATE SET
                 title = @{nameof(LarpakeTaskLocalization.Title)},
                 body = @{nameof(LarpakeTaskLocalization.Body)};
-            """, record.TextData.Select(x => new { x.Title, x.Body, record.Id, x.LanguageCode }));
+            """, localizations);
+
+        Debug.Assert(rowsAffected == localizations.Length + 1, "Rows affected does not match.");
 
         await transaction.CommitAsync();
         return rowsAffected;
