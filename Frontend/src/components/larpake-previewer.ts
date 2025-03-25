@@ -1,3 +1,6 @@
+import { Q_LARPAKE_ID } from "../constants";
+import { throwIfAnyNull } from "../helpers";
+
 const idStart = "larpake-preview-";
 
 export type PreviewData = {
@@ -76,41 +79,35 @@ export default class LarpakePreview extends HTMLLIElement {
         this.groups = document.getElementById(`larpake-${numId}-groups`) as HTMLParagraphElement;
         this.created = document.getElementById(`larpake-${numId}-created`) as HTMLSpanElement;
         this.edited = document.getElementById(`larpake-${numId}-edited`) as HTMLSpanElement;
+
+        throwIfAnyNull([
+            this.link,
+            this.image,
+            this.titleText,
+            this.year,
+            this.sections,
+            this.tasks,
+            this.total,
+            this.groups,
+            this.created,
+            this.edited,
+        ]);
     }
 
     disconnectedCallback() {}
 
     addData(data: PreviewData) {
-        if (this.link) {
-            this.link.href = `larpake_manager.html?larpakeId=${data.id}`;
-        }
-        if (this.image) {
-            this.image.src = data.imgUrl;
-        }
-        if (this.titleText) {
-            this.titleText.innerText = data.titleFi;
-        }
-        if (this.year) {
-            this.year.innerText = data.year?.toString() ?? "N/A";
-        }
-        if (this.sections) {
-            this.sections.innerText = data.sections.toString();
-        }
-        if (this.tasks) {
-            this.tasks.innerText = data.tasks.toString();
-        }
-        if (this.total) {
-            this.total.innerText = data.points.toString();
-        }
-        if (this.groups) {
-            this.groups.innerText = data.groups.toString();
-        }
-        if (this.created) {
-            this.created.innerText = data.createdAt.toString().split("T")[0];
-        }
-        if (this.edited) {
-            this.edited.innerText = data.updatedAt.toString().split("T")[0];
-        }
+        // ctor validates all to be not null
+        this.link!.href = `larpake_manager.html?${Q_LARPAKE_ID}=${data.id}`;
+        this.image!.src = data.imgUrl;
+        this.titleText!.innerText = data.titleFi;
+        this.year!.innerText = data.year?.toString() ?? "N/A";
+        this.sections!.innerText = data.sections.toString();
+        this.tasks!.innerText = data.tasks.toString();
+        this.total!.innerText = data.points.toString();
+        this.groups!.innerText = data.groups.toString();
+        this.created!.innerText = data.createdAt.toString().split("T")[0];
+        this.edited!.innerText = data.updatedAt.toString().split("T")[0];
     }
 
     #getAvailableIdNum() {

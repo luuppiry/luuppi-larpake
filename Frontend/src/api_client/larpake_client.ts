@@ -218,13 +218,12 @@ export default class LarpakeClient {
     async #uploadTask(sectionId: number, task: LarpakeTask) {
         task.larpakeSectionId = sectionId;
         if (task.id < 0) {
-            this.#createTask(task);
-        }
-        if (await this.#taskExists(task.id)) {
-            await this.#updateTask(task);
+            // Create
+            await this.#createTask(task);
             return;
         }
-        await this.#createTask(task);
+        // Update
+        await this.#updateTask(task);
     }
 
     async #createTask(task: LarpakeTask) {
@@ -243,8 +242,5 @@ export default class LarpakeClient {
         }
     }
 
-    async #taskExists(taskId: number) {
-        const response = await this.client.get(`api/larpake-tasks/${taskId}`);
-        return response.ok;
-    }
+    
 }

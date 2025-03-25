@@ -1,5 +1,5 @@
 import { LarpakeTask, Section } from "./models/larpake";
-import { GroupMember } from "./models/user";
+import { Group, GroupMember } from "./models/user";
 
 export function SectionSortFunc(first: Section, second: Section): number {
     /* Sort by
@@ -35,11 +35,34 @@ export function groupMemberSortFunc(first: GroupMember, second: GroupMember){
     if (first.isCompeting && !second.isCompeting) {
         return 1;
     }
-    if (!first.user?.entraId) {
+
+    if (!first.userId) {
         return -1;
     }
-    if (!second.user?.entraId) {
+    if (!second.userId) {
         return 1;
     }
-    return first.user.entraId > second.user.entraId ? 1 : -1;
+    return first.userId > second.userId ? 1 : -1;
+}
+
+export function groupSortFunc(first: Group, second: Group): number {
+    if (first.larpakeId < second.larpakeId) {
+        return -1;
+    }
+    if (first.larpakeId > second.larpakeId) {
+        return 1;
+    }
+    if (!second.groupNumber) {
+        return -1;
+    }
+    if (!first.groupNumber) {
+        return 1;
+    }
+    if (first.groupNumber < second.groupNumber) {
+        return -1;
+    }
+    if (first.groupNumber > second.groupNumber) {
+        return 1;
+    }
+    return first.id < second.id ? -1 : 1;
 }

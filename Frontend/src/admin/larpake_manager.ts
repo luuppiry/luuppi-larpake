@@ -1,8 +1,9 @@
 import LarpakeClient from "../api_client/larpake_client.ts";
 import SectionEditor from "../components/section-editor.ts";
-import { Q_LARPAKE_ID } from "../constants.ts";
+import { Q_LARPAKE_ID, Q_NEW } from "../constants.ts";
 import mapChildren, {
     getInputNumericByDocId,
+    getSearchParams,
     isEmpty,
     LANG_EN,
     LANG_FI,
@@ -28,18 +29,16 @@ async function render() {
     }
 
     // Read query for
-    const url = window.location.href;
-    const query = url.split("?");
-    if (query.length > 1) {
-        const params = new URLSearchParams(query[1]);
-        const larpakeId = parseInt(params.get(Q_LARPAKE_ID) ?? "");
-        if (!Number.isNaN(larpakeId)) {
-            // Loadable larpake found, load and show it
-            await loadExternal(larpakeId);
-        }
+    const params = getSearchParams();
+    const larpakeId = parseInt(params.get(Q_LARPAKE_ID) ?? "");
+    if (!Number.isNaN(larpakeId)) {
+        // Loadable larpake found, load and show it
+        await loadExternal(larpakeId);
     } else {
         // No loadable data, open new editor
-        window.location.href = `${url}?new=true`;
+        pushUrlState((state) => {
+            state.set(Q_NEW, "true");
+        });
     }
 }
 
@@ -48,14 +47,27 @@ async function loadExternal(larpakeId: number): Promise<void> {
     idField.value = larpakeId.toString();
 
     const larpake = await client.getById(larpakeId);
-    if (larpake == null) {
+    if (!larpake) {
         throw new Error("Failed to fetch Larpake tasks.");
     }
 
     const records = await client.getTasksByLarpakeId(larpakeId);
-    if (records == null) {
+    if (!records) {
         throw new Error("Failed to fetch Larpake tasks.");
     }
+
+    // Some error logging to catch errors 
+    const textDatas = records.flatMap((x) => x.textData);
+    console.log(textDatas.length, "text datas exist for", records.length, "tasks");
+    const invalid = textDatas.filter((x) => isEmpty(x.title));
+    console.log(invalid.length, "text datas were invalid");
+    console.log(
+        "Invalid ids were",
+        records
+            .filter((x) => x.textData.length < 2 || x.textData.filter((x) => isEmpty(x.title)).length > 0)
+            .map((x) => x.id)
+            .sort((a, b) => a - b)
+    );
 
     // Map tasks
     const tasks = ToDictionary(records, (task) => task.larpakeSectionId);
@@ -114,10 +126,9 @@ function addPageEventListeners() {
         console.log(data);
         const id = await client.uploadLarpakeCommonDataOnly(data);
         if (id >= 0) {
-            
             pushUrlState((params: URLSearchParams) => {
                 params.set(Q_LARPAKE_ID, id.toString());
-            })
+            });
             showCommonStateDialog("common-data-saved-dialog");
         } else {
             showCommonStateDialog("action-failed");
@@ -150,9 +161,9 @@ function addPageEventListeners() {
             textData: [],
         });
         if (rowsAffected >= 0) {
-            pushUrlState(params => {
-                params.set(Q_LARPAKE_ID, id.toString())
-            })
+            pushUrlState((params) => {
+                params.set(Q_LARPAKE_ID, id.toString());
+            });
 
             showCommonStateDialog("tasks-saved-dialog");
         } else {

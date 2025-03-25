@@ -9,6 +9,7 @@ import {
     throwIfAnyNull,
 } from "../helpers";
 import { Group } from "../models/user";
+import { groupSortFunc } from "../sortFunctions";
 
 const PAGE_SIZE = 15;
 const DEBOUNCH_TIMEOUT = 500;
@@ -125,26 +126,6 @@ async function main() {
     selector.render();
 }
 
-function groupSortFunc(first: Group, second: Group): number {
-    if (first.larpakeId < second.larpakeId) {
-        return -1;
-    }
-    if (first.larpakeId > second.larpakeId) {
-        return 1;
-    }
-    if (!second.groupNumber) {
-        return -1;
-    }
-    if (!first.groupNumber) {
-        return 1;
-    }
-    if (first.groupNumber < second.groupNumber) {
-        return -1;
-    }
-    if (first.groupNumber > second.groupNumber) {
-        return 1;
-    }
-    return first.id < second.id ? -1 : 1;
-}
+
 
 main();

@@ -113,7 +113,7 @@ export function removeChildren(elem: HTMLElement, predicate: null | ((elem: Elem
     }
 }
 
-export function throwIfAnyNull(elems: HTMLElement[]) {
+export function throwIfAnyNull(elems: (HTMLElement | null)[]) {
     for (const elem of elems) {
         if (!elem) {
             throw new Error("Element cannot be null");
