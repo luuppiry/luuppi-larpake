@@ -1,7 +1,7 @@
-import { EventClient } from "./api_client/event_client.ts";
-import LarpakeClient from "./api_client/larpake_client.ts";
-import EventPreviewer from "./components/event-previewer.ts";
-import { appendTemplateElement, getDocumentLangCode, removeChildren } from "./helpers.ts";
+import { EventClient } from "./api_client/event_client.js";
+import LarpakeClient from "./api_client/larpake_client.js";
+import EventPreviewer from "./components/event-previewer.js";
+import { appendTemplateElement, getDocumentLangCode, removeChildren } from "./helpers.js";
 
 const eventClient = new EventClient();
 const larpakeClient = new LarpakeClient();

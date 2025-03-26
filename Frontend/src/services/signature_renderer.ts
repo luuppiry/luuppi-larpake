@@ -1,4 +1,4 @@
-import { Point2D } from "../models/common.ts";
+import { Point2D } from "../models/common.js";
 
 const svgNamespace = "http://www.w3.org/2000/svg";
 

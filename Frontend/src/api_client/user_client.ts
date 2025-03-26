@@ -1,6 +1,6 @@
-import { Container, IdObject, RowsAffected } from "../models/common.ts";
-import { Group, GroupMember, PermissionData, Signature, User } from "../models/user.ts";
-import HttpClient from "./http_client.ts";
+import { Container, IdObject, RowsAffected } from "../models/common.js";
+import { Group, GroupMember, PermissionData, Signature, User } from "../models/user.js";
+import HttpClient from "./http_client.js";
 
 const FETCH_CHUNK_SIZE = 100;
 const MIN_SEARCH_LENGTH = 3;

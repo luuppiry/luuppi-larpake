@@ -1,5 +1,6 @@
 using LarpakeServer;
 using LarpakeServer.Identity;
+using LarpakeServer.Middleware;
 using LarpakeServer.Services.Implementations;
 using Scalar.AspNetCore;
 
@@ -37,13 +38,14 @@ builder.Services.AddServices(configuration, logger);
 builder.Services.AddPostgresDatabases(configuration, logger);
 builder.Services.ConfigureCors();
 builder.Services.AddRateLimiters(configuration);
-
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
 });
 
-var app = builder.Build();
+WebApplication app = builder.Build();
+
+app.AddFrontendServing();
 
 // Use openapi 
 app.MapOpenApi();

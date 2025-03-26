@@ -1,4 +1,4 @@
-import HttpClient from "../api_client/http_client";
+import HttpClient from "../api_client/http_client.js";
 
 class Header extends HTMLElement {
     client: HttpClient;

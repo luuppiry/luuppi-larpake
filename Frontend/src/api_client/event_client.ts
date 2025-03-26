@@ -1,6 +1,6 @@
-import { Container } from "../models/common.ts";
-import { OrgEvent } from "../models/event.ts";
-import HttpClient from "./http_client.ts";
+import { Container } from "../models/common.js";
+import { OrgEvent } from "../models/event.js";
+import HttpClient from "./http_client.js";
 
 export class EventClient {
     client: HttpClient;

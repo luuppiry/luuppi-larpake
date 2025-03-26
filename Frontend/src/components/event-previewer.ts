@@ -1,5 +1,5 @@
-import { formatDate, formatTime, LANG_ATTRIBUTE_NAME, LANG_EN, LANG_FI } from "../helpers";
-import { EventLocalization, OrgEvent } from "../models/event";
+import { formatDate, formatTime, LANG_ATTRIBUTE_NAME, LANG_EN, LANG_FI } from "../helpers.js";
+import { EventLocalization, OrgEvent } from "../models/event.js";
 
 export default class EventPreviewer extends HTMLLIElement {
     constructor() {
@@ -8,22 +8,22 @@ export default class EventPreviewer extends HTMLLIElement {
 
     connectedCallback() {
         this.innerHTML = `
-                    <div class="stripe"></div>
-                    <div class="section-filler">
-                        <a class="_href event-link" >
-                            <div class="event">
-                                <h3>
-                                    <span class="_date">1.1.1970</span>
-                                    <span class="_title">Preview Title</span>
-                                </h3>
-                                <p class="_time">klo 17:00 &HorizontalLine; 21:00</p>
-                                <p class="_body task-body-text">
-                                    This is event body, a short text about what event 
-                                    is about...
-                                </p>
-                            </div>
-                        </a>
-                    </div>
+                <div class="stripe"></div>
+                <div class="section-filler">
+                    <a class="_href event-link" >
+                        <div class="event">
+                            <h3>
+                                <span class="_date">1.1.1970</span>
+                                <span class="_title">Preview Title</span>
+                            </h3>
+                            <p class="_time">klo 17:00 &HorizontalLine; 21:00</p>
+                            <p class="_body task-body-text">
+                                This is event body, a short text about what event 
+                                is about...
+                            </p>
+                        </div>
+                    </a>
+                </div>
                 `;
 
         this.classList.add("event-item");

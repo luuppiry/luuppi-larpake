@@ -1,4 +1,4 @@
-import { Point2D } from "../models/common.ts";
+import { Point2D } from "../models/common.js";
 
 export default class Draw {
     flattenThreshold: number;

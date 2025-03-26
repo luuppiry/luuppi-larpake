@@ -6,6 +6,7 @@
 # Self Added 
 appsettings.Development.json
 appsettings.local.json
+wwwroot/
 
 ## DataGrip files
 .iws
@@ -15,6 +16,7 @@ tasks.xml
 # dotenv files and secrets
 *.env
 *.secrets
+*.env.production
 
 # User-specific files
 *.rsuser
