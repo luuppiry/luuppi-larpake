@@ -1,6 +1,6 @@
 import { Point2D } from "../models/common.js";
 
-const svgNamespace = "http://www.w3.org/2000/svg";
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 /* Compile point data into svg 
  * and render to (svg) html element. 
@@ -37,7 +37,7 @@ export default class SignatureRenderer {
 
         for (let i = 0; i < data.length; i++) {
             // New path segment
-            let path: SVGPathElement = document.createElementNS(svgNamespace, "path");
+            let path: SVGPathElement = document.createElementNS(SVG_NS, "path");
             const pointGroup = data[i];
 
             // Build single drawn line

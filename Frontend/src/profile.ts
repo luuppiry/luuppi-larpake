@@ -1,6 +1,6 @@
-import Draw from "./services/signature_provider.ts";
-import { Point2D } from "./models/common.ts";
-import SignatureRenderer from "./services/signature_renderer.ts";
+import Draw from "./services/signature_provider.js";
+import { Point2D } from "./models/common.js";
+import SignatureRenderer from "./services/signature_renderer.js";
 
 const dialog = document.getElementById("signature-dialog") as HTMLDialogElement;
 const showDialogBtn = document.getElementById("show-dialog-btn") as HTMLButtonElement;

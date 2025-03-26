@@ -1,4 +1,4 @@
-import { getDocumentLangCode } from "../helpers";
+import { getDocumentLangCode } from "../helpers.js";
 
 export type SectionTextData = {
     title: string;

@@ -1,5 +1,5 @@
-import { UserClient } from "../api_client/user_client.ts";
-import { Q_GROUP_ID } from "../constants.ts";
+import { UserClient } from "../api_client/user_client.js";
+import { Q_GROUP_ID } from "../constants.js";
 import {
     appendTemplateElement,
     isEmpty,
@@ -7,10 +7,10 @@ import {
     removeChildren,
     showOkDialog,
     ToOverwriteDictionary,
-} from "../helpers.ts";
+} from "../helpers.js";
 import { User, Group, GroupMember } from "../models/user";
-import { groupMemberSortFunc } from "../sortFunctions.ts";
-import GroupManagerUI from "./ui-model/group_manager_ui.ts";
+import { groupMemberSortFunc } from "../sortFunctions.js";
+import GroupManagerUI from "./ui-model/group_manager_ui.js";
 
 const TUTOR = "Tutor";
 const FRESHMAN = "Fuksi";

@@ -1,5 +1,5 @@
-import { LarpakeTask, Section } from "./models/larpake";
-import { Group, GroupMember } from "./models/user";
+import { LarpakeTask, Section } from "./models/larpake.js";
+import { Group, GroupMember } from "./models/user.js";
 
 export function SectionSortFunc(first: Section, second: Section): number {
     /* Sort by

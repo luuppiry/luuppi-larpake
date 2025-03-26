@@ -1,4 +1,4 @@
-import { Point2D } from "./common.ts";
+import { Point2D } from "./common.js";
 
 // User, GroupMember and Group are used by group_manager.ts
 export type User = {

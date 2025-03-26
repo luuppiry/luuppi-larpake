@@ -1,8 +1,8 @@
-import { UserClient } from "../api_client/user_client";
-import { Q_PAGE_OFFSET, Q_PAGE_SIZE, Q_SEARCH } from "../constants";
-import { appendTemplateElement, getDocumentLangCode, isEmpty, LANG_EN, pushUrlState, removeChildren } from "../helpers";
-import { User } from "../models/user";
-import UserManagerUI from "./ui-model/user_manager_ui";
+import { UserClient } from "../api_client/user_client.js";
+import { Q_PAGE_OFFSET, Q_PAGE_SIZE, Q_SEARCH } from "../constants.js";
+import { appendTemplateElement, getDocumentLangCode, isEmpty, LANG_EN, pushUrlState, removeChildren } from "../helpers.js";
+import { User } from "../models/user.js";
+import UserManagerUI from "./ui-model/user_manager_ui.js";
 
 const VISIBLE_ID_LENGTH = 6;
 const DEFAULT_PAGE_SIZE = 25;
