@@ -25,7 +25,7 @@ class GroupSelector {
     pageSize: number;
     search: string | null;
     isLastPage: boolean = true;
-    debounchTimerId: number | null = null;
+    debounchTimerId: NodeJS.Timeout | null = null;
 
     constructor(offset: number, size: number, search: string | null) {
         this.prevBtn = document.getElementById("prev-btn") as HTMLButtonElement;

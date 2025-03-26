@@ -91,6 +91,7 @@ async function main() {
 }
 
 async function fetchStatistics(larpakeId: number): Promise<Statistic[]> {
+    console.log("Fetch Lärpäke statistics called, returning static data. Id was:", larpakeId);
     return data;
 }
 

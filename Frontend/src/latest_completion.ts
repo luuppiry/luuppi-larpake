@@ -59,7 +59,7 @@ function render(container: HTMLOListElement, attendances: Attendance[], tasks: M
         if (title) {
             elem.querySelector<HTMLHeadingElement>("._title");
         } else {
-            renderIdOnlyItem(elem, attendance.larpakeTaskId, attendance.completed!.createdAt);
+            renderIdOnlyItem(elem, attendance.larpakeTaskId, attendance.completed!.createdAt, lang);
         }
 
         const completed = formatDateTime(attendance.completed?.completedAt!);

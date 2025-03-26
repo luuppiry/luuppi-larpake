@@ -26,7 +26,7 @@ const userClient = new UserClient();
 class GroupManager extends GroupManagerUI {
     allUsers: Map<string, User>;
     group: Group;
-    debounchTimerId: number | null = null;
+    debounchTimerId: NodeJS.Timeout | null = null;
 
     uploadFunc: (group: Group) => Promise<boolean>;
 

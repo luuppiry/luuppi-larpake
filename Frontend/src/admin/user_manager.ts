@@ -27,7 +27,7 @@ class UserBrowser extends UserManagerUI {
     offset: number;
     pageSize: number;
     filter: string | null = null;
-    debounchTimerId: number | null = null;
+    debounchTimerId: NodeJS.Timeout | null = null;
 
     constructor(options: Paging) {
         super();
