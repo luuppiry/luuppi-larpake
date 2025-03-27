@@ -45,7 +45,10 @@ builder.Services.AddRouting(options =>
 
 WebApplication app = builder.Build();
 
+#if !DEBUG
+// Production add frontend page serving
 app.AddFrontendServing();
+#endif
 
 // Use openapi 
 app.MapOpenApi();

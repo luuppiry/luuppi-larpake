@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
-
-namespace LarpakeServer.Middleware;
+﻿namespace LarpakeServer.Middleware;
 
 public static class StaticFileServer
 {

@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Data;
@@ -19,4 +20,5 @@ public interface IGroupDatabase
     Task<Result<string>> GetInviteKey(long groupId);
     Task<Result<int>> InsertMemberByInviteKey(string inviteKey, Guid userId);
     Task<Result<string>> RefreshInviteKey(long groupId);
+    Task<GroupInfo?> GetGroupByInviteKey(string key);
 }

@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Npgsql;
@@ -157,7 +158,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 m.is_competing = @{nameof(options.IsSearchMemberCompeting)}
                 """, operand);
 
- 
+
     }
 
     public async Task<FreshmanGroup?> GetGroup(long id)
@@ -427,6 +428,29 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         }
     }
 
+    public async Task<GroupInfo?> GetGroupByInviteKey(string inviteKey)
+    {
+        if (inviteKey is null)
+        {
+            return null;
+        }
+        if (inviteKey.Length != _keyService.KeyLength)
+        {
+            return null;
+        }
+
+        using var connection = GetConnection();
+        return await connection.QueryFirstOrDefaultAsync<GroupInfo>($"""
+            SELECT 
+                g.larpake_id,
+                g.name,
+                g.group_number
+            FROM freshman_groups
+                WHERE invite_key = @{nameof(inviteKey)}
+            LIMIT 1;
+            """, new { inviteKey });
+    }
+
     public async Task<Result<string>> RefreshInviteKey(long groupId)
     {
         // Get group invite key or create new if null
@@ -450,4 +474,6 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         }
         return key;
     }
+
+
 }
