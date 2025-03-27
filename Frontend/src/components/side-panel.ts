@@ -18,18 +18,36 @@ class SidePanel extends HTMLElement {
                 href: "larpake.html",
                 title: { fi: "Lärpäke", en: "Lärpäke" },
                 submenu: [
-                    { href: "larpake.html?page=0", title: { fi: "Ensi askeleet", en: "Baby steps" } },
+                    {
+                        href: "larpake.html?page=0",
+                        title: { fi: "Ensi askeleet", en: "Baby steps" },
+                    },
                     {
                         href: "larpake.html?page=2",
-                        title: { fi: "Pienen pieni luuppilainen", en: "Youngster luuppi's member" },
+                        title: { fi: "Pienen pieni luuppilainen", en: "Young Luuppian" },
                     },
-                    { href: "larpake.html?page=4", title: { fi: "Pii-Klubilla tapahtuu", en: "Pii-Klubi happenings" } },
+                    {
+                        href: "larpake.html?page=4",
+                        title: { fi: "Pii-Klubilla tapahtuu", en: "Pii-Klubi happenings" },
+                    },
                     { href: "larpake.html?page=5", title: { fi: "Normipäivä", en: "Averageday" } },
-                    { href: "larpake.html?page=6", title: { fi: "Yliopistoelämää", en: "University life" } },
-                    { href: "larpake.html?page=8", title: { fi: "Vaikutusvaltaa", en: "Power usage" } },
+                    {
+                        href: "larpake.html?page=6",
+                        title: { fi: "Yliopistoelämää", en: "University life" },
+                    },
+                    {
+                        href: "larpake.html?page=8",
+                        title: { fi: "Vaikutusvaltaa", en: "Power usage" },
+                    },
                     { href: "larpake.html?page=10", title: { fi: "Liikunnallista", en: "Sporty" } },
-                    { href: "larpake.html?page=11", title: { fi: "Kaikenlaista", en: "Miscellaneous" } },
-                    { href: "larpake.html?page=13", title: { fi: "Tanpereella", en: "Welcome to Tampere" } },
+                    {
+                        href: "larpake.html?page=11",
+                        title: { fi: "Kaikenlaista", en: "Miscellaneous" },
+                    },
+                    {
+                        href: "larpake.html?page=13",
+                        title: { fi: "Tanpereella", en: "Welcome to Tampere" },
+                    },
                 ],
             },
             {
@@ -49,16 +67,22 @@ class SidePanel extends HTMLElement {
                 title: { fi: "Tulevat tapahtumat", en: "Upcoming Events" },
             },
             {
-                href: "own_tutors.html",
-                title: { fi: "Omat tuutorit", en: "My Tutors" },
+                href: "own_groups.html",
+                title: { fi: "Ryhmäni", en: "My Group" },
             },
             {
                 href: "event_marking.html",
-                title: { fi: "DEMO Kirjaa osallistuminen - Fuksi", en: "DEMO Log Attendance - Freshman" },
+                title: {
+                    fi: "DEMO Kirjaa osallistuminen - Fuksi",
+                    en: "DEMO Log Attendance - Freshman",
+                },
             },
             {
                 href: "tutor_mark_event.html",
-                title: { fi: "DEMO Kirjaa osallistuminen - Tuutori", en: "DEMO Log Attendance - Tutor" },
+                title: {
+                    fi: "DEMO Kirjaa osallistuminen - Tuutori",
+                    en: "DEMO Log Attendance - Tutor",
+                },
             },
         ];
 

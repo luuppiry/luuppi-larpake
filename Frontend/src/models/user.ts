@@ -32,11 +32,8 @@ export type PermissionData = {
         tutor: number;
         admin: number;
         sudo: number;
-    }
-}
-
-
-
+    };
+};
 
 export type Signature = {
     id: string;
@@ -52,20 +49,18 @@ export type Signature = {
     };
 };
 
-
 export type GroupDto = {
     id: number;
     larpakeId: number;
     name: string;
     groupNumber: number;
-    //createdAt: Date;
-    //updatedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
     members: string[];
 };
 
-
-
-
-
-
-
+export type GroupInfo = {
+    larpakeId: number;
+    name: string;
+    groupNumber: number;
+};

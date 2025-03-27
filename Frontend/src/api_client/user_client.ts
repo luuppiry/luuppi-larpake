@@ -253,7 +253,10 @@ export class UserClient {
             });
 
             if (!competitorResponse.ok) {
-                console.warn("Failed to upload competitor group members", await competitorResponse.json());
+                console.warn(
+                    "Failed to upload competitor group members",
+                    await competitorResponse.json()
+                );
                 return competitorResponse;
             }
         }
@@ -267,9 +270,12 @@ export class UserClient {
                 };
             });
         if (tutors.length > 0) {
-            const tutorResponse = await this.client.post(`api/groups/${groupId}/members/non-competing`, {
-                members: tutors,
-            });
+            const tutorResponse = await this.client.post(
+                `api/groups/${groupId}/members/non-competing`,
+                {
+                    members: tutors,
+                }
+            );
             if (!tutorResponse.ok) {
                 console.warn("Failed to upload tutor group members", await tutorResponse.json());
                 return tutorResponse;

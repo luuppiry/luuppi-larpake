@@ -4,7 +4,7 @@ import EventPreviewer from "./components/event-previewer.js";
 import { appendTemplateElement, getDocumentLangCode, removeChildren } from "./helpers.js";
 
 const eventClient = new EventClient();
-const larpakeClient = new LarpakeClient();
+const larpakeClient = new LarpakeClient(eventClient.client);
 
 async function render() {
     await loadLarpakkeet();
@@ -27,13 +27,16 @@ async function loadLarpakkeet() {
         const element = appendTemplateElement<HTMLElement>("larpake-template", container);
 
         const lang = getDocumentLangCode();
-        const text = larpake.textData.filter((x) => x.languageCode == lang)[0] ?? larpake.textData[0];
+        const text =
+            larpake.textData.filter((x) => x.languageCode == lang)[0] ?? larpake.textData[0];
 
         const params = new URLSearchParams();
         params.append("LarpakeId", larpake.id.toString());
 
         element.querySelector<HTMLHeadingElement>("._title")!.innerText = text.title;
-        element.querySelector<HTMLAnchorElement>("._href")!.href = `larpake.html?${params.toString()}`;
+        element.querySelector<HTMLAnchorElement>(
+            "._href"
+        )!.href = `larpake.html?${params.toString()}`;
         element.querySelector<HTMLImageElement>("._img")!.src = larpake.image_url ?? "/kiasa.png";
     }
 }

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Luuppi - Liity</title>
+            <link rel="stylesheet" href="/styles/join.css" />
+            <script type="module" src="/src/components/side-panel.js"></script>
+            <script type="module" src="/src/components/ui-header.js"></script>
+            <script type="module" src="/src/components/form-container.js"></script>
+            <script type="module" src="/src/join_invite.js"></script>
+        </head>
+    </head>
+    <body>
+        <dialog id="join-failed-dialog">
+            <h2>Jotakin meni pieleen!</h2>
+            <p>
+                Näyttää siltä, että ryhmään liittyminen ei onnistunut. Kantsii siis koittaa
+                uudestaan tai varmistaa linkin voimassaolo tutorilta!
+            </p>
+            <button class="_ok primary-btm">OK</button>
+        </dialog>
+
+        <dialog id="malformed-key-dialog">
+            <h2>Jotakin meni pieleen!</h2>
+            <p>
+                Näyttää siltä, että ryhmään liittyminen ei onnistunut. Kantsii siis koittaa
+                uudestaan tai varmistaa linkin voimassaolo tutorilta!
+            </p>
+            <button class="_ok primary-btm">OK</button>
+        </dialog>
+
+        <dialog id="link-expired-dialog">
+            <h2>Linkki on vanhentunut!</h2>
+            <p>
+                Näyttää siltä, että linkki on päässyt vanhenemaan ja sillä ei voi enää liittyä
+                ryhmään. Kantsii siis käydä pyytämässä uutta linkkiä tutoreilta!
+            </p>
+            <button class="_ok primary-btm">OK</button>
+        </dialog>
+
+        <section>
+            <form-container>
+                <h2>Liity Ryhmään</h2>
+                <p>
+                    Sinut on kutsuttu liittymään ryhmää <span id="group-name">Ryhmä</span> (<span
+                        id="group-number"
+                    ></span
+                    >)! Haluatko liittyä?
+                </p>
+                <button id="join-btn" class="primary-btn">Liity</button>
+            </form-container>
+        </section>
+    </body>
+</html>
