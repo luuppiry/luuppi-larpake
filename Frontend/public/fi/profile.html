@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Lärpäke - Profiili</title>
         <link rel="stylesheet" href="/styles/profile.css" />
-        <script type="module" src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
         <script>
             if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
                 window.location.replace("unauthorized.html");
@@ -23,10 +23,19 @@
                         <h1>Lisää signeeraus</h1>
                         <p>Piirrä alla olevaan ruutuun</p>
                         <!-- Setting height and width in css mess up the canvas 2d context -->
-                        <canvas height="100" width="450" id="signature-canvas" class="signature-canvas"></canvas>
+                        <canvas
+                            height="100"
+                            width="450"
+                            id="signature-canvas"
+                            class="signature-canvas"
+                        ></canvas>
                         <div class="dialog-btn-container">
-                            <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">OK</button>
-                            <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">Peruuta</button>
+                            <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">
+                                OK
+                            </button>
+                            <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">
+                                Peruuta
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -97,15 +106,20 @@
                     <div>
                         <h2>Signeeraus</h2>
                         <p>
-                            Tutor -roolilliset jäsenet voivat lisätä itselleen jopa 5 omaa signeerausta, jotka tulevat
-                            näkyviin lärpäkkeen sivuilla kirjatun tapahtuman kohdalle.
+                            Tutor -roolilliset jäsenet voivat lisätä itselleen jopa 5 omaa
+                            signeerausta, jotka tulevat näkyviin lärpäkkeen sivuilla kirjatun
+                            tapahtuman kohdalle.
                         </p>
                         <ul class="signature-container" id="signature-container">
                             <li id="show-dialog-btn" class="signature-field">
                                 <img src="/icons/plus_icon.svg" alt="add new icon" />
                             </li>
 
-                            <li class="signature-field signature-unused" id="default-signature" style="padding: 5px">
+                            <li
+                                class="signature-field signature-unused"
+                                id="default-signature"
+                                style="padding: 5px"
+                            >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 450 100"
@@ -121,5 +135,5 @@
         </div>
     </body>
 
-    <script type="module" src="/src/profile.ts"></script>
+    <script type="module" src="/src/profile.js"></script>
 </html>

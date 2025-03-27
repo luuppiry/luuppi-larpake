@@ -5,8 +5,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Lärpäke - Ylläpito</title>
         <link rel="stylesheet" href="/styles/admin/larpake_selector.css" />
-        <script type="module" src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
         <script>
             if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
                 window.location.replace("unauthorized.html");
@@ -22,7 +22,7 @@
             </div>
             <div style="display: flex; justify-content: center">
                 <ul id="larpake-container" class="larpake-container" style="padding: 0px">
-                    <li class="flex-last" style="width: 100%;">
+                    <li class="flex-last" style="width: 100%">
                         <a class="add-new-btn hover-scale" href="larpake_manager.html?new=true">
                             <img src="/icons/plus_icon.svg" alt="plus icon" />
                         </a>
@@ -31,5 +31,5 @@
             </div>
         </div>
     </body>
-    <script type="module" src="/src/admin/larpake_selector.ts"></script>
+    <script type="module" src="/src/admin/larpake_selector.js"></script>
 </html>

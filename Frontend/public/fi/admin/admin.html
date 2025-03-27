@@ -5,10 +5,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Lärpäke - Ylläpito</title>
         <link rel="stylesheet" href="/styles/admin/admin.css" />
-        <script type="module" src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
         <script>
-            if (!Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"))){
+            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
                 window.location.replace("../unauthorized.html");
             }
         </script>
@@ -19,7 +19,10 @@
 
         <div style="margin-left: 40px; margin-bottom: 50px">
             <h2>Ylläpito</h2>
-            <p>Olet siirtynyt ylläpitopuolelle. Täällä voit hallita käyttäjiä, ryhmiä ja lärpäkkeitä.</p>
+            <p>
+                Olet siirtynyt ylläpitopuolelle. Täällä voit hallita käyttäjiä, ryhmiä ja
+                lärpäkkeitä.
+            </p>
         </div>
         <div class="action-container">
             <div class="right-rounded-rectangle">

@@ -10,9 +10,9 @@
             }
         </script>
         <link rel="stylesheet" href="/styles/admin/user_manager.css" />
-        <script type="module" src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
-        <script type="module" src="/src/components/form-container.ts"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
     </head>
     <body>
         <dialog id="user-dialog">
@@ -85,11 +85,12 @@
                     <h2>Käyttäjien ylläpito</h2>
                     <div class="permissions-notice">
                         <p class="permissions-info">
-                            Oikeuksien päivittäminen tulee tulevaisuudessa selkeytymään, mutta kirjoittamisen hetkellä
-                            (22.3.2025 klo 2.12) oikeuksien antamisessa tulee noudattaa sivulla näkyvää taulukkoa. Jos
-                            tämän tekstin kirjoittamisesta on kulunut kauan (yli 1kk) suosittelen varmistamaan oikeat
-                            arvot kehitystiimiltä, sillä numerot eivät ole vain "random" arvoja, vaan jokainen bitti
-                            merkitsee oikeutta.
+                            Oikeuksien päivittäminen tulee tulevaisuudessa selkeytymään, mutta
+                            kirjoittamisen hetkellä (22.3.2025 klo 2.12) oikeuksien antamisessa
+                            tulee noudattaa sivulla näkyvää taulukkoa. Jos tämän tekstin
+                            kirjoittamisesta on kulunut kauan (yli 1kk) suosittelen varmistamaan
+                            oikeat arvot kehitystiimiltä, sillä numerot eivät ole vain "random"
+                            arvoja, vaan jokainen bitti merkitsee oikeutta.
                         </p>
                         <table class="permissions-table">
                             <tbody id="permissions-container">
@@ -98,18 +99,25 @@
                                     <th>Arvo</th>
                                 </tr>
                                 <tr>
-                                <td class="permission-value" colspan="2">Arvojen hakeminen epäonnistui</td>
+                                    <td class="permission-value" colspan="2">
+                                        Arvojen hakeminen epäonnistui
+                                    </td>
                                 </tr>
                             </tbody>
-                            
                         </table>
                     </div>
                     <div class="search">
                         <p>
-                            Selaa järjestelmän käyttäjiä ja muokkaa oikeuksia. Haulla voit etsiä käyttäjää sähköpostin,
-                            tunnisteen, luuppi tunnisteen, aloitusvuoden, nimien tai oikeuksien perusteella.
+                            Selaa järjestelmän käyttäjiä ja muokkaa oikeuksia. Haulla voit etsiä
+                            käyttäjää sähköpostin, tunnisteen, luuppi tunnisteen, aloitusvuoden,
+                            nimien tai oikeuksien perusteella.
                         </p>
-                        <input id="search-field" class="search-field" type="search" placeholder="Hae" />
+                        <input
+                            id="search-field"
+                            class="search-field"
+                            type="search"
+                            placeholder="Hae"
+                        />
                     </div>
                 </div>
                 <div class="user-table-padding">
@@ -137,12 +145,16 @@
                         <span id="out-of">MAX</span>
                     </p>
                     <div class="table-navigation">
-                        <button id="prev-btn" class="primary-btn hover-scale select-none" disabled>&lt;</button>
-                        <button id="next-btn" class="primary-btn hover-scale select-none">&gt;</button>
+                        <button id="prev-btn" class="primary-btn hover-scale select-none" disabled>
+                            &lt;
+                        </button>
+                        <button id="next-btn" class="primary-btn hover-scale select-none">
+                            &gt;
+                        </button>
                     </div>
                 </div>
             </section>
         </div>
     </body>
-    <script type="module" src="/src/admin/user_manager.ts"></script>
+    <script type="module" src="/src/admin/user_manager.js"></script>
 </html>
