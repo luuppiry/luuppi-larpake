@@ -1,6 +1,6 @@
 import { Point2D } from "../models/common.js";
 
-export default class Draw {
+export default class DrawView {
     flattenThreshold: number;
     canvas: HTMLCanvasElement;
     isDrawing: boolean;
@@ -8,7 +8,7 @@ export default class Draw {
     points: (Point2D | null)[];
 
     constructor(canvas: HTMLCanvasElement) {
-        this.flattenThreshold = 4;
+        this.flattenThreshold = 3;
         this.canvas = canvas;
         this.context = canvas.getContext("2d")!;
         this.isDrawing = false;
@@ -27,7 +27,7 @@ export default class Draw {
 
     startDrawing(event: MouseEvent) {
         this.isDrawing = true;
-        this.points.push({ X: event.offsetX, Y: event.offsetY });
+        this.points.push({ x: event.offsetX, y: event.offsetY });
     }
 
     draw(event: MouseEvent) {
@@ -41,13 +41,13 @@ export default class Draw {
         this.context.beginPath();
 
         const lastPoint = this.points[this.points.length - 1];
-        const currentPoint = { X: event.offsetX, Y: event.offsetY };
+        const currentPoint = { x: event.offsetX, y: event.offsetY };
         if (lastPoint == null) {
             return;
         }
 
-        this.context.moveTo(lastPoint.X, lastPoint.Y);
-        this.context.lineTo(currentPoint.X, currentPoint.Y);
+        this.context.moveTo(lastPoint.x, lastPoint.y);
+        this.context.lineTo(currentPoint.x, currentPoint.y);
         this.context.stroke();
 
         this.points.push(currentPoint);
@@ -58,7 +58,7 @@ export default class Draw {
         this.points.push(null);
     }
 
-    get_flattened(): Point2D[][] {
+    getFlattened(): Point2D[][] {
         /* Flatten - simplify
          * Remove points that are close to one another from given array.
          * For example threshold of 3 means that y and x coordinates
@@ -104,8 +104,8 @@ export default class Draw {
             // Do not include points that are
             // within a threshold from last point
             const lastPoint = workingArray[workingArray.length - 1];
-            const diffX = Math.abs(currentPoint.X - lastPoint.X);
-            const diffY = Math.abs(currentPoint.Y - lastPoint.Y);
+            const diffX = Math.abs(currentPoint.x - lastPoint.x);
+            const diffY = Math.abs(currentPoint.y - lastPoint.y);
             if (diffX <= this.flattenThreshold && diffY <= this.flattenThreshold) {
                 continue;
             }
@@ -129,7 +129,7 @@ export default class Draw {
          * */
 
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${this.canvas.width} ${this.canvas.height}">`;
-        const data = this.get_flattened();
+        const data = this.getFlattened();
         for (let i = 0; i < data.length; i++) {
             // Build one path segment (one stroke)
             svg += `\n\t<path d="`;
@@ -139,10 +139,10 @@ export default class Draw {
                 const currentPoint = pathData[j];
                 if (j === 0) {
                     // First point
-                    svg += `M ${currentPoint.X} ${currentPoint.Y}`;
+                    svg += `M ${currentPoint.x} ${currentPoint.y}`;
                 } else {
                     // Other points
-                    svg += `L ${currentPoint.X} ${currentPoint.Y}`;
+                    svg += `L ${currentPoint.x} ${currentPoint.y}`;
                 }
             }
             svg += `" stroke="black" fill="none" stroke-width="2" stroke-linecap="round"/>`;

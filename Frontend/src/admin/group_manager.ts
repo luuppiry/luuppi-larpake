@@ -1,4 +1,4 @@
-import { UserClient } from "../api_client/user_client.js";
+import GroupClient from "../api_client/group_client.js";
 import { Q_GROUP_ID } from "../constants.js";
 import {
     appendTemplateElement,
@@ -21,7 +21,7 @@ const MAX_SEARCH_RESULTS = 20;
 const DEBOUNCH_TIMEOUT = 500;
 
 // Section DATA
-const userClient = new UserClient();
+const groupClient = new GroupClient();
 
 class GroupManager extends GroupManagerUI {
     allUsers: Map<string, User>;
@@ -316,14 +316,14 @@ async function main() {
     const params = new URLSearchParams(window.location.search);
     const groupId: number = parseInt(params.get(Q_GROUP_ID) ?? "");
 
-    const allUsers = await userClient.getAllUnpaged();
+    const allUsers = await groupClient.getAllUnpaged();
     if (!allUsers) {
         throw new Error("Could not fetch all available users.");
     }
 
     let group = null;
     if (!Number.isNaN(groupId)) {
-        group = await userClient.getGroupById(groupId);
+        group = await groupClient.getGroupById(groupId);
         if (!group) {
             throw new Error(`Could not load group ${groupId} from the server.`);
         }
@@ -348,7 +348,7 @@ async function uploadGroup(group: Group): Promise<boolean> {
         console.error("Group must belong to valid larpake id.");
         return false;
     }
-    const id = await userClient.uploadGroup(group);
+    const id = await groupClient.uploadGroup(group);
     if (!id) {
         console.error("Failed to upload group into database, see errors (warnings) above");
         return false;

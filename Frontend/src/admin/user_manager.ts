@@ -330,7 +330,7 @@ function showDialog(dialogName: string, message: string) {
 
 async function loadPermissionValues() {
     const lang = getDocumentLangCode();
-    const permissions = await userClient.getPermissionMetadata();
+    const permissions = await userClient.getPermissionTable();
     if (!permissions) {
         console.error(
             "Failed to fetch permission values. If this keeps happening, ask you service maintainer for instructions."

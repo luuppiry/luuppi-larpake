@@ -26,7 +26,7 @@ export type Group = {
     members: GroupMember[];
 };
 
-export type PermissionData = {
+export type PermissionCollection = {
     roles: {
         freshman: number;
         tutor: number;
@@ -35,18 +35,20 @@ export type PermissionData = {
     };
 };
 
+export type SvgMetadata = {
+    height: number;
+    width: number;
+    data: Point2D[][];
+    lineWidth: number;
+    strokeStyle: string;
+    lineCap: string;
+};
+
 export type Signature = {
     id: string;
     ownerId: string;
     createdAt: Date;
-    signature: {
-        height: number;
-        width: number;
-        data: Point2D[][];
-        lineWidth: number;
-        strokeStyle: string;
-        lineCap: string;
-    };
+    signature: SvgMetadata;
 };
 
 export type GroupDto = {

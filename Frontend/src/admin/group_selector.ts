@@ -1,4 +1,4 @@
-import { UserClient } from "../api_client/user_client.js";
+import GroupClient from "../api_client/group_client.js";
 import { Q_GROUP_ID, Q_PAGE_OFFSET, Q_PAGE_SIZE, Q_SEARCH } from "../constants.js";
 import {
     appendTemplateElement,
@@ -14,7 +14,7 @@ import { groupSortFunc } from "../sortFunctions.js";
 const PAGE_SIZE = 15;
 const DEBOUNCH_TIMEOUT = 500;
 
-const userClient = new UserClient();
+const groupClient = new GroupClient();
 
 class GroupSelector {
     prevBtn: HTMLButtonElement;
@@ -71,7 +71,7 @@ class GroupSelector {
     }
 
     async render() {
-        const groups = await userClient.getGroupsPaged(
+        const groups = await groupClient.getGroupsPaged(
             false,
             isEmpty(this.search) ? null : this.search,
             this.pageSize,

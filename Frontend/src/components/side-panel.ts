@@ -112,7 +112,7 @@ class SidePanel extends HTMLElement {
 
         this.innerHTML = `
             <nav class="side-panel" id="side-panel-element">
-                <div class="close-btn" onclick="toggleSidePanel()">
+                <div class="_close close-btn">
                     <img class="close-x" src="/icons/close-x.png" height="30px" width="auto">
                 </div>
                 <ul>${menuItems}</ul>
@@ -120,6 +120,9 @@ class SidePanel extends HTMLElement {
         `;
 
         this.setupSubmenuToggle();
+        this.querySelector<HTMLDivElement>("._close")?.addEventListener("click", (_) => {
+            this.toggleSidePanel();
+        });
     }
 
     setupSubmenuToggle() {

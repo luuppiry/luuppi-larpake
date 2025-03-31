@@ -1,8 +1,13 @@
+import { PermissionCollection } from "./models/user.js";
+
 export const LANG_FI = "fi";
 export const LANG_EN = "en";
 export const LANG_ATTRIBUTE_NAME = "lang";
 
-export default function mapChildren<T>(children: HTMLCollection, func: (elem: Element) => T | null): T[] {
+export default function mapChildren<T>(
+    children: HTMLCollection,
+    func: (elem: Element) => T | null
+): T[] {
     /* Generic method to map children */
     const result: T[] = [];
     for (let i = 0; i < children.length; i++) {
@@ -29,7 +34,10 @@ export function ThrowIfNull<T>(value: T) {
     }
 }
 
-export function ToDictionary<TKey, TValue>(values: TValue[], selector: (value: TValue) => TKey): Map<TKey, TValue[]> {
+export function ToDictionary<TKey, TValue>(
+    values: TValue[],
+    selector: (value: TValue) => TKey
+): Map<TKey, TValue[]> {
     const result = new Map<TKey, TValue[]>();
     values.forEach((x) => {
         const key = selector(x);
@@ -104,7 +112,10 @@ export function getDocumentLangCode() {
     return document.documentElement.lang == LANG_EN ? LANG_EN : LANG_FI;
 }
 
-export function removeChildren(elem: HTMLElement, predicate: null | ((elem: Element) => boolean) = null) {
+export function removeChildren(
+    elem: HTMLElement,
+    predicate: null | ((elem: Element) => boolean) = null
+) {
     const children = [...elem.children];
     for (const child of children) {
         if (predicate == null || predicate(child)) {
@@ -136,7 +147,10 @@ export function getSearchParams() {
     return new URLSearchParams(new URL(window.location.href).search);
 }
 
-export function showOkDialog(id: string, afterClose: null | (() => void) = null): HTMLDialogElement {
+export function showOkDialog(
+    id: string,
+    afterClose: null | (() => void) = null
+): HTMLDialogElement {
     const dialog = document.getElementById(id) as HTMLDialogElement;
     dialog.showModal();
     dialog.querySelector<HTMLButtonElement>("._ok")?.addEventListener("click", (_) => {
@@ -146,4 +160,67 @@ export function showOkDialog(id: string, afterClose: null | (() => void) = null)
         }
     });
     return dialog;
+}
+
+export function toRole(
+    permissions: number,
+    table: PermissionCollection | null,
+    lang: string | null = null
+): string {
+    table ??= getDefaultPermissionsTable();
+    lang ??= getDocumentLangCode();
+    const isFinnish = lang !== LANG_EN;
+
+    if (permissions >= table.roles.sudo) {
+        return "Sudo";
+    }
+    if (permissions >= table.roles.admin) {
+        return "Admin";
+    }
+    if (permissions >= table.roles.tutor) {
+        return "Tutor";
+    }
+    if (permissions >= table.roles.freshman) {
+        return isFinnish ? "Fuksi" : "Freshman";
+    }
+    return isFinnish ? "Ei roolia" : "No role";
+}
+
+export enum Role {
+    Freshman = 6,
+    Tutor = 766,
+    Admin = 4194302,
+    Sudo = 2147483647,
+}
+
+export function hasRole(
+    permissions: number,
+    role: Role,
+    table: PermissionCollection | null = null
+) {
+    table ??= getDefaultPermissionsTable();
+    if (role === Role.Sudo) {
+        return permissions >= table.roles.sudo;
+    }
+    if (role === Role.Admin) {
+        return permissions >= table.roles.admin;
+    }
+    if (role === Role.Tutor) {
+        return permissions >= table.roles.tutor;
+    }
+    if (role === Role.Freshman) {
+        return permissions >= table.roles.freshman;
+    }
+    throw new Error("Invalid role type");
+}
+
+function getDefaultPermissionsTable(): PermissionCollection {
+    return {
+        roles: {
+            freshman: Role.Freshman as number,
+            tutor: Role.Tutor as number,
+            admin: Role.Admin as number,
+            sudo: Role.Sudo as number,
+        },
+    };
 }
