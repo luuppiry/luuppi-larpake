@@ -39,8 +39,9 @@ public class SignatureDatabase(NpgsqlConnectionString connectionString, ILogger<
             OFFSET @{nameof(options.PageOffset)}
             """);
 
+        string parsed = query.ToString();
         using var connection = GetConnection();
-        var records = await connection.QueryAsync<Signature>(query.ToString(), options);
+        var records = await connection.QueryAsync<Signature>(parsed, options);
         return records.ToArray();
     }
 

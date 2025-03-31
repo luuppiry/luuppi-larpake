@@ -1,5 +1,5 @@
-import { Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "./constants";
-import { appendTemplateElement, getSearchParams, removeChildren } from "./helpers";
+import { Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "./constants.js";
+import { appendTemplateElement, getSearchParams, removeChildren } from "./helpers.js";
 
 type Statistic = {
     title: string;

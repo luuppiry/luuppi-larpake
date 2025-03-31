@@ -5,9 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Lärpäke - Admin</title>
         <link rel="stylesheet" href="/styles/admin/group_selector.css" />
-        <script type="module" src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/form-container.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
     </head>
     <body>
         <template id="group-template">
@@ -17,7 +17,10 @@
                         <!-- Under score starting element class names are not for styles, only for query select -->
                         <div class="spacer">
                             <div class="group-info-container">
-                                <h3 style="text-wrap: wrap; word-wrap: break-word; max-width: 40vw" class="_group-name">
+                                <h3
+                                    style="text-wrap: wrap; word-wrap: break-word; max-width: 40vw"
+                                    class="_group-name"
+                                >
                                     Group X
                                 </h3>
                                 <p class="_group-number">(N)</p>
@@ -40,10 +43,11 @@
                 <header>
                     <h2 class="title">Ryhmät</h2>
                     <p>
-                        Alla on lista järjestelmässä olevista ryhmistä. Siirry muokkaamaan ryhmää klikkaamalla ryhmän
-                        kohdalta. Voit myös lisätä uuden ryhmän klikkaamalla plus -painiketta. Voit myös etsiä ryhmän
-                        nimen, vuosiluvun tai Lärpäkkeen numeron avulla hakukentässä. Haun pituus pitää olla 3-30
-                        merkkiä tai nimen haku ohitetaan.
+                        Alla on lista järjestelmässä olevista ryhmistä. Siirry muokkaamaan ryhmää
+                        klikkaamalla ryhmän kohdalta. Voit myös lisätä uuden ryhmän klikkaamalla
+                        plus -painiketta. Voit myös etsiä ryhmän nimen, vuosiluvun tai Lärpäkkeen
+                        numeron avulla hakukentässä. Haun pituus pitää olla 3-30 merkkiä tai nimen
+                        haku ohitetaan.
                     </p>
                     <input id="search" placeholder="Hae" type="search" class="text-field" />
                 </header>
@@ -55,18 +59,24 @@
                         <a href="group_manager.html?New=true" class="link">
                             <form-container>
                                 <div class="hor-center-content">
-                                    <img src="/icons/plus_icon.svg" class="plus-icon" alt="go to icon" />
+                                    <img
+                                        src="/icons/plus_icon.svg"
+                                        class="plus-icon"
+                                        alt="go to icon"
+                                    />
                                 </div>
                             </form-container>
                         </a>
                     </li>
                 </ul>
                 <footer class="table-navigation margin-left">
-                    <button id="prev-btn" class="primary-btn hover-scale select-none" disabled>&lt;</button>
+                    <button id="prev-btn" class="primary-btn hover-scale select-none" disabled>
+                        &lt;
+                    </button>
                     <button id="next-btn" class="primary-btn hover-scale select-none">&gt;</button>
                 </footer>
             </section>
         </div>
     </body>
-    <script type="module" src="/src/admin/group_selector.ts"></script>
+    <script type="module" src="/src/admin/group_selector.js"></script>
 </html>

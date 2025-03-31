@@ -1,5 +1,5 @@
-import { Q_LARPAKE_ID } from "../constants";
-import { throwIfAnyNull } from "../helpers";
+import { Q_LARPAKE_ID } from "../constants.js";
+import { throwIfAnyNull } from "../helpers.js";
 
 const idStart = "larpake-preview-";
 

@@ -37,7 +37,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet("own")]
     [RequiresPermissions(Permissions.CommonRead)]
-    [ProducesResponseType(typeof(FreshmanGroups), 200)]
+    [ProducesResponseType<FreshmanGroups>(200)]
     public async Task<IActionResult> GetOwnGroups([FromQuery] FreshmanGroupQueryOptions options)
     {
         /* User can here only see their own groups,
@@ -60,7 +60,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.Tutor)]
-    [ProducesResponseType(typeof(FreshmanGroups), 200)]
+    [ProducesResponseType<FreshmanGroups>(200)]
     public async Task<IActionResult> GetGroups([FromQuery] FreshmanGroupQueryOptions options)
     {
         /* Tutors can see all groups and members.
@@ -72,9 +72,22 @@ public class GroupsController : ExtendedControllerBase
         return Ok(groups);
     }
 
+    
+    [HttpGet("{key}/join")]
+    [ProducesResponseType<GroupInfo>(200)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> GetCommonInfo(string key)
+    {
+        GroupInfo? group = await _db.GetGroupByInviteKey(key);
+        return group is null ? NotFound() : Ok(group);
+    }
+
+
+    
+
     [HttpGet("{groupId}")]
     [RequiresPermissions(Permissions.Tutor)]
-    [ProducesResponseType(typeof(FreshmanGroup), 200)]
+    [ProducesResponseType<FreshmanGroup>(200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetGroup(long groupId)
     {
@@ -89,7 +102,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet("{groupId}/members")]
     [RequiresPermissions(Permissions.Tutor)]
-    [ProducesResponseType(typeof(MembersResponse), 200)]
+    [ProducesResponseType<MembersResponse>(200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetMembers(long groupId)
     {
@@ -100,7 +113,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet("{groupId}/invite")]
     [RequiresPermissions(Permissions.EditGroup)]
-    [ProducesResponseType(typeof(InviteKeyResponse), 200)]
+    [ProducesResponseType<InviteKeyResponse>(200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetInviteKey(long groupId)
     {
@@ -111,7 +124,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPost("{groupId}/invite/refresh")]
     [RequiresPermissions(Permissions.EditGroup)]
-    [ProducesResponseType(typeof(MembersResponse), 200)]
+    [ProducesResponseType<MembersResponse>(200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> RefreshInviteKey(long groupId)
     {
@@ -136,8 +149,8 @@ public class GroupsController : ExtendedControllerBase
             error: FromError);
     }
 
-    [HttpPost("join/{key}")]    // No permissions required
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [HttpPost("{key}/join")]    // No permissions required
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> JoinByInvite([Required] string key)
     {
@@ -174,7 +187,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPost("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> AddMembers(long groupId, GroupMemberIdCollection members)
     {
@@ -196,7 +209,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPost("{groupId}/members/non-competing")]
     [RequiresPermissions(Permissions.EditGroup | Permissions.Admin)]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> AddNonCompetingMembers(long groupId, NonCompetingMemberIdCollection members)
     {
@@ -215,7 +228,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpPut("{groupId}")]
     [RequiresPermissions(Permissions.EditGroup)]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateGroup(long groupId, [FromBody] FreshmanGroupPutDto dto)
     {
@@ -238,7 +251,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpDelete("{groupId}/members")]
     [RequiresPermissions(Permissions.EditGroup)]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> DeleteMembers(long groupId, [FromBody] GroupMemberIdCollection members)
     {
@@ -268,7 +281,7 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpDelete("{groupId}")]
     [RequiresPermissions(Permissions.Admin)]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> DeleteGroup(long groupId)
     {

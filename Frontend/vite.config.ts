@@ -2,7 +2,9 @@ import { defineConfig } from "vite";
 import path, { resolve } from "path";
 import fs from "fs";
 
-const BASE_FOLDER = "public";
+// Relative folders (from folder containing this file)
+const INPUT_HTML_BASE_FOLDER = "public";
+const BUILD_OUT_DIR = "../LarpakeServer/wwwroot"; 
 
 const generateFilePaths = (dir: string, skipFiles: boolean = false) => {
     const entries: { [key: string]: string } = {};
@@ -15,7 +17,7 @@ const generateFilePaths = (dir: string, skipFiles: boolean = false) => {
         } else if (!skipFiles && file.endsWith(".html")) {
             // Found, create name from reltive path and without "public" folder
             // Append to entries
-            const name = path.relative(path.join(__dirname, BASE_FOLDER), fullPath).replace(".html", "");
+            const name = path.relative(__dirname, fullPath).replace(".html", "");
             entries[name] = resolve(__dirname, fullPath);
         }
     });
@@ -38,10 +40,17 @@ export default defineConfig({
         },
     },
     build: {
-        outDir: path.resolve(__dirname, "build"),
+        outDir: path.resolve(__dirname, BUILD_OUT_DIR),
         emptyOutDir: true,
         rollupOptions: {
-            input: generateFilePaths(path.resolve(__dirname, BASE_FOLDER), true)
+            preserveEntrySignatures: "strict",
+            input: generateFilePaths(path.resolve(__dirname, INPUT_HTML_BASE_FOLDER), true),
+            output: {
+                preserveModules: true,
+                assetFileNames: "[name].[ext]",
+                chunkFileNames: "[name].js",
+                entryFileNames: "[name].js",
+            }
         },
     },
 });

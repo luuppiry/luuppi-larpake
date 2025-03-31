@@ -1,6 +1,6 @@
-import LarpakeClient from "../api_client/larpake_client.ts";
-import SectionEditor from "../components/section-editor.ts";
-import { Q_LARPAKE_ID, Q_NEW } from "../constants.ts";
+import LarpakeClient from "../api_client/larpake_client.js";
+import SectionEditor from "../components/section-editor.js";
+import { Q_LARPAKE_ID, Q_NEW } from "../constants.js";
 import mapChildren, {
     getInputNumericByDocId,
     getSearchParams,
@@ -9,9 +9,9 @@ import mapChildren, {
     LANG_FI,
     pushUrlState,
     ToDictionary,
-} from "../helpers.ts";
-import { Larpake, Section } from "../models/larpake.ts";
-import { SectionSortFunc, TaskSortFunc } from "../sortFunctions.ts";
+} from "../helpers.js";
+import { Larpake, Section } from "../models/larpake.js";
+import { SectionSortFunc, TaskSortFunc } from "../sortFunctions.js";
 
 const client = new LarpakeClient();
 

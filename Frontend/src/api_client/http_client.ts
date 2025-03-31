@@ -1,5 +1,5 @@
-import DevHttpClient from "./dev_http_client.ts";
-import EntraId from "./entra_id.ts";
+import DevHttpClient from "./dev_http_client.js";
+import EntraId from "./entra_id.js";
 
 type AccessToken = {
     accessToken: string;

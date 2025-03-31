@@ -1,4 +1,4 @@
-import { Q_EVENT_ID, Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "../constants";
+import { Q_EVENT_ID, Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "../constants.js";
 import {
     appendTemplateElement,
     isEmpty,
@@ -6,12 +6,12 @@ import {
     removeChildren,
     throwIfAnyNull,
     ToOverwriteDictionary,
-} from "../helpers";
-import { Attendance, Completion } from "../models/attendance";
-import { getSectionText, getTaskText, Section } from "../models/larpake";
-import { Signature } from "../models/user";
-import { SectionSortFunc, TaskSortFunc } from "../sortFunctions";
-import SignatureRenderer from "./signature_renderer";
+} from "../helpers.js";
+import { Attendance, Completion } from "../models/attendance.js";
+import { getSectionText, getTaskText, Section } from "../models/larpake.js";
+import { Signature } from "../models/user.js";
+import { SectionSortFunc, TaskSortFunc } from "../sortFunctions.js";
+import SignatureRenderer from "./signature_renderer.js";
 
 const PAGE_SIZE = 7;
 const TASK_LINE_LENGTH = 55;

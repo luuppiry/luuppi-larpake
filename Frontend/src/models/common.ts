@@ -12,13 +12,17 @@ export type Container<T> = {
 };
 
 export type Point2D = {
-    X: number;
-    Y: number;
+    x: number;
+    y: number;
 };
 
 export type IdObject = {
     id: number;
 };
+
+export type GuidIdObject = {
+    id: string;
+}
 
 export type RowsAffected = {
     rowsAffected: number;

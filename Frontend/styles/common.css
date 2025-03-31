@@ -76,8 +76,6 @@ body {
     background-color: #ddd;
 }
 
-
-
 .container {
     max-width: 600px;
     margin: 20px auto;
@@ -86,7 +84,6 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     padding: 20px;
 }
-
 
 /* Side panel styles */
 .side-panel {
@@ -276,5 +273,40 @@ body {
 }
 
 .margin-left {
+    margin-left: auto;
+}
+
+.dialog {
+    max-width: 500px;
+    padding: 0;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.dialog.error {
+    border: #eb7a8b solid 2px;
+}
+
+.dialog.max-width-300 {
+    max-width: 300px;
+}
+.dialog.max-width-400 {
+    max-width: 400px;
+}
+.dialog.max-width-500 {
+    max-width: 500px;
+}
+.dialog.max-width-600 {
+    max-width: 600px;
+}
+
+.dialog > section {
+    padding: 10px 30px;
+    display: flex;
+    flex-flow: column;
+}
+
+.dialog > section > button {
     margin-left: auto;
 }

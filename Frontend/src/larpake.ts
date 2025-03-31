@@ -1,10 +1,10 @@
-import AttendanceClient from "./api_client/attendance_client";
-import LarpakeClient from "./api_client/larpake_client";
+import AttendanceClient from "./api_client/attendance_client.js";
+import LarpakeClient from "./api_client/larpake_client.js";
 
-import { Larpake, LarpakeTask } from "./models/larpake";
-import { Q_LARPAKE_ID, Q_LAST_PAGE, Q_PAGE } from "./constants";
-import { LarpakeRenderer } from "./services/larpake_render";
-import { getDocumentLangCode, ToDictionary } from "./helpers";
+import { Larpake, LarpakeTask } from "./models/larpake.js";
+import { Q_LARPAKE_ID, Q_LAST_PAGE, Q_PAGE } from "./constants.js";
+import { LarpakeRenderer } from "./services/larpake_render.js";
+import { getDocumentLangCode, ToDictionary } from "./helpers.js";
 
 const client = new LarpakeClient();
 const attendanceClient = new AttendanceClient(client.client);

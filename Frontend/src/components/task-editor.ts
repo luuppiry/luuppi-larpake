@@ -1,5 +1,5 @@
-import { isEmpty, LANG_EN, LANG_FI, throwIfAnyNull } from "../helpers";
-import { LarpakeTask } from "../models/larpake";
+import { isEmpty, LANG_EN, LANG_FI, throwIfAnyNull } from "../helpers.js";
+import { LarpakeTask } from "../models/larpake.js";
 
 const ID_START = "task-editor-";
 

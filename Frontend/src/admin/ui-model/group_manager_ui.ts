@@ -1,4 +1,4 @@
-import { throwIfAnyNull } from "../../helpers";
+import { throwIfAnyNull } from "../../helpers.js";
 
 export default class GroupManagerUI {
     memberContainer: HTMLUListElement;

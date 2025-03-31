@@ -1,7 +1,7 @@
-import HttpClient from "./http_client.ts";
-import { Larpake, LarpakeTask, Section } from "../models/larpake.ts";
-import { Container, IdObject } from "../models/common.ts";
-import { ThrowIfNull } from "../helpers.ts";
+import HttpClient from "./http_client.js";
+import { Larpake, LarpakeTask, Section } from "../models/larpake.js";
+import { Container, IdObject } from "../models/common.js";
+import { ThrowIfNull } from "../helpers.js";
 
 type Ids = {
     ids: number[];

@@ -1,6 +1,7 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
+using LarpakeServer.Models.ComplexDataTypes;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
@@ -30,7 +31,7 @@ public class SignaturesController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.CommonRead)]
-    [ProducesResponseType(typeof(SignaturesGetDto), 200)]
+    [ProducesResponseType<SignaturesGetDto>(200)]
     public async Task<IActionResult> GetSignatures([FromQuery] SignatureQueryOptions options)
     {
         var records = await _db.Get(options);
@@ -41,6 +42,19 @@ public class SignaturesController : ExtendedControllerBase
             .AppendPaging(options);
 
         return Ok(result);
+    }
+
+    [HttpGet("own")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType<SignaturesGetDto>(200)]
+    public async Task<IActionResult> GetOwnSignatures([FromQuery] QueryOptions options)
+    {
+        return await GetSignatures(new SignatureQueryOptions
+        {
+            UserId = GetRequestUserId(),
+            PageOffset = options.PageOffset,
+            PageSize = options.PageSize
+        });
     }
 
     [HttpGet("{signatureId}")]
@@ -60,8 +74,8 @@ public class SignaturesController : ExtendedControllerBase
 
 
     [HttpPost]
-    [RequiresPermissions(Permissions.CreateSignature)]
-    [ProducesResponseType(typeof(GuidIdResponse), 201)]
+    [RequiresPermissions(Permissions.Admin)]
+    [ProducesResponseType<GuidIdResponse>(201)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> PostSignature([FromBody] SignaturePostDto dto)
     {
@@ -81,9 +95,22 @@ public class SignaturesController : ExtendedControllerBase
         return FromError(id);
     }
 
+    [HttpPost("own")]
+    [RequiresPermissions(Permissions.CreateSignature)]
+    [ProducesResponseType<GuidIdResponse>(201)]
+    [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
+    public async Task<IActionResult> PostOwnSignature([FromBody] SvgMetadata signature)
+    {
+        return await PostSignature(new SignaturePostDto
+        {
+            OwnerId = GetRequestUserId(),
+            Signature = signature
+        });
+    }
+
     [HttpDelete("{signatureId}")]
     [RequiresPermissions(Permissions.CreateSignature)]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> DeleteSignature(Guid signatureId)
     {
@@ -105,7 +132,6 @@ public class SignaturesController : ExtendedControllerBase
 
     private async Task<Result<bool>> RequireOwnerOrAdmin(Guid signatureId)
     {
-
         Permissions userPermissions = _claimsReader.ReadAuthorizedUserPermissions(Request);
         if (userPermissions.Has(Permissions.Admin))
         {

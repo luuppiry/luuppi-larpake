@@ -1,8 +1,8 @@
-import { encodeArrayToQueryString } from "../helpers";
-import { Attendance } from "../models/attendance";
-import { Container } from "../models/common";
-import { Signature } from "../models/user";
-import HttpClient from "./http_client";
+import { encodeArrayToQueryString } from "../helpers.js";
+import { Attendance } from "../models/attendance.js";
+import { Container } from "../models/common.js";
+import { Signature } from "../models/user.js";
+import HttpClient from "./http_client.js";
 
 export default class AttendanceClient {
     client: HttpClient;

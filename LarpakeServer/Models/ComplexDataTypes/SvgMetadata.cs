@@ -9,7 +9,7 @@ public class SvgMetadata
     public required int Height { get; set; }
 
     [Required]
-    [Range(0, 400)]
+    [Range(0, 500)]
     public required int Width { get; set; }
 
     [Required]

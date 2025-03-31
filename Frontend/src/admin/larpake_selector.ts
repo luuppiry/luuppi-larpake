@@ -1,5 +1,5 @@
-import LarpakeClient from "../api_client/larpake_client.ts";
-import LarpakePreview from "../components/larpake-previewer.ts";
+import LarpakeClient from "../api_client/larpake_client.js";
+import LarpakePreview from "../components/larpake-previewer.js";
 
 async function main() {
     const client = new LarpakeClient();

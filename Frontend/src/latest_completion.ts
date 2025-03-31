@@ -1,5 +1,5 @@
-import AttendanceClient from "./api_client/attendance_client";
-import LarpakeClient from "./api_client/larpake_client";
+import AttendanceClient from "./api_client/attendance_client.js";
+import LarpakeClient from "./api_client/larpake_client.js";
 import {
     appendTemplateElement,
     formatDateTime,
@@ -7,9 +7,9 @@ import {
     isEmpty,
     LANG_EN,
     ToOverwriteDictionary,
-} from "./helpers";
-import { Attendance } from "./models/attendance";
-import { LarpakeTask } from "./models/larpake";
+} from "./helpers.js";
+import { Attendance } from "./models/attendance.js";
+import { LarpakeTask } from "./models/larpake.js";
 
 const larpakeClient = new LarpakeClient();
 const attendanceClient = new AttendanceClient(larpakeClient.client);

@@ -1,59 +1,20 @@
-import { Container, IdObject, RowsAffected } from "../models/common.ts";
-import { Group, GroupMember, PermissionData, Signature, User } from "../models/user.ts";
-import HttpClient from "./http_client.ts";
+import { Container, GuidIdObject, RowsAffected } from "../models/common.js";
+import { Group, PermissionCollection, Signature, SvgMetadata, User } from "../models/user.js";
+import HttpClient from "./http_client.js";
+import RequestEngine from "./request_engine.js";
 
-const FETCH_CHUNK_SIZE = 100;
-const MIN_SEARCH_LENGTH = 3;
-const MAX_SEARCH_LENGTH = 30;
-
-type NonCompetingGroupMember = {
-    userId: string;
-    isHidden: boolean;
-};
-
-type MemberIds = {
-    members: string[];
-};
-
-export class UserClient {
-    client: HttpClient;
-
-    constructor() {
-        this.client = new HttpClient();
+export class UserClient extends RequestEngine {
+    constructor(client: HttpClient | null = null) {
+        super(client ?? new HttpClient());
     }
 
-    async getAllUnpaged(): Promise<User[] | null> {
-        const result: User[] = [];
-
-        const query = new URLSearchParams();
-
-        // query.append("StartedBefore", <date>)
-        // query.append("StartedAfter", <date>)
-        // query.append("Permissions", <number>)
-        // query.append("IsORQuery", <boolean>)
-        // query.append("UserIds", <id array>)
-        // query.append("EntraIds", <id array>)
-        // query.append("EntraUsername", <guid>)
-        query.append("PageSize", FETCH_CHUNK_SIZE.toString());
-
-        while (true) {
-            let offset = 0;
-            query.set("PageOffset", offset.toString());
-            const response = await this.client.get("api/users", query);
-            if (!response.ok) {
-                console.warn("Failed to fetch users from offset", offset, await response.json());
-                return null;
-            }
-
-            const users: Container<User[]> = await response.json();
-
-            result.push(...users.data);
-
-            offset = users.nextPage;
-            if (!offset || offset <= 0) {
-                return result;
-            }
+    async getSelf(): Promise<User | null> {
+        const response = await this.client.get("api/users/me");
+        if (!response.ok) {
+            console.warn("Failed to fetch user information:", await response.json());
+            return null;
         }
+        return await response.json();
     }
 
     async updateUser(userId: string, startYear: null | number): Promise<boolean> {
@@ -116,190 +77,31 @@ export class UserClient {
         return await response.json();
     }
 
-    async getPermissionMetadata(): Promise<PermissionData | null> {
-        const response = await this.client.get("api/status/permissions");
+    async getOwnSignatures(): Promise<Signature[] | null> {
+        const response = await this.client.get("api/signatures/own");
         if (!response.ok) {
-            console.warn("Failed to fetch permission metadata", await response.json());
+            console.warn("Failed to fetch own signatures:", await response.json());
             return null;
         }
-        return await response.json();
+        const signatures: Container<Signature[]> = await response.json();
+        return signatures.data;
     }
 
-    async getGroupsPaged(
-        minimize: boolean = true,
-        search: string | null = null,
-        pageSize: number = 20,
-        pageOffset: number = 0,
-        isOrQuery: boolean = true
-    ): Promise<Container<Group[]> | null> {
-        const query = new URLSearchParams();
-        query.append("DoMinimize", minimize ? "true" : "false");
-        query.append("IncludeHiddenMembers", "true");
-        query.append("PageSize", pageSize.toString());
-        query.append("PageOffset", pageOffset.toString());
-        // query.append("ContainsUser", <string>)
-        // query.append("IncludeHiddenMembers", <boolean>)
-        // query.append("IsSearchMemberCompeting", <boolean>)
-
-        if (search && search.length >= MIN_SEARCH_LENGTH && search.length <= MAX_SEARCH_LENGTH) {
-            query.append("GroupName", search);
-        }
-        if (search) {
-            query.append("IsORQuery", isOrQuery ? "true" : "false");
-            const numeric = parseInt(search);
-            if (!Number.isNaN(numeric)) {
-                query.append("StartYear", numeric.toString());
-                query.append("LarpakeId", numeric.toString());
-                query.append("GroupNumber", numeric.toString());
-            }
-        }
-
-        const response = await this.client.get("api/groups", query);
-        if (!response.ok) {
-            console.warn("Failed to fetch groups", await response.json());
-            return null;
-        }
-
-        const groups: Container<Group[]> = await response.json();
-        return groups;
+    async uploadSignature(signature: SvgMetadata): Promise<GuidIdObject | null> {
+        return await this.post<GuidIdObject>({
+            url: "api/signatures/own",
+            body: signature,
+            failMessage: "Failed to upload signature",
+            isContainerType: false,
+        });
     }
 
-    async getGroups(
-        minimize: boolean = true,
-        search: string | null = null,
-        pageSize: number = 20,
-        pageOffset: number = 0,
-        isOrQuery: boolean = true
-    ): Promise<Group[] | null> {
-        const paged = await this.getGroupsPaged(minimize, search, pageSize, pageOffset, isOrQuery);
-        if (paged) {
-            return paged.data;
-        }
-        return null;
-    }
-
-    async getGroupById(groupId: number): Promise<Group | null> {
-        /* Group is 'minimized' */
-        const response = await this.client.get(`api/groups/${groupId}`);
-        if (!response.ok) {
-            console.warn(`Failed to fetch group ${groupId}`, await response.json());
-            return null;
-        }
-        return await response.json();
-    }
-
-    async getGroupMembers(groupId: number): Promise<null | string[]> {
-        const response = await this.client.get(`api/groups/${groupId}/members`);
-        if (!response.ok) {
-            console.warn(`Failed to fetch group ${groupId} members`, await response.json());
-            return null;
-        }
-        const ids: MemberIds = await response.json();
-        return ids.members;
-    }
-
-    async uploadGroup(group: Group): Promise<number | null> {
-        if (group.id <= 0) {
-            return this.#createGroup(group);
-        }
-
-        const response = await this.#updateGroup(group);
-        if (!response.ok && response.status === 404) {
-            return this.#createGroup(group);
-        }
-        if (!response.ok) {
-            console.warn(`Failed to update existing group ${group.id}`, await response.json());
-            return null;
-        }
-        return group.id;
-    }
-    async #updateGroup(group: Group): Promise<Response> {
-        const response = await this.client.put(`api/groups/${group.id}`, group);
-        if (!response.ok) {
-            return response;
-        }
-
-        const userResponse = await this.#setGroupMembers(group.id, group.members);
-
-        // Null means success (no error)
-        return userResponse === null ? response : userResponse!;
-    }
-
-    async #createGroup(group: Group): Promise<number | null> {
-        /* Null means no error in here, I know it is stupid, but get over it */
-        const response = await this.client.post("api/groups", group);
-        if (!response.ok) {
-            console.warn("Failed to create group body.", await response.json());
-            return null;
-        }
-        const idObject: IdObject = await response.json();
-        const id = idObject.id;
-
-        const userResult = await this.#setGroupMembers(id, group.members);
-        if (userResult == null) {
-            return id;
-        }
-        return null;
-    }
-
-    async #setGroupMembers(groupId: number, members: GroupMember[]): Promise<Response | null> {
-        const ids = members.map((x) => x.userId);
-        this.#removeNotIncludedMembers(groupId, ids);
-
-        const competitors = members.filter((x) => x.isCompeting).map((x) => x.userId);
-        if (competitors.length > 0) {
-            const competitorResponse = await this.client.post(`api/groups/${groupId}/members`, {
-                memberIds: competitors,
-            });
-
-            if (!competitorResponse.ok) {
-                console.warn("Failed to upload competitor group members", await competitorResponse.json());
-                return competitorResponse;
-            }
-        }
-
-        const tutors: NonCompetingGroupMember[] = members
-            .filter((x) => !x.isCompeting)
-            .map((x) => {
-                return {
-                    userId: x.userId,
-                    isHidden: x.isHidden,
-                };
-            });
-        if (tutors.length > 0) {
-            const tutorResponse = await this.client.post(`api/groups/${groupId}/members/non-competing`, {
-                members: tutors,
-            });
-            if (!tutorResponse.ok) {
-                console.warn("Failed to upload tutor group members", await tutorResponse.json());
-                return tutorResponse;
-            }
-        }
-        return null;
-    }
-
-    async #removeNotIncludedMembers(groupId: number, memberIds: string[]) {
-        const oldMembersRequest = await this.getGroupMembers(groupId);
-        if (oldMembersRequest) {
-            const membersToBeRemoved = oldMembersRequest.filter((x) => !memberIds.includes(x));
-            if (membersToBeRemoved.length <= 0) {
-                return;
-            }
-            const deleteResponse = await this.client.delete(`api/groups/${groupId}/members`, {
-                memberIds: membersToBeRemoved,
-            });
-
-            // Don't really care if this fails actually
-            if (!deleteResponse.ok) {
-                console.warn(
-                    `Failed to remove members: `,
-                    membersToBeRemoved,
-                    " from group",
-                    groupId,
-                    "because of",
-                    await deleteResponse.json()
-                );
-            }
-        }
+    async getPermissionTable(): Promise<PermissionCollection | null> {
+        return await this.get<PermissionCollection>({
+            url: "api/status/permissions",
+            params: null,
+            failMessage: "Failed to fetch permissions table",
+            isContainerType: false,
+        });
     }
 }
