@@ -49,6 +49,8 @@ class UserBrowser extends UserManagerUI {
         }
     }
 
+    
+
     setAvailableUsers(users: User[]) {
         this.allUsers = users;
         this.#filter();

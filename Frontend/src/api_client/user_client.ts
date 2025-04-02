@@ -3,9 +3,45 @@ import { Group, PermissionCollection, Signature, SvgMetadata, User } from "../mo
 import HttpClient from "./http_client.js";
 import RequestEngine from "./request_engine.js";
 
+const FETCH_CHUNK_SIZE = 100;
+
 export class UserClient extends RequestEngine {
     constructor(client: HttpClient | null = null) {
         super(client ?? new HttpClient());
+    }
+
+    async getAllUnpaged(): Promise<User[] | null> {
+        const result: User[] = [];
+
+        const query = new URLSearchParams();
+
+        // query.append("StartedBefore", <date>)
+        // query.append("StartedAfter", <date>)
+        // query.append("Permissions", <number>)
+        // query.append("IsORQuery", <boolean>)
+        // query.append("UserIds", <id array>)
+        // query.append("EntraIds", <id array>)
+        // query.append("EntraUsername", <guid>)
+        query.append("PageSize", FETCH_CHUNK_SIZE.toString());
+
+        while (true) {
+            let offset = 0;
+            query.set("PageOffset", offset.toString());
+            const response = await this.client.get("api/users", query);
+            if (!response.ok) {
+                console.warn("Failed to fetch users from offset", offset, await response.json());
+                return null;
+            }
+
+            const users: Container<User[]> = await response.json();
+
+            result.push(...users.data);
+
+            offset = users.nextPage;
+            if (!offset || offset <= 0) {
+                return result;
+            }
+        }
     }
 
     async getSelf(): Promise<User | null> {

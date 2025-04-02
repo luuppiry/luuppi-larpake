@@ -15,7 +15,7 @@ export const Q_SEARCH = "Search";
 
 export const Q_INVITE_KEY = "InviteKey";
 
-export const INVITE_KEY_LENGTH = 6;
+export const INVITE_KEY_LENGTH = 8;
 export const INVITE_KEY_HEADER = "lak-v1_";
 export const Q_KEY_MALFORMED = "KeyMalformed";
 export const Q_KEY_EXPIRED = "KeyExpired";

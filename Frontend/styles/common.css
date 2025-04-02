@@ -284,6 +284,10 @@ body {
     border-radius: 10px;
 }
 
+.dialog.primary-btn {
+    margin-left: auto;
+}
+
 .dialog.error {
     border: #eb7a8b solid 2px;
 }

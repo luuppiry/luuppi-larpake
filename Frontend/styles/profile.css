@@ -7,6 +7,10 @@ body {
     margin-bottom: 150px;
 }
 
+.section {
+    max-width: 600px !important;
+}
+
 .groups-container {
     list-style: none;
     padding: 0;

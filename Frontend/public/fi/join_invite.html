@@ -5,7 +5,7 @@
             <meta charset="UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             <title>Luuppi - Liity</title>
-            <link rel="stylesheet" href="/styles/join.css" />
+            <link rel="stylesheet" href="/styles/join_invite.css" />
             <script type="module" src="/src/components/side-panel.js"></script>
             <script type="module" src="/src/components/ui-header.js"></script>
             <script type="module" src="/src/components/form-container.js"></script>
@@ -13,44 +13,56 @@
         </head>
     </head>
     <body>
-        <dialog id="join-failed-dialog">
-            <h2>Jotakin meni pieleen!</h2>
-            <p>
-                Näyttää siltä, että ryhmään liittyminen ei onnistunut. Kantsii siis koittaa
-                uudestaan tai varmistaa linkin voimassaolo tutorilta!
-            </p>
-            <button class="_ok primary-btm">OK</button>
-        </dialog>
-
-        <dialog id="malformed-key-dialog">
-            <h2>Jotakin meni pieleen!</h2>
-            <p>
-                Näyttää siltä, että ryhmään liittyminen ei onnistunut. Kantsii siis koittaa
-                uudestaan tai varmistaa linkin voimassaolo tutorilta!
-            </p>
-            <button class="_ok primary-btm">OK</button>
-        </dialog>
-
-        <dialog id="link-expired-dialog">
-            <h2>Linkki on vanhentunut!</h2>
-            <p>
-                Näyttää siltä, että linkki on päässyt vanhenemaan ja sillä ei voi enää liittyä
-                ryhmään. Kantsii siis käydä pyytämässä uutta linkkiä tutoreilta!
-            </p>
-            <button class="_ok primary-btm">OK</button>
-        </dialog>
-
-        <section>
-            <form-container>
-                <h2>Liity Ryhmään</h2>
+        <dialog id="join-failed-dialog" class="dialog error max-width-400">
+            <section>
+                <h2>Jotakin meni pieleen!</h2>
                 <p>
-                    Sinut on kutsuttu liittymään ryhmää <span id="group-name">Ryhmä</span> (<span
-                        id="group-number"
-                    ></span
-                    >)! Haluatko liittyä?
+                    Näyttää siltä, että ryhmään liittyminen ei onnistunut. Kantsii siis koittaa
+                    uudestaan tai varmistaa linkin voimassaolo tutorilta!
                 </p>
-                <button id="join-btn" class="primary-btn">Liity</button>
-            </form-container>
-        </section>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+
+        <dialog id="malformed-key-dialog" class="dialog error max-width-400">
+            <section>
+                <h2>Jotakin meni pieleen!</h2>
+                <p>
+                    Näyttää siltä, että ryhmään liittyminen ei onnistunut. Kantsii siis koittaa
+                    uudestaan tai varmistaa linkin voimassaolo tutorilta!
+                </p>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+
+        <dialog id="link-expired-dialog" class="dialog error max-width-400">
+            <section>
+                <h2>Linkki on vanhentunut!</h2>
+                <p>
+                    Näyttää siltä, että linkki on päässyt vanhenemaan ja sillä ei voi enää liittyä
+                    ryhmään. Kantsii siis käydä pyytämässä uutta linkkiä tutoreilta!
+                </p>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+
+        <ui-header></ui-header>
+        <side-panel> </side-panel>
+        <form-container class="shadow">
+            <section class="group-info">
+                <h2 class="join-text">Liity Ryhmään</h2>
+                <img src="/group-profile.png" class="profile-picture" />
+                <h3 class="group-title">
+                    <span id="group-name">Ryhmä</span> (<span id="group-number"></span>)
+                </h3>
+                <p>
+                    Sinut on kutsuttu liittymään ryhmää. Oletko valmiina ottamaan ensiaskeleesi
+                    Lärpäkkeen ihmeelliseen maailmaan? Viimeistele liittyminen painamalla alla
+                    olevaa painiketta!
+                </p>
+
+                <button id="join-btn" class="primary-btn">Liity!</button>
+            </section>
+        </form-container>
     </body>
 </html>

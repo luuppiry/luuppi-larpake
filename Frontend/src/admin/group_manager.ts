@@ -1,4 +1,5 @@
 import GroupClient from "../api_client/group_client.js";
+import { UserClient } from "../api_client/user_client.js";
 import { parseInviteLink } from "../builders.js";
 import { Q_GROUP_ID } from "../constants.js";
 import {
@@ -23,6 +24,7 @@ const DEBOUNCH_TIMEOUT = 500;
 
 // Section DATA
 const groupClient = new GroupClient();
+const userClient = new UserClient(groupClient.client);
 
 class GroupManager extends GroupManagerUI {
     allUsers: Map<string, User>;
@@ -366,7 +368,7 @@ async function main() {
     const params = new URLSearchParams(window.location.search);
     const groupId: number = parseInt(params.get(Q_GROUP_ID) ?? "");
 
-    const allUsers = await groupClient.getAllUnpaged();
+    const allUsers = await userClient.getAllUnpaged();
     if (!allUsers) {
         throw new Error("Could not fetch all available users.");
     }

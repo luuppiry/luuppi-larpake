@@ -1,9 +1,8 @@
 import { Container, IdObject } from "../models/common.js";
-import { Group, GroupInfo, GroupInvite, GroupMember, User } from "../models/user.js";
+import { Group, GroupInfo, GroupInvite, GroupMember } from "../models/user.js";
 import HttpClient from "./http_client.js";
 import RequestEngine from "./request_engine.js";
 
-const FETCH_CHUNK_SIZE = 100;
 const MIN_SEARCH_LENGTH = 3;
 const MAX_SEARCH_LENGTH = 30;
 
@@ -21,39 +20,7 @@ export default class GroupClient extends RequestEngine {
         super(client ?? new HttpClient());
     }
 
-    async getAllUnpaged(): Promise<User[] | null> {
-        const result: User[] = [];
 
-        const query = new URLSearchParams();
-
-        // query.append("StartedBefore", <date>)
-        // query.append("StartedAfter", <date>)
-        // query.append("Permissions", <number>)
-        // query.append("IsORQuery", <boolean>)
-        // query.append("UserIds", <id array>)
-        // query.append("EntraIds", <id array>)
-        // query.append("EntraUsername", <guid>)
-        query.append("PageSize", FETCH_CHUNK_SIZE.toString());
-
-        while (true) {
-            let offset = 0;
-            query.set("PageOffset", offset.toString());
-            const response = await this.client.get("api/users", query);
-            if (!response.ok) {
-                console.warn("Failed to fetch users from offset", offset, await response.json());
-                return null;
-            }
-
-            const users: Container<User[]> = await response.json();
-
-            result.push(...users.data);
-
-            offset = users.nextPage;
-            if (!offset || offset <= 0) {
-                return result;
-            }
-        }
-    }
 
     async getGroupJoinInformation(key: string): Promise<GroupInfo | 404 | null> {
         const response = await this.client.get(`api/groups/${key}/join`);

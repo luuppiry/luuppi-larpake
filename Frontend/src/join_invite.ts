@@ -1,5 +1,6 @@
 import GroupClient from "./api_client/group_client.js";
-import { INVITE_KEY_HEADER, INVITE_KEY_LENGTH, Q_INVITE_KEY } from "./constants.js";
+import { parseValidInviteCodeToKey } from "./builders.js";
+import { Q_INVITE_KEY } from "./constants.js";
 import { getSearchParams, showOkDialog, throwIfAnyNull } from "./helpers.js";
 
 const client = new GroupClient();
@@ -11,22 +12,22 @@ throwIfAnyNull([nameField, groupNumberField, joinBtn]);
 
 async function main() {
     const params = getSearchParams();
-    const inviteKey = params.get(Q_INVITE_KEY);
-    if (!inviteKey) {
+    const inviteCode = params.get(Q_INVITE_KEY);
+    if (!inviteCode) {
         window.location.href = "join.html";
         return;
     }
 
-    const key = inviteKey.slice(INVITE_KEY_HEADER.length, -1);
-    const isKeyMalformed =
-        !inviteKey?.startsWith(INVITE_KEY_HEADER) || key.length !== INVITE_KEY_LENGTH;
+    const validKey = parseValidInviteCodeToKey(inviteCode);
 
-    if (isKeyMalformed) {
+
+
+    if (!validKey) {
         handleMalformed();
         return;
     }
 
-    const group = await client.getGroupJoinInformation(key);
+    const group = await client.getGroupJoinInformation(validKey);
     if (group === 404) {
         handleExpired();
         return;
@@ -42,7 +43,7 @@ async function main() {
 
     // Handle join pressed
     joinBtn?.addEventListener("click", async (_) => {
-        const joined = await client.join(key);
+        const joined = await client.join(validKey);
         switch (joined) {
             case true:
                 window.location.href = "own_groups.html";

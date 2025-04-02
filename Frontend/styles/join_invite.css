@@ -1,0 +1,41 @@
+@import "common.css";
+@import "section.css";
+
+.section {
+    max-width: 500px !important;
+}
+
+.section-filler > div {
+    padding: 30px !important;
+}
+
+.group-info {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    text-align: center;
+}
+
+.join-text {
+    font-size: large;
+    margin-top: 0;
+}
+
+.profile-picture {
+    height: 200px;
+    width: 200px;
+    border: 2px solid black;
+    border-radius: 50%;
+
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.group-title {
+    font-size: x-large;
+}
+
+
+
+#join-btn {
+    padding: 15px 120px;
+}

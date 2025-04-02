@@ -1,2 +1,45 @@
 @import "common.css";
 @import "section.css";
+
+.section {
+    max-width: 600px !important;
+}
+
+.section-filler > div {
+    padding: 30px !important;
+}
+
+.content {
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    text-align: center;
+}
+
+.box-container {
+    display: flex;
+    width: fit-content;
+    gap: 1px;
+    margin: 0 auto; /* Center the box-container */
+}
+
+.code-title {
+    margin: 2px 0;
+}
+
+.box {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border: 2px solid var(--text-border);
+    font-size: 20px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.join-btn {
+    margin: 30px auto 0 auto;
+    padding: 8px 120px !important;
+}
+
