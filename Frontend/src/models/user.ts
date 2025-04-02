@@ -26,6 +26,11 @@ export type Group = {
     members: GroupMember[];
 };
 
+export type GroupInvite = {
+    inviteKey: string;
+    message: string;
+}
+
 export type PermissionCollection = {
     roles: {
         freshman: number;

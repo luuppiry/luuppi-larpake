@@ -1,6 +1,7 @@
 import { Container, IdObject } from "../models/common.js";
-import { Group, GroupInfo, GroupMember, User } from "../models/user.js";
+import { Group, GroupInfo, GroupInvite, GroupMember, User } from "../models/user.js";
 import HttpClient from "./http_client.js";
+import RequestEngine from "./request_engine.js";
 
 const FETCH_CHUNK_SIZE = 100;
 const MIN_SEARCH_LENGTH = 3;
@@ -15,46 +16,44 @@ type MemberIds = {
     members: string[];
 };
 
-export default class GroupClient {
-    
-    client: HttpClient;
+export default class GroupClient extends RequestEngine {
     constructor(client: HttpClient | null = null) {
-        this.client = client ?? new HttpClient();
+        super(client ?? new HttpClient());
     }
 
     async getAllUnpaged(): Promise<User[] | null> {
-            const result: User[] = [];
-    
-            const query = new URLSearchParams();
-    
-            // query.append("StartedBefore", <date>)
-            // query.append("StartedAfter", <date>)
-            // query.append("Permissions", <number>)
-            // query.append("IsORQuery", <boolean>)
-            // query.append("UserIds", <id array>)
-            // query.append("EntraIds", <id array>)
-            // query.append("EntraUsername", <guid>)
-            query.append("PageSize", FETCH_CHUNK_SIZE.toString());
-    
-            while (true) {
-                let offset = 0;
-                query.set("PageOffset", offset.toString());
-                const response = await this.client.get("api/users", query);
-                if (!response.ok) {
-                    console.warn("Failed to fetch users from offset", offset, await response.json());
-                    return null;
-                }
-    
-                const users: Container<User[]> = await response.json();
-    
-                result.push(...users.data);
-    
-                offset = users.nextPage;
-                if (!offset || offset <= 0) {
-                    return result;
-                }
+        const result: User[] = [];
+
+        const query = new URLSearchParams();
+
+        // query.append("StartedBefore", <date>)
+        // query.append("StartedAfter", <date>)
+        // query.append("Permissions", <number>)
+        // query.append("IsORQuery", <boolean>)
+        // query.append("UserIds", <id array>)
+        // query.append("EntraIds", <id array>)
+        // query.append("EntraUsername", <guid>)
+        query.append("PageSize", FETCH_CHUNK_SIZE.toString());
+
+        while (true) {
+            let offset = 0;
+            query.set("PageOffset", offset.toString());
+            const response = await this.client.get("api/users", query);
+            if (!response.ok) {
+                console.warn("Failed to fetch users from offset", offset, await response.json());
+                return null;
+            }
+
+            const users: Container<User[]> = await response.json();
+
+            result.push(...users.data);
+
+            offset = users.nextPage;
+            if (!offset || offset <= 0) {
+                return result;
             }
         }
+    }
 
     async getGroupJoinInformation(key: string): Promise<GroupInfo | 404 | null> {
         const response = await this.client.get(`api/groups/${key}/join`);
@@ -82,21 +81,18 @@ export default class GroupClient {
         return true;
     }
 
-    async getOwnGroups() : Promise<Group[] | null> {
+    async getOwnGroups(): Promise<Group[] | null> {
         const params = new URLSearchParams();
         params.set("DoMinimize", "true");
 
-        const response = await this.client.get("api/groups/own", params);
-        if (!response.ok){
-            console.warn("Failed to fetch own groups:", await response.json());
-            return null;
-        }
-        const groups: Container<Group[]> = await response.json();
-        return groups.data;
+        return await this.get<Group[]>({
+            url: "api/groups/own",
+            params: params,
+            failMessage: "Failed to fetch own groups:",
+            isContainerType: true,
+        });
     }
 
-
-    
     async getGroupsPaged(
         minimize: boolean = true,
         search: string | null = null,
@@ -126,14 +122,12 @@ export default class GroupClient {
             }
         }
 
-        const response = await this.client.get("api/groups", query);
-        if (!response.ok) {
-            console.warn("Failed to fetch groups", await response.json());
-            return null;
-        }
-
-        const groups: Container<Group[]> = await response.json();
-        return groups;
+        return await this.get<Container<Group[]>>({
+            url: "api/groups",
+            params: query,
+            failMessage: "Failed to fetch groups",
+            isContainerType: false,
+        });
     }
 
     async getGroups(
@@ -152,12 +146,12 @@ export default class GroupClient {
 
     async getGroupById(groupId: number): Promise<Group | null> {
         /* Group is 'minimized' */
-        const response = await this.client.get(`api/groups/${groupId}`);
-        if (!response.ok) {
-            console.warn(`Failed to fetch group ${groupId}`, await response.json());
-            return null;
-        }
-        return await response.json();
+        return await this.get<Group>({
+            url: `api/groups/${groupId}`,
+            params: null,
+            failMessage: `Failed to fetch group ${groupId}`,
+            isContainerType: false,
+        });
     }
 
     async getGroupMembers(groupId: number): Promise<null | string[]> {
@@ -184,6 +178,24 @@ export default class GroupClient {
             return null;
         }
         return group.id;
+    }
+
+    async getInviteKey(groupId: number): Promise<GroupInvite | null> {
+        return await this.get<GroupInvite>({
+            url: `api/groups/${groupId}/invite`,
+            params: null,
+            failMessage: "Failed to get current group invite key.",
+            isContainerType: false,
+        });
+    }
+
+    async refreshInviteLink(groupId: number): Promise<GroupInvite | null> {
+        return await this.post<GroupInvite>({
+            url: `api/groups/${groupId}/invite/refresh`,
+            body: null,
+            failMessage: "Failed to refresh group invite key to new one.",
+            isContainerType: false,
+        });
     }
 
     async #updateGroup(group: Group): Promise<Response> {
@@ -281,5 +293,4 @@ export default class GroupClient {
             }
         }
     }
-
 }

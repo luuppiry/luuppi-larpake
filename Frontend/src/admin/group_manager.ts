@@ -1,4 +1,5 @@
 import GroupClient from "../api_client/group_client.js";
+import { parseInviteLink } from "../builders.js";
 import { Q_GROUP_ID } from "../constants.js";
 import {
     appendTemplateElement,
@@ -27,10 +28,19 @@ class GroupManager extends GroupManagerUI {
     allUsers: Map<string, User>;
     group: Group;
     debounchTimerId: NodeJS.Timeout | null = null;
+    groupInviteCode: string | null = null;
 
+    inviteLink: string | null;
     uploadFunc: (group: Group) => Promise<boolean>;
+    inviteRefreshFunc: (groupId: number) => Promise<string>;
 
-    constructor(group: Group | null, users: User[], uploadFunc: (group: Group) => Promise<boolean>) {
+    constructor(
+        group: Group | null,
+        users: User[],
+        invitelink: string | null,
+        uploadFunc: (group: Group) => Promise<boolean>,
+        inviteRefreshFunc: (groupId: number) => Promise<string>
+    ) {
         super();
 
         this.group = group ?? {
@@ -40,8 +50,11 @@ class GroupManager extends GroupManagerUI {
             groupNumber: null,
             members: [],
         };
+        this.inviteLink = invitelink;
         this.allUsers = ToOverwriteDictionary(users, (x) => x.id);
+
         this.uploadFunc = uploadFunc;
+        this.inviteRefreshFunc = inviteRefreshFunc;
     }
 
     render() {
@@ -50,6 +63,8 @@ class GroupManager extends GroupManagerUI {
         this.larpakeIdInput.value = this.group.larpakeId?.toString() ?? "";
         this.group.members?.sort(groupMemberSortFunc).forEach((x) => this.#appendNewUser(x));
         this.#addEventListeners();
+
+        this.#renderInviteKey();
     }
 
     #appendNewUser(member: GroupMember) {
@@ -57,7 +72,8 @@ class GroupManager extends GroupManagerUI {
 
         // Add new member
         const elem = appendTemplateElement<HTMLElement>("member-template", this.memberContainer);
-        elem.querySelector<HTMLHeadingElement>("._username")!.innerText = user?.entraUsername ?? member.userId ?? "N/A";
+        elem.querySelector<HTMLHeadingElement>("._username")!.innerText =
+            user?.entraUsername ?? member.userId ?? "N/A";
         elem.querySelector<HTMLSpanElement>("._first-name")!.innerText = user?.firstName ?? "N/A";
         elem.querySelector<HTMLSpanElement>("._last-name")!.innerText = user?.lastName ?? "N/A";
         elem.querySelector<HTMLParagraphElement>("._id")!.innerText = member.userId;
@@ -84,7 +100,8 @@ class GroupManager extends GroupManagerUI {
         const status = userElem.querySelector<HTMLElement>("._status")?.innerText;
         const username = userElem.querySelector<HTMLElement>("._username")?.innerText;
 
-        this.editUserDialog.querySelector<HTMLSelectElement>("._status")!.value = status === TUTOR ? "false" : "true";
+        this.editUserDialog.querySelector<HTMLSelectElement>("._status")!.value =
+            status === TUTOR ? "false" : "true";
         this.editUserDialog.querySelector<HTMLElement>("._username")!.innerText = username ?? "N/A";
         this.editUserDialog.querySelector<HTMLParagraphElement>("._id")!.innerText = userId;
     }
@@ -145,12 +162,17 @@ class GroupManager extends GroupManagerUI {
     }
 
     #appendSearchListUser(user: User) {
-        const elem = appendTemplateElement<HTMLElement>("available-user-template", this.availableUsersContainer);
+        const elem = appendTemplateElement<HTMLElement>(
+            "available-user-template",
+            this.availableUsersContainer
+        );
 
         elem.querySelector<HTMLParagraphElement>("._id")!.innerText = user.id;
-        elem.querySelector<HTMLParagraphElement>("._email")!.innerText = user.entraUsername ?? "N/A";
+        elem.querySelector<HTMLParagraphElement>("._email")!.innerText =
+            user.entraUsername ?? "N/A";
         elem.querySelector<HTMLParagraphElement>("._username")!.innerText = user.username ?? "N/A";
-        elem.querySelector<HTMLParagraphElement>("._first-name")!.innerText = user.firstName ?? "N/A";
+        elem.querySelector<HTMLParagraphElement>("._first-name")!.innerText =
+            user.firstName ?? "N/A";
         elem.querySelector<HTMLParagraphElement>("._last-name")!.innerText = user.lastName ?? "N/A";
 
         elem.addEventListener("click", (e) => this.selectUser(e));
@@ -228,10 +250,14 @@ class GroupManager extends GroupManagerUI {
             showOkDialog("success-dialog", () => {
                 window.location.reload();
             });
-            
         } else {
             this.#showUploadErrorDialog();
         }
+    }
+
+    #renderInviteKey() {
+        this.inviteLink ??= "";
+        this.inviteLinkField.value = this.inviteLink;
     }
 
     #addEventListeners() {
@@ -253,7 +279,8 @@ class GroupManager extends GroupManagerUI {
         this.deleteUserBtn.addEventListener("click", (e) => {
             e.preventDefault();
 
-            const userId = this.editUserDialog.querySelector<HTMLParagraphElement>("._id")?.innerText;
+            const userId =
+                this.editUserDialog.querySelector<HTMLParagraphElement>("._id")?.innerText;
             if (userId == null) {
                 throw new Error("User id to be deleted is null.");
             }
@@ -281,6 +308,29 @@ class GroupManager extends GroupManagerUI {
 
         this.saveBtn.addEventListener("click", async (_) => {
             await this.SaveGroupState();
+        });
+
+        this.copyInviteLinkBtn.addEventListener("click", (_) => {
+            if (!this.inviteLink) {
+                alert("Failed to retrieve invite link, try to refresh and try again.");
+                return;
+            }
+            navigator.clipboard.writeText(this.inviteLink);
+        });
+
+        this.showInviteQrCodeBtn.addEventListener("click", (_) => {
+            showOkDialog("qr-code-dialog");
+        });
+
+        this.refreshInviteLinkBtn.addEventListener("click", async (_) => {
+            if (!this.group.id) {
+                alert("Group id not defined! Have you ever saved the group?");
+                return;
+            }
+
+            const key = await this.inviteRefreshFunc(this.group.id);
+            this.inviteLink = parseInviteLink(key, this.group.id);
+            this.#renderInviteKey();
         });
     }
 
@@ -322,14 +372,23 @@ async function main() {
     }
 
     let group = null;
+    let inviteKey = null;
     if (!Number.isNaN(groupId)) {
         group = await groupClient.getGroupById(groupId);
         if (!group) {
             throw new Error(`Could not load group ${groupId} from the server.`);
         }
+
+        // Get invite key
+        const inviteResponse = await groupClient.getInviteKey(group.id);
+        inviteKey = inviteResponse?.inviteKey ?? null;
+        if (!inviteKey) {
+            console.error("Failed to fetch invite key. You can try to refresh it to fix problem.");
+        }
     }
 
-    const manager = new GroupManager(group, allUsers, uploadGroup);
+    const inviteLink = parseInviteLink(inviteKey, group?.id);
+    const manager = new GroupManager(group, allUsers, inviteLink, uploadGroup, refreshInviteLink);
     manager.render();
 }
 
@@ -341,6 +400,14 @@ function contains(value: string | null, searchValue: string | null) {
         return true;
     }
     return value.toLowerCase().includes(searchValue.toLowerCase());
+}
+
+async function refreshInviteLink(groupId: number): Promise<string> {
+    const code = await groupClient.refreshInviteLink(groupId);
+    if (!code) {
+        throw new Error("Failed to refresh group invite key.");
+    }
+    return code.inviteKey;
 }
 
 async function uploadGroup(group: Group): Promise<boolean> {

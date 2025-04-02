@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
+        <title>Lärpäke - Admin</title>
         <link rel="stylesheet" href="/styles/admin/group_manager.css" />
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/form-container.js"></script>
@@ -71,6 +71,13 @@
                 </div>
             </div>
         </dialog>
+        <dialog id="qr-code-dialog">
+            <h1>
+                Liittymiskoodi
+            </h1>
+            <p>Toiminto ei ole vielä toiminnassa, käytä liittymislinkkiä!</p>
+            <button class="_ok primary-btn">OK</button>
+        </dialog>
         <template id="available-user-template">
             <!-- classes starting with underscore are for identification only, no styling -->
             <li class="available-user hover-scale-03 cursor-pointer flex-col">
@@ -102,19 +109,20 @@
         </template>
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
-        <div class="limit-width margin-auto">
-            <h2>Ryhmähoitelija</h2>
-            <p>
-                Muokkaa ryhmän tietoja ja jäseniä. Huomaa, että Lärpäke id:tä ei voi enää vaihtaa
-                ensimmäisen tallennuksen jälkeen, vaikka se saattaakin käyttöliittymän puolesta
-                vaikuttaa mahdolliselta. Teknisestä toteutuksesta johtuan (yhtäkää tietokannan
-                taulua ei ladata kokonaisuudessaan välimuistiin) ryhmän avaaminen saattaa kestää
-                muutamia sekunteja. Näkymä ei tarkasta onko käyttäjä jo ennestään valittu ryhmään
-                (näkymän viimeisin uniikki arvo jää voimaan).
-            </p>
-        </div>
         <div class="hor-center-content page-padding page-end-margin">
             <div class="limit-width flex-col">
+                <section class="limit-width margin-auto">
+                    <h2>Ryhmähoitelija</h2>
+                    <p>
+                        Muokkaa ryhmän tietoja ja jäseniä. Huomaa, että Lärpäke id:tä ei voi enää
+                        vaihtaa ensimmäisen tallennuksen jälkeen, vaikka se saattaakin
+                        käyttöliittymän puolesta vaikuttaa mahdolliselta. Teknisestä toteutuksesta
+                        johtuan (yhtäkää tietokannan taulua ei ladata kokonaisuudessaan
+                        välimuistiin) ryhmän avaaminen saattaa kestää muutamia sekunteja. Näkymä ei
+                        tarkasta onko käyttäjä jo ennestään valittu ryhmään (näkymän viimeisin
+                        uniikki arvo jää voimaan).
+                    </p>
+                </section>
                 <section>
                     <form>
                         <h3>Yleistä</h3>
@@ -165,6 +173,39 @@
                             </div>
                         </div>
                     </form>
+                </section>
+                <section class="link-section">
+                    <h3>Jäsenten liittäminen</h3>
+                    <p>
+                        Lärpäke tukee käyttäjien liittämistä linkkien ja QR-koodien avulla.
+                        Alla olevassa kentässä voit nähdä tällä hetkellä voimassa olevan
+                        liittymislinkin. Lisäksi perässä olevista painikkeista voit kopioida linkin,
+                        luo QR-koodin tai generoida uuden liittymislinkin. Huomaa, että uuden linkin
+                        generoiminen mitätöi kaikki vanhat tähän ryhmään liittyvät liittymislinkit.
+                        Käyttäjiä voi myös lisätä tässä admin -sivulla manuaalisesti.
+                    </p>
+                    <div class="link-container">
+                        <input id="invite-code-field" class="text-field" />
+
+                        <button
+                            id="copy-invite-link-btn"
+                            class="icon-btn hover-scale cursor-pointer select-none"
+                        >
+                            <img src="/icons/copy.svg" />
+                        </button>
+                        <button
+                            id="gen-qr-code-btn"
+                            class="icon-btn hover-scale cursor-pointer select-none"
+                        >
+                            <img src="/icons/open.svg" />
+                        </button>
+                        <button
+                            id="regen-invite-btn"
+                            class="icon-btn hover-scale cursor-pointer select-none"
+                        >
+                            <img src="/icons/again.svg" />
+                        </button>
+                    </div>
                 </section>
                 <section class="members-container">
                     <div class="flex-separate">

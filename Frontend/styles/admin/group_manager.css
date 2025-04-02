@@ -157,6 +157,44 @@
     margin: 0;
 }
 
+
+
+
+.link-section {
+    padding: 30px 0px;
+    display: flex;
+    flex-flow: column;
+}
+
+.link-section > h3 {
+    margin: 0;
+}
+
+.link-container {
+    display: flex;
+    gap: 4px;
+    max-width: 700px;
+}
+
+.link-container > input {
+    width: 100%;
+}
+
+.icon-btn {
+    
+  padding: 7px 10px 5px 10px;
+  background-color: var(--luuppi-blue);
+  border: none;
+  border-radius: 5px;
+}
+
+.icon-btn > img {
+    height: 25px;
+    width: 25px;
+}
+
+
+
 .user-container {
     padding: 0;
     display: flex;
