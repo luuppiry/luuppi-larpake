@@ -353,6 +353,8 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
     public async Task<int> DeleteMembers(long id, Guid[] members)
     {
+        Logger.LogTrace("Deleting members {ids} from group {id}", members, id);
+
         using var connection = GetConnection();
         return await connection.ExecuteAsync($"""
             DELETE FROM freshman_group_members
@@ -385,8 +387,11 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         if (key is null)
         {
+            Logger.LogTrace("Failed to retrieve invite key for group {id}", groupId);
             return Error.NotFound("Group not found.");
         }
+
+        Logger.LogTrace("Retrieved invite key {key} for group {id}", key, groupId);
         return key;
     }
 
@@ -400,6 +405,8 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         {
             return Error.BadRequest("Invalid invite key length.");
         }
+
+        Logger.LogTrace("Adding user {id} to group with invite key {key}", userId, inviteKey);
 
         try
         {
@@ -415,7 +422,8 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 @{nameof(userId)},
                 TRUE
             FROM freshman_groups
-            WHERE invite_key = @{nameof(inviteKey)};
+            WHERE invite_key = @{nameof(inviteKey)}
+            ON CONFLICT DO NOTHING;
             """, new { inviteKey, userId });
         }
         catch (NpgsqlException ex)
@@ -439,12 +447,14 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             return null;
         }
 
+        Logger.LogTrace("Retrieving information for group with invite key {key}", inviteKey);
+
         using var connection = GetConnection();
         return await connection.QueryFirstOrDefaultAsync<GroupInfo>($"""
             SELECT 
-                g.larpake_id,
-                g.name,
-                g.group_number
+                larpake_id,
+                name,
+                group_number
             FROM freshman_groups
                 WHERE invite_key = @{nameof(inviteKey)}
             LIMIT 1;
@@ -456,6 +466,8 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         // Get group invite key or create new if null
         string newKey = _keyService.GenerateKey();
         using var connection = GetConnection();
+
+        Logger.LogTrace("Overwrite group {id} invite key with new value {key}", groupId, newKey);
 
         // Get or update if null
         string? key = await connection.ExecuteScalarAsync<string>($"""
