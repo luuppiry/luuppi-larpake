@@ -17,8 +17,7 @@ namespace LarpakeServer.Controllers;
 [Route("api/groups")]
 public class GroupsController : ExtendedControllerBase
 {
-    record struct InviteKeyResponse(string InviteKey);
-    record struct InviteKeyMsgResponse(string InviteKey, string Message);
+    record InviteKeyMsgResponse(string InviteKey, string Message);
     record struct MembersResponse(Guid[] Members);
 
     readonly IGroupDatabase _db;
@@ -113,18 +112,18 @@ public class GroupsController : ExtendedControllerBase
 
     [HttpGet("{groupId}/invite")]
     [RequiresPermissions(Permissions.EditGroup)]
-    [ProducesResponseType<InviteKeyResponse>(200)]
+    [ProducesResponseType<InviteKeyMsgResponse>(200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetInviteKey(long groupId)
     {
         var key = await _db.GetInviteKey(groupId);
         return key is null
-            ? IdNotFound() : Ok(new InviteKeyResponse((string)key));
+            ? IdNotFound() : Ok(new InviteKeyMsgResponse((string)key, "Key valid until new generated."));
     }
 
     [HttpPost("{groupId}/invite/refresh")]
     [RequiresPermissions(Permissions.EditGroup)]
-    [ProducesResponseType<MembersResponse>(200)]
+    [ProducesResponseType<InviteKeyMsgResponse>(200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> RefreshInviteKey(long groupId)
     {

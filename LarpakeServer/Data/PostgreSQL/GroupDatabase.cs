@@ -370,7 +370,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         // Get or update if null
         string? key = await connection.ExecuteScalarAsync<string>($"""
-            UDPATE freshman_groups 
+            UPDATE freshman_groups 
             SET 
                 invite_key = COALESCE(invite_key, @{nameof(newKey)}),
                 updated_at = CASE 
@@ -381,7 +381,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                     ELSE invite_key_changed_at END
             WHERE id = @{nameof(groupId)}
             RETURNING invite_key;
-            """, new { newKey });
+            """, new { newKey, groupId });
 
         if (key is null)
         {
@@ -459,14 +459,14 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         // Get or update if null
         string? key = await connection.ExecuteScalarAsync<string>($"""
-            UDPATE freshman_groups 
+            UPDATE freshman_groups 
             SET 
                 invite_key = @{nameof(newKey)},
                 updated_at = NOW(),
                 invite_key_changed_at = NOW()
             WHERE id = @{nameof(groupId)}
             RETURNING invite_key;
-            """, new { newKey });
+            """, new { newKey, groupId });
 
         if (key is null)
         {
