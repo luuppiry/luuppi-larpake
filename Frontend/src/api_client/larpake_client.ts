@@ -111,7 +111,6 @@ export default class LarpakeClient extends RequestEngine {
     }
 
     async getTaskById(taskId: number): Promise<LarpakeTask | null> {
-        const params = new URLSearchParams();
         return await this.get<LarpakeTask>({
             url: `api/larpake-tasks/${taskId}`,
             params: null,
@@ -121,8 +120,13 @@ export default class LarpakeClient extends RequestEngine {
     }
 
 
-    async getSectionById(taskId: number): Promise<Section | null> {
-        throw new Error("Method not implemented.");
+    async getSectionById(sectionId: number): Promise<Section | null> {
+        return await this.get({
+            url: `api/larpakkeet/section/${sectionId}`,
+            params: null,
+            failMessage: `Failed to fetch section with id ${sectionId}`,
+            isContainerType: false
+        });
     }
 
     async uploadLarpakeCommonDataOnly(larpake: Larpake): Promise<number> {

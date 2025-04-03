@@ -2,6 +2,10 @@
 @import "event_previewer.css";
 @import "section.css";
 
+body {
+    padding-bottom: 150px;
+}
+
 article {
     margin: 0;
     padding: 0;
@@ -15,46 +19,21 @@ article {
     text-decoration: none;
 }
 
-.larpake-front > img {
-    max-width: 100%;
-    border-radius: 10px;
-    background-color: blueviolet;
+.image {
+    width: 100%;
+    border-radius: 50px;
 }
 
-.larpake-front > h2 {
-    text-align: center;
-    margin: 10px 0 0;
+.title {
     color: var(--luuppi-blue);
-    font-size: 1.2rem;
 }
-
-.larpake-front > a {
-    text-align: right;
-    width: 100%;
-    margin-right: 0;
-}
-
-.main-site-button {
-    background-color: var(--luuppi-blue);
-    color: white;
-    text-align: right;
-    padding: 10px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 40px;
-    width: 100%;
-    max-width: 300px;
-}
-
-/* Body */
 
 #larpake-container {
     list-style: none;
     padding: 0;
 }
 
-
-.container h2 {
+.container > h2 {
     color: var(--luuppi-blue);
     margin-bottom: 10px;
 }
@@ -65,10 +44,6 @@ article {
     display: flex;
     flex-flow: column;
     gap:16px;
-}
-
-body {
-    padding-bottom: 150px;
 }
 
 .upcoming-events-btn {
@@ -85,7 +60,6 @@ body {
     margin-top: auto;
     margin-bottom: auto;
 }
-
 
 .bigger-icon {
     font-size: 50px;

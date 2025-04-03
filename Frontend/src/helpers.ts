@@ -89,7 +89,7 @@ export function formatDate(date: Date) {
 }
 
 export function formatDateTime(date: Date) {
-    const day = formatTime(date);
+    const day = formatDate(date);
     const time = formatTime(date);
     return `${day} ${time}`;
 }

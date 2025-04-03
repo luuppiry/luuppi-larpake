@@ -78,7 +78,7 @@ class SidePanel extends HTMLElement {
                 },
             },
             {
-                href: "complete_task.html",
+                href: "complete.html",
                 title: {
                     fi: "DEMO Kirjaa osallistuminen - Tuutori",
                     en: "DEMO Log Attendance - Tutor",

@@ -8,6 +8,7 @@ export type Completion = {
 };
 
 export type AttendanceKey = {
+    key: string;
     qrCodeKey: string;
     keyInvalidAt: Date;
 };

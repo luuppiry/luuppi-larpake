@@ -20,7 +20,7 @@ async function main() {
         throw new Error("Attendance container not found, check naming");
     }
 
-    let attendances = await attendanceClient.get(null, true, true, 30);
+    let attendances = await attendanceClient.getAll(null, true, true, 30);
     if (!attendances) {
         throw new Error("Failed to fetch attendances.");
     }

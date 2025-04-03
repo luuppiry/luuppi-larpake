@@ -12,20 +12,20 @@
         <ui-header></ui-header>
         <side-panel lang="fi"></side-panel>
         <section id="event-container" class="container">
-            <h2>
+            <h2 class="section-path">
                 <span>Lärpäke</span>
                 <span class="_name"></span>
             </h2>
-            <h3 class="_title">Tehtävän otsikko</h3>
-            <p class="_updated">Updated: --</p>
-            <p class="_description">Event description here...</p>
-            <div class="_qr-container">
-                <p id="qr-section-text-1">
-                    Show this QR code to any tutor to verify participation:
-                </p>
-                <img id="qr-code" src="" alt="QR Code" />
-                <p id="qr-section-text-2">or use this code:</p>
-                <p><span id="event-code">----</span></p>
+            <h3 class="_title title">Tehtävän otsikko</h3>
+            <p class="_updated updated">Päivitetty: N/A</p>
+            <p class="_description">Lyhyt koonti tehtävästä...</p>
+            <div id="qr-container" class="qr-container">
+                <p>Näytä QR-koodia tutorille kirjataksesi osallistumisesi</p>
+                <div class="qr hover-scale-01">
+                    <img class="_qr-code" src="" alt="QR koodi suorituksen kirjaamiseksi" />
+                </div>
+                <p>tai käytä koodia</p>
+                <p class="_code code cursor-pointer hover-scale"></p>
             </div>
         </section>
         <section class="container">

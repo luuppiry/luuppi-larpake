@@ -1,5 +1,5 @@
-import { Container } from "../models/common";
-import HttpClient from "./http_client";
+import { Container } from "../models/common.js";
+import HttpClient from "./http_client.js";
 
 export type GetRequest = {
     url: string;

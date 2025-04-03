@@ -1,105 +1,63 @@
 @import "common.css";
 
-.button-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 300px;
-  margin: 20px auto;
-}
-  
-.event-button {
-  padding: 10px;
-  background-color: #4a4a97;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
-}
-  
-.event-button:hover {
-  background-color: #373781;
-}
-  
-#event-code {
-  background: #FFF;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-}
-
-#event-updated {
-  color: #CCC;
-  margin: 0px;
-}
-
 .container {
-  max-width: 600px;
-  margin: 20px auto;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 20px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-#event-title {
-  margin-bottom: 0px;
+.section-path {
+    font-size: medium;
+    font-weight: 200;
+    margin: 0;
 }
 
-.qr-section {
-  text-align: center;
-  margin-bottom: 20px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  background-color: #fafafa;
-}
-  
-.qr-section img {
-  max-width: 250px;
-  padding: 10px;
-  background-color: #FFF;
-  border: 1px solid #ccc;
-  border-radius: 10px;
+.title {
+    font-size: xx-large;
+    margin: 20px 0 0 0;
 }
 
-#qr-canvas {
-  max-width: 350px;
-}
-  
-.related-info {
-  margin-top: 20px;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
+.updated {
+    color: #ccc;
+    margin: 0px;
 }
 
-form {
-  font-size: 25px;
-  margin-bottom: 8px;
+.qr-container {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px 10px 30px 10px;
+    border-radius: 10px;
+    background-color: var(--luuppi-gray);
+    display: flex;
+    flex-flow: column;
+    align-items: center;
 }
 
-#code-input {
-  width: 100%;
-  max-width: 200px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin-bottom: 15px;
-  text-align: center;
-  font-size: 20px;
+.qr {
+    margin: auto;
+    background-color: white;
+    border: 3px solid var(--text-border);
+    border-radius: 10px;
 }
 
-.submit-button {
-  background-color: #4a4a90;
-  color: #fff;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 20px;
+.qr > img {
+    width: 250px;
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: -7px;
 }
 
-.submit-button:hover {
-  background-color: #37376f;
+.code {
+    padding: 10px 10px 10px 10px;
+    width: fit-content;
+    background-color: white;
+    font-weight: 700;
+    letter-spacing: 10px;
+    font-size: x-large;
+    margin: 0;
+    border-radius: 10px;
 }

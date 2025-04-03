@@ -1,3 +1,5 @@
+import { SERVER_STATUSES as SERVER_STATUS } from "../constants";
+
 export type ApiAction = {
     description: string;
     method: string;
@@ -27,3 +29,9 @@ export type GuidIdObject = {
 export type RowsAffected = {
     rowsAffected: number;
 };
+
+export type MessageResponse = {
+    message: string;
+    details: string | null;
+    applicationError: SERVER_STATUS
+}

@@ -37,7 +37,7 @@ async function main() {
     await addSectionTasks(larpake);
 
     // Load attendances
-    const attendances = (await attendanceClient.get(larpake.id)) ?? [];
+    const attendances = (await attendanceClient.getAll(larpake.id)) ?? [];
 
     // Load signatures
     const signatureIds: string[] = attendances
