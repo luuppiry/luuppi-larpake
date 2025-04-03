@@ -20,6 +20,12 @@ public enum ErrorCode
 
 
     // Internal server error
-    UnknownServerError = 1700
-    
+    UnknownServerError = 1700,
+    KeyGenFailed = 1701,
+
+
+
+    // User action forbidden for user
+    UserStatusTutor = 1801,
+    UserNotAttending = 1802,
 }

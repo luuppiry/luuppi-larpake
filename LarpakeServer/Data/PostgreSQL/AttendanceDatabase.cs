@@ -143,22 +143,34 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             try
             {
                 using var connection = GetConnection();
-                bool canAttend = await connection.ExecuteScalarAsync<bool>($"""
-                SELECT EXISTS(SELECT 1 FROM larpake_events e
-                    LEFT JOIN larpake_sections s
-                        ON e.larpake_section_id = s.id
-                    LEFT JOIN freshman_groups g
-                        ON s.larpake_id = g.larpake_id
-                    LEFT JOIN freshman_group_members m 
-                        ON g.id = m.group_id
-                WHERE e.id = @{nameof(attendance.LarpakeTaskId)}
-                    AND m.user_id = @{nameof(attendance.UserId)}
-                    AND m.is_competing = TRUE);
-                """, attendance);
+                IEnumerable<bool> competingStatuses = await connection.QueryAsync<bool>($"""
+                     SELECT 
+                        m.is_competing 
+                    FROM larpake_events e
+                        LEFT JOIN larpake_sections s
+                            ON e.larpake_section_id = s.id
+                        LEFT JOIN freshman_groups g
+                            ON s.larpake_id = g.larpake_id
+                        LEFT JOIN freshman_group_members m 
+                            ON g.id = m.group_id
+                    WHERE e.id = @{nameof(attendance.LarpakeTaskId)}
+                        AND m.user_id = @{nameof(attendance.UserId)};
+                    """, attendance);
 
-                if (canAttend is false)
+                bool[] statuses = competingStatuses.ToArray();
+
+                // User and event not found
+                if (statuses.Length <= 0)
                 {
-                    return Error.BadRequest("User must be member of a group that is participating the larpake and not competing.");
+                    return Error.BadRequest("User not attending given larpake.",
+                        ErrorCode.UserNotAttending);
+                }
+
+                // User and event found, but user is tutor and cannot attend
+                if (statuses.All(x => x is false))
+                {
+                    return Error.Forbidden("User has non competing status.",
+                        ErrorCode.UserStatusTutor);
                 }
 
                 key = await connection.QueryFirstAsync<AttendanceKey>($"""
@@ -186,7 +198,6 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             }
             catch (PostgresException ex) when (ex.SqlState is PostgresError.UniqueViolation)
             {
-
                 Logger.LogInformation("QrCodeKey conflict for {hash}, retrying ({count} left).",
                     attendance.GetHashCode(), retriesLeft);
                 continue;
@@ -199,7 +210,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 throw;
             }
         }
-        return Error.Conflict("Key generation failed, retry with same parameters.");
+        return Error.InternalServerError("Key generation failed, retry with same parameters.", ErrorCode.KeyGenFailed);
     }
 
     public async Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion)

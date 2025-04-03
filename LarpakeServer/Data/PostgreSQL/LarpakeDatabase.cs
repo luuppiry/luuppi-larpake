@@ -239,13 +239,12 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 s.created_at,
                 s.updated_at,
                 sl.larpake_section_id,
-                GetLanguageCode(sl.language_id) AS languge_code
-                sl.title,
+                GetLanguageCode(sl.language_id) AS language_code,
+                sl.title
             FROM larpake_sections s
                 LEFT JOIN larpake_section_localizations sl
                     ON id = larpake_section_id
-            WHERE id = @{nameof(sectionId)} 
-            LIMIT 1;
+            WHERE id = @{nameof(sectionId)};
             """,
             new { sectionId });
         return result;
@@ -255,23 +254,25 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     {
         using var connection = GetConnection();
         return await connection.QueryFirstOrDefaultLocalizedAsync<LarpakeSection, LarpakeSectionLocalization>($"""
-            SELECT 
+            SELECT DISTINCT ON (sl.language_id)
                 s.id,
                 s.larpake_id,
                 s.ordering_weight_number,
                 s.created_at,
                 s.updated_at,
                 sl.larpake_section_id,
-                GetLanguageCode(sl.language_id) AS languge_code
-                sl.title,
+                GetLanguageCode(sl.language_id) AS language_code,
+                sl.title
               FROM larpake_sections s
                 LEFT JOIN larpake_section_localizations sl
                     ON id = larpake_section_id
-                LEFT JOIN 
-            WHERE id = @{nameof(sectionId)} 
-                AND 
-            LIMIT 1;
-            """, new { sectionId, userId });
+                LEFT JOIN freshman_groups g
+                    ON s.larpake_id = g.larpake_id
+                LEFT JOIN freshman_group_members m
+                    ON g.id = m.group_id
+            WHERE s.id = @{nameof(sectionId)} 
+                AND m.user_id = @{nameof(userId)};
+            """, new { sectionId, userId }, splitOn: "larpake_section_id");
     }
 
 

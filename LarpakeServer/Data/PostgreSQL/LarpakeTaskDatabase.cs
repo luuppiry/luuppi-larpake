@@ -135,7 +135,7 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
     {
         using NpgsqlConnection connection = GetConnection();
         return await connection.QueryFirstOrDefaultLocalizedAsync<LarpakeTask, LarpakeTaskLocalization>($"""
-            SELECT 
+            SELECT
                 e.id, 
                 e.larpake_section_id,
                 e.points,

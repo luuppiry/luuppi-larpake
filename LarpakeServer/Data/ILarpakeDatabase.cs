@@ -10,7 +10,6 @@ public interface ILarpakeDatabase
     Task<Larpake?> GetLarpake(long larpakeId);
     Task<LarpakeSection?> GetSection(long sectionId);
     Task<LarpakeSection?> GetSectionsByIdAndUser(long sectionId, Guid userId);
-
     Task<LarpakeSection[]> GetSections(long larpakeId, QueryOptions options);
     Task<Result<long>> InsertLarpake(Larpake record);
     Task<Result<long>> InsertSection(LarpakeSection section);

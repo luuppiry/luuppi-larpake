@@ -65,7 +65,10 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("{eventId}")]
     [RequiresPermissions(Permissions.AttendEvent)]
-    [ProducesResponseType(typeof(AttendanceGetDto), 200)]
+    [ProducesResponseType(typeof(AttendanceKey), 200)]
+    [ProducesResponseType(typeof(ErrorMessageResponse), 400)]
+    [ProducesResponseType(typeof(ErrorMessageResponse), 403)]
+    [ProducesResponseType(typeof(ErrorMessageResponse), 500)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GenerateAttendanceKey(long eventId)
     {

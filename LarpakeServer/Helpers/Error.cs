@@ -52,4 +52,6 @@ public class Error
     public static Error InternalServerError(string message, ErrorCode appError) => new(500, message, appError);
     public static Error Unauthorized(string? message = null, Exception? ex = null) => new(401, message ?? "Unauthorized", ex);
     public static Error Unauthorized(string? message, ErrorCode appError) => new(401, message ?? "Unauthorized", appError);
+    public static Error Forbidden(string? message, ErrorCode appError) => new(403, message ?? "Forbidden", appError);
+
 }
