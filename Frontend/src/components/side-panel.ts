@@ -71,17 +71,14 @@ class SidePanel extends HTMLElement {
                 title: { fi: "Ryhmäni", en: "My Group" },
             },
             {
-                href: "task_info.html",
-                title: {
-                    fi: "DEMO Kirjaa osallistuminen - Fuksi",
-                    en: "DEMO Log Attendance - Freshman",
-                },
+                href: "join.html",
+                title: { fi: "Liity ryhmään", en: "Join group" },
             },
             {
-                href: "complete.html",
+                href: "read.html",
                 title: {
-                    fi: "DEMO Kirjaa osallistuminen - Tuutori",
-                    en: "DEMO Log Attendance - Tutor",
+                    fi: "Tuutori - Allekirjoita",
+                    en: "Tutor - Sign Task",
                 },
             },
         ];

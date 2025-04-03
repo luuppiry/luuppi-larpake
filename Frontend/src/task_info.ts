@@ -85,6 +85,7 @@ function renderQRCode(completionKey: AttendanceKey | null) {
     params.set("size", "250x250");
     params.set("data", link);
 
+    // Example URL
     // https://api.qrserver.com/v1/create-qr-code/?data=${event.code}&amp;size=250x250
     const url = `https://api.qrserver.com/v1/create-qr-code/?${params.toString()}`;
 
