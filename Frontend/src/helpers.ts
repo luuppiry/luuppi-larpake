@@ -112,6 +112,27 @@ export function getDocumentLangCode() {
     return document.documentElement.lang == LANG_EN ? LANG_EN : LANG_FI;
 }
 
+type LangObject = {
+    languageCode: string;
+}
+
+export function getMatchingLangObject<T>(textData: LangObject[] | null): T | null {
+    if (!textData) {
+        return null;
+    }
+    const lang = getDocumentLangCode();
+
+    const matching = textData.filter(x => x.languageCode === lang)[0]
+    if (matching) {
+        return matching as T;
+    }
+    const finnish = textData.filter(x => x.languageCode === LANG_FI)[0];
+    if (finnish) {
+        return finnish as T;
+    }
+    return textData[0] as T;
+}
+
 export function removeChildren(
     elem: HTMLElement,
     predicate: null | ((elem: Element) => boolean) = null

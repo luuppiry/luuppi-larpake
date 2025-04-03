@@ -1,4 +1,4 @@
-import { Q_EVENT_ID, Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "../constants.js";
+import { Q_TASK_ID, Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "../constants.js";
 import {
     appendTemplateElement,
     isEmpty,
@@ -48,7 +48,7 @@ class Task {
         this.points = points;
     }
 }
-class Filler {}
+class Filler { }
 
 type Page = {
     header: string;
@@ -264,7 +264,7 @@ export class LarpakeRenderer {
         element.querySelector<HTMLHeadingElement>("._title")!.innerText = task.title;
         element.querySelector<HTMLHeadingElement>("._points")!.innerText = `${task.points ?? 0}P`;
         element.addEventListener("click", (_) => {
-            window.location.href = `event_marking.html?${Q_EVENT_ID}=${task.id}&${Q_LARPAKE_ID}=${this.larpakeId}`;
+            window.location.href = `task_info.html?${Q_TASK_ID}=${task.id}&${Q_LARPAKE_ID}=${this.larpakeId}`;
         });
 
         if (task.isCancelled) {

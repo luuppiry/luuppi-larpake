@@ -4,19 +4,22 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Luuppi - Lärpäke</title>
-        <link rel="stylesheet" href="/styles/event_marking.css" />
+        <link rel="stylesheet" href="/styles/task_info.css" />
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
     </head>
     <body>
         <ui-header></ui-header>
         <side-panel lang="fi"></side-panel>
-        <div class="container">
-            <div id="larpake-page-name">Lärpäke</div>
-            <h1 id="event-title">Event Title</h1>
-            <p id="event-updated">Updated: --</p>
-            <p id="event-description">Event description here...</p>
-            <div class="qr-section">
+        <section id="event-container" class="container">
+            <h2>
+                <span>Lärpäke</span>
+                <span class="_name"></span>
+            </h2>
+            <h3 class="_title">Tehtävän otsikko</h3>
+            <p class="_updated">Updated: --</p>
+            <p class="_description">Event description here...</p>
+            <div class="_qr-container">
                 <p id="qr-section-text-1">
                     Show this QR code to any tutor to verify participation:
                 </p>
@@ -24,12 +27,12 @@
                 <p id="qr-section-text-2">or use this code:</p>
                 <p><span id="event-code">----</span></p>
             </div>
-        </div>
-        <div class="container">
+        </section>
+        <section class="container">
             <div class="events-section">
-                <h2>Aiheeseen liittyvät</h2>
+                <h2>Aiheeseen liittyvät:</h2>
             </div>
-        </div>
-        <script type="module" src="/src/event_marking.js"></script>
+        </section>
+        <script type="module" src="/src/task_info.js"></script>
     </body>
 </html>

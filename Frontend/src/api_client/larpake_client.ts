@@ -2,16 +2,15 @@ import HttpClient from "./http_client.js";
 import { Larpake, LarpakeTask, Section } from "../models/larpake.js";
 import { Container, IdObject } from "../models/common.js";
 import { ThrowIfNull } from "../helpers.js";
+import RequestEngine from "./request_engine.js";
 
 type Ids = {
     ids: number[];
 };
 
-export default class LarpakeClient {
-    client: HttpClient;
-
-    constructor(clint: HttpClient | null = null) {
-        this.client = clint ?? new HttpClient();
+export default class LarpakeClient extends RequestEngine {
+    constructor(client: HttpClient | null = null) {
+        super(client ?? new HttpClient());
     }
 
     async getById(id: number, minimize: boolean = false): Promise<Larpake | null> {
@@ -111,6 +110,21 @@ export default class LarpakeClient {
         return events.ids;
     }
 
+    async getTaskById(taskId: number): Promise<LarpakeTask | null> {
+        const params = new URLSearchParams();
+        return await this.get<LarpakeTask>({
+            url: `api/larpake-tasks/${taskId}`,
+            params: null,
+            failMessage: `Failed to fetch task with id ${taskId}`,
+            isContainerType: false
+        })
+    }
+
+
+    async getSectionById(taskId: number): Promise<Section | null> {
+        throw new Error("Method not implemented.");
+    }
+
     async uploadLarpakeCommonDataOnly(larpake: Larpake): Promise<number> {
         ThrowIfNull(larpake);
 
@@ -141,7 +155,7 @@ export default class LarpakeClient {
         if (!existing) {
             throw new Error(
                 "Save common data first, to create Larpake." +
-                    " If you have already sent common data first or larpake should exists, there might be a bug."
+                " If you have already sent common data first or larpake should exists, there might be a bug."
             );
         }
 
@@ -242,5 +256,5 @@ export default class LarpakeClient {
         }
     }
 
-    
+
 }

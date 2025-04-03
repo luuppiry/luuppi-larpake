@@ -6,6 +6,7 @@ using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using Microsoft.AspNetCore.Identity;
 using LarpakeetGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.LarpakeGetDto>;
 using LarpakeSectionsGetDto = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.DatabaseModels.LarpakeSection>;
 
@@ -104,6 +105,17 @@ public class LarpakkeetController : ExtendedControllerBase
         LarpakeSectionsGetDto result = LarpakeSectionsGetDto.MapFrom(sections);
         result.SetNextPaginationPage(options);
         return Ok(result);
+    }
+
+    [HttpGet("section/{sectionId}")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetSectionById(long sectionId)
+    {
+        bool isSelfOnlySearch = GetRequestPermissions().Has(Permissions.ReadAllData) is false;
+        Guid userId = GetRequestUserId();
+
+        LarpakeSection? section = await _db.GetSectionsByIdAndUser(sectionId, userId);
+
     }
 
 
