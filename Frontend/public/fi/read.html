@@ -12,7 +12,7 @@
     <body>
         <ui-header></ui-header>
         <side-panel lang="fi"></side-panel>
-        <div class="container">
+        <div class="container flex-col hor-center-content">
             <div id="larpake-page-name">Lärpäke / Kirjaa</div>
             <h1 id="event-title">Allekirjoita tehtävä</h1>
             <div class="qr-section">
@@ -21,19 +21,20 @@
                     <img src="/icons/camera-icon.png" />
                 </a>
 
-                <a></a>
                 <canvas hidden="" id="qr-canvas"></canvas>
                 <div id="qr-result" hidden=""></div>
-                <p id="qr-section-text-2">tai syötä 8-merkkinen koodi</p>
-                <form id="code-form">
-                    <input
-                        type="text"
-                        id="code-input"
-                        maxlength="9"
-                        placeholder="ABCD1234"
-                        required
-                    />
-                    <button type="submit" class="submit-button">Kirjaa</button>
+                <p id="qr-section-text-2">tai syötä 6-merkkinen koodi</p>
+                <form >
+                    <div class="box-container">
+                        <input id="first-char-field" class="_char box" maxlength="1"></input>
+                        <input class="_char box" maxlength="1"></input>
+                        <input class="_char box" maxlength="1"></input>
+                        <input class="_char box" maxlength="1"></input>
+                        <input class="_char box" maxlength="1"></input>
+                        <input class="_char box" maxlength="1"></input>
+                    </div>
+
+                    <button id="submit-btn" class="submit-button primary-btn hover-scale-03">Kirjaa</button>
                 </form>
             </div>
         </div>

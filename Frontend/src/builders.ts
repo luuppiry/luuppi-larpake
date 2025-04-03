@@ -30,6 +30,9 @@ export function parseValidInviteCodeToKey(inviteCode: string): string | null {
     return isKeyMalformed ? null : inviteCode;
 }
 
+
+
+
 function getUrlHostPart() {
     const url = window.location.href;
     const host = window.location.origin;
