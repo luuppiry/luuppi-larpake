@@ -1,7 +1,9 @@
 // Query parameters
 export const Q_LARPAKE_ID = "LarpakeId";
-export const Q_PAGE = "Page";
 export const Q_TASK_ID = "TaskId";
+export const Q_SECTION_ID = "SectionId";
+export const Q_PAGE = "Page";
+
 export const Q_LAST_PAGE = "LastPage";
 export const Q_OF_PAGES = "OfPages";
 

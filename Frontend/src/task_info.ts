@@ -1,10 +1,11 @@
 import AttendanceClient from "./api_client/attendance_client.js";
 import LarpakeClient from "./api_client/larpake_client.js";
 import { parseAttendanceLink } from "./builders.js";
-import { Q_TASK_ID, SERVER_STATUSES } from "./constants.js";
-import { formatDateTime, getMatchingLangObject, getSearchParams } from "./helpers.js";
+import { Q_SECTION_ID, Q_TASK_ID, SERVER_STATUSES } from "./constants.js";
+import { formatDateTime, getMatchingLangObject, getSearchParams, pushUrlState } from "./helpers.js";
 import { AttendanceKey } from "./models/attendance.js";
 import { LarpakeTask, LarpakeTaskTextData, Section, SectionTextData } from "./models/larpake.js";
+import ClickerService from "./services/clicker_service.js";
 
 const taskClient = new LarpakeClient();
 const attendanceClient = new AttendanceClient(taskClient.client);
@@ -36,6 +37,12 @@ async function main() {
         } else {
             alert("Something went wrong whilst trying to fetch completion key!");
         }
+    }
+
+    if (section?.id) {
+        pushUrlState((params) => {
+            params.set(Q_SECTION_ID, section.id.toString());
+        });
     }
 
     const key = completionKey as AttendanceKey;
@@ -80,13 +87,37 @@ function renderQRCode(completionKey: AttendanceKey | null) {
 
     // https://api.qrserver.com/v1/create-qr-code/?data=${event.code}&amp;size=250x250
     const url = `https://api.qrserver.com/v1/create-qr-code/?${params.toString()}`;
-    container.querySelector<HTMLImageElement>("._qr-code")!.src = url;
 
+    const qrCodeImage = container.querySelector<HTMLImageElement>("._qr-code")!;
+    const notFoundImage = container.querySelector<HTMLImageElement>("._not-found")!;
+
+    const resetQrCode = () => {
+        qrCodeImage.src = "/qr-placeholder.png";
+    };
+
+    qrCodeImage.src = url;
+    if (url) {
+        // Add click actions
+        new ClickerService(qrCodeImage, resetQrCode);
+        notFoundImage.style.display = "none";
+    }
+
+    // Add key field copy to clickboard functionality
     const keyField = container.querySelector<HTMLParagraphElement>("._code")!;
     keyField.innerText = completionKey?.key ?? "N/A";
     keyField.addEventListener("click", () => {
         if (completionKey?.key) {
-            navigator.clipboard.writeText(completionKey?.key);
+            const copiedLabel = container.querySelector<HTMLElement>("._copied")!;
+            navigator.clipboard.writeText(completionKey?.key).then((_) => {
+                copiedLabel.style.display = "block";
+                copiedLabel.style.opacity = "1";
+                setTimeout(() => {
+                    copiedLabel.style.opacity = "0";
+                    setTimeout(() => {
+                        copiedLabel.style.display = "none";
+                    }, 1000);
+                }, 800);
+            });
         }
     });
 }

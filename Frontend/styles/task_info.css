@@ -1,5 +1,9 @@
 @import "common.css";
 
+body {
+    margin-bottom: 150px;
+}
+
 .container {
     max-width: 600px;
     margin: 20px auto;
@@ -41,18 +45,44 @@
     background-color: white;
     border: 3px solid var(--text-border);
     border-radius: 10px;
+    display: grid;
 }
 
 .qr > img {
+    padding: 20px;
     width: 250px;
     max-width: 100%;
-    padding: 20px;
     border-radius: 10px;
-    margin-bottom: -7px;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+
+
+
+
+.code-container {
+    position: relative;
+    display: inline-block;
+}
+
+.copied {
+    position: absolute;
+    top: -100%;
+    left: 60%;
+    z-index: 1;
+    padding: 5px 10px;
+    background-color: white;
+    width: fit-content;
+    border-radius: 10px;
+    pointer-events: none;
+    display: none;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
 }
 
 .code {
-    padding: 10px 10px 10px 10px;
+    padding: 10px 10px 10px 20px;
     width: fit-content;
     background-color: white;
     font-weight: 700;
@@ -60,4 +90,6 @@
     font-size: x-large;
     margin: 0;
     border-radius: 10px;
+    min-width: 200px;
+    min-height: 20px;
 }
