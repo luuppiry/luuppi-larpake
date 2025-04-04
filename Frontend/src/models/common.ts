@@ -1,4 +1,4 @@
-import { SERVER_STATUSES as SERVER_STATUS } from "../constants";
+import { SERVER_STATUS as SERVER_STATUS } from "../constants";
 
 export type ApiAction = {
     description: string;

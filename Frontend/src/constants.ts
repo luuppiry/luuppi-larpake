@@ -10,6 +10,7 @@ export const Q_OF_PAGES = "OfPages";
 export const Q_GROUP_ID = "GroupId";
 
 export const Q_NEW = "New";
+export const Q_STATUS = "Status";
 
 export const Q_PAGE_SIZE = "PageSize";
 export const Q_PAGE_OFFSET = "PageOffset";
@@ -19,21 +20,23 @@ export const Q_INVITE_KEY = "InviteKey";
 export const Q_ATTENDANCE_KEY = "AttendanceKey";
 
 export const ATTENDANCE_KEY_LENGTH = 6;
-export const ATTENDANCE_KEY_HEADER = "lak-v1_";
+export const ATTENDANCE_CODE_HEADER = "lak-v1_";
 
 export const INVITE_KEY_LENGTH = 8;
 export const Q_KEY_MALFORMED = "KeyMalformed";
 export const Q_KEY_EXPIRED = "KeyExpired";
+
+export const Q_PARAM = "Param";
 
 export const SIGNATURE_INFO = {
     WIDTH: 450,
     HEIGTH: 100,
     LINE_WIDTH: 2,
     STROKE_STYLE: "black",
-    LINE_CAP: "round"
-}
+    LINE_CAP: "round",
+};
 
-export enum SERVER_STATUSES {
+export enum SERVER_STATUS {
     UNDEFINED = 0,
     // Id errors
     ID_ERROR = 1100,

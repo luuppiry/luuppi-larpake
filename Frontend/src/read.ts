@@ -1,5 +1,5 @@
 import { parseAttendanceLink } from "./builders.js";
-import { ATTENDANCE_KEY_HEADER, ATTENDANCE_KEY_LENGTH, Q_ATTENDANCE_KEY } from "./constants.js";
+import { ATTENDANCE_CODE_HEADER, ATTENDANCE_KEY_LENGTH, Q_ATTENDANCE_KEY } from "./constants.js";
 import { addSingleCharacterInputBehaviour, parseFromInputRow } from "./services/input_service.js";
 import QRCodeService from "./services/qr_code_read_service.js";
 
@@ -28,7 +28,7 @@ function main() {
         if (input.length < ATTENDANCE_KEY_LENGTH) {
             return;
         }
-        const link = parseAttendanceLink(`${ATTENDANCE_KEY_HEADER}${input}`);
+        const link = parseAttendanceLink(`${ATTENDANCE_CODE_HEADER}${input}`);
         if (link) {
             window.location.href = link;
         } else {

@@ -1,3 +1,4 @@
+import { Q_PARAM, Q_STATUS } from "./constants.js";
 import { PermissionCollection } from "./models/user.js";
 
 export const LANG_FI = "fi";
@@ -114,7 +115,7 @@ export function getDocumentLangCode() {
 
 type LangObject = {
     languageCode: string;
-}
+};
 
 export function getMatchingLangObject<T>(textData: LangObject[] | null): T | null {
     if (!textData) {
@@ -122,11 +123,11 @@ export function getMatchingLangObject<T>(textData: LangObject[] | null): T | nul
     }
     const lang = getDocumentLangCode();
 
-    const matching = textData.filter(x => x.languageCode === lang)[0]
+    const matching = textData.filter((x) => x.languageCode === lang)[0];
     if (matching) {
         return matching as T;
     }
-    const finnish = textData.filter(x => x.languageCode === LANG_FI)[0];
+    const finnish = textData.filter((x) => x.languageCode === LANG_FI)[0];
     if (finnish) {
         return finnish as T;
     }
@@ -233,6 +234,16 @@ export function hasRole(
         return permissions >= table.roles.freshman;
     }
     throw new Error("Invalid role type");
+}
+
+export function redirect404Page(missingParamName: string | null = null) {
+    const params = new URLSearchParams();
+    if (missingParamName) {
+        params.set(Q_STATUS, "MissingRequiredParam");
+        params.set(Q_PARAM, missingParamName);
+    }
+
+    window.location.href = `404.html?${Q_STATUS}=`;
 }
 
 function getDefaultPermissionsTable(): PermissionCollection {

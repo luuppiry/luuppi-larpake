@@ -7,10 +7,33 @@
         <link rel="stylesheet" href="/styles/complete.css" />
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
     </head>
     <body>
         <ui-header></ui-header>
         <side-panel></side-panel>
-        <h2>Merkitse suoritetuksi</h2>
+        <form-container>
+            <section id="info">
+                <h2>Merkitse suoritetuksi</h2>
+                <h3>Käyttäjälle:</h3>
+                <p>
+                    <span class="_first-name">etunimi</span>
+                    <span class="_last-name">sukunimi</span>
+                </p>
+                <p>
+                    <span>Käyttäjänimi:</span>
+                    <span class="_username">käyttäjänimi</span>
+                </p>
+
+                <h3>Tehtävä:</h3>
+                <p>
+                    <span class="_task">Tehtävän nimi</span>
+                    (<span class="_points">X</span><span>P</span>)
+                </p>
+
+                <button class="_submit primary-btn hover-scale cursor-pointer">HYVÄKSY!!!</button>
+            </section>
+        </form-container>
     </body>
+    <script type="module" src="/src/complete.js"></script>
 </html>

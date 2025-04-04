@@ -1,1 +1,11 @@
 @import "common.css";
+@import "section.css";
+
+.section {
+    max-width: 600px !important;
+}
+
+.primary-btn {
+    padding: 60px;
+    border-radius: 40px;
+}

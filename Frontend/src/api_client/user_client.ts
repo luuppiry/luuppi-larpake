@@ -140,4 +140,12 @@ export class UserClient extends RequestEngine {
             isContainerType: false,
         });
     }
+    async getById(userId: string): Promise<User | null> {
+        return await this.get<User>({
+            url: `api/users/${userId}`,
+            params: null,
+            failMessage: `Failed to fetch user ${userId}`,
+            isContainerType: false
+        });
+    }
 }

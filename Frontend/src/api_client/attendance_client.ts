@@ -1,7 +1,7 @@
-import { SERVER_STATUSES } from "../constants.js";
+import { ATTENDANCE_CODE_HEADER, SERVER_STATUS } from "../constants.js";
 import { encodeArrayToQueryString } from "../helpers.js";
-import { Attendance, AttendanceKey } from "../models/attendance.js";
-import { Container, MessageResponse } from "../models/common.js";
+import { Attendance, AttendanceKey, FatAttendance } from "../models/attendance.js";
+import { Container, GuidIdObject, MessageResponse } from "../models/common.js";
 import { Signature } from "../models/user.js";
 import HttpClient from "./http_client.js";
 import RequestEngine from "./request_engine.js";
@@ -73,17 +73,46 @@ export default class AttendanceClient extends RequestEngine {
         const response = await this.client.post(`api/attendances/${taskId}`);
         if (response.status === 403) {
             const error: MessageResponse | null = await response.json();
-            if (error?.applicationError === SERVER_STATUSES.USER_STATUS_TUTOR) {
-                return SERVER_STATUSES.USER_STATUS_TUTOR;
+            if (error?.applicationError === SERVER_STATUS.USER_STATUS_TUTOR) {
+                return SERVER_STATUS.USER_STATUS_TUTOR;
             }
         }
         if (!response.ok) {
             console.warn(
-                `Failed to fetch attendance with task id of ${taskId}`,
+                `Failed to fetch attendance with task id of '${taskId}'`,
                 await response.json()
             );
             return response.status;
         }
         return await response.json();
+    }
+
+    async getAttendanceByKey(key: string): Promise<FatAttendance | null> {
+        return this.get<FatAttendance>({
+            url: `api/attendances/${key}`,
+            params: null,
+            failMessage: `Failed to fetch attendance with key '${key}'`,
+            isContainerType: false,
+        });
+    }
+
+    async completeKeyed(key: string): Promise<string | MessageResponse> {
+        const response = await this.client.post(`api/attendances/${ATTENDANCE_CODE_HEADER}${key}/complete`);
+        if (!response.ok) {
+            const parsed = await response.json();
+            console.warn("Failed to fetch keyed attendance", key, parsed);
+
+            if (parsed as MessageResponse) {
+                return parsed as MessageResponse;
+            }
+            return {
+                message: `Failed to fetch attendance with key '${key}'`,
+                details: "Message generated in frontend, no server message.",
+                applicationError: SERVER_STATUS.UNDEFINED,
+            };
+        }
+
+        const id: GuidIdObject = await response.json();
+        return id.id;
     }
 }

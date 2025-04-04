@@ -1,7 +1,7 @@
 import AttendanceClient from "./api_client/attendance_client.js";
 import LarpakeClient from "./api_client/larpake_client.js";
 import { parseAttendanceLink } from "./builders.js";
-import { Q_TASK_ID, SERVER_STATUSES } from "./constants.js";
+import { Q_TASK_ID, SERVER_STATUS } from "./constants.js";
 import { formatDateTime, getMatchingLangObject, getSearchParams } from "./helpers.js";
 import { AttendanceKey } from "./models/attendance.js";
 import { LarpakeTask, LarpakeTaskTextData, Section, SectionTextData } from "./models/larpake.js";
@@ -32,7 +32,7 @@ async function main() {
     // Get key if attendance was found
     const completionKey = await attendanceClient.getAttendanceByTaskId(task.id);
     if (Number.isInteger(completionKey)) {
-        if (completionKey == SERVER_STATUSES.USER_STATUS_TUTOR) {
+        if (completionKey == SERVER_STATUS.USER_STATUS_TUTOR) {
             console.log("No QR-code, because user is not competing.");
         } else {
             alert("Something went wrong whilst trying to fetch completion key!");
