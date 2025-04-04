@@ -100,7 +100,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             """);
 
         query.AppendLine($"""
-            ORDER BY a.larpake_event_id ASC, c.completed_at DESC NULLS LAST
+            ORDER BY c.completed_at DESC NULLS LAST, a.larpake_event_id ASC
             LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)}
             """);

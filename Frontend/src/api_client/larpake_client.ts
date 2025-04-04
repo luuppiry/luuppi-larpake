@@ -67,7 +67,10 @@ export default class LarpakeClient extends RequestEngine {
         return tasks.data;
     }
 
-    async getTasks(larpakeId: number | null = null, taskIds: number[] | null = null): Promise<LarpakeTask[] | null> {
+    async getTasks(
+        larpakeId: number | null = null,
+        taskIds: number[] | null = null
+    ): Promise<LarpakeTask[] | null> {
         const query = new URLSearchParams();
         // Different search params
         // query.append("userId", "<guid>");
@@ -81,7 +84,7 @@ export default class LarpakeClient extends RequestEngine {
             query.append("LarpakeId", larpakeId.toString());
         }
         if (taskIds) {
-            taskIds.forEach((x) => query.append("LarpakeTaskIds[]", x.toString()));
+            taskIds.forEach((x) => query.append("LarpakeTaskIds", x.toString()));
         }
 
         const response = await this.client.get("api/larpake-tasks", query);
@@ -99,7 +102,9 @@ export default class LarpakeClient extends RequestEngine {
             throw new Error("Task id must be defined.");
         }
 
-        const response = await this.client.get(`/api/larpake-events/${taskId}/attendance-opportunities`);
+        const response = await this.client.get(
+            `/api/larpake-events/${taskId}/attendance-opportunities`
+        );
 
         if (!response.ok) {
             console.warn(response);
@@ -115,17 +120,16 @@ export default class LarpakeClient extends RequestEngine {
             url: `api/larpake-tasks/${taskId}`,
             params: null,
             failMessage: `Failed to fetch task with id ${taskId}`,
-            isContainerType: false
-        })
+            isContainerType: false,
+        });
     }
-
 
     async getSectionById(sectionId: number): Promise<Section | null> {
         return await this.get({
             url: `api/larpakkeet/section/${sectionId}`,
             params: null,
             failMessage: `Failed to fetch section with id ${sectionId}`,
-            isContainerType: false
+            isContainerType: false,
         });
     }
 
@@ -159,7 +163,7 @@ export default class LarpakeClient extends RequestEngine {
         if (!existing) {
             throw new Error(
                 "Save common data first, to create Larpake." +
-                " If you have already sent common data first or larpake should exists, there might be a bug."
+                    " If you have already sent common data first or larpake should exists, there might be a bug."
             );
         }
 
@@ -178,7 +182,10 @@ export default class LarpakeClient extends RequestEngine {
 
     async #createSections(larpakeId: number, sections: Section[]): Promise<number> {
         for (const section of sections) {
-            const response = await this.client.post(`api/larpakkeet/${larpakeId}/sections`, section);
+            const response = await this.client.post(
+                `api/larpakkeet/${larpakeId}/sections`,
+                section
+            );
             if (!response.ok) {
                 throw new Error(await response.json());
             }
@@ -259,6 +266,4 @@ export default class LarpakeClient extends RequestEngine {
             throw new Error(await response.json());
         }
     }
-
-
 }

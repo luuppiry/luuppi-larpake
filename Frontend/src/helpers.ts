@@ -117,11 +117,11 @@ type LangObject = {
     languageCode: string;
 };
 
-export function getMatchingLangObject<T>(textData: LangObject[] | null): T | null {
+export function getMatchingLangObject<T>(textData: LangObject[] | null, lang: string | null = null): T | null {
     if (!textData) {
         return null;
     }
-    const lang = getDocumentLangCode();
+    lang ??= getDocumentLangCode();
 
     const matching = textData.filter((x) => x.languageCode === lang)[0];
     if (matching) {
@@ -162,7 +162,7 @@ export function appendTemplateElement<TAppended>(id: string, container: HTMLElem
 }
 
 export function encodeArrayToQueryString(key: string, array: string[]): string {
-    return array.map((x) => `${key}[]=${encodeURIComponent(x)}`).join("&");
+    return array.map((x) => `${key}=${encodeURIComponent(x)}`).join("&");
 }
 
 export function getSearchParams() {

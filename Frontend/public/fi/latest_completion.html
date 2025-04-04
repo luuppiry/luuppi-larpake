@@ -11,23 +11,25 @@
         <script type="module" src="/src/components/form-container.js"></script>
     </head>
     <body>
+        <template id="attendance-template">
+            <li class="hover-scale-01">
+                <section class="attendace-item">
+                    <h3 class="_title">Tehtävä</h3>
+                    <p>
+                        <span>Suoritettu:</span>
+                        <span class="_time">20.3.2025 klo 13:24</span>
+                    </p>
+                </section>
+            </li>
+        </template>
+
         <ui-header></ui-header>
         <side-panel lang="fi"></side-panel>
 
         <article class="attendance-article">
             <form-container>
                 <h2>Suoritetut tehtävät</h2>
-                <ol id="attendance-container" class="attendance-container">
-                    <li class="hover-scale-01">
-                        <section class="attendace-item">
-                            <h3 class="_title">Tehtävä</h3>
-                            <p>
-                                <span>Suoritettu:</span>
-                                <span class="_time">20.3.2025 klo 13:24</span>
-                            </p>
-                        </section>
-                    </li>
-                </ol>
+                <ol id="attendance-container" class="attendance-container"></ol>
             </form-container>
         </article>
         <script type="module" src="/src/latest_completion.js"></script>

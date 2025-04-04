@@ -1,6 +1,10 @@
 @import "common.css";
 @import "section.css";
 
+body {
+    padding-bottom: 150px;
+}
+
 .attendance-article {
     max-width: 800px;
     margin: auto;
