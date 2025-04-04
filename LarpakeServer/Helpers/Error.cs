@@ -23,6 +23,7 @@ public class Error
         Ex = ex;
     }
 
+
     public int HttpStatusCode { get; set; }
     public string Message { get; set; }
     public Exception? Ex { get; set; }

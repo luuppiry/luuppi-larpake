@@ -1,10 +1,15 @@
-﻿using LarpakeServer.Data.Helpers;
+﻿using Dapper;
+using LarpakeServer.Controllers;
+using LarpakeServer.Data.Helpers;
 using LarpakeServer.Extensions;
+using LarpakeServer.Models.Collections;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Npgsql;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -200,7 +205,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         return result;
     }
 
-    public async Task<Guid[]?> GetMembers(long id)
+    public async Task<Guid[]?> GetMemberIds(long id)
     {
         using var connection = GetConnection();
         var members = await connection.QueryAsync<Guid>($"""
@@ -488,4 +493,62 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
     }
 
 
+
+    record struct Member(long GroupId, Guid UserId, bool IsHidden, bool IsCompeting);
+
+    public async Task<RawGroupMemberCollection[]> GetMembers(long[] groupIds, Guid userId, bool includeHidden)
+    {
+        using var connection = GetConnection();
+
+        SelectQuery query = new();
+        query.AppendLine($"""
+            SELECT 
+                g.id AS group_id,
+                m.user_id,
+                m.is_hidden,
+                m.is_competing
+            FROM freshman_groups g
+                LEFT JOIN freshman_group_members m
+                    ON g.id = m.group_id
+            """);
+
+        query.AppendConditionLine($"""
+            g.id = ANY(
+                SELECT group_id FROM freshman_group_members
+                    WHERE group_id = ANY(@{nameof(groupIds)})
+                        AND user_id = @{nameof(userId)}
+            )
+            """);
+
+        query.IfFalse(includeHidden).AppendConditionLine($"""
+            m.is_hidden = FALSE
+            """);
+
+
+
+        string parsed = query.ToString();
+        var records = await connection.QueryAsync<Member>(parsed, new { groupIds, userId });
+
+        Dictionary<long, RawGroupMemberCollection> memberMap = [];
+        foreach (var user in records)
+        {
+            RawGroupMemberCollection? container = memberMap.GetOrAdd(user.GroupId, new(user.GroupId))
+                ?? throw new UnreachableException("Container should never be null.");
+
+            if (user.UserId == Guid.Empty)
+            {
+                continue;
+            }
+            if (user.IsCompeting)
+            {
+                container.Members.Add(user.UserId);
+            }
+            else
+            {
+                container.Tutors.Add(user.UserId);
+            }
+        }
+
+        return memberMap.Values.ToArray();
+    }
 }

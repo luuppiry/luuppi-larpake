@@ -36,70 +36,22 @@ public class UsersController : ExtendedControllerBase
     }
 
 
-
-
-
     [HttpGet]
     [RequiresPermissions(Permissions.ReadRawUserInfomation)]
-    [ProducesResponseType(typeof(QueryDataGetDto<UserGetDto>), 200)]
+    [ProducesResponseType<QueryDataGetDto<UserGetDto>>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GetUsers([FromQuery] UserQueryOptions options, CancellationToken token)
     {
-        DbUser[] records = await _db.Get(options);
-
-        // To dictionary
-        Dictionary<Guid, UserGetDto> entraUsers = [];
-        List<UserGetDto> nonEntraUsers = [];
-        foreach (DbUser user in records)
+        var users = await _service.GetFullUsers(options, token);
+        if (users.IsError)
         {
-            if (user.EntraId is null)
-            {
-                nonEntraUsers.Add(UserGetDto.From(user));
-            }
-            else
-            {
-                entraUsers[user.EntraId!.Value] = UserGetDto.From(user);
-            }
+            return FromError(users);
         }
-
-
-        // Fetch external information
-        Task<Result<ExternalUserInformation>>[] externalTasks = records
-            .Where(x => x.EntraId is not null)
-            .Select(x => _userInfoService.PullUserInformationFromExternalSource(x.EntraId!.Value, token))
-            .ToArray();
-
-
-        // Append external information
-        await foreach (Task<Result<ExternalUserInformation>> user in Task.WhenEach(externalTasks))
-        {
-            if (user.IsFaulted)
-            {
-                _logger.LogWarning("Exception thrown during external user retrieval: {ex}.", user.Exception);
-                return InternalServerError("Exception thrown during user external user retrieval");
-            }
-            Result<ExternalUserInformation> taskResult = await user;
-            if (taskResult.IsError && (Error)taskResult is { ApplicationErrorCode: ErrorCode.IdNotFound })
-            {
-                continue;
-            }
-            if (taskResult.IsError)
-            {
-                return FromError(taskResult);
-            }
-
-            var userInfo = (ExternalUserInformation)taskResult;
-            if (entraUsers.TryGetValue(userInfo.EntraId, out UserGetDto? userDto))
-            {
-                userDto.Append(userInfo);
-            }
-        }
-
 
         // Map to result
         var result = new QueryDataGetDto<UserGetDto>
         {
-            Data = nonEntraUsers.Concat(entraUsers.Values).ToArray()
+            Data = (UserGetDto[])users
         }
         .AppendPaging(options);
 
@@ -122,7 +74,7 @@ public class UsersController : ExtendedControllerBase
 
     [HttpGet("{userId}/reduced")]
     [RequiresPermissions(Permissions.CommonRead)]
-    [ProducesResponseType(typeof(ReducedUserGetDto), 200)]
+    [ProducesResponseType<ReducedUserGetDto>(200)]
     [ProducesResponseType(404)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GetCommonUserInfo(Guid userId, CancellationToken token)
@@ -137,9 +89,6 @@ public class UsersController : ExtendedControllerBase
         ReducedUserGetDto reduced = ReducedUserGetDto.From((UserGetDto)record);
         return Ok(reduced);
     }
-
-
-
 
 
     [HttpGet("me")]

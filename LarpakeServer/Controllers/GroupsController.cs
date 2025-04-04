@@ -1,11 +1,14 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
+using LarpakeServer.Models.Collections;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos;
+using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.PostDtos;
 using LarpakeServer.Models.PutDtos;
 using LarpakeServer.Models.QueryOptions;
+using LarpakeServer.Services;
 using System.ComponentModel.DataAnnotations;
 using FreshmanGroups = LarpakeServer.Models.GetDtos.Templates.QueryDataGetDto<LarpakeServer.Models.GetDtos.FreshmanGroupGetDto>;
 
@@ -22,15 +25,18 @@ public class GroupsController : ExtendedControllerBase
 
     readonly IGroupDatabase _db;
     readonly IUserDatabase _userDb;
+    readonly UserService _userService;
 
     public GroupsController(
         IGroupDatabase db,
         IUserDatabase userDb,
         ILogger<GroupsController> logger,
+        UserService userService,
         IClaimsReader claimsReader) : base(claimsReader, logger)
     {
         _db = db;
         _userDb = userDb;
+        _userService = userService;
     }
 
 
@@ -45,7 +51,7 @@ public class GroupsController : ExtendedControllerBase
          * Searching by group name is limited to admin and up.
          */
         options.ContainsUser = GetRequestUserId();
-        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers) 
+        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers)
             && options.IncludeHiddenMembers;
 
         if (GetRequestPermissions().Has(Permissions.Admin))
@@ -64,14 +70,14 @@ public class GroupsController : ExtendedControllerBase
     {
         /* Tutors can see all groups and members.
          */
-        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers) 
+        options.IncludeHiddenMembers = GetRequestPermissions().Has(Permissions.SeeHiddenMembers)
             && options.IncludeHiddenMembers;
 
         FreshmanGroups groups = await GetResultGroups(options);
         return Ok(groups);
     }
 
-    
+
     [HttpGet("{key}/join")]
     [ProducesResponseType<GroupInfo>(200)]
     [ProducesResponseType(404)]
@@ -82,7 +88,7 @@ public class GroupsController : ExtendedControllerBase
     }
 
 
-    
+
 
     [HttpGet("{groupId}")]
     [RequiresPermissions(Permissions.Tutor)]
@@ -99,16 +105,85 @@ public class GroupsController : ExtendedControllerBase
         return Ok(group);
     }
 
-    [HttpGet("{groupId}/members")]
+    [HttpGet("{groupId}/member-ids")]
     [RequiresPermissions(Permissions.Tutor)]
     [ProducesResponseType<MembersResponse>(200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetMembers(long groupId)
     {
-        var members = await _db.GetMembers(groupId);
+        var members = await _db.GetMemberIds(groupId);
         return members is null
             ? IdNotFound() : Ok(new MembersResponse(members));
     }
+
+
+
+
+
+
+
+    [HttpGet("members")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetMembers([Required][FromQuery] long[] groupIds, CancellationToken token)
+    {
+        bool includeHidden = GetRequestPermissions().Has(Permissions.SeeHiddenMembers);
+        Guid userId = GetRequestUserId();
+
+        // Search is limited to groups containing user and groups defined
+        RawGroupMemberCollection[] groups = await _db.GetMembers(groupIds, userId, includeHidden);
+
+
+        // Combine all ids into a single distinct array
+        Guid[] userIds = new HashSet<Guid>(groups.SelectMany(x => x.Members.Concat(x.Tutors))).ToArray();
+
+        // Query
+        var fullUsers = await _userService.GetFullUsers(new UserQueryOptions
+        {
+            UserIds = userIds,
+        }, token);
+
+        if (fullUsers.IsError)
+        {
+            return FromError(fullUsers);
+        }
+
+        Dictionary<Guid, UserGetDto> fullUsersDict = ((UserGetDto[])fullUsers).ToDictionary(x => x.Id);
+        List<GroupMemberCollection> result = [];
+        foreach (var group in groups)
+        {
+            result.Add(new GroupMemberCollection
+            {
+                GroupId = group.GroupId,
+                Tutors = Map(group.Tutors),
+                Members = Map(group.Members),
+            });
+        }
+
+        UserGetDto[] Map(List<Guid> ids)
+        {
+            return ids.Select(id =>
+            {
+                if (fullUsersDict.TryGetValue(id, out var user))
+                {
+                    user.EntraId = null;
+                    user.EntraUsername = null;
+                    return user;
+                }
+                return null!;   // Filtered out on next step
+            })
+            .Where(x => x is not null)
+            .ToArray();
+        }
+
+        return Ok(new QueryDataGetDto<GroupMemberCollection>
+        {
+            Data = result.ToArray()
+        });
+    }
+
+
+
+
 
     [HttpGet("{groupId}/invite")]
     [RequiresPermissions(Permissions.EditGroup)]
@@ -306,7 +381,7 @@ public class GroupsController : ExtendedControllerBase
 
         // Is not admin
         var userId = GetRequestUserId();
-        var members = await _db.GetMembers(groupId);
+        var members = await _db.GetMemberIds(groupId);
         if (members is null)
         {
             // Group not found

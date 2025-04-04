@@ -23,5 +23,4 @@ public class ReducedUserGetDto
             UpdatedAt = user.UpdatedAt
         };
     }
-
 }
