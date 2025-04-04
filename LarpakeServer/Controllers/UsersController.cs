@@ -17,17 +17,20 @@ namespace LarpakeServer.Controllers;
 public class UsersController : ExtendedControllerBase
 {
     readonly IUserDatabase _db;
+    readonly UserService _service;
     readonly IRefreshTokenDatabase _refreshTokenDb;
     readonly IExternalIntegrationService _userInfoService;
 
     public UsersController(
         IUserDatabase db,
+        UserService service,
         IClaimsReader claimsReader,
         IRefreshTokenDatabase refreshTokenDb,
         IExternalIntegrationService userInfoService,
         ILogger<UsersController> logger) : base(claimsReader, logger)
     {
         _db = db;
+        _service = service;
         _refreshTokenDb = refreshTokenDb;
         _userInfoService = userInfoService;
     }
@@ -110,7 +113,7 @@ public class UsersController : ExtendedControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetUser(Guid userId, CancellationToken token)
     {
-        Result<UserGetDto>? record = await GetFullUser(userId, token);
+        Result<UserGetDto>? record = await _service.GetFullUser(userId, token);
         return record.MatchToResponse(
             ok: Ok,
             error: FromError
@@ -124,7 +127,7 @@ public class UsersController : ExtendedControllerBase
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GetCommonUserInfo(Guid userId, CancellationToken token)
     {
-        Result<UserGetDto>? record = await GetFullUser(userId, token);
+        Result<UserGetDto>? record = await _service.GetFullUser(userId, token);
 
         if (record.IsError)
         {
@@ -145,7 +148,7 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> GetMe(CancellationToken token)
     {
         Guid authorId = GetRequestUserId();
-        Result<UserGetDto> record = await GetFullUser(authorId, token);
+        Result<UserGetDto> record = await _service.GetFullUser(authorId, token);
         return record.MatchToResponse(
             ok: Ok,
             error: FromError);
@@ -326,28 +329,5 @@ public class UsersController : ExtendedControllerBase
         return Result.Ok;
     }
 
-    private async Task<Result<UserGetDto>> GetFullUser(Guid userId, CancellationToken token)
-    {
-        DbUser? user = await _db.GetByUserId(userId);
-        if (user is null)
-        {
-            return Error.NotFound("User id not found", ErrorCode.IdNotFound);
-        }
-        if (user.EntraId is null)
-        {
-            return UserGetDto.From(user);
-        }
 
-        // Fetch information like username and names from external source
-        Result<ExternalUserInformation> luuppiUser =
-            await _userInfoService.PullUserInformationFromExternalSource(user.EntraId.Value, token);
-        if (luuppiUser.IsError)
-        {
-            _logger.LogWarning("Failed to get user information from external source for user {id}.", userId);
-            return (Error)luuppiUser;
-        }
-        UserGetDto result = UserGetDto.From(user);
-        result.Append((ExternalUserInformation)luuppiUser);
-        return result;
-    }
 }

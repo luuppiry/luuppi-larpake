@@ -167,6 +167,7 @@ public static class ServiceInjections
     {
         services.AddApplicationOptions(configuration, logger);
 
+        services.AddSingleton<UserService>();
         services.AddSingleton<CompletionMessageService>();
         services.AddSingleton(new ClientPoolConfiguration
         {

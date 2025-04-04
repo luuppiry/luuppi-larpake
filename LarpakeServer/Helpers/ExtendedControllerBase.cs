@@ -77,9 +77,9 @@ public class ExtendedControllerBase : ControllerBase
         return BadRequest(new ErrorMessageResponse("Invalid JWT token.", message, ErrorCode.InvalidJWT));
     }
 
-    protected ObjectResult InternalServerError(string message)
+    protected ObjectResult InternalServerError(string message, ErrorCode error = ErrorCode.UnknownServerError)
     {
-        return StatusCode(500, new ErrorMessageResponse(message, null, ErrorCode.UnknownServerError));
+        return StatusCode(500, new ErrorMessageResponse(message, null, error));
     }
 
     protected ObjectResult BadRequest(string message, string? details = null, ErrorCode error = ErrorCode.Undefined)
@@ -91,8 +91,8 @@ public class ExtendedControllerBase : ControllerBase
     {
         return Unauthorized(new ErrorMessageResponse(message, null, error));
     }
-   
-    
+
+
 
     private ObjectResult FromError(Error error)
     {
@@ -103,14 +103,26 @@ public class ExtendedControllerBase : ControllerBase
             return StatusCode(dataError.HttpStatusCode, new
             {
                 dataError.Message,
+                Details = "",
+                ApplicationError = error,
                 dataError.Data,
-                dataError.DataKind
+                dataError.DataKind,
+#if DEBUG
+                Exception = error.Ex
+#endif
             });
         }
 
 #if DEBUG
         var (statusCode, message) = error;
-        return StatusCode(statusCode, new { Message = message, Exception = error.Ex });
+        return StatusCode(statusCode,
+            new
+            {
+                Message = message,
+                Details = "",
+                ApplicationError = error.ApplicationErrorCode,
+                Exception = error.Ex
+            });
 #else
         var (statusCode, message) = error;
         return StatusCode(statusCode, new ErrorMessageResponse(message, null, error.ApplicationErrorCode));

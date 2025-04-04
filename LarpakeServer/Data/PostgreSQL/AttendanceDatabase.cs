@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Data.Helpers;
+﻿using Dapper;
+using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
@@ -118,6 +119,40 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             splitOn: "id");
 
         return records.ToArray();
+    }
+
+    public async Task<Attendance?> GetByKey(string key)
+    {
+        using var connection = GetConnection();
+        var records = await connection.QueryAsync<Attendance, Completion, Attendance>($"""
+            SELECT
+                a.user_id,
+                a.larpake_event_id AS larpake_task_id,
+                a.completion_id,
+                a.created_at,
+                a.updated_at,
+                a.qr_code_key,
+                a.key_invalid_at,
+                c.id,
+                c.signer_id,
+                c.signature_id,
+                c.completed_at,
+                c.created_at,
+                c.updated_at
+            FROM attendances a
+            LEFT JOIN completions c
+                ON a.completion_id = c.id
+            WHERE a.qr_code_key = @{nameof(key)}
+            LIMIT 1;
+            """,
+            (attendance, completion) =>
+            {
+                attendance.Completion = completion;
+                return attendance;
+            },
+            new { key }, splitOn: "id");
+
+        return records.FirstOrDefault();
     }
 
     public async Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance)
@@ -241,6 +276,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
              * - Key should be deleted after cooldown period (like 5 days).
              */
             using var connection = GetConnection();
+            await connection.OpenAsync();
             using var transaction = await connection.BeginTransactionAsync();
 
             // Get attendance, Note that signer cannot get attendance with same userId as signerId 
@@ -251,18 +287,21 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                         updated_at = NOW()
                 WHERE qr_code_key = @{nameof(completion.Key)}
                     AND key_invalid_at > NOW()
-                    AND user_id <> @{nameof(completion.SignerId)}
                 RETURNING
                     user_id,
                     larpake_event_id,
                     completion_id;
                 """, completion);
 
+
             if (attendance is null)
             {
-                return Error.NotFound("Attendance with given key not found or key expired.");
+                return Error.NotFound("Attendance with given key not found or key expired.", ErrorCode.IdNotFound);
             }
-
+            if (attendance.UserId == completion.SignerId)
+            {
+                return Error.BadRequest("Cannot self-sign attendance", ErrorCode.CannotSignSelf);
+            }
             if (attendance.CompletionId is not null)
             {
                 transaction.Commit();
@@ -274,7 +313,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
             // Validate signer is in same Larpake and is not competing
             bool isSignerValid = await connection.ExecuteScalarAsync<bool>($"""
-                SELECT CanUserSignAttendance({nameof(completion.SignerId)}, {attendance.LarpakeTaskId});
+                SELECT CanUserSignAttendance(@{nameof(completion.SignerId)}, @{nameof(attendance.LarpakeTaskId)});
                 """, new { completion.SignerId, attendance.LarpakeTaskId });
 
             if (isSignerValid is false)
@@ -295,7 +334,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     id,
                     signer_id,
                     signature_id,
-                    completed_at,
+                    completed_at
                 )
                 VALUES (
                     @{nameof(record.Id)},
@@ -314,7 +353,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 UPDATE attendances
                 SET 
                     completion_id = @{nameof(record.Id)},
-                    updated_at = NOW()
+                    updated_at = NOW(),
                     key_invalid_at = NOW()
                 WHERE 
                     qr_code_key = @{nameof(completion.Key)};
