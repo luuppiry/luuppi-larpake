@@ -246,7 +246,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                     ON id = larpake_section_id
             WHERE id = @{nameof(sectionId)};
             """,
-            new { sectionId });
+            new { sectionId }, splitOn: "larpake_section_id");
         return result;
     }
 

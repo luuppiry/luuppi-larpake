@@ -112,11 +112,11 @@ public class LarpakkeetController : ExtendedControllerBase
     public async Task<IActionResult> GetSectionById(long sectionId)
     {
         bool isSelfOnlySearch = GetRequestPermissions().Has(Permissions.ReadAllData) is false;
-        Guid userId = GetRequestUserId();
 
         LarpakeSection? section;
-        if (!isSelfOnlySearch)
+        if (isSelfOnlySearch)
         {
+            Guid userId = GetRequestUserId();
             section = await _db.GetSectionsByIdAndUser(sectionId, userId);
             return section is null
                 ? IdNotFound() : Ok(section);
