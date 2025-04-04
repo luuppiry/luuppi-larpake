@@ -31,6 +31,12 @@ body {
     align-items: center;
 }
 
+.cancelled {
+    font-size: x-large;
+    font-weight: 700;
+    margin: 0;
+}
+
 .qr {
     margin: auto;
     background-color: white;
@@ -47,10 +53,6 @@ body {
     grid-column: 1;
     grid-row: 1;
 }
-
-
-
-
 
 .code-container {
     position: relative;

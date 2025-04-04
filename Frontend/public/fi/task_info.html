@@ -21,24 +21,27 @@
             <p class="_description">Lyhyt koonti tehtävästä...</p>
             <div id="qr-container" class="qr-container">
                 <p>Näytä QR-koodia tutorille kirjataksesi osallistumisesi</p>
+                <p id="cancelled-label" class="hidden cancelled">TEHTÄVÄ ON PERUUTETTU</p>
                 <div class="qr hover-scale-01">
-                    <img class="_qr-code qr-code" src="/qr-placeholder.png" alt="QR koodi suorituksen kirjaamiseksi" />
-                    <img class="_not-found not-found no-interact" src="/icons/over-x.svg" >
+                    <img
+                        class="_qr-code qr-code"
+                        src="/qr-placeholder.png"
+                        alt="QR koodi suorituksen kirjaamiseksi"
+                    />
+                    <img class="_not-found not-found no-interact" src="/icons/over-x.svg" />
                 </div>
                 <p>tai käytä koodia</p>
                 <div class="code-container">
                     <p class="_copied copied default-shadow no-interact">Kopioitu</p>
                     <p class="_code code cursor-pointer hover-scale"></p>
                 </div>
-            </div>  
+            </div>
         </section>
         <section class="container">
             <div class="events-section">
                 <h2>Aiheeseen liittyvät:</h2>
                 <ul>
-                    <li>
-                        Tämä toiminto ei ole vielä toiminnassa.
-                    </li>
+                    <li>Tämä toiminto ei ole vielä toiminnassa.</li>
                 </ul>
             </div>
         </section>

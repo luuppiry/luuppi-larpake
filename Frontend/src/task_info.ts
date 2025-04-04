@@ -69,10 +69,16 @@ function render(task: LarpakeTask, completionKey: AttendanceKey | null, section:
     container.querySelector<HTMLParagraphElement>("._description")!.innerText =
         taskText?.body ?? "";
 
-    renderQRCode(completionKey);
+    if (!task.cancelledAt) {
+        renderAttendanceCodes(completionKey);
+    }
+    else {
+        const label = document.getElementById("cancelled-label") as HTMLParagraphElement;
+        label.classList.remove("hidden")
+    }
 }
 
-function renderQRCode(completionKey: AttendanceKey | null) {
+function renderAttendanceCodes(completionKey: AttendanceKey | null) {
     const container = document.getElementById("qr-container") as HTMLElement;
 
     const link = parseAttendanceLink(completionKey?.qrCodeKey ?? null);
