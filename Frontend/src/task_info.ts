@@ -1,8 +1,8 @@
 import AttendanceClient from "./api_client/attendance_client.js";
 import LarpakeClient from "./api_client/larpake_client.js";
 import { parseAttendanceLink } from "./builders.js";
-import { Q_SECTION_ID, Q_TASK_ID, SERVER_STATUSES } from "./constants.js";
-import { formatDateTime, getMatchingLangObject, getSearchParams, pushUrlState } from "./helpers.js";
+import { Q_TASK_ID, SERVER_STATUSES } from "./constants.js";
+import { formatDateTime, getMatchingLangObject, getSearchParams } from "./helpers.js";
 import { AttendanceKey } from "./models/attendance.js";
 import { LarpakeTask, LarpakeTaskTextData, Section, SectionTextData } from "./models/larpake.js";
 import ClickerService from "./services/clicker_service.js";
@@ -37,12 +37,6 @@ async function main() {
         } else {
             alert("Something went wrong whilst trying to fetch completion key!");
         }
-    }
-
-    if (section?.id) {
-        pushUrlState((params) => {
-            params.set(Q_SECTION_ID, section.id.toString());
-        });
     }
 
     const key = completionKey as AttendanceKey;
