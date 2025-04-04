@@ -4,17 +4,38 @@ export function addSingleCharacterInputBehaviour(elem: Element) {
         return;
     }
     input.addEventListener("input", () => {
-        const next = input.nextElementSibling as HTMLElement;
-        if (next) {
-            next.focus();
-        }
+        next(input);
     });
     input.addEventListener("keydown", (e) => {
-        const invalid = ["Tab", "Control", "Shift"];
-        if (invalid.includes(e.key)) {
+        if (e.key === "ArrowLeft") {
+            previous(input);
+        }
+        if (e.key === "ArrowRight") {
+            next(input);
+        }
+        if (isCharacter(e.key)) {
+            input.value = "";
+        }
+    });
+    input.addEventListener("paste", (e) => {
+        e.preventDefault();
+        const pasteData = e.clipboardData?.getData("text");
+        if (!pasteData) {
             return;
         }
-        input.value = "";
+
+        // Paste clipboard data into each field
+        let index = 0;
+        let current = input;
+        while (current) {
+            const value = pasteData[index];
+            if (!value) {
+                return;
+            }
+            current.value = value;
+            index++;
+            current = current.nextElementSibling as HTMLInputElement;
+        }
     });
 }
 
@@ -31,4 +52,22 @@ export function parseFromInputRow(first: HTMLInputElement): string {
         input += elem.value;
     }
     return input;
+}
+
+function isCharacter(input: string) {
+    return /^[a-zA-Z0-9]$/.test(input);
+}
+
+function previous(elem: HTMLElement) {
+    const last = elem.previousElementSibling as HTMLElement;
+    if (last) {
+        last.focus();
+    }
+}
+
+function next(elem: HTMLElement) {
+    const next = elem.nextElementSibling as HTMLElement;
+    if (next) {
+        next.focus();
+    }
 }
