@@ -175,16 +175,17 @@ body {
 
 .primary-btn {
     font-size: large;
-    background-color: var(--luuppi-blue);
-    color: white;
     border-radius: 6px;
     padding: 8px 16px;
-    border-style: none;
+    background-color: var(--luuppi-blue);
+    color: white;
+    border: 2px var(--luuppi-blue) solid;
     cursor: pointer;
 }
 
 .primary-btn:disabled {
     background-color: #e2e2e9;
+    border: 2px #e2e2e9 solid;
 }
 
 .hover-scale:disabled:hover {
@@ -195,11 +196,11 @@ body {
 .secondary-btn {
     font-size: large;
     border-radius: 6px;
+    padding: 8px 16px;
     background-color: white;
     color: var(--luuppi-blue);
     border: 2px var(--luuppi-blue) solid;
     cursor: pointer;
-    padding: 8px 16px;
 }
 
 /* Default scaling 1.05 */
@@ -286,7 +287,6 @@ body {
 
 .default-shadow {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-
 }
 
 .dialog.primary-btn {

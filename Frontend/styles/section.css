@@ -29,10 +29,15 @@
     flex-grow: 1;
     flex-shrink: 1;
     flex-basis: auto;
-    padding: 30px 30px 50px 30px;
     display: flex;
     flex-flow: column;
 }
+
+/* Set padding if not not prevented */ 
+form-container:not(.no-pad) .section > .section-filler > div {
+    padding: 30px 30px 50px 30px;
+}
+
 
 .stripe {
     min-height: 20px;

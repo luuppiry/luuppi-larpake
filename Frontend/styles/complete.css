@@ -5,7 +5,43 @@
     max-width: 600px !important;
 }
 
-.primary-btn {
-    padding: 60px;
-    border-radius: 40px;
+
+#success-dialog {
+    border-radius: 10px;
+    border: none;
 }
+
+#success-dialog > section {
+    display: flex;
+    flex-flow: column;
+    padding: 0 20px;
+}
+
+#success-dialog .primary-btn {
+    margin-left: auto;
+    padding: 10px 30px;
+}
+
+#info {
+    display: flex;
+    flex-flow: column;
+    padding: 20px;
+}
+
+.section-title {
+    font-size: medium;
+    font-weight: 200;
+    margin: 0;
+    
+}
+
+.section-value {
+    font-size: large;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+}
+
+
+ .btn-container{
+    margin-left: auto;
+ }

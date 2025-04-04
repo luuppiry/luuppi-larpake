@@ -14,6 +14,13 @@ import { LarpakeTaskTextData } from "./models/larpake.js";
 const attendanceClient = new AttendanceClient();
 
 async function main() {
+    document.getElementById("cancel-btn")?.addEventListener("click", _ => {
+        window.location.href = "read.html"
+    })
+
+
+
+
     const params = getSearchParams();
     const rawKey = params.get(Q_ATTENDANCE_KEY);
     if (!rawKey) {
@@ -22,7 +29,6 @@ async function main() {
     }
 
     const key = removeAttendanceCodeHeader(rawKey ?? "");
-
     if (!key) {
         alertNotFound(null);
         return;
@@ -45,7 +51,7 @@ async function main() {
             );
             return;
         }
-        window.location.href = "read.html";
+        showSuccess(id);
     };
 
     render(attendance, complete);
@@ -62,9 +68,14 @@ function render(attendance: FatAttendance, complete: () => void) {
     section.querySelector<HTMLElement>("._username")!.innerText = user.username ?? "N/A";
     section.querySelector<HTMLElement>("._task")!.innerText = taskText?.title ?? "N/A";
     section.querySelector<HTMLElement>("._points")!.innerText = attendance.task.points.toString();
-    const submitBtn = section.querySelector<HTMLElement>("._submit")!;
-
+    const submitBtn = section.querySelector<HTMLButtonElement>("._submit")!;
     submitBtn.addEventListener("click", complete);
+
+    const isCompleted = attendance.completed != null;
+    submitBtn.disabled = isCompleted;
+    if (isCompleted) {
+        section.querySelector<HTMLElement>("._completed")!.classList.remove("hidden");
+    }
 }
 
 function alertNotFound(key: string | null) {
@@ -85,6 +96,22 @@ function alertNotFound(key: string | null) {
             ? `Avainta '${key}' ei löydy tietokannasta, se voi olla vanhentunut.`
             : `Key '${key}' not found on database, it might be expired.`
     );
+}
+
+function showSuccess(id: string) {
+    const target = "read.html";
+
+    const dialog = document.getElementById("success-dialog") as HTMLDialogElement;
+    dialog.showModal();
+
+    dialog.querySelector<HTMLSpanElement>("._id")!.innerText = id;
+    dialog.querySelector<HTMLElement>("._ok")?.addEventListener("click", (_) => {
+        window.location.href = target;
+    });
+
+    setInterval(() => {
+        window.location.href = target;
+    }, 2000);
 }
 
 main();
