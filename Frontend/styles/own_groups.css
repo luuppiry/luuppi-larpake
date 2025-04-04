@@ -1,4 +1,14 @@
 @import "common.css";
+@import "section.css";
+
+body {
+    padding-bottom: 150px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
 
 .header {
     background-color: #5c61a3;

@@ -117,7 +117,10 @@ type LangObject = {
     languageCode: string;
 };
 
-export function getMatchingLangObject<T>(textData: LangObject[] | null, lang: string | null = null): T | null {
+export function getMatchingLangObject<T>(
+    textData: LangObject[] | null,
+    lang: string | null = null
+): T | null {
     if (!textData) {
         return null;
     }
@@ -163,6 +166,12 @@ export function appendTemplateElement<TAppended>(id: string, container: HTMLElem
 
 export function encodeArrayToQueryString(key: string, array: string[]): string {
     return array.map((x) => `${key}=${encodeURIComponent(x)}`).join("&");
+}
+
+export function appendSearchArray(query: URLSearchParams, key: string, values: string[]) {
+    values.forEach((x) => {
+        query.append(key, x);
+    });
 }
 
 export function getSearchParams() {

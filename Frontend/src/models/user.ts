@@ -71,3 +71,10 @@ export type GroupInfo = {
     name: string;
     groupNumber: number;
 };
+
+
+export type GroupMemberCollection = {
+    groupId: number;
+    members: User[];
+    tutors: User[];   
+}

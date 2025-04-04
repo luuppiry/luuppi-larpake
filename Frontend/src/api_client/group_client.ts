@@ -1,5 +1,6 @@
+import { appendSearchArray } from "../helpers.js";
 import { Container, IdObject } from "../models/common.js";
-import { Group, GroupInfo, GroupInvite, GroupMember } from "../models/user.js";
+import { Group, GroupInfo, GroupInvite, GroupMember, GroupMemberCollection } from "../models/user.js";
 import HttpClient from "./http_client.js";
 import RequestEngine from "./request_engine.js";
 
@@ -16,6 +17,7 @@ type MemberIds = {
 };
 
 export default class GroupClient extends RequestEngine {
+    
     constructor(client: HttpClient | null = null) {
         super(client ?? new HttpClient());
     }
@@ -48,9 +50,9 @@ export default class GroupClient extends RequestEngine {
         return true;
     }
 
-    async getOwnGroups(): Promise<Group[] | null> {
+    async getOwnGroups(minimize: boolean): Promise<Group[] | null> {
         const params = new URLSearchParams();
-        params.set("DoMinimize", "true");
+        params.set("DoMinimize", minimize ? "true" : "false");
 
         return await this.get<Group[]>({
             url: "api/groups/own",
@@ -163,6 +165,19 @@ export default class GroupClient extends RequestEngine {
             failMessage: "Failed to refresh group invite key to new one.",
             isContainerType: false,
         });
+    }
+
+
+    async getGroupMembersByGroupIds(groupIds: number[]) {
+        const params = new URLSearchParams();
+        appendSearchArray(params, "GroupIds", groupIds.map(x => x.toString()))
+        
+        return await this.get<GroupMemberCollection[]>({
+            url: "api/groups/members",
+            params: params,
+            failMessage: "Failed to fetch group members from multiple groups",
+            isContainerType: true
+        })
     }
 
     async #updateGroup(group: Group): Promise<Response> {
