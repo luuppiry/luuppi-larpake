@@ -4,7 +4,7 @@
 services:
     larpake_pg_dev:
         container_name: larpake_pg_dev
-        env_file: ".env"
+        env_file: "dev.env"
         platform: linux/amd64
         image: postgres:17.3-bookworm
         environment:
@@ -22,7 +22,7 @@ services:
         container_name: larpake_pg_create_users_dev
         platform: linux/amd64
         image: postgres:17.3-bookworm
-        env_file: ".env"
+        env_file: "dev.env"
         environment:
             - PGHOST=larpake_pg_dev
             - PGPORT=5432
@@ -43,7 +43,7 @@ services:
 
     larpake_migrations_dev:
         container_name: larpake_migrations_dev
-        env_file: ".env"
+        env_file: "dev.env"
         build:
           dockerfile: migrations.Dockerfile
         networks:
@@ -57,7 +57,7 @@ services:
 
     larpake_api_dev:
         container_name: larpake_api_dev
-        env_file: ".env"
+        env_file: "dev.env"
         build:
           dockerfile: api-dev.Dockerfile
         ports:
