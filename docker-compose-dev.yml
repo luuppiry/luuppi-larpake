@@ -54,18 +54,6 @@ services:
             larpake_pg_create_users:
                 condition: service_completed_successfully
 
-    larpake_frontend:
-        container_name: larpake_frontend_build
-        env_file: ".env"
-        docker_file: vite.Dockerfile
-        environment:
-            - VITE_ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
-            - VITE_ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
-            - VITE_ENTRA_SERVER=${ENTRA_SERVER_NAME}
-            - VITE_ENTRA_SCOPE=${ENTRA_AUTH_SCOPE}
-            - VITE_ENTRA_REDIRECT_URL=${FRONTEND_AUTH_REDIRECT_URL}
-            - VITE_API_BASE_URL=${API_BASE_URL}
-
     larpake_api_production:
         container_name: larpake_api_production
         env_file: ".env"

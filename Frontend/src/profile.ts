@@ -137,7 +137,7 @@ async function loadSignatures(user: User, permissionsTable: PermissionCollection
 }
 
 async function loadGroups(root: HTMLElement) {
-    const groups = await groupClient.getOwnGroups();
+    const groups = await groupClient.getOwnGroups(true);
     if (!groups || groups.length === 0) {
         return;
     }
