@@ -54,8 +54,8 @@ services:
             larpake_pg_create_users:
                 condition: service_completed_successfully
 
-    larpake_frontend:
-        container_name: larpake_frontend_build
+    larpake_frontend_production:
+        container_name: larpake_frontend_production
         env_file: ".env"
         docker_file: vite.Dockerfile
         environment:
@@ -85,6 +85,8 @@ services:
             - LARPAKE_JWT_AUDIENCE=${JWT_AUDIENCE}
         depends_on:
             larpake_migrations_production:
+                condition: service_completed_successfully
+            larpake_frontend_production:
                 condition: service_completed_successfully
 
 volumes:

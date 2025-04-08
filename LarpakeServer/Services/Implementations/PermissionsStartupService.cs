@@ -82,6 +82,8 @@ public class PermissionsStartupService : IHostedService
 
         if (result.IsOk)
         {
+            _logger.LogInformation("Set permissions for user {userId} to {permissions}.",
+                userId, permission);
             return;
         }
 
