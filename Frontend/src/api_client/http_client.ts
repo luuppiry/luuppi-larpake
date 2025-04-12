@@ -13,6 +13,9 @@ export default class HttpClient {
 
     constructor() {
         this.baseUrl = import.meta.env.VITE_API_BASE_URL;
+        if (!this.baseUrl){
+            throw new Error("Api base url is not provided, check server configuration.")
+        }
         this.accessToken = null;
     }
 
