@@ -1,28 +1,39 @@
 ###########################
-# Create vite build image #
+# Build vite front-end    #
 ###########################
 
-# Build vite app
-
-FROM node:latest AS vite-build
+# Create npm build container 
+FROM node:23-slim AS vite-build
 
 WORKDIR /source
 
-# Copy project dependency files
-
-COPY Frontend/package.json Frontend/package-lock.json /source/
+# Copy project files
+COPY Frontend/. ./
 
 # Install dependencies
 RUN npm install
 
 # Build vite 
-
-COPY Frontend/. /source/
-
 RUN npm run build
 
+# Vite container result file system 
+#
+# root/
+# ├─ source/
+# │  ├─ package.json
+# ├─ LarpakeServer/
+# │  ├─ wwwroot/
+# │  │  ├─ public/
+# │  │  ├─ src/
+# │  │  ├─ styles/
+
+
+
+
+
+
 ##########################
-# Create API build image #
+# Build web API project  #
 ##########################
 
 # Create 'build' image
@@ -33,11 +44,23 @@ WORKDIR /source
 # Copy source files 
 COPY LarpakeServer/. ./
 
-# Copy built frontend into wwwroot
-COPY --from=vite-build /LarpakeServer/wwwroot ./wwwroot/
-
 # Change workdir
 RUN dotnet publish -c Release -o /app 
+
+# Dotnet build container output
+#
+# root/
+# ├─ source/
+# │  ├─ LarpakeServer.csproj
+# ├─ app/
+# │  ├─ LarpakeServer.exe
+# │  ├─ LarpakeServer.dll
+# │  ├─ many_libraries.dll
+
+
+
+
+
 
 ########################
 # Create runtime image #
@@ -50,5 +73,21 @@ WORKDIR /app
 # Copy build image result to runtime image
 COPY --from=build /app .
 
+# Copy built frontend into wwwroot
+COPY --from=vite-build /LarpakeServer/wwwroot/. ./wwwroot/.
+
 # Run "dotnet LarpakeServer.dll" to run platform independent (before JIT) dll file 
 ENTRYPOINT [ "dotnet", "LarpakeServer.dll" ]
+
+# Final application container file structure
+#
+# root/
+# ├─ app/
+# │  ├─ LarpakeServer.dll
+# │  ├─ LarpakeServer.exe
+# │  ├─ wwwroot/
+# │  │  ├─ src/
+# │  │  ├─ node_modules/
+# │  │  ├─ styles/
+# │  │  ├─ public/
+

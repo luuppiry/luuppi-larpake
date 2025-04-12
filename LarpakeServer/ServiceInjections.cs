@@ -247,7 +247,7 @@ public static class ServiceInjections
     {
         // Production add frontend page serving
         logger.LogInformation("Adding frontend serving.");
-        app.AddFrontendServing();
+        app.AddFrontendServing(logger);
         try
         {
             if (Directory.Exists("wwwroot"))

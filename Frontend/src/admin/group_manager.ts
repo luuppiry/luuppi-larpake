@@ -10,7 +10,7 @@ import {
     showOkDialog,
     ToOverwriteDictionary,
 } from "../helpers.js";
-import { User, Group, GroupMember } from "../models/user";
+import { User, Group, GroupMember } from "../models/user.js";
 import { groupMemberSortFunc } from "../sortFunctions.js";
 import GroupManagerUI from "./ui-model/group_manager_ui.js";
 
