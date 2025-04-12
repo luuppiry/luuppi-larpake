@@ -9,15 +9,11 @@
     margin: 0 auto;
     gap: 30px;
     margin: 0px 30px;
+
 }
 
-.hover-scale {
-    transition: transform 0.3s ease;
-    transform-origin: center;
-}
-
-.hover-scale:hover {
-    transform: scale(1.05);
+.section {
+    margin: 0 !important;
 }
 
 .larpake-title {

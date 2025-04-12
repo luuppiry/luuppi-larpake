@@ -39,7 +39,7 @@ class FormContainer extends HTMLElement {
                 <div class="stripe"></div>
                 <div class="section-filler">
                     <!-- Container for elements and correct expansion, do not remove -->
-                    <div>
+                    <div class="form-container-padding">
                         <!-- Content -->
                         ${content}
                     </div>
