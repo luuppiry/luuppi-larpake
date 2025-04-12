@@ -33,11 +33,10 @@
     flex-flow: column;
 }
 
-/* Set padding if not not prevented */ 
-form-container:not(.no-pad) .section > .section-filler > div {
+/* Set padding if not not prevented */
+form-container:not(.no-pad) .section-filler > div {
     padding: 30px 30px 50px 30px;
 }
-
 
 .stripe {
     min-height: 20px;
