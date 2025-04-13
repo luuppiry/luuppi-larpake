@@ -1,5 +1,7 @@
-import { UserInfo } from "../models/common.js";
+import { UserAuthenticatedEvent, UserInfo } from "../models/common.js";
 import EntraId from "./entra_id.js";
+
+export const AUTHENTICATED_EVENT_NAME = "client-authenticated";
 
 type AccessToken = {
     accessToken: string;
@@ -100,6 +102,8 @@ export default class HttpClient {
             return null;
         }
         this.accessToken = accessToken;
+        this.#authenticated(this.accessToken);
+
         return {
             permissions: accessToken.permissions,
         };
@@ -198,6 +202,9 @@ export default class HttpClient {
         }
 
         this.accessToken = await this.#fetchEntraLogin();
+        if (this.accessToken) {
+            this.#authenticated(this.accessToken);
+        }
         return this.accessToken != null;
     }
 
@@ -241,5 +248,18 @@ export default class HttpClient {
         }
         const token = await response.json();
         return token;
+    }
+
+    async #authenticated(token: AccessToken) {
+        const data: UserInfo = {
+            permissions: token.permissions
+        }
+
+        const event: UserAuthenticatedEvent = new CustomEvent(AUTHENTICATED_EVENT_NAME, {
+            detail: data
+        })
+
+        document.dispatchEvent(event);
+
     }
 }

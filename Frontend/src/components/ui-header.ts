@@ -1,7 +1,7 @@
-import HttpClient from "../api_client/http_client.js";
+import HttpClient, { AUTHENTICATED_EVENT_NAME } from "../api_client/http_client.js";
 import { Permissions } from "../constants.js";
 import { getDocumentLangCode, hasPermissions, LANG_EN, removeChildren } from "../helpers.js";
-
+import { UserAuthenticatedEvent } from "../models/common.js";
 
 class Header extends HTMLElement {
     client: HttpClient;
@@ -12,9 +12,6 @@ class Header extends HTMLElement {
         super();
         this.client = new HttpClient();
     }
-
-
-
 
     async connectedCallback() {
         const hasLanguageOptions: boolean =
@@ -66,7 +63,6 @@ class Header extends HTMLElement {
         });
     }
 
-
     #getProfileBtn(permissions: Permissions | null): HTMLElement {
         if (!permissions) {
             // Permissions are null, so user is logged out
@@ -81,10 +77,17 @@ class Header extends HTMLElement {
 
             loginBtn.appendChild(loggedOutIcon);
 
-            loginBtn.addEventListener("click", e => {
+            loginBtn.addEventListener("click", (e) => {
                 e.preventDefault();
                 this.login();
-            })
+            });
+
+            document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
+                const typed = e as UserAuthenticatedEvent;
+                if (typed) {
+                    this.resetProfileBtn(typed.detail.permissions);
+                }
+            });
             return loginBtn;
         }
 
@@ -114,7 +117,7 @@ class Header extends HTMLElement {
 
         const logoutLink = document.createElement("a");
         logoutLink.href = "#";
-        logoutLink.className = "color-red"
+        logoutLink.className = "color-red";
         logoutLink.innerText = isFinnish ? "Kirjaudu ulos" : "Logout";
 
         profileBtn.appendChild(profileIcon);
@@ -126,15 +129,14 @@ class Header extends HTMLElement {
         }
         btnContainer.appendChild(logoutLink);
 
-
-        profileBtn.addEventListener("click", _ => {
+        profileBtn.addEventListener("click", (_) => {
             this.profileDropdown();
         });
 
-        logoutLink.addEventListener("click", e => {
+        logoutLink.addEventListener("click", (e) => {
             e.preventDefault();
             this.logout();
-        })
+        });
         return profileBtn;
     }
 
@@ -168,8 +170,6 @@ class Header extends HTMLElement {
 
     async login() {
         try {
-
-
             const token = await this.client.login();
             if (token) {
                 console.log("Login successful.");
@@ -196,7 +196,7 @@ class Header extends HTMLElement {
         }
     }
 
-    setHttpClient(client: HttpClient){
+    setHttpClient(client: HttpClient) {
         this.client = client;
     }
 
@@ -213,7 +213,6 @@ class Header extends HTMLElement {
         }
         return this.#add_path_correction("admin/admin.html");
     }
-
 
     #add_path_correction(path: string): string {
         /* Path depth should be positive number
@@ -252,8 +251,6 @@ class Header extends HTMLElement {
         result.innerText = isFinnish ? "Ylläpito" : "Administration";
         return result;
     }
-
-    
 }
 
 function profileDropdown(): void {

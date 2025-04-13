@@ -2,7 +2,7 @@ import { Permissions, SERVER_STATUS as SERVER_STATUS } from "../constants.js";
 
 export type UserInfo = {
     permissions: Permissions;
-}
+};
 
 export type ApiAction = {
     description: string;
@@ -28,7 +28,7 @@ export type IdObject = {
 
 export type GuidIdObject = {
     id: string;
-}
+};
 
 export type RowsAffected = {
     rowsAffected: number;
@@ -37,5 +37,11 @@ export type RowsAffected = {
 export type MessageResponse = {
     message: string;
     details: string | null;
-    applicationError: SERVER_STATUS
+    applicationError: SERVER_STATUS;
+};
+
+export interface UserAuthenticated {
+    permissions: Permissions;
 }
+
+export type UserAuthenticatedEvent = CustomEvent<UserAuthenticated>;
