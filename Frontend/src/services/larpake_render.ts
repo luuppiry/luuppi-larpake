@@ -238,6 +238,7 @@ export class LarpakeRenderer {
 
         // Update button states
         this.previousBtn.disabled = this.currentPage === 0;
+        this.nextBtn.disabled = this.pages.length == 0;
 
         // Update buttons
         removeChildren(this.taskContainer);
