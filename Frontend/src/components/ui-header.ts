@@ -95,18 +95,18 @@ class Header extends HTMLElement {
         const isFinnish = getDocumentLangCode() !== LANG_EN;
 
         // Create base structure
-        const profileBtn = document.createElement("div");
-        profileBtn.className = "menu-icon header-profile-btn";
-        profileBtn.id = "ui-header-profile-btn";
+        const profileDropdown = document.createElement("div");
+        profileDropdown.className = "menu-icon header-profile-btn";
+        profileDropdown.id = "ui-header-profile-btn";
 
         const profileIcon = document.createElement("img");
         profileIcon.className = "header-icon";
         profileIcon.src = "/icons/profile-icon.png";
         profileIcon.height = 30;
 
-        const btnContainer = document.createElement("div");
-        btnContainer.id = "profile-dropdown";
-        btnContainer.className = "_btn-container profile-dropdown";
+        const dropdown = document.createElement("div");
+        dropdown.id = "profile-dropdown";
+        dropdown.className = "_btn-container profile-dropdown";
 
         // Create buttons
         const profileLink = document.createElement("a");
@@ -120,24 +120,37 @@ class Header extends HTMLElement {
         logoutLink.className = "color-red";
         logoutLink.innerText = isFinnish ? "Kirjaudu ulos" : "Logout";
 
-        profileBtn.appendChild(profileIcon);
-        profileBtn.appendChild(btnContainer);
+        profileDropdown.appendChild(profileIcon);
+        profileDropdown.appendChild(dropdown);
 
-        btnContainer.appendChild(profileLink);
+        dropdown.appendChild(profileLink);
         if (adminLink) {
-            btnContainer.appendChild(adminLink);
+            dropdown.appendChild(adminLink);
         }
-        btnContainer.appendChild(logoutLink);
+        dropdown.appendChild(logoutLink);
 
-        profileBtn.addEventListener("click", (_) => {
-            this.profileDropdown();
+        profileDropdown.addEventListener("click", (_) => {
+            this.toggleProfileDropdown();
+        });
+
+        document.addEventListener("click", (e) => {
+            const target = e.target as Node;
+            if (!target) {
+                return;
+            }
+            if (dropdown.style.display === "none"){
+                return;
+            }
+            if (!profileDropdown.contains(target)) {
+                dropdown.style.display = "none"
+            }
         });
 
         logoutLink.addEventListener("click", (e) => {
             e.preventDefault();
             this.logout();
         });
-        return profileBtn;
+        return profileDropdown;
     }
 
     // Runs when object is disconnected from DOM
@@ -152,9 +165,10 @@ class Header extends HTMLElement {
         changeLanguage();
     }
 
-    profileDropdown() {
+    toggleProfileDropdown() {
         profileDropdown();
     }
+
 
     resetProfileBtn(permissions: Permissions | null) {
         const container = this.querySelector<HTMLElement>("._profile-container");
@@ -326,7 +340,7 @@ function toggleSidePanelOutsider(nameOverride: string | null = null): void {
 }
 
 function closeDropdownOutside(event: MouseEvent): void {
-    const profileDropdown = document.getElementById("profileDropdown");
+    const profileDropdown = document.getElementById("profile-dropdown");
     const profileBtn = document.getElementById("ui-header-profile-btn");
 
     if (!profileDropdown || !profileBtn) return;
