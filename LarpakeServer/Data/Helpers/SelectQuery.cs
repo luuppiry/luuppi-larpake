@@ -3,6 +3,13 @@
 
 internal class SelectQuery
 {
+    internal enum ConditionOperand
+    {
+        And,
+        Or
+    }
+
+
     readonly StringBuilder _builder = new();
     bool _hasWhere = false;
 
@@ -21,7 +28,7 @@ internal class SelectQuery
     /// Automatically chooses whether to append WHERE or AND if already conditions appended.
     /// </summary>
     /// <param name="condition"></param>
-    internal virtual SelectQuery AppendConditionLine(string condition)
+    internal virtual SelectQuery AppendConditionLine(string condition, ConditionOperand operand = ConditionOperand.And)
     {
         if (_hasWhere is false)
         {
@@ -30,11 +37,17 @@ internal class SelectQuery
         }
         else
         {
-            _builder.Append("AND ");
+            _builder.Append(operand switch
+            {
+                ConditionOperand.And => "AND ",
+                ConditionOperand.Or => "OR ",
+                _ => "AND "
+            });
         }
         _builder.AppendLine(condition);
         return this;
     }
+
     internal string Build()
     {
         return _builder.ToString();
@@ -48,7 +61,7 @@ internal class SelectQuery
     {
         /* These functions should not do anything */
 
-        internal override NullQuery AppendConditionLine(string condition)
+        internal override NullQuery AppendConditionLine(string condition, ConditionOperand operand = ConditionOperand.And)
         {
             return this;
         }
@@ -63,7 +76,7 @@ internal class SelectQuery
     {
         return If(condition is true);
     }
-    
+
     public SelectQuery IfFalse(bool? condition)
     {
         return If(condition is false);

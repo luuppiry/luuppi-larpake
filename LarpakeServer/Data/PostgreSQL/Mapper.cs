@@ -1,7 +1,6 @@
 ﻿using LarpakeServer.Extensions;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using Npgsql;
-using System.Diagnostics;
 
 namespace LarpakeServer.Data.PostgreSQL;
 

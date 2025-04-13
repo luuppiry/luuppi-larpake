@@ -1,6 +1,6 @@
-import { isEmpty, LANG_EN, LANG_FI } from "../helpers";
-import { LarpakeTask, Section } from "../models/larpake";
-import TaskEditor from "./task-editor";
+import { isEmpty, LANG_EN, LANG_FI } from "../helpers.js";
+import { LarpakeTask, Section } from "../models/larpake.js";
+import TaskEditor from "./task-editor.js";
 
 const idStart = "section-editor-";
 

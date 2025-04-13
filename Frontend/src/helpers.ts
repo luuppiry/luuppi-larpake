@@ -1,10 +1,14 @@
-import { LarpakeTask, Section } from "./models/larpake";
+import { Q_PARAM, Q_STATUS } from "./constants.js";
+import { PermissionCollection } from "./models/user.js";
 
 export const LANG_FI = "fi";
 export const LANG_EN = "en";
 export const LANG_ATTRIBUTE_NAME = "lang";
 
-export default function mapChildren<T>(children: HTMLCollection, func: (elem: Element) => T | null): T[] {
+export default function mapChildren<T>(
+    children: HTMLCollection,
+    func: (elem: Element) => T | null
+): T[] {
     /* Generic method to map children */
     const result: T[] = [];
     for (let i = 0; i < children.length; i++) {
@@ -31,7 +35,10 @@ export function ThrowIfNull<T>(value: T) {
     }
 }
 
-export function ToDictionary<TKey, TValue>(values: TValue[], selector: (value: TValue) => TKey): Map<TKey, TValue[]> {
+export function ToDictionary<TKey, TValue>(
+    values: TValue[],
+    selector: (value: TValue) => TKey
+): Map<TKey, TValue[]> {
     const result = new Map<TKey, TValue[]>();
     values.forEach((x) => {
         const key = selector(x);
@@ -55,55 +62,18 @@ export function ToOverwriteDictionary<TKey, TValue>(
     return result;
 }
 
-export function SectionSortFunc(first: Section, second: Section): number {
-    /* Sort by
-     * - bigger ordering weight
-     * - bigger id
-     */
-
-    if (first.orderingWeightNumber > second.orderingWeightNumber) {
-        return -1;
-    }
-    if (second.orderingWeightNumber < first.orderingWeightNumber) {
-        return 1;
-    }
-    return first.id > second.id ? 1 : -1;
-}
-
-export function TaskSortFunc(first: LarpakeTask, second: LarpakeTask): number {
-    /* Sort by
-     * - bigger ordering weight
-     * - bigger id
-     */
-
-    if (first.orderingWeightNumber > second.orderingWeightNumber) {
-        return -1;
-    }
-    if (second.orderingWeightNumber < first.orderingWeightNumber) {
-        return 1;
-    }
-    return first.id > second.id ? 1 : -1;
-}
-
 export function getInputNumericByDocId(fieldName: string) {
     return parseInt((document.getElementById(fieldName) as HTMLInputElement)?.value);
 }
 
-export function overwriteQueryParam(name: string, value: string) {
-    const pieced = window.location.href.split("?");
-    const url = pieced[0];
+export function pushUrlState(manipulate: (params: URLSearchParams) => void) {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
 
-    const params = new URLSearchParams();
-    params.append(name, value);
+    manipulate(params);
 
-    // Change page url without reloading. Good for changes in query parameters
-    window.history.pushState(
-        {
-            change: `update page url with query param  '${name}': '${value}'`,
-        },
-        "",
-        `${url}?${params}`
-    );
+    url.search = params.toString();
+    window.history.pushState({}, "", url);
 }
 
 export function formatDate(date: Date) {
@@ -120,7 +90,7 @@ export function formatDate(date: Date) {
 }
 
 export function formatDateTime(date: Date) {
-    const day = formatTime(date);
+    const day = formatDate(date);
     const time = formatTime(date);
     return `${day} ${time}`;
 }
@@ -143,16 +113,45 @@ export function getDocumentLangCode() {
     return document.documentElement.lang == LANG_EN ? LANG_EN : LANG_FI;
 }
 
-export function removeChildren(elem: HTMLElement) {
+type LangObject = {
+    languageCode: string;
+};
+
+export function getMatchingLangObject<T>(
+    textData: LangObject[] | null,
+    lang: string | null = null
+): T | null {
+    if (!textData) {
+        return null;
+    }
+    lang ??= getDocumentLangCode();
+
+    const matching = textData.filter((x) => x.languageCode === lang)[0];
+    if (matching) {
+        return matching as T;
+    }
+    const finnish = textData.filter((x) => x.languageCode === LANG_FI)[0];
+    if (finnish) {
+        return finnish as T;
+    }
+    return textData[0] as T;
+}
+
+export function removeChildren(
+    elem: HTMLElement,
+    predicate: null | ((elem: Element) => boolean) = null
+) {
     const children = [...elem.children];
     for (const child of children) {
-        elem.removeChild(child);
+        if (predicate == null || predicate(child)) {
+            elem.removeChild(child);
+        }
     }
 }
 
-export function throwIfAnyNull(elems: HTMLElement[]) {
+export function throwIfAnyNull(elems: (HTMLElement | null)[]) {
     for (const elem of elems) {
-        if (elem == null) {
+        if (!elem) {
             throw new Error("Element cannot be null");
         }
     }
@@ -169,6 +168,100 @@ export function encodeArrayToQueryString(key: string, array: string[]): string {
     return array.map((x) => `${key}=${encodeURIComponent(x)}`).join("&");
 }
 
-export function getSearchParams(){
+export function appendSearchArray(query: URLSearchParams, key: string, values: string[]) {
+    values.forEach((x) => {
+        query.append(key, x);
+    });
+}
+
+export function getSearchParams() {
     return new URLSearchParams(new URL(window.location.href).search);
+}
+
+export function showOkDialog(
+    id: string,
+    afterClose: null | (() => void) = null
+): HTMLDialogElement {
+    const dialog = document.getElementById(id) as HTMLDialogElement;
+    dialog.showModal();
+    dialog.querySelector<HTMLButtonElement>("._ok")?.addEventListener("click", (_) => {
+        dialog.close();
+        if (afterClose) {
+            afterClose();
+        }
+    });
+    return dialog;
+}
+
+export function toRole(
+    permissions: number,
+    table: PermissionCollection | null,
+    lang: string | null = null
+): string {
+    table ??= getDefaultPermissionsTable();
+    lang ??= getDocumentLangCode();
+    const isFinnish = lang !== LANG_EN;
+
+    if (permissions >= table.roles.sudo) {
+        return "Sudo";
+    }
+    if (permissions >= table.roles.admin) {
+        return "Admin";
+    }
+    if (permissions >= table.roles.tutor) {
+        return "Tutor";
+    }
+    if (permissions >= table.roles.freshman) {
+        return isFinnish ? "Fuksi" : "Freshman";
+    }
+    return isFinnish ? "Ei roolia" : "No role";
+}
+
+export enum Role {
+    Freshman = 6,
+    Tutor = 766,
+    Admin = 4194302,
+    Sudo = 2147483647,
+}
+
+export function hasRole(
+    permissions: number,
+    role: Role,
+    table: PermissionCollection | null = null
+) {
+    table ??= getDefaultPermissionsTable();
+    if (role === Role.Sudo) {
+        return permissions >= table.roles.sudo;
+    }
+    if (role === Role.Admin) {
+        return permissions >= table.roles.admin;
+    }
+    if (role === Role.Tutor) {
+        return permissions >= table.roles.tutor;
+    }
+    if (role === Role.Freshman) {
+        return permissions >= table.roles.freshman;
+    }
+    throw new Error("Invalid role type");
+}
+
+export function redirect404Page(missingParamName: string | null = null) {
+    const params = new URLSearchParams();
+    if (missingParamName) {
+        params.set(Q_STATUS, "MissingRequiredParam");
+        params.set(Q_PARAM, missingParamName);
+    }
+
+    window.location.href = `404.html?${Q_STATUS}=`;
+}
+
+function getDefaultPermissionsTable(): PermissionCollection {
+    return {
+        roles: {
+            freshman: Role.Freshman as number,
+            tutor: Role.Tutor as number,
+            admin: Role.Admin as number,
+            sudo: Role.Sudo as number,
+        },
+    };
 }

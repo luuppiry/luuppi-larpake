@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Luuppi - Lärpäke</title>
+        <link rel="stylesheet" href="/styles/own_groups.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+    </head>
+    <body>
+        <template id="freshman-template">
+            <li>
+                <div>
+                    <h3>
+                        <span class="_first-name">Etunimi</span>
+                        <span class="_last-name">Sukunimi</span>
+                        (<span class="_username">käyttäjänimi</span>)
+                    </h3>
+                </div>
+            </li>
+        </template>
+
+        <template id="tutor-template">
+            <li>
+                <div>
+                    <h3>
+                        <span class="_first-name">Etunimi</span>
+                        <span class="_last-name">Sukunimi</span>
+                        (<span class="_username">käyttäjänimi</span>)
+                    </h3>
+                    <p>
+                        <span>Opiskeluvuosi:</span>
+                        <span class="_start-year">20XX</span>
+                    </p>
+
+                    <p>
+                        <span>Kotoisin:</span>
+                        <span class="_from">Kotikaupunki</span>
+                    </p>
+                    <p>
+                        <span>Lempitapahtuma:</span>
+                        <span class="_from">ATK-YTP, aina (tää on placeholder)</span>
+                    </p>
+                </div>
+                <img src="/gambina-profiili-kuva.png" alt="Tuutorin profiilikuva" />
+            </li>
+        </template>
+
+        <template id="group-template">
+            <li>
+                <form-container>
+                    <article>
+                        <h4>
+                            <span class="_group-name">Ryhmän nimi</span> (<span
+                                class="_group-number"
+                                >XX</span
+                            >)
+                        </h4>
+                        <ul class="_tutors"></ul>
+                        <ul class="_freshmen"></ul>
+                    </article>
+                </form-container>
+            </li>
+        </template>
+
+        <ui-header></ui-header>
+        <side-panel lang="fi"></side-panel>
+        <h2>Omat ryhmät</h2>
+        <ul id="group-container"></ul>
+
+        <script type="module" src="/src/own_groups.js"></script>
+    </body>
+</html>

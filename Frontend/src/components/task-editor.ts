@@ -1,5 +1,7 @@
-import { isEmpty, LANG_EN, LANG_FI } from "../helpers";
-import { LarpakeTask } from "../models/larpake";
+import { isEmpty, LANG_EN, LANG_FI, throwIfAnyNull } from "../helpers.js";
+import { LarpakeTask } from "../models/larpake.js";
+
+const ID_START = "task-editor-";
 
 export default class TaskEditor extends HTMLElement {
     titleFiField: HTMLInputElement | null = null;
@@ -22,15 +24,18 @@ export default class TaskEditor extends HTMLElement {
         const idNum = this.idNumber;
 
         const header = `
-            <div id="task-${idNum}-header" class="task-header">
+            <div class="_header task-header">
                 <div class="task-header-titles">
-                    <h4 id="task-${idNum}-header-title">Title</h4>
+                    <h4 >
+                        <span class="_index"></span>
+                        <span class="_header-title">Title</span>
+                    </h4>
                     <p>&HorizontalLine;</p>
-                    <p id="task-${idNum}-header-points">Xp</p>
-                    <img id="delete-task-${idNum}-btn" src="/icons/bin.svg" alt="delete icon" />
+                    <p class="_header-points">Xp</p>
+                    <img class="_delete" src="/icons/bin.svg" alt="delete icon" />
                     <p class="_cancelled hidden">&HorizontalLine; (PERUUTETTU)</p>
                 </div>
-                <img id="task-${idNum}-opened-img" src="/icons/menu_closed.svg" alt="menu closed icon" />
+                <img class="_opened" src="/icons/menu_closed.svg" alt="menu closed icon" />
             </div>
             `;
 
@@ -48,7 +53,7 @@ export default class TaskEditor extends HTMLElement {
                     <input
                         id="task-${idNum}-points"
                         name="points"
-                        class="text-field start-year-field"
+                        class="_points text-field start-year-field"
                         type="number"
                         min="1"
                         max="100"
@@ -68,8 +73,8 @@ export default class TaskEditor extends HTMLElement {
                         <label for="task-${idNum}-title-fi">Otsikko</label>
                         <input
                             id="task-${idNum}-title-fi"
-                            name="title-en"
-                            class="text-field"
+                            name="title-fi"
+                            class="_title-fi text-field"
                             placeholder="otsikko suomeksi"
                             maxlength="80"
                             minlength="5"
@@ -81,7 +86,7 @@ export default class TaskEditor extends HTMLElement {
                         <textarea
                             id="task-${idNum}-body-fi"
                             name="body-fi"
-                            class="description-field text-field"
+                            class="_body-fi description-field text-field"
                             placeholder="kuvaus suomeksi"
                             maxlength="800"
                         ></textarea>
@@ -95,7 +100,7 @@ export default class TaskEditor extends HTMLElement {
                         <input
                             id="task-${idNum}-title-en"
                             name="title-en"
-                            class="text-field"
+                            class="_title-en text-field"
                             placeholder="title in english"
                             maxlength="80"
                             minlength="5"
@@ -107,7 +112,7 @@ export default class TaskEditor extends HTMLElement {
                         <textarea
                             id="task-${idNum}-body-en"
                             name="body-en"
-                            class="description-field text-field"
+                            class="_body-en description-field text-field"
                             placeholder="body in english"
                             maxlength="800"
                         ></textarea>
@@ -119,30 +124,39 @@ export default class TaskEditor extends HTMLElement {
         this.innerHTML = `
         <li class="task">
             ${header}
-            <div id="task-${idNum}-content" class="task-content">
+            <div class="_content task-content">
                 ${commonInfo}
                 ${localizedInfo}
             </div>
         </li>
         `;
 
-        this.id = `task-editor-${idNum}`;
-        this.titleFiField = document.getElementById(`task-${idNum}-title-fi`) as HTMLInputElement;
-        this.titleEnField = document.getElementById(`task-${idNum}-title-en`) as HTMLInputElement;
-        this.bodyFiField = document.getElementById(`task-${idNum}-body-fi`) as HTMLTextAreaElement;
-        this.bodyEnField = document.getElementById(`task-${idNum}-body-en`) as HTMLTextAreaElement;
-        this.pointsField = document.getElementById(`task-${idNum}-points`) as HTMLInputElement;
-        this.headerTitleField = document.getElementById(`task-${idNum}-header-title`) as HTMLHeadingElement;
-        this.headerPointsField = document.getElementById(`task-${idNum}-header-points`) as HTMLParagraphElement;
+        this.id = `${ID_START}${idNum}`;
+        this.titleEnField = this.querySelector<HTMLInputElement>("._title-en");
+        this.titleFiField = this.querySelector<HTMLInputElement>("._title-fi");
+        this.bodyFiField = this.querySelector<HTMLTextAreaElement>("._body-fi");
+        this.bodyEnField = this.querySelector<HTMLTextAreaElement>("._body-en");
+        this.pointsField = this.querySelector<HTMLInputElement>("._points");
+        this.headerTitleField = this.querySelector<HTMLHeadingElement>("._header-title");
+        this.headerPointsField = this.querySelector<HTMLParagraphElement>("._header-points");
+        this.querySelector<HTMLSpanElement>("._index")!.innerText = idNum.toString();
+
+        throwIfAnyNull([
+            this.titleFiField,
+            this.titleEnField,
+            this.bodyFiField,
+            this.bodyEnField,
+            this.pointsField,
+            this.headerTitleField,
+            this.headerPointsField,
+        ]);
     }
 
     disconnectedCallback() {}
 
     getAvailableIdNum() {
-        const idStart = "task-editor-";
-
         let i = 0;
-        while (document.getElementById(`${idStart}${i}`) != null) {
+        while (document.getElementById(`${ID_START}${i}`) != null) {
             if (i > 1000) {
                 console.log(`Low on available task editor ids, currently searching ${i}`);
             }
@@ -158,47 +172,36 @@ export default class TaskEditor extends HTMLElement {
         const textFi = data.textData.filter((x) => x.languageCode == LANG_FI)[0];
         const textEn = data.textData.filter((x) => x.languageCode == LANG_EN)[0];
 
-        if (this.titleFiField) {
-            this.titleFiField.value = textFi?.title ?? "";
+        if (!textEn?.title) {
+            console.log("on");
         }
-        if (this.titleEnField) {
-            this.titleEnField.value = textEn?.title ?? "";
-        }
-        if (this.bodyFiField) {
-            this.bodyFiField.value = textFi?.body ?? "";
-        }
-        if (this.bodyEnField) {
-            this.bodyEnField.value = textEn?.body ?? "";
-        }
-        if (this.pointsField) {
-            this.pointsField.value = data.points.toString();
-        }
-        if (this.headerTitleField) {
-            this.headerTitleField.innerText = textFi?.title ?? "Uusi tehtävä";
-        }
-        if (this.headerPointsField) {
-            this.headerPointsField.innerText = `${data.points}p`;
-        }
-        if (data.cancelledAt != null) {
+
+        this.titleFiField!.value = textFi?.title ?? "";
+        this.titleEnField!.value = textEn?.title ?? "";
+        this.bodyFiField!.value = textFi?.body ?? "";
+        this.bodyEnField!.value = textEn?.body ?? "";
+        this.pointsField!.value = data.points.toString();
+        this.headerTitleField!.innerText = textFi?.title ?? "Uusi tehtävä";
+        this.headerPointsField!.innerText = `${data.points}p`;
+        
+        if (data.cancelledAt){
             this.querySelector("._cancelled")?.classList.remove("hidden");
         }
+        
     }
 
     addEventListeners() {
-        const header = document.getElementById(`task-${this.idNumber}-header`);
-        header?.addEventListener("click", (_) => {
+        this.querySelector<HTMLElement>("._header")?.addEventListener("click", (_) => {
             // Change content visibility
-            const content = document.getElementById(`task-${this.idNumber}-content`) as HTMLElement;
+            const content = this.querySelector<HTMLElement>("._content")!;
             const isOpen = content.style.display === "block";
             content.style.display = isOpen ? "none" : "block";
 
             // Flip header opened icon
-            const isOpenedImg = document.getElementById(`task-${this.idNumber}-opened-img`);
-            isOpenedImg?.classList.toggle("rotate-180deg");
+            this.querySelector("._opened")?.classList.toggle("rotate-180deg");
         });
 
-        const deleteBtn = document.getElementById(`delete-task-${this.idNumber}-btn`);
-        deleteBtn?.addEventListener("click", (event) => {
+        this.querySelector<HTMLElement>("._delete")?.addEventListener("click", (event) => {
             this.parentElement?.removeChild(this);
             event.stopPropagation(); // To no route click to parent handlers
         });
@@ -221,6 +224,15 @@ export default class TaskEditor extends HTMLElement {
         const points = parseInt(this.pointsField!.value);
         if (Number.isNaN(points)) {
             throw new Error(`Task ${this.idNumber} points must have numeric value`);
+        }
+
+        if (isEmpty(this.titleEnField?.value)) {
+            console.log("");
+        }
+
+        if (this.idNumber == 33){
+            console.log("");
+
         }
 
         return {
@@ -252,7 +264,7 @@ if ("customElements" in window) {
 }
 
 export function addTaskEventListeners() {
-    let editors = document.getElementsByClassName("task-header");
+    let editors = document.getElementsByClassName("._header");
     for (let i = 0; i < editors.length; i++) {
         if (editors[i] instanceof TaskEditor) {
             (editors[i] as TaskEditor).addEventListeners();

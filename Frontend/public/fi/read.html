@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Luuppi - Lärpäke</title>
+        <link rel="stylesheet" href="/styles/read.css" />
+        <script src="https://rawgit.com/sitepoint-editors/jsqrcode/master/src/qr_packed.js"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+    </head>
+    <body>
+        <ui-header></ui-header>
+        <side-panel lang="fi"></side-panel>
+        <div class="container flex-col hor-center-content">
+            <div id="larpake-page-name">Lärpäke / Kirjaa</div>
+            <h1 id="event-title">Allekirjoita tehtävä</h1>
+            <div class="qr-section">
+                <p id="qr-section-text-1">Lue QR-koodi puhelimesi avulla</p>
+                <a id="btn-scan-qr">
+                    <img src="/icons/camera-icon.png" class="cursor-pointer hover-scale" />
+                </a>
+
+                <canvas hidden="" id="qr-canvas"></canvas>
+                <div id="qr-result" hidden=""></div>
+                <p id="qr-section-text-2">tai syötä 6-merkkinen koodi</p>
+                <form >
+                    <div class="box-container">
+                        <input id="first-char-field" class="_char box hover-scale" maxlength="1"></input>
+                        <input class="_char box hover-scale" maxlength="1"></input>
+                        <input class="_char box hover-scale" maxlength="1"></input>
+                        <input class="_char box hover-scale" maxlength="1"></input>
+                        <input class="_char box hover-scale" maxlength="1"></input>
+                        <input class="_char box hover-scale" maxlength="1"></input>
+                    </div>
+
+                    <button id="submit-btn" class="submit-button primary-btn hover-scale-03">Kirjaa</button>
+                </form>
+            </div>
+        </div>
+        <script type="module" src="/src/read.js"></script>
+    </body>
+</html>

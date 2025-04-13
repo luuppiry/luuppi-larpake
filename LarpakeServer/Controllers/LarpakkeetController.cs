@@ -57,7 +57,7 @@ public class LarpakkeetController : ExtendedControllerBase
         LarpakeetGetDto result = LarpakeetGetDto
             .MapFrom(records)
             .AppendPaging(options);
-        
+
         if (isLimitedSearch)
         {
             result.Details.Add("Search limited outside search by title.");
@@ -91,7 +91,7 @@ public class LarpakkeetController : ExtendedControllerBase
     public async Task<IActionResult> Get(long larpakeId)
     {
         var record = await _db.GetLarpake(larpakeId);
-        return record is null 
+        return record is null
             ? IdNotFound() : Ok(record);
     }
 
@@ -104,6 +104,29 @@ public class LarpakkeetController : ExtendedControllerBase
         LarpakeSectionsGetDto result = LarpakeSectionsGetDto.MapFrom(sections);
         result.SetNextPaginationPage(options);
         return Ok(result);
+    }
+
+    [HttpGet("section/{sectionId}")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetSectionById(long sectionId)
+    {
+        bool isSelfOnlySearch = GetRequestPermissions().Has(Permissions.ReadAllData) is false;
+
+        LarpakeSection? section;
+        if (isSelfOnlySearch)
+        {
+            Guid userId = GetRequestUserId();
+            section = await _db.GetSectionsByIdAndUser(sectionId, userId);
+            return section is null
+                ? IdNotFound() : Ok(section);
+        }
+        else
+        {
+            // Admin can see all sections
+            section = await _db.GetSection(sectionId);
+            return section is null
+                ? IdNotFound() : Ok(section);
+        }
     }
 
 

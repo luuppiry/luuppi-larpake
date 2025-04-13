@@ -35,11 +35,11 @@ class FormContainer extends HTMLElement {
         this.innerHTML = `
         <div class="hor-center-content">
             <!-- Default max width is 1400px -->
-            <div class="section" style="max-width: 1400px">
+            <div class="section">
                 <div class="stripe"></div>
                 <div class="section-filler">
                     <!-- Container for elements and correct expansion, do not remove -->
-                    <div>
+                    <div class="form-container-padding">
                         <!-- Content -->
                         ${content}
                     </div>

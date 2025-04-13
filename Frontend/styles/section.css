@@ -8,7 +8,7 @@
 .section {
     /*  */
     width: 100%;
-    max-width: 600px;
+    max-width: 1400px;
     background-color: #ffffff;
     border-radius: 10px;
     overflow: hidden;
@@ -29,9 +29,13 @@
     flex-grow: 1;
     flex-shrink: 1;
     flex-basis: auto;
-    padding: 30px 30px 50px 30px;
     display: flex;
     flex-flow: column;
+}
+
+/* Set padding if not not prevented */
+.form-container-padding {
+    padding: 30px 30px 50px 30px;
 }
 
 .stripe {
@@ -39,4 +43,9 @@
     flex-shrink: 0;
     width: 5px;
     background-color: var(--luuppi-blue);
+}
+
+/* Note that .section-shadow .section must have space between to work */
+.shadow .section {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }

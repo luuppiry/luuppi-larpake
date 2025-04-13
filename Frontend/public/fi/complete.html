@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Luuppi - Lärpäke</title>
+        <link rel="stylesheet" href="/styles/complete.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+    </head>
+    <body>
+        <dialog id="success-dialog" class="default-shadow">
+            <section>
+                <h1>Suoritus merkitty</h1>
+                <p>Tehtävän suoritus merkittiin onnistuneesti viitteellä:</p>
+                <p class="_id">viite</p>
+                <button class="_ok primary-btn hover-scale cursor-pointer">OK</button>
+            </section>
+        </dialog>
+        <ui-header></ui-header>
+        <side-panel></side-panel>
+        <form-container class="no-pad">
+            <section id="info">
+                <h2>Merkitse suoritetuksi</h2>
+                <h3 class="section-title">Käyttäjälle:</h3>
+                <p class="section-value">
+                    <span class="_first-name">etunimi</span>
+                    <span class="_last-name">sukunimi</span>
+                    (<span class="_username">käyttäjänimi</span>)
+                </p>
+
+                <h3 class="section-title">Tehtävä:</h3>
+                <p class="section-value">
+                    <span class="_task">Tehtävän nimi</span>
+                    (<span class="_points">X</span><span>P</span>)
+                </p>
+                <p class="_completed hidden">Tehtävä on jo suoritettu!</p>
+                <div class="btn-container">
+                    <button id="cancel-btn" class="secondary-btn hover-scale cursor-pointer">
+                        Peruuta
+                    </button>
+                    <button class="_submit submit primary-btn hover-scale cursor-pointer" disabled>
+                        Hyväksy
+                    </button>
+                </div>
+            </section>
+        </form-container>
+    </body>
+    <script type="module" src="/src/complete.js"></script>
+</html>

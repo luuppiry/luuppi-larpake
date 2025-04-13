@@ -1,0 +1,21 @@
+/* Input type for input with specific amount of characters.
+ * Every character is its own input 
+ */ 
+
+.box-container {
+    display: flex;
+    width: fit-content;
+    gap: 1px;
+    margin: 0 auto; /* Center the box-container */
+}
+
+.box {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border: 2px solid var(--text-border);
+    font-size: 20px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    font-weight: 600;
+}

@@ -1,9 +1,15 @@
-﻿using LarpakeServer.Data.Helpers;
+﻿using Dapper;
+using LarpakeServer.Controllers;
+using LarpakeServer.Data.Helpers;
 using LarpakeServer.Extensions;
+using LarpakeServer.Models.Collections;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Npgsql;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -30,18 +36,13 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         SelectQuery query = new();
         query.AppendLine($"""
-            SELECT 
+            SELECT DISTINCT ON (g.id)
                 g.id,
                 g.larpake_id,
                 g.name,
                 g.group_number,
                 g.created_at,
-                g.updated_at,
-                m.group_id,
-                m.user_id,
-                m.is_hidden,
-                m.is_competing,
-                m.joined_at
+                g.updated_at
             FROM freshman_groups g
                 LEFT JOIN freshman_group_members m
                     ON g.id = m.group_id
@@ -52,7 +53,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         AddWhereClauses(ref query, options);
 
         query.AppendLine($"""
-            ORDER BY l.year ASC, g.larpake_id, g.group_number ASC
+            ORDER BY g.id, g.larpake_id, g.group_number ASC
             LIMIT @{nameof(options.PageSize)} 
             OFFSET @{nameof(options.PageOffset)}
             """);
@@ -60,23 +61,31 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         string q = query.ToString();
 
         using var connection = GetConnection();
-        Dictionary<long, FreshmanGroup> groups = [];
-        await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>(
-            query.ToString(),
-            (group, member) =>
-            {
-                FreshmanGroup resultGroup = groups.GetOrAdd(group.Id, group)!;
-                if (member is not null)
-                {
-                    resultGroup.Members ??= [];
-                    resultGroup.Members.Add(member);
-                }
-                return resultGroup;
-            },
-            options,
-            splitOn: "group_id");
 
-        return groups.Values.ToArray();
+        var rawGroups = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
+        var groups = rawGroups.ToArray();
+
+        var rawMembers = await connection.QueryAsync<FreshmanGroupMember>($"""
+            SELECT 
+                m.group_id,
+                m.user_id,
+                m.is_hidden,
+                m.is_competing,
+                m.joined_at
+            FROM freshman_group_members m
+            WHERE group_id = ANY(@Ids);
+            """, new { Ids = groups.Select(x => x.Id).ToArray() });
+
+        // Map members to groups
+        Dictionary<long, List<FreshmanGroupMember>> memberMap = rawMembers.GroupBy(x => x.GroupId).ToDictionary(x => x.Key, x => x.ToList());
+        foreach (var group in groups)
+        {
+            if (memberMap.TryGetValue(group.Id, out var value))
+            {
+                group.Members = value;
+            }
+        }
+        return groups;
     }
 
 
@@ -114,34 +123,47 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
     private static void AddWhereClauses(ref SelectQuery query, in FreshmanGroupQueryOptions options)
     {
+        SelectQuery.ConditionOperand operand = options.IsORQuery ?
+            SelectQuery.ConditionOperand.Or : SelectQuery.ConditionOperand.And;
+
+        // Are hidden members included?
+        query.IfFalse(options.IncludeHiddenMembers).AppendConditionLine($"""
+            m.is_hidden IS FALSE
+            """);
+
         // Search only groups user is in
         query.IfNotNull(options.ContainsUser).AppendConditionLine($"""
             m.user_id = @{nameof(options.ContainsUser)}
-            """);
+            """, operand);
 
         // Match groups with name including case-insensitive string
-        query.IfNotNull(options.GroupName).AppendConditionLine($"""
-            g.name ILIKE %@{nameof(options.GroupName)}%
-            """);
+        query.IfNotNull(options.GroupNameSearchValue).AppendConditionLine($"""
+            g.name ILIKE @{nameof(options.GroupNameSearchValue)}
+            """, operand);
 
         // Match groups with specific start year
         query.IfNotNull(options.StartYear).AppendConditionLine($"""
             l.year = @{nameof(options.StartYear)}
-            """);
-
-        // Are hidden members included?
-        query.IfFalse(options.IncludeHiddenMembers).AppendConditionLine($"""
-            m.is_hidden IS NOT TRUE
-            """);
+            """, operand);
 
         // Is participating in larpake
         query.IfNotNull(options.LarpakeId).AppendConditionLine($"""
             g.larpake_id = @{nameof(options.LarpakeId)}
-            """);
+            """, operand);
 
-        query.IfNotNull(options.IsCompeting).AppendConditionLine($"""
-            m.is_competing = @{nameof(options.IsCompeting)}
-            """);
+        // Group number
+        query.IfNotNull(options.GroupNumber).AppendConditionLine($"""
+            g.group_number = @{nameof(options.GroupNumber)}
+            """, operand);
+
+        // User search
+        query.IfNotNull(options.ContainsUser)
+          .IfNotNull(options.IsSearchMemberCompeting)
+          .AppendConditionLine($"""
+                m.is_competing = @{nameof(options.IsSearchMemberCompeting)}
+                """, operand);
+
+
     }
 
     public async Task<FreshmanGroup?> GetGroup(long id)
@@ -150,7 +172,19 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         FreshmanGroup? result = null;
         await connection.QueryAsync<FreshmanGroup, FreshmanGroupMember, FreshmanGroup>($"""
-            SELECT * FROM freshman_groups g
+            SELECT 
+                g.id,
+                g.larpake_id,
+                g.name,
+                g.group_number,
+                g.created_at,
+                g.updated_at,
+                m.group_id,
+                m.user_id,
+                m.is_hidden,
+                m.is_competing,
+                m.joined_at
+            FROM freshman_groups g
             LEFT JOIN freshman_group_members m
                 ON g.id = m.group_id
             WHERE g.id = @{nameof(id)};
@@ -166,12 +200,12 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 return group;
             },
             new { id },
-            splitOn: "id");
+            splitOn: "group_id");
 
         return result;
     }
 
-    public async Task<Guid[]?> GetMembers(long id)
+    public async Task<Guid[]?> GetMemberIds(long id)
     {
         using var connection = GetConnection();
         var members = await connection.QueryAsync<Guid>($"""
@@ -263,10 +297,13 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             VALUES (
                 @{nameof(InsertModel2.Id)},
                 @{nameof(InsertModel2.UserId)},
-                @{nameof(InsertModel2.IsHidden)}
+                @{nameof(InsertModel2.IsHidden)},
                 FALSE
             )
-            ON CONFLICT DO NOTHING;
+            ON CONFLICT (group_id, user_id) DO UPDATE
+                SET 
+                    is_competing = FALSE,
+                    is_hidden = @{nameof(InsertModel2.IsHidden)};
             """,
                 records);
         }
@@ -291,7 +328,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                     group_number = @{nameof(record.GroupNumber)},
                     updated_at = NOW()
                 WHERE id = @{nameof(record.Id)}
-                """);
+                """, record);
         }
         catch (PostgresException ex)
         {
@@ -321,13 +358,15 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
     public async Task<int> DeleteMembers(long id, Guid[] members)
     {
+        Logger.LogTrace("Deleting members {ids} from group {id}", members, id);
+
         using var connection = GetConnection();
         return await connection.ExecuteAsync($"""
             DELETE FROM freshman_group_members
             WHERE group_id = @{nameof(id)}
-                AND user_id IN (@{nameof(members)});
+                AND user_id IN (@x);
             """,
-            new { id, members });
+            members.Select(x => new { id, x }));
     }
 
     public async Task<Result<string>> GetInviteKey(long groupId)
@@ -338,7 +377,7 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
 
         // Get or update if null
         string? key = await connection.ExecuteScalarAsync<string>($"""
-            UDPATE freshman_groups 
+            UPDATE freshman_groups 
             SET 
                 invite_key = COALESCE(invite_key, @{nameof(newKey)}),
                 updated_at = CASE 
@@ -349,12 +388,15 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                     ELSE invite_key_changed_at END
             WHERE id = @{nameof(groupId)}
             RETURNING invite_key;
-            """, new { newKey });
+            """, new { newKey, groupId });
 
         if (key is null)
         {
+            Logger.LogTrace("Failed to retrieve invite key for group {id}", groupId);
             return Error.NotFound("Group not found.");
         }
+
+        Logger.LogTrace("Retrieved invite key {key} for group {id}", key, groupId);
         return key;
     }
 
@@ -368,6 +410,8 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         {
             return Error.BadRequest("Invalid invite key length.");
         }
+
+        Logger.LogTrace("Adding user {id} to group with invite key {key}", userId, inviteKey);
 
         try
         {
@@ -383,7 +427,8 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 @{nameof(userId)},
                 TRUE
             FROM freshman_groups
-            WHERE invite_key = @{nameof(inviteKey)};
+            WHERE invite_key = @{nameof(inviteKey)}
+            ON CONFLICT DO NOTHING;
             """, new { inviteKey, userId });
         }
         catch (NpgsqlException ex)
@@ -396,27 +441,114 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
         }
     }
 
+    public async Task<GroupInfo?> GetGroupByInviteKey(string inviteKey)
+    {
+        if (inviteKey is null)
+        {
+            return null;
+        }
+        if (inviteKey.Length != _keyService.KeyLength)
+        {
+            return null;
+        }
+
+        Logger.LogTrace("Retrieving information for group with invite key {key}", inviteKey);
+
+        using var connection = GetConnection();
+        return await connection.QueryFirstOrDefaultAsync<GroupInfo>($"""
+            SELECT 
+                larpake_id,
+                name,
+                group_number
+            FROM freshman_groups
+                WHERE invite_key = @{nameof(inviteKey)}
+            LIMIT 1;
+            """, new { inviteKey });
+    }
+
     public async Task<Result<string>> RefreshInviteKey(long groupId)
     {
         // Get group invite key or create new if null
         string newKey = _keyService.GenerateKey();
         using var connection = GetConnection();
 
+        Logger.LogTrace("Overwrite group {id} invite key with new value {key}", groupId, newKey);
+
         // Get or update if null
         string? key = await connection.ExecuteScalarAsync<string>($"""
-            UDPATE freshman_groups 
+            UPDATE freshman_groups 
             SET 
                 invite_key = @{nameof(newKey)},
                 updated_at = NOW(),
                 invite_key_changed_at = NOW()
             WHERE id = @{nameof(groupId)}
             RETURNING invite_key;
-            """, new { newKey });
+            """, new { newKey, groupId });
 
         if (key is null)
         {
             return Error.NotFound("Group not found.");
         }
         return key;
+    }
+
+
+
+    record struct Member(long GroupId, Guid UserId, bool IsHidden, bool IsCompeting);
+
+    public async Task<RawGroupMemberCollection[]> GetMembers(long[] groupIds, Guid userId, bool includeHidden)
+    {
+        using var connection = GetConnection();
+
+        SelectQuery query = new();
+        query.AppendLine($"""
+            SELECT 
+                g.id AS group_id,
+                m.user_id,
+                m.is_hidden,
+                m.is_competing
+            FROM freshman_groups g
+                LEFT JOIN freshman_group_members m
+                    ON g.id = m.group_id
+            """);
+
+        query.AppendConditionLine($"""
+            g.id = ANY(
+                SELECT group_id FROM freshman_group_members
+                    WHERE group_id = ANY(@{nameof(groupIds)})
+                        AND user_id = @{nameof(userId)}
+            )
+            """);
+
+        query.IfFalse(includeHidden).AppendConditionLine($"""
+            m.is_hidden = FALSE
+            """);
+
+
+
+        string parsed = query.ToString();
+        var records = await connection.QueryAsync<Member>(parsed, new { groupIds, userId });
+
+        Dictionary<long, RawGroupMemberCollection> memberMap = [];
+        foreach (var user in records)
+        {
+            RawGroupMemberCollection? container = memberMap.GetOrAdd(user.GroupId, new(user.GroupId))
+                ?? throw new UnreachableException("Container should never be null.");
+
+            if (user.UserId == Guid.Empty)
+            {
+                continue;
+            }
+            if (user.IsCompeting)
+            {
+                container.Members.Add(user.UserId);
+            }
+            else
+            {
+                container.Tutors.Add(user.UserId);
+            }
+        }
+
+        return memberMap.Values.ToArray();
     }
 }

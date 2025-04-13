@@ -1,111 +1,131 @@
-type Group = {
-    id: number;
-    groupNumber: number;
-    title: string;
-    larpakeId: number;
-};
+import GroupClient from "../api_client/group_client.js";
+import { Q_GROUP_ID, Q_PAGE_OFFSET, Q_PAGE_SIZE, Q_SEARCH } from "../constants.js";
+import {
+    appendTemplateElement,
+    getSearchParams,
+    isEmpty,
+    pushUrlState,
+    removeChildren,
+    throwIfAnyNull,
+} from "../helpers.js";
+import { Group } from "../models/user.js";
+import { groupSortFunc } from "../sortFunctions.js";
 
-let data: Group[] = [
-    {
-        id: 1,
-        groupNumber: 4,
-        title: "Superfuksit",
-        larpakeId: 1,
-    },
-    {
-        id: 2,
-        groupNumber: 11,
-        title: "Apollo 11",
-        larpakeId: 1,
-    },
-    {
-        id: 3,
-        groupNumber: 2,
-        title: "G-fuksit",
-        larpakeId: 2,
-    },
-];
+const PAGE_SIZE = 15;
+const DEBOUNCH_TIMEOUT = 500;
 
-const container = document.getElementById("groups-container") as HTMLUListElement;
-if (container == null) {
-    throw new Error("Group container is null, check naming.");
-}
+const groupClient = new GroupClient();
 
-const groupTemplate = document.getElementById("group-template") as HTMLTemplateElement;
-if (groupTemplate == null) {
-    throw new Error("Group template is null, check naming");
-}
+class GroupSelector {
+    prevBtn: HTMLButtonElement;
+    nextBtn: HTMLButtonElement;
+    container: HTMLUListElement;
+    searchField: HTMLInputElement;
+    offset: number;
+    pageSize: number;
+    search: string | null;
+    isLastPage: boolean = true;
+    debounchTimerId: NodeJS.Timeout | null = null;
 
-const addBtnTemplate = document.getElementById("add-new-template") as HTMLTemplateElement;
-if (addBtnTemplate == null) {
-    throw new Error("Group template is null, check naming");
-}
+    constructor(offset: number, size: number, search: string | null) {
+        this.prevBtn = document.getElementById("prev-btn") as HTMLButtonElement;
+        this.nextBtn = document.getElementById("next-btn") as HTMLButtonElement;
+        this.container = document.getElementById("groups-container") as HTMLUListElement;
+        this.searchField = document.getElementById("search") as HTMLInputElement;
+        throwIfAnyNull([this.prevBtn, this.nextBtn, this.container]);
 
-function main() {
-    // Sort by LärpäkeId, then GroupNumber
-    data.sort((first, second) => {
-        if (first.larpakeId > second.larpakeId) {
-            return 1;
+        this.offset = offset;
+        this.pageSize = size;
+        this.search = search;
+
+        this.nextBtn.addEventListener("click", (_) => {
+            this.next();
+        });
+
+        this.prevBtn.addEventListener("click", (_) => {
+            this.previous();
+        });
+
+        this.searchField.addEventListener("input", (_) => {
+            clearTimeout(this.debounchTimerId ?? undefined);
+
+            this.debounchTimerId = setTimeout(() => {
+                this.search = this.searchField.value;
+                this.render();
+            }, DEBOUNCH_TIMEOUT);
+        });
+    }
+
+    async next() {
+        if (this.isLastPage) {
+            return;
         }
-        if (first.larpakeId < second.larpakeId) {
-            return -1;
-        }
-        if (first.groupNumber == second.groupNumber) {
-            return 0;
-        }
-        return first.groupNumber < second.groupNumber ? -1 : 1;
-    });
 
-    if (data.length > 0) {
-        // Remove any existing children
-        let child = container.firstElementChild;
-        while (child != null) {
-            container.removeChild(child);
-            child = container.firstElementChild;
-        }
+        this.offset = this.offset + this.pageSize;
+        this.render();
     }
 
-    data.forEach(setData);
-    appendAddNew();
+    async previous() {
+        this.offset = this.offset - this.pageSize;
+        this.render();
+    }
+
+    async render() {
+        const groups = await groupClient.getGroupsPaged(
+            false,
+            isEmpty(this.search) ? null : this.search,
+            this.pageSize,
+            this.offset,
+            true
+        );
+        if (!groups) {
+            throw new Error("Failed to fetch groups");
+        }
+
+        if (groups.data.length > 0) {
+            // Remove any existing children
+            removeChildren(this.container, (x) => !x.classList.contains("_no-remove"));
+        }
+
+        removeChildren(this.container, (x) => !x.classList.contains("_no-remove"));
+        groups.data.sort(groupSortFunc).forEach((x) => this.#setData(x, this.container));
+
+        this.isLastPage = groups.nextPage < 0;
+        this.prevBtn.disabled = !(this.offset > 0);
+        this.nextBtn.disabled = this.isLastPage;
+
+        pushUrlState((x) => {
+            x.set(Q_PAGE_OFFSET, this.offset.toString());
+            x.set(Q_PAGE_SIZE, this.pageSize.toString());
+            if (this.search) {
+                x.set(Q_SEARCH, this.search);
+            } else {
+                x.delete(Q_SEARCH);
+            }
+        });
+    }
+
+    #setData(group: Group, container: HTMLElement) {
+        const elem = appendTemplateElement<Element>("group-template", container);
+
+        elem.querySelector<HTMLAnchorElement>(".link")!.href = `group_manager.html?${Q_GROUP_ID}=${group.id}`;
+        elem.querySelector<HTMLElement>("._group-name")!.innerText = group.name;
+        elem.querySelector<HTMLElement>("._group-number")!.innerText = `(${group.groupNumber})`;
+        elem.querySelector<HTMLElement>("._group-id")!.innerText = `Id: ${group.id}`;
+        elem.querySelector<HTMLElement>("._larpake")!.innerText = `Lärpäke: ${group.larpakeId}`;
+    }
 }
 
-function setData(group: Group) {
-    const fragment = document.importNode(groupTemplate.content, true);
-    container.appendChild(fragment);
-    const node = container.children[container.children.length - 1];
+async function main() {
+    const params = getSearchParams();
+    const offset = parseInt(params.get(Q_PAGE_OFFSET) ?? "0");
+    const size = parseInt(params.get(Q_PAGE_SIZE) ?? PAGE_SIZE.toString());
+    const search = params.get(Q_SEARCH);
 
-    const link = node.querySelector(".link") as HTMLAnchorElement;
-    if (link) {
-        link.href = `group_manager.html?groupId=${group.id}`;
-    }
-
-    const groupField = node.querySelector("._group-title") as HTMLElement;
-    if (groupField) {
-        groupField.innerText = group.title;
-    }
-
-    const numberField = node.querySelector("._group-number") as HTMLElement;
-    if (numberField) {
-        const num = group.groupNumber.toString();
-        numberField.innerText = `(${num})`;
-    }
-
-    const idField = node.querySelector("._group-id") as HTMLElement;
-    if (idField) {
-        const id = group.id.toString();
-        idField.innerText = `Id: ${id}`;
-    }
-
-    const larpakeField = node.querySelector("._larpake") as HTMLElement;
-    if (larpakeField) {
-        const larpake = group.larpakeId.toString();
-        larpakeField.innerText = `Lärpäke: ${larpake}`;
-    }
+    const selector = new GroupSelector(offset, size, search);
+    selector.render();
 }
 
-function appendAddNew() {
-    const fragment = document.importNode(addBtnTemplate.content, true);
-    container.appendChild(fragment);
-}
+
 
 main();

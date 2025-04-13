@@ -14,4 +14,5 @@ public interface IAttendanceDatabase
     Task<Result<AttendedCreated>> Complete(CompletionMetadata completion);
     Task<Result<int>> Uncomplete(Guid userId, long eventId);
     Task<int> Clean();
+    Task<Attendance?> GetByKey(string key);
 }

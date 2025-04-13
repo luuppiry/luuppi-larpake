@@ -1,17 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script>
-        if (!Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"))){
-            window.location.replace("unauthorized.html");
-        }
-    </script>
-</head>
-<body>
-    <p>Note: this page is not wired up and is static</p>
-    
-</body>
+<html lang="fi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <script>
+            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
+                window.location.replace("unauthorized.html");
+            }
+        </script>
+        <link rel="stylesheet" href="/styles/admin/user_manager.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+    </head>
+    <body>
+        <dialog id="user-dialog">
+            <form-container>
+                <header>
+                    <h2 class="dialog-title">Muokkaa käyttäjätietoja</h2>
+                </header>
+
+                <section class="dialog-content">
+                    <h3>Sähköposti</h3>
+                    <p class="_email"></p>
+                    <h3>Käyttäjänimi</h3>
+                    <p class="_username"></p>
+                    <h3>Etunimi</h3>
+                    <p class="_first-name"></p>
+                    <h3>Sukunimi</h3>
+                    <p class="_last-name"></p>
+                    <h3>Oikeudet (Rooli)</h3>
+                    <p><i>Tarkistathan, että ole antamassa oikeuksia oikealle henkilöille!</i></p>
+                    <input class="_permissions text-field" type="number" />
+                    <h3>Aloitusvuosi</h3>
+                    <input class="_start-year text-field" type="number" />
+                    <h3>Id (Lärpäkkeen sisäinen tunniste)</h3>
+                    <p class="_id"></p>
+                    <h3>Entra id (luuppi käyttäjä tunniste)</h3>
+                    <p class="_entra-id"></p>
+                </section>
+                <footer>
+                    <button class="_ok primary-btn">Tallenna</button>
+                    <button class="_cancel secondary-btn">Peruuta</button>
+                </footer>
+            </form-container>
+        </dialog>
+
+        <dialog id="error-dialog">
+            <h2>Päivittäminen epäonnistui!</h2>
+            <p class="_message">error message</p>
+            <button class="_ok primary-btn">OK</button>
+        </dialog>
+
+        <dialog id="success-dialog">
+            <h2>Tietojen päivittäminen onnistui!</h2>
+            <p class="_message">success message</p>
+            <button class="_ok primary-btn">OK</button>
+        </dialog>
+        <template id="user-template">
+            <tr>
+                <td class="_email">email</td>
+                <td class="_username">username</td>
+                <td class="_first-name">first name</td>
+                <td class="_last-name">last name</td>
+                <td class="_permissions">X</td>
+                <td class="_start-year"></td>
+                <td class="_id"></td>
+                <td class="_entra-id"></td>
+            </tr>
+        </template>
+        <template id="role-template">
+            <tr class="permission-value">
+                <td class="_role">RoleName</td>
+                <td class="_value">X</td>
+            </tr>
+        </template>
+
+        <ui-header path-depth="1"></ui-header>
+        <side-panel path-depth="1"></side-panel>
+        <div class="top-level-container">
+            <section class="content">
+                <div class="page-information">
+                    <h2>Käyttäjien ylläpito</h2>
+                    <div class="permissions-notice">
+                        <p class="permissions-info">
+                            Oikeuksien päivittäminen tulee tulevaisuudessa selkeytymään, mutta
+                            kirjoittamisen hetkellä (22.3.2025 klo 2.12) oikeuksien antamisessa
+                            tulee noudattaa sivulla näkyvää taulukkoa. Jos tämän tekstin
+                            kirjoittamisesta on kulunut kauan (yli 1kk) suosittelen varmistamaan
+                            oikeat arvot kehitystiimiltä, sillä numerot eivät ole vain "random"
+                            arvoja, vaan jokainen bitti merkitsee oikeutta.
+                        </p>
+                        <table class="permissions-table">
+                            <tbody id="permissions-container">
+                                <tr class="column-titles permission-value">
+                                    <th>Rooli</th>
+                                    <th>Arvo</th>
+                                </tr>
+                                <tr>
+                                    <td class="permission-value" colspan="2">
+                                        Arvojen hakeminen epäonnistui
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="search">
+                        <p>
+                            Selaa järjestelmän käyttäjiä ja muokkaa oikeuksia. Haulla voit etsiä
+                            käyttäjää sähköpostin, tunnisteen, luuppi tunnisteen, aloitusvuoden,
+                            nimien tai oikeuksien perusteella.
+                        </p>
+                        <input
+                            id="search-field"
+                            class="search-field"
+                            type="search"
+                            placeholder="Hae"
+                        />
+                    </div>
+                </div>
+                <div class="user-table-padding">
+                    <table class="user-table">
+                        <tbody id="user-container">
+                            <tr class="column-titles">
+                                <th>Sähköposti</th>
+                                <th>Käyttäjänimi</th>
+                                <th>Etunimi</th>
+                                <th>Sukunimi</th>
+                                <th>Oikeudet</th>
+                                <th>Aloitusvuosi</th>
+                                <th>Id</th>
+                                <th>Entra Id</th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="table-footer">
+                    <p class="item-counter">
+                        <span id="from-count">X</span>
+                        <span>-</span>
+                        <span id="to-count">Y</span>
+                        <span>/</span>
+                        <span id="out-of">MAX</span>
+                    </p>
+                    <div class="table-navigation">
+                        <button id="prev-btn" class="primary-btn hover-scale select-none" disabled>
+                            &lt;
+                        </button>
+                        <button id="next-btn" class="primary-btn hover-scale select-none">
+                            &gt;
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </body>
+    <script type="module" src="/src/admin/user_manager.js"></script>
 </html>

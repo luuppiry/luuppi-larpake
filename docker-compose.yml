@@ -1,5 +1,11 @@
 # Postgres port 5501 or 5432 (default)
-# Api port 5502 or 8080 (default)
+# Api port 5002 or 8080 (default)
+
+# Workflow
+# 1) Start postgres container (larpake_pg_production)
+# 2) Create database users with shell script (larpake_pg_create_users)
+# 3) Build migrations client and run migrations (larpake_migrations_production)
+# 4) Build vite, Build web API and run API with static vite serving (larpake_api_production)
 
 services:
     larpake_pg_production:
@@ -40,8 +46,6 @@ services:
         depends_on:
             larpake_pg_production:
                 condition: service_started
-        
-
 
     larpake_migrations_production:
         container_name: larpake_migrations_production
@@ -52,7 +56,6 @@ services:
         environment:
             - PG_CONNECTION_STRING=${POSTGRES_MIGRATIONS_CONNECTION_STRING}
 
-
         depends_on:
             larpake_pg_create_users:
                 condition: service_completed_successfully
@@ -61,8 +64,19 @@ services:
         container_name: larpake_api_production
         env_file: ".env"
         image: luuppi.azurecr.io/larpake-prod:latest
+        # Uncomment following if you want to build the image locally
+        #
+        # build:
+        #     dockerfile: api.Dockerfile
+        #     args:
+        #       VITE_API_BASE_URL: ${API_BASE_URL}
+        #       VITE_ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID}
+        #       VITE_ENTRA_TEDANT_ID: ${ENTRA_TEDANT_ID}
+        #       VITE_ENTRA_SERVER: ${ENTRA_SERVER_NAME}
+        #       VITE_ENTRA_SCOPE: ${ENTRA_AUTH_SCOPE}
+        #       VITE_ENTRA_REDIRECT_URL: ${FRONTEND_AUTH_REDIRECT_URL}
         ports:
-            - "127.0.0.1:5502:8080"
+            - "127.0.0.1:5002:8080"
         networks:
             - weba-network
         environment:
@@ -74,11 +88,15 @@ services:
             - LARPAKE_ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
             - LARPAKE_JWT_ISSUER=${JWT_ISSUER}
             - LARPAKE_JWT_AUDIENCE=${JWT_AUDIENCE}
+            - VITE_API_BASE_URL=${API_BASE_URL}
+            - VITE_ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
+            - VITE_ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
+            - VITE_ENTRA_SERVER=${ENTRA_SERVER_NAME}
+            - VITE_ENTRA_SCOPE=${ENTRA_AUTH_SCOPE}
+            - VITE_ENTRA_REDIRECT_URL=${FRONTEND_AUTH_REDIRECT_URL}
         depends_on:
             larpake_migrations_production:
                 condition: service_completed_successfully
-
-
 
 volumes:
     larpake-pg-data:

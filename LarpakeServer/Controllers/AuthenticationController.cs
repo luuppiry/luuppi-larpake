@@ -31,7 +31,7 @@ public class AuthenticationController : ExtendedControllerBase
         Refresh,
         Register
     }
-    record TokenInfo(string Message, string AccessToken, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt, string TokenType = "Bearer", string Action = "None");
+    record TokenInfo(string Message, string AccessToken, Permissions Permissions, DateTime AccessTokenExpiresAt, DateTime RefreshTokenExpiresAt, string TokenType = "Bearer", string Action = "None");
 
 
     public AuthenticationController(
@@ -192,6 +192,9 @@ public class AuthenticationController : ExtendedControllerBase
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         int rowsAffected = await _refreshTokenDb.RevokeUserTokens(userId);
+
+        Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
+
         return OkRowsAffected(rowsAffected);
     }
 
@@ -203,6 +206,9 @@ public class AuthenticationController : ExtendedControllerBase
     public async Task<IActionResult> InvalidateTokenFamily(Guid tokenFamily)
     {
         int rowsAffected = await _refreshTokenDb.RevokeFamily(tokenFamily);
+
+        Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
+
         return OkRowsAffected(rowsAffected);
     }
 
@@ -243,6 +249,7 @@ public class AuthenticationController : ExtendedControllerBase
         TokenInfo tokenInfo = new(
             Message: "Refresh token cookie set, access token in body.",
             AccessToken: tokens.AccessToken,
+            Permissions: user.Permissions,
             AccessTokenExpiresAt: tokens.AccessTokenExpiresAt.Value,
             RefreshTokenExpiresAt: tokens.RefreshTokenExpiresAt.Value,
             Action: action switch

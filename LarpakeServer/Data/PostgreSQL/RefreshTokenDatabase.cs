@@ -132,12 +132,12 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
         return await ValidateAndRevoke(token, connection);
     }
 
-    public Task<int> RevokeUserTokens(Guid userId)
+    public async Task<int> RevokeUserTokens(Guid userId)
     {
         Logger.LogInformation("Revoking all tokens for user {id}.", userId);
 
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             UPDATE refresh_tokens
             SET invalidated_at = NOW()
             WHERE user_id = @{nameof(userId)};

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Luuppi - Lärpäke</title>
+        <link rel="stylesheet" href="/styles/task_info.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+    </head>
+    <body>
+        <ui-header></ui-header>
+        <side-panel lang="fi"></side-panel>
+        <section id="event-container" class="container">
+            <h2 class="section-path">
+                <span>Lärpäke</span>
+                <span class="_name"></span>
+            </h2>
+            <h3 class="_title title">Tehtävän otsikko</h3>
+            <p class="_updated updated">Päivitetty: N/A</p>
+            <p class="_description">Lyhyt koonti tehtävästä...</p>
+            <div id="qr-container" class="qr-container">
+                <p>Näytä QR-koodia tutorille kirjataksesi osallistumisesi</p>
+                <p id="cancelled-label" class="hidden cancelled">TEHTÄVÄ ON PERUUTETTU</p>
+                <div class="qr hover-scale-01">
+                    <img
+                        class="_qr-code qr-code"
+                        src="/qr-placeholder.png"
+                        alt="QR koodi suorituksen kirjaamiseksi"
+                    />
+                    <img class="_not-found not-found no-interact" src="/icons/over-x.svg" />
+                </div>
+                <p>tai käytä koodia</p>
+                <div class="code-container">
+                    <p class="_copied copied default-shadow no-interact">Kopioitu</p>
+                    <p class="_code code cursor-pointer hover-scale"></p>
+                </div>
+            </div>
+        </section>
+        <section class="container">
+            <div class="events-section">
+                <h2>Aiheeseen liittyvät:</h2>
+                <ul>
+                    <li>Tämä toiminto ei ole vielä toiminnassa.</li>
+                </ul>
+            </div>
+        </section>
+        <script type="module" src="/src/task_info.js"></script>
+    </body>
+</html>

@@ -21,18 +21,24 @@ namespace LarpakeServer.Controllers;
 public class AttendancesController : ExtendedControllerBase
 {
     readonly IAttendanceDatabase _db;
+    private readonly UserService _userService;
     readonly CompletionMessageService _messageService;
+    readonly ILarpakeTaskDatabase _taskDb;
     readonly AttendanceKeyOptions _keyOptions;
 
     public AttendancesController(
         IAttendanceDatabase db,
+        UserService userService,
         CompletionMessageService messageService,
         IClaimsReader claimsReader,
         IOptions<AttendanceKeyOptions> keyOptions,
+        ILarpakeTaskDatabase taskDb,
         ILogger<AttendancesController> logger) : base(claimsReader, logger)
     {
         _db = db;
+        _userService = userService;
         _messageService = messageService;
+        _taskDb = taskDb;
         _keyOptions = keyOptions.Value;
     }
 
@@ -63,9 +69,52 @@ public class AttendancesController : ExtendedControllerBase
     }
 
 
+    [HttpGet("{key}")]
+    [RequiresPermissions(Permissions.CompleteAttendance)]
+    [ProducesResponseType<FatAttendanceGetDto>(200)]
+    [ProducesResponseType<ErrorMessageResponse>(400)]
+    [ProducesResponseType(404)]
+    public async Task<IActionResult> Get(string key, CancellationToken token)
+    {
+        if (key.StartsWith(_keyOptions.Header))
+        {
+            key = key.Replace(_keyOptions.Header, "");
+        }
+
+        if (key.Length != _keyOptions.KeyLength)
+        {
+            return BadRequest($"Invalid key format, pass only {_keyOptions.KeyLength} characters.", error: ErrorCode.InvalidId);
+        }
+
+        Attendance? record = await _db.GetByKey(key);
+        if (record is null)
+        {
+            return IdNotFound();
+        }
+
+        Result<UserGetDto> user = await _userService.GetFullUser(record.UserId, token);
+        LarpakeTask? task = await _taskDb.GetTask(record.LarpakeTaskId);
+
+        if (user.IsError)
+        {
+            return InternalServerError("Referenced user was not found.", ErrorCode.InvalidDatabaseState);
+        }
+        if (task is null)
+        {
+            return InternalServerError("Referenced task was not found.", ErrorCode.InvalidDatabaseState);
+        }
+
+        var attendance = FatAttendanceGetDto.From(record, (UserGetDto)user, task);
+        return Ok(attendance);
+    }
+
+
     [HttpPost("{eventId}")]
     [RequiresPermissions(Permissions.AttendEvent)]
-    [ProducesResponseType(typeof(AttendanceGetDto), 200)]
+    [ProducesResponseType(typeof(AttendanceKey), 200)]
+    [ProducesResponseType(typeof(ErrorMessageResponse), 400)]
+    [ProducesResponseType(typeof(ErrorMessageResponse), 403)]
+    [ProducesResponseType(typeof(ErrorMessageResponse), 500)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GenerateAttendanceKey(long eventId)
     {
@@ -131,9 +180,9 @@ public class AttendancesController : ExtendedControllerBase
         {
             return BadRequest("User cannot sign their own attendance.");
         }
-        
+
         var record = CompletionMetadata.From(dto, signerId);
-        
+
         Result<AttendedCreated> completed = await _db.Complete(record);
         if (completed)
         {
@@ -151,7 +200,7 @@ public class AttendancesController : ExtendedControllerBase
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
-        
+
         Result<int> result = await _db.Uncomplete(dto.UserId, dto.EventId);
 
         _logger.IfPositive((int)result)

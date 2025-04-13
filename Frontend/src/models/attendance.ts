@@ -1,3 +1,6 @@
+import { LarpakeTask } from "./larpake.js";
+import { User } from "./user.js";
+
 export type Completion = {
     id: string;
     signerId: string;
@@ -5,18 +8,30 @@ export type Completion = {
     completedAt: Date;
     createdAt: Date;
     updatedAt: Date;
-}
+};
 
 export type AttendanceKey = {
+    key: string;
     qrCodeKey: string;
     keyInvalidAt: Date;
-}
+};
 
 export type Attendance = {
     userId: string;
-    larpakeEventId: number;
+    larpakeTaskId: number;
     completed: Completion | null;
     createdAt: Date;
     updatedAt: Date;
     key: AttendanceKey | null;
-}
+};
+
+export type FatAttendance = {
+    userId: string;
+    larpakeTaskId: number;
+    completed: Completion | null;
+    createdAt: Date;
+    updatedAt: Date;
+    key: AttendanceKey | null;
+    user: User;
+    task: LarpakeTask;
+};

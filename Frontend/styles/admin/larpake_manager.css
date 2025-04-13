@@ -7,6 +7,10 @@
     --hover-white: #eee;
 }
 
+body {
+    padding-bottom: 100px
+}
+
 .larpake-divider {
     display: flex;
     flex-flow: row;

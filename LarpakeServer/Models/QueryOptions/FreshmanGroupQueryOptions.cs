@@ -11,13 +11,12 @@ public class FreshmanGroupQueryOptions : QueryOptions
     public Guid? ContainsUser { get; set; }
     public int? StartYear { get; set; }
     public long? LarpakeId { get; set; }
+    public int? GroupNumber { get; set; }
     public bool DoMinimize { get; set; } = true;
-    public bool? IsCompeting { get; set; }
+    public bool? IsSearchMemberCompeting { get; set; }
+    public bool IncludeHiddenMembers { get; set; } = true;
+    public bool IsORQuery { get; set; } = false;
 
     [JsonIgnore]
-    public bool IncludeHiddenMembers { get; set; } = false;
-
-
-
-
+    public string? GroupNameSearchValue => GroupName is null ? null : $"%{GroupName}%";
 }

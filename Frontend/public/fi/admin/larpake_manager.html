@@ -5,9 +5,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Lärpäke - Admin</title>
         <link rel="stylesheet" href="/styles/admin/larpake_manager.css" />
-        <script src="/src/components/side-panel.ts"></script>
-        <script src="/src/components/form-container.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
         <script>
             if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
                 window.location.replace("unauthorized.html");
@@ -17,7 +17,8 @@
     <dialog id="common-data-saved-dialog" class="max-width-400">
         <h1>Yleiset tiedot tallennettu</h1>
         <p>
-            Lärpäkkeen yleiset tiedot (otsikko, vuosi, kuvaus) on tallennettu järjestelmään. Huomaa, että osioita ja
+            Lärpäkkeen yleiset tiedot (otsikko, vuosi, kuvaus) on tallennettu järjestelmään. Huomaa,
+            että osioita ja
             <b>tehtäviä ei tallennettu nyt</b>.
         </p>
         <button class="_close-btn primary-btn align-right hover-scale">OK</button>
@@ -26,7 +27,8 @@
         <h1>Tehtävät tallennettu</h1>
         <p>
             Lärpäkkeen osiot ja tehtävät on tallennettu järjestelmään. Huomaa, että Lärpäkkeen
-            <b>yleisiä tietoja ei tallennettu nyt. </b> Yleisiä tietoja ovat esim. Lärpäkkeen otsikko tai vuosi.
+            <b>yleisiä tietoja ei tallennettu nyt. </b> Yleisiä tietoja ovat esim. Lärpäkkeen
+            otsikko tai vuosi.
         </p>
         <button class="_close-btn primary-btn align-right hover-scale">OK</button>
     </dialog>
@@ -41,28 +43,31 @@
     <dialog id="invalid-data-dialog" class="max-width-400 border-red">
         <h1>Puuttuvia arvoja</h1>
         <p>
-            Jotkin arvot ovat joko väärässä formaatissa tai puuttuvat kokonaan. Katso konsolia lisätietoja varten (F12
-            -> konsoli).
+            Jotkin arvot ovat joko väärässä formaatissa tai puuttuvat kokonaan. Katso konsolia
+            lisätietoja varten (F12 -> konsoli).
         </p>
         <button class="_close-btn primary-btn align-right hover-scale">OK</button>
     </dialog>
     <dialog id="action-failed" class="max-width-400 border-red">
         <h1>Viimeisin toiminto kusi!</h1>
-        <p>Jotain meni pieleen viimeisimmässä toiminnossa... Katso konsolia lisätietoja varten (F12 -> konsoli).</p>
+        <p>
+            Jotain meni pieleen viimeisimmässä toiminnossa... Katso konsolia lisätietoja varten (F12
+            -> konsoli).
+        </p>
         <button class="_close-btn primary-btn align-right hover-scale">OK</button>
     </dialog>
 
-    <body style="margin-bottom: 100px">
+    <body >
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
         <form-container>
             <form style="padding: 20px">
                 <h2>Muokkaa Yleisiä Tietoja</h2>
                 <p>
-                    Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tämäm osion muokkaaminen ei vaikuta
-                    käyttäjätietoihin eivätkä esimerkiksi osallistumiset poistu olemassa olevista tapahtumista. Huomaa,
-                    että eri kielille on määritelty omat osionsa. Arvon tyhjäksi jättäminen määrittää oletusarvon
-                    käytettäväksi.
+                    Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tämäm osion
+                    muokkaaminen ei vaikuta käyttäjätietoihin eivätkä esimerkiksi osallistumiset
+                    poistu olemassa olevista tapahtumista. Huomaa, että eri kielille on määritelty
+                    omat osionsa. Arvon tyhjäksi jättäminen määrittää oletusarvon käytettäväksi.
                 </p>
 
                 <div class="field">
@@ -130,8 +135,20 @@
                 </div>
                 <div class="send-options">
                     <!-- type="button" to disable any default action -->
-                    <button type="button" id="common-info-cancel-btn" class="secondary-btn hover-scale">Peruuta</button>
-                    <button type="button" id="common-info-submit-btn" class="primary-btn hover-scale">Lähetä</button>
+                    <button
+                        type="button"
+                        id="common-info-cancel-btn"
+                        class="secondary-btn hover-scale"
+                    >
+                        Peruuta
+                    </button>
+                    <button
+                        type="button"
+                        id="common-info-submit-btn"
+                        class="primary-btn hover-scale"
+                    >
+                        Lähetä
+                    </button>
                 </div>
             </form>
         </form-container>
@@ -141,9 +158,10 @@
                 <div style="padding: 20px">
                     <h2>Osiot Ja Tehtävät</h2>
                     <p>
-                        HUOM! VOIT MENETTÄÄ TIETOJA! Osion poistaminen poistaa myös kaikki sen tehtävät, jolloin dataa
-                        katoaa. Nämä muutokset näkyvät julkisesti muokaamassasi Lärpäkkeessä. Tehtävän poistaminen ei
-                        poista tehtävää järjestelmästä, mutta poistaa siitä saatavat pisteet ja merkitsee sen
+                        HUOM! VOIT MENETTÄÄ TIETOJA! Osion poistaminen poistaa myös kaikki sen
+                        tehtävät, jolloin dataa katoaa. Nämä muutokset näkyvät julkisesti
+                        muokaamassasi Lärpäkkeessä. Tehtävän poistaminen ei poista tehtävää
+                        järjestelmästä, mutta poistaa siitä saatavat pisteet ja merkitsee sen
                         peruutetuksi.
                     </p>
                     <ol id="section-container" class="section-list">
@@ -153,12 +171,16 @@
                         </button>
                     </ol>
                     <div class="send-options">
-                        <button id="tasks-cancel-btn" class="secondary-btn hover-scale">Peruuta</button>
-                        <button id="tasks-submit-btn" class="primary-btn hover-scale">Lähetä</button>
+                        <button id="tasks-cancel-btn" class="secondary-btn hover-scale">
+                            Peruuta
+                        </button>
+                        <button id="tasks-submit-btn" class="primary-btn hover-scale">
+                            Lähetä
+                        </button>
                     </div>
                 </div>
             </form>
         </form-container>
     </body>
-    <script type="module" src="/src/admin/larpake_manager.ts"></script>
+    <script type="module" src="/src/admin/larpake_manager.js"></script>
 </html>

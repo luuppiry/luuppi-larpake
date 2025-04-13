@@ -18,13 +18,14 @@
 .dialog {
     padding: 0px;
     border: none;
-    box-shadow: 0 4px 8px black;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
 }
 
 .choose-user-dialog {
-    width: 400px;
-    max-width: 90%;
+    width: 90%;
+    max-width: 500px;
     height: 700px;
+    overflow-y: scroll;
 }
 
 .edit-user-dialog {
@@ -83,10 +84,14 @@
 .available-user {
     background-color: var(--luuppi-blue);
     border-radius: 10px;
-    padding: 0 20px;
+    padding: 8px 20px;
     list-style: none;
     display: flex;
-    flex-flow: row;
+    flex-flow: column;
+}
+
+.available-user > p {
+    margin: 0;
 }
 
 .no-interact {
@@ -152,6 +157,44 @@
     margin: 0;
 }
 
+
+
+
+.link-section {
+    padding: 30px 0px;
+    display: flex;
+    flex-flow: column;
+}
+
+.link-section > h3 {
+    margin: 0;
+}
+
+.link-container {
+    display: flex;
+    gap: 4px;
+    max-width: 750px;
+}
+
+.link-container > input {
+    width: 100%;
+}
+
+.icon-btn {
+    
+  padding: 7px 10px 5px 10px;
+  background-color: var(--luuppi-blue);
+  border: none;
+  border-radius: 5px;
+}
+
+.icon-btn > img {
+    height: 25px;
+    width: 25px;
+}
+
+
+
 .user-container {
     padding: 0;
     display: flex;
@@ -170,7 +213,12 @@
     color: #fe678e;
 }
 
-.no-users {
-    display: flex;
-    justify-content: center;
+
+.no-members {
+    text-align: center;
+    display: none;
+}
+
+.no-members:only-child {
+    display: block;
 }

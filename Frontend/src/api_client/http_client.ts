@@ -1,10 +1,10 @@
-import DevHttpClient from "./dev_http_client.ts";
-import EntraId from "./entra_id.ts";
+import EntraId from "./entra_id.js";
 
 type AccessToken = {
     accessToken: string;
     accessTokenExpiresAt: Date;
     refreshTokenExpiresAt: Date;
+    permissions: number;
 };
 
 export default class HttpClient {
@@ -13,6 +13,9 @@ export default class HttpClient {
 
     constructor() {
         this.baseUrl = import.meta.env.VITE_API_BASE_URL;
+        if (!this.baseUrl){
+            throw new Error("Api base url is not provided, check server configuration.")
+        }
         this.accessToken = null;
     }
 
@@ -32,8 +35,31 @@ export default class HttpClient {
         return await this.makeRequest(endpoint, "DELETE", body, headers, null);
     }
 
-    /**
-     * Makes an HTTP request to the specified endpoint with the given method, headers, and query parameters.
+    async logout(): Promise<boolean> {
+        this.accessToken = null;
+
+        const response = await this.post("api/authentication/token/invalidate");
+        if (!response.ok) {
+            console.warn(
+                "Failed to invalidate refresh token on Lärpäke API:",
+                await response.json()
+            );
+        }
+
+        const entra = new EntraId();
+        const entraSuccess = await entra.fetchAzureLogout();
+        if (!entraSuccess) {
+            console.warn("Failed to logout from entra");
+        }
+        return entraSuccess !== undefined;
+    }
+
+    async login(): Promise<string | null> {
+        const entra = new EntraId();
+        return await entra.fetchAzureLogin();
+    }
+
+    /* Makes an HTTP request to the specified endpoint with the given method, headers, and query parameters.
      * Ensures valid access tokens if can get one, asks user credentials if needed.
      *
      * @param endpoint - The endpoint to which the request is made, do not include starting "/".
@@ -50,35 +76,6 @@ export default class HttpClient {
         headers: Headers | null = null,
         query: URLSearchParams | null = null
     ): Promise<Response> {
-        if (import.meta.env.VITE_IS_DEV === "true") {
-            return await this.#fetchDev(endpoint, method, body, headers, query);
-        }
-
-        return await this.#makeRequestMiddleware(endpoint, method, body, headers, query);
-    }
-
-    async #fetchDev(
-        endpoint: string,
-        method: string = "GET",
-        body: any | null = null,
-        headers: Headers | null = null,
-        query: URLSearchParams | null = null
-    ): Promise<Response> {
-        const devClient = new DevHttpClient();
-        if (this.accessToken == null || this.accessToken.accessTokenExpiresAt < new Date()) {
-            // Reauthenticate if needed
-            this.accessToken = await devClient.authenticate();
-        }
-        return await devClient.makeDevRequest(this.accessToken, endpoint, method, body, headers, query);
-    }
-
-    async #makeRequestMiddleware(
-        endpoint: string,
-        method: string = "GET",
-        body: any | null = null,
-        headers: Headers | null = null,
-        query: URLSearchParams | null = null
-    ): Promise<Response> {
         if ((await this.#ensureAccessToken()) == false) {
             throw new Error("Authentication failed.");
         }
@@ -86,11 +83,14 @@ export default class HttpClient {
         // First attempt
         headers ??= new Headers();
         headers.append("Content-Type", "application/json");
-        headers.append("Authorization", `Bearer ${this.accessToken?.accessToken}`);
+        headers.set("Authorization", `Bearer ${this.accessToken?.accessToken}`);
 
-        const url = query == null ? `${this.baseUrl}${endpoint}` : `${this.baseUrl}${endpoint}?${query.toString()}`;
+        const url =
+            query == null
+                ? `${this.baseUrl}${endpoint}`
+                : `${this.baseUrl}${endpoint}?${query.toString()}`;
 
-        console.log("fetch first");
+        console.log("Making api request");
 
         const request: RequestInit = {
             method: method,
@@ -127,13 +127,11 @@ export default class HttpClient {
     }
 
     async #ensureAccessToken(): Promise<boolean> {
-        // const now = new Date();
+        const now = new Date();
         if (
             this.accessToken != null &&
-            this.accessToken.accessToken != null
-            /* This motherf***ker does not work, because API uses UTC time and javascript just cannot comprehend it 
-                How I cannot easily just accept both, this is just fu**ing stupid.  */
-            // && this.accessToken.accessTokenExpiresAt > now
+            this.accessToken.accessToken != null &&
+            new Date(this.accessToken.accessTokenExpiresAt) > now
         ) {
             // Valid token exists
             return true;
@@ -175,9 +173,8 @@ export default class HttpClient {
             credentials: "include",
         });
 
-        console.log(response);
         if (!response.ok) {
-            console.log("Failed to login to API with new entra id access token.");
+            console.warn("Failed to login to API with new entra id access token.");
             return null;
         }
         const token = await response.json();

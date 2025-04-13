@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Data.Helpers;
+﻿using Dapper;
+using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
@@ -99,7 +100,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             """);
 
         query.AppendLine($"""
-            ORDER BY a.larpake_event_id ASC, c.completed_at DESC NULLS LAST
+            ORDER BY c.completed_at DESC NULLS LAST, a.larpake_event_id ASC
             LIMIT @{nameof(options.PageSize)}
             OFFSET @{nameof(options.PageOffset)}
             """);
@@ -118,6 +119,40 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             splitOn: "id");
 
         return records.ToArray();
+    }
+
+    public async Task<Attendance?> GetByKey(string key)
+    {
+        using var connection = GetConnection();
+        var records = await connection.QueryAsync<Attendance, Completion, Attendance>($"""
+            SELECT
+                a.user_id,
+                a.larpake_event_id AS larpake_task_id,
+                a.completion_id,
+                a.created_at,
+                a.updated_at,
+                a.qr_code_key,
+                a.key_invalid_at,
+                c.id,
+                c.signer_id,
+                c.signature_id,
+                c.completed_at,
+                c.created_at,
+                c.updated_at
+            FROM attendances a
+            LEFT JOIN completions c
+                ON a.completion_id = c.id
+            WHERE a.qr_code_key = @{nameof(key)}
+            LIMIT 1;
+            """,
+            (attendance, completion) =>
+            {
+                attendance.Completion = completion;
+                return attendance;
+            },
+            new { key }, splitOn: "id");
+
+        return records.FirstOrDefault();
     }
 
     public async Task<Result<AttendanceKey>> GetAttendanceKey(Attendance attendance)
@@ -143,22 +178,34 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             try
             {
                 using var connection = GetConnection();
-                bool canAttend = await connection.ExecuteScalarAsync<bool>($"""
-                SELECT EXISTS(SELECT 1 FROM larpake_events e
-                    LEFT JOIN larpake_sections s
-                        ON e.larpake_section_id = s.id
-                    LEFT JOIN freshman_groups g
-                        ON s.larpake_id = g.larpake_id
-                    LEFT JOIN freshman_group_members m 
-                        ON g.id = m.group_id
-                WHERE e.id = @{nameof(attendance.LarpakeTaskId)}
-                    AND m.user_id = @{nameof(attendance.UserId)}
-                    AND m.is_competing = TRUE);
-                """, attendance);
+                IEnumerable<bool> competingStatuses = await connection.QueryAsync<bool>($"""
+                     SELECT 
+                        m.is_competing 
+                    FROM larpake_events e
+                        LEFT JOIN larpake_sections s
+                            ON e.larpake_section_id = s.id
+                        LEFT JOIN freshman_groups g
+                            ON s.larpake_id = g.larpake_id
+                        LEFT JOIN freshman_group_members m 
+                            ON g.id = m.group_id
+                    WHERE e.id = @{nameof(attendance.LarpakeTaskId)}
+                        AND m.user_id = @{nameof(attendance.UserId)};
+                    """, attendance);
 
-                if (canAttend is false)
+                bool[] statuses = competingStatuses.ToArray();
+
+                // User and event not found
+                if (statuses.Length <= 0)
                 {
-                    return Error.BadRequest("User must be member of a group that is participating the larpake and not competing.");
+                    return Error.BadRequest("User not attending given larpake.",
+                        ErrorCode.UserNotAttending);
+                }
+
+                // User and event found, but user is tutor and cannot attend
+                if (statuses.All(x => x is false))
+                {
+                    return Error.Forbidden("User has non competing status.",
+                        ErrorCode.UserStatusTutor);
                 }
 
                 key = await connection.QueryFirstAsync<AttendanceKey>($"""
@@ -186,7 +233,6 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             }
             catch (PostgresException ex) when (ex.SqlState is PostgresError.UniqueViolation)
             {
-
                 Logger.LogInformation("QrCodeKey conflict for {hash}, retrying ({count} left).",
                     attendance.GetHashCode(), retriesLeft);
                 continue;
@@ -199,7 +245,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 throw;
             }
         }
-        return Error.Conflict("Key generation failed, retry with same parameters.");
+        return Error.InternalServerError("Key generation failed, retry with same parameters.", ErrorCode.KeyGenFailed);
     }
 
     public async Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion)
@@ -230,6 +276,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
              * - Key should be deleted after cooldown period (like 5 days).
              */
             using var connection = GetConnection();
+            await connection.OpenAsync();
             using var transaction = await connection.BeginTransactionAsync();
 
             // Get attendance, Note that signer cannot get attendance with same userId as signerId 
@@ -240,18 +287,21 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                         updated_at = NOW()
                 WHERE qr_code_key = @{nameof(completion.Key)}
                     AND key_invalid_at > NOW()
-                    AND user_id <> @{nameof(completion.SignerId)}
                 RETURNING
                     user_id,
                     larpake_event_id,
                     completion_id;
                 """, completion);
 
+
             if (attendance is null)
             {
-                return Error.NotFound("Attendance with given key not found or key expired.");
+                return Error.NotFound("Attendance with given key not found or key expired.", ErrorCode.IdNotFound);
             }
-
+            if (attendance.UserId == completion.SignerId)
+            {
+                return Error.BadRequest("Cannot self-sign attendance", ErrorCode.CannotSignSelf);
+            }
             if (attendance.CompletionId is not null)
             {
                 transaction.Commit();
@@ -263,7 +313,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
             // Validate signer is in same Larpake and is not competing
             bool isSignerValid = await connection.ExecuteScalarAsync<bool>($"""
-                SELECT CanUserSignAttendance({nameof(completion.SignerId)}, {attendance.LarpakeTaskId});
+                SELECT CanUserSignAttendance(@{nameof(completion.SignerId)}, @{nameof(attendance.LarpakeTaskId)});
                 """, new { completion.SignerId, attendance.LarpakeTaskId });
 
             if (isSignerValid is false)
@@ -284,7 +334,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     id,
                     signer_id,
                     signature_id,
-                    completed_at,
+                    completed_at
                 )
                 VALUES (
                     @{nameof(record.Id)},
@@ -303,7 +353,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 UPDATE attendances
                 SET 
                     completion_id = @{nameof(record.Id)},
-                    updated_at = NOW()
+                    updated_at = NOW(),
                     key_invalid_at = NOW()
                 WHERE 
                     qr_code_key = @{nameof(completion.Key)};

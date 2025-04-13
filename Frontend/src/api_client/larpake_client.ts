@@ -1,17 +1,16 @@
-import HttpClient from "./http_client.ts";
-import { Larpake, LarpakeTask, Section } from "../models/larpake.ts";
-import { Container, IdObject } from "../models/common.ts";
-import { ThrowIfNull } from "../helpers.ts";
+import HttpClient from "./http_client.js";
+import { Larpake, LarpakeTask, Section } from "../models/larpake.js";
+import { Container, IdObject } from "../models/common.js";
+import { ThrowIfNull } from "../helpers.js";
+import RequestEngine from "./request_engine.js";
 
 type Ids = {
     ids: number[];
 };
 
-export default class LarpakeClient {
-    client: HttpClient;
-
-    constructor(clint: HttpClient | null = null) {
-        this.client = clint ?? new HttpClient();
+export default class LarpakeClient extends RequestEngine {
+    constructor(client: HttpClient | null = null) {
+        super(client ?? new HttpClient());
     }
 
     async getById(id: number, minimize: boolean = false): Promise<Larpake | null> {
@@ -68,7 +67,10 @@ export default class LarpakeClient {
         return tasks.data;
     }
 
-    async getTasks(larpakeId: number | null = null): Promise<LarpakeTask[] | null> {
+    async getTasks(
+        larpakeId: number | null = null,
+        taskIds: number[] | null = null
+    ): Promise<LarpakeTask[] | null> {
         const query = new URLSearchParams();
         // Different search params
         // query.append("userId", "<guid>");
@@ -78,8 +80,11 @@ export default class LarpakeClient {
         // query.append("pageSize", "<num>");
         // query.append("pageOffset", "<num>");
 
-        if (larpakeId != null) {
+        if (larpakeId) {
             query.append("LarpakeId", larpakeId.toString());
+        }
+        if (taskIds) {
+            taskIds.forEach((x) => query.append("LarpakeTaskIds", x.toString()));
         }
 
         const response = await this.client.get("api/larpake-tasks", query);
@@ -97,7 +102,9 @@ export default class LarpakeClient {
             throw new Error("Task id must be defined.");
         }
 
-        const response = await this.client.get(`/api/larpake-events/${taskId}/attendance-opportunities`);
+        const response = await this.client.get(
+            `/api/larpake-events/${taskId}/attendance-opportunities`
+        );
 
         if (!response.ok) {
             console.warn(response);
@@ -106,6 +113,24 @@ export default class LarpakeClient {
 
         const events: Ids = await response.json();
         return events.ids;
+    }
+
+    async getTaskById(taskId: number): Promise<LarpakeTask | null> {
+        return await this.get<LarpakeTask>({
+            url: `api/larpake-tasks/${taskId}`,
+            params: null,
+            failMessage: `Failed to fetch task with id ${taskId}`,
+            isContainerType: false,
+        });
+    }
+
+    async getSectionById(sectionId: number): Promise<Section | null> {
+        return await this.get({
+            url: `api/larpakkeet/section/${sectionId}`,
+            params: null,
+            failMessage: `Failed to fetch section with id ${sectionId}`,
+            isContainerType: false,
+        });
     }
 
     async uploadLarpakeCommonDataOnly(larpake: Larpake): Promise<number> {
@@ -157,7 +182,10 @@ export default class LarpakeClient {
 
     async #createSections(larpakeId: number, sections: Section[]): Promise<number> {
         for (const section of sections) {
-            const response = await this.client.post(`api/larpakkeet/${larpakeId}/sections`, section);
+            const response = await this.client.post(
+                `api/larpakkeet/${larpakeId}/sections`,
+                section
+            );
             if (!response.ok) {
                 throw new Error(await response.json());
             }
@@ -215,13 +243,12 @@ export default class LarpakeClient {
     async #uploadTask(sectionId: number, task: LarpakeTask) {
         task.larpakeSectionId = sectionId;
         if (task.id < 0) {
-            this.#createTask(task);
-        }
-        if (await this.#taskExists(task.id)) {
-            await this.#updateTask(task);
+            // Create
+            await this.#createTask(task);
             return;
         }
-        await this.#createTask(task);
+        // Update
+        await this.#updateTask(task);
     }
 
     async #createTask(task: LarpakeTask) {
@@ -238,10 +265,5 @@ export default class LarpakeClient {
         if (!response.ok) {
             throw new Error(await response.json());
         }
-    }
-
-    async #taskExists(taskId: number) {
-        const response = await this.client.get(`api/larpake-tasks/${taskId}`);
-        return response.ok;
     }
 }

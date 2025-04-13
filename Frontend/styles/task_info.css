@@ -1,0 +1,88 @@
+@import "common.css";
+
+body {
+    margin-bottom: 150px;
+}
+
+.section-path {
+    font-size: medium;
+    font-weight: 200;
+    margin: 0;
+}
+
+.title {
+    font-size: xx-large;
+    margin: 20px 0 0 0;
+}
+
+.updated {
+    color: #ccc;
+    margin: 0px;
+}
+
+.qr-container {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px 10px 30px 10px;
+    border-radius: 10px;
+    background-color: var(--luuppi-gray);
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+}
+
+.cancelled {
+    font-size: x-large;
+    font-weight: 700;
+    margin: 0;
+}
+
+.qr {
+    margin: auto;
+    background-color: white;
+    border: 3px solid var(--text-border);
+    border-radius: 10px;
+    display: grid;
+}
+
+.qr > img {
+    padding: 20px;
+    width: 250px;
+    max-width: 100%;
+    border-radius: 10px;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.code-container {
+    position: relative;
+    display: inline-block;
+}
+
+.copied {
+    position: absolute;
+    top: -100%;
+    left: 60%;
+    z-index: 1;
+    padding: 5px 10px;
+    background-color: white;
+    width: fit-content;
+    border-radius: 10px;
+    pointer-events: none;
+    display: none;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.code {
+    padding: 10px 10px 10px 20px;
+    width: fit-content;
+    background-color: white;
+    font-weight: 700;
+    letter-spacing: 10px;
+    font-size: x-large;
+    margin: 0;
+    border-radius: 10px;
+    min-width: 200px;
+    min-height: 20px;
+}

@@ -76,8 +76,6 @@ body {
     background-color: #ddd;
 }
 
-
-
 .container {
     max-width: 600px;
     margin: 20px auto;
@@ -86,7 +84,6 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     padding: 20px;
 }
-
 
 /* Side panel styles */
 .side-panel {
@@ -178,22 +175,32 @@ body {
 
 .primary-btn {
     font-size: large;
-    background-color: var(--luuppi-blue);
-    color: white;
     border-radius: 6px;
     padding: 8px 16px;
-    border-style: none;
+    background-color: var(--luuppi-blue);
+    color: white;
+    border: 2px var(--luuppi-blue) solid;
     cursor: pointer;
+}
+
+.primary-btn:disabled {
+    background-color: #e2e2e9;
+    border: 2px #e2e2e9 solid;
+}
+
+.hover-scale:disabled:hover {
+    transform: none;
+    cursor: not-allowed;
 }
 
 .secondary-btn {
     font-size: large;
     border-radius: 6px;
+    padding: 8px 16px;
     background-color: white;
     color: var(--luuppi-blue);
     border: 2px var(--luuppi-blue) solid;
     cursor: pointer;
-    padding: 8px 16px;
 }
 
 /* Default scaling 1.05 */
@@ -256,4 +263,59 @@ body {
 
 .width-100 {
     width: 100%;
+}
+
+.select-none {
+    user-select: none;
+}
+
+.margin-auto {
+    margin: auto;
+}
+
+.margin-left {
+    margin-left: auto;
+}
+
+.dialog {
+    max-width: 500px;
+    padding: 0;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+
+.default-shadow {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.dialog.primary-btn {
+    margin-left: auto;
+}
+
+.dialog.error {
+    border: #eb7a8b solid 2px;
+}
+
+.dialog.max-width-300 {
+    max-width: 300px;
+}
+.dialog.max-width-400 {
+    max-width: 400px;
+}
+.dialog.max-width-500 {
+    max-width: 500px;
+}
+.dialog.max-width-600 {
+    max-width: 600px;
+}
+
+.dialog > section {
+    padding: 10px 30px;
+    display: flex;
+    flex-flow: column;
+}
+
+.dialog > section > button {
+    margin-left: auto;
 }

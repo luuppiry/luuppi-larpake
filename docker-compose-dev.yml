@@ -1,0 +1,85 @@
+# Postgres port 5501 or 5432 (default)
+# Api port 5502 or 8080 (default)
+
+services:
+    larpake_pg_dev:
+        container_name: larpake_pg_dev
+        env_file: "dev.env"
+        platform: linux/amd64
+        image: postgres:17.3-bookworm
+        environment:
+            - POSTGRES_USER=${POSTGRES_ADMIN_USERNAME}
+            - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_NAME}
+        volumes:
+            - larpake-pg-data:/var/lib/postgresql/data/
+        ports:
+            - "127.0.0.1:5501:5432"
+        networks:
+            - weba-network
+
+    larpake_pg_create_users_dev:
+        container_name: larpake_pg_create_users_dev
+        platform: linux/amd64
+        image: postgres:17.3-bookworm
+        env_file: "dev.env"
+        environment:
+            - PGHOST=larpake_pg_dev
+            - PGPORT=5432
+            - PGUSER=${POSTGRES_ADMIN_USERNAME}
+            - PGDATABASE=postgres
+            - PGPASSWORD=${POSTGRES_ADMIN_PASSWORD}
+            - PG_API_CLIENT_PASSWORD=${PG_API_CLIENT_PASSWORD}
+            - PG_API_MIGRATIONS_PASSWORD=${PG_API_MIGRATIONS_PASSWORD}
+
+        volumes:
+            - ./create-db-dev.sh:/tmp/create-db.sh
+        networks:
+            - weba-network
+        entrypoint: ["sh", "/tmp/create-db.sh"]
+        depends_on:
+            larpake_pg_dev:
+                condition: service_started
+
+    larpake_migrations_dev:
+        container_name: larpake_migrations_dev
+        env_file: "dev.env"
+        build:
+          dockerfile: migrations.Dockerfile
+        networks:
+            - weba-network
+        environment:
+            - PG_CONNECTION_STRING=${POSTGRES_MIGRATIONS_CONNECTION_STRING}
+
+        depends_on:
+            larpake_pg_create_users_dev:
+                condition: service_completed_successfully
+
+    larpake_api_dev:
+        container_name: larpake_api_dev
+        env_file: "dev.env"
+        build:
+          dockerfile: api-dev.Dockerfile
+        ports:
+            - "127.0.0.1:5502:8080"
+        networks:
+            - weba-network
+        environment:
+            - LARPAKE_ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
+            - LARPAKE_ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
+            - LARPAKE_LUUPPI_API_KEY=${LUUPPI_API_KEY}
+            - LARPAKE_JWT_SECRET=${JWT_SECRET}
+            - LARPAKE_POSTGRES_CONNECTION_STRING=${POSTGRES_API_CONNECTION_STRING}
+            - LARPAKE_ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
+            - LARPAKE_JWT_ISSUER=${JWT_ISSUER}
+            - LARPAKE_JWT_AUDIENCE=${JWT_AUDIENCE}
+        depends_on:
+            larpake_migrations_dev:
+                condition: service_completed_successfully
+
+volumes:
+    larpake-pg-data:
+
+networks:
+    weba-network:
+        external: true
