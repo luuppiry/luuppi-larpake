@@ -64,16 +64,17 @@ services:
         container_name: larpake_api_production
         env_file: ".env"
         image: luuppi.azurecr.io/larpake-prod:latest
-        build:
-            dockerfile: api.Dockerfile
-            args:
-              VITE_API_BASE_URL: ${API_BASE_URL}
-              VITE_ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID}
-              VITE_ENTRA_TEDANT_ID: ${ENTRA_TEDANT_ID}
-              VITE_ENTRA_SERVER: ${ENTRA_SERVER_NAME}
-              VITE_ENTRA_SCOPE: ${ENTRA_AUTH_SCOPE}
-              VITE_ENTRA_REDIRECT_URL: ${FRONTEND_AUTH_REDIRECT_URL}
-              
+        # Uncomment following if you want to build the image locally
+        #
+        # build:
+        #     dockerfile: api.Dockerfile
+        #     args:
+        #       VITE_API_BASE_URL: ${API_BASE_URL}
+        #       VITE_ENTRA_CLIENT_ID: ${ENTRA_CLIENT_ID}
+        #       VITE_ENTRA_TEDANT_ID: ${ENTRA_TEDANT_ID}
+        #       VITE_ENTRA_SERVER: ${ENTRA_SERVER_NAME}
+        #       VITE_ENTRA_SCOPE: ${ENTRA_AUTH_SCOPE}
+        #       VITE_ENTRA_REDIRECT_URL: ${FRONTEND_AUTH_REDIRECT_URL}
         ports:
             - "127.0.0.1:5002:8080"
         networks:
@@ -87,6 +88,12 @@ services:
             - LARPAKE_ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
             - LARPAKE_JWT_ISSUER=${JWT_ISSUER}
             - LARPAKE_JWT_AUDIENCE=${JWT_AUDIENCE}
+            - VITE_API_BASE_URL=${API_BASE_URL}
+            - VITE_ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
+            - VITE_ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
+            - VITE_ENTRA_SERVER=${ENTRA_SERVER_NAME}
+            - VITE_ENTRA_SCOPE=${ENTRA_AUTH_SCOPE}
+            - VITE_ENTRA_REDIRECT_URL=${FRONTEND_AUTH_REDIRECT_URL}
         depends_on:
             larpake_migrations_production:
                 condition: service_completed_successfully
