@@ -13,7 +13,7 @@ import { Signature } from "../models/user.js";
 import { SectionSortFunc, TaskSortFunc } from "../sortFunctions.js";
 import SignatureRenderer from "./signature_renderer.js";
 
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 6;
 const TASK_LINE_LENGTH = 55;
 
 class Title {
