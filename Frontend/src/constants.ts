@@ -59,3 +59,13 @@ export enum SERVER_STATUS {
 }
 
 export const MAX_SIGNATURES = 10;
+
+/* Do not full trust these permission numbers, 
+ * Always check correct numbers from API
+ * side if needed for things like auth */
+export enum Permissions {
+    Freshman = 6,
+    Tutor = 766,
+    Admin = 4194302,
+    Sudo = 2147483647
+}

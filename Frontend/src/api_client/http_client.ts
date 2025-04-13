@@ -1,3 +1,4 @@
+import { UserInfo } from "../models/common.js";
 import EntraId from "./entra_id.js";
 
 type AccessToken = {
@@ -13,8 +14,8 @@ export default class HttpClient {
 
     constructor() {
         this.baseUrl = import.meta.env.VITE_API_BASE_URL;
-        if (!this.baseUrl){
-            throw new Error("Api base url is not provided, check server configuration.")
+        if (!this.baseUrl) {
+            throw new Error("Api base url is not provided, check server configuration.");
         }
         this.accessToken = null;
     }
@@ -54,9 +55,54 @@ export default class HttpClient {
         return entraSuccess !== undefined;
     }
 
-    async login(): Promise<string | null> {
+    async login(): Promise<UserInfo | null> {
+        if (this.accessToken?.permissions) {
+            return {
+                permissions: this.accessToken.permissions,
+            };
+        }
+        await this.#renewAccessToken();
+        if (this.accessToken?.permissions) {
+            return {
+                permissions: this.accessToken!.permissions,
+            };
+        }
+        return null;
+    }
+
+    async trySilentLogin(): Promise<UserInfo | null> {
+        // Already logged in
+        if (this.accessToken?.permissions) {
+            return {
+                permissions: this.accessToken.permissions,
+            };
+        }
+
+        // Try API token refresh
+        const resp = await this.#fetchRefresh();
+        if (resp) {
+            return {
+                permissions: resp.permissions,
+            };
+        }
+
+        // Fetch silent
         const entra = new EntraId();
-        return await entra.fetchAzureLogin();
+        const request = await entra.createRequest();
+
+        const azureToken = await entra.fetchSilent(request);
+        if (!azureToken) {
+            return null;
+        }
+
+        const accessToken = await this.#fetchApiLogin(azureToken);
+        if (!accessToken) {
+            return null;
+        }
+        this.accessToken = accessToken;
+        return {
+            permissions: accessToken.permissions,
+        };
     }
 
     /* Makes an HTTP request to the specified endpoint with the given method, headers, and query parameters.
@@ -162,7 +208,23 @@ export default class HttpClient {
             console.log("Login failed, entra failed.");
             return null;
         }
+        return await this.#fetchApiLogin(entraToken);
+    }
 
+    async #fetchRefresh(): Promise<AccessToken | null> {
+        const response = await fetch(`${this.baseUrl}api/authentication/token/refresh`, {
+            method: "GET",
+            credentials: "include",
+        });
+        if (!response.ok) {
+            console.log("No refresh token exists.");
+            return null;
+        }
+        const token = await response.json();
+        return token;
+    }
+
+    async #fetchApiLogin(entraToken: string): Promise<AccessToken | null> {
         const headers = new Headers();
         headers.append("Authorization", `Bearer ${entraToken}`);
         headers.append("Accept", "*/*");
@@ -175,19 +237,6 @@ export default class HttpClient {
 
         if (!response.ok) {
             console.warn("Failed to login to API with new entra id access token.");
-            return null;
-        }
-        const token = await response.json();
-        return token;
-    }
-
-    async #fetchRefresh(): Promise<AccessToken | null> {
-        const response = await fetch(`${this.baseUrl}api/authentication/token/refresh`, {
-            method: "GET",
-            credentials: "include",
-        });
-        if (!response.ok) {
-            console.log("No refresh token exists.");
             return null;
         }
         const token = await response.json();

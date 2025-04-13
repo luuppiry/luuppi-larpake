@@ -5,6 +5,32 @@
     --side-panel-width: 250px;
 }
 
+.header-lang-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-profile-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-logo{
+    height: 60px;
+    cursor: pointer;
+}
+
+.color-red {
+    color: red !important;
+}
+
+.header-icon {
+    height: 30px;
+    width: auto;
+}
+
 body {
     font-family: Poppins;
     font-style: normal;

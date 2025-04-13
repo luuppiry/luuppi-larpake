@@ -37,8 +37,7 @@ export default class EntraId {
             }
         }
 
-        const request = await this.#createRequest();
-
+        const request = await this.createRequest();
         if (this.accounts?.length! > 0) {
             const token = await this.fetchSilent(request);
             if (token !== null) {
@@ -98,7 +97,7 @@ export default class EntraId {
         }
     }
 
-    async #createRequest() {
+    async createRequest() {
         await this.#initialize();
 
         const scope = import.meta.env.VITE_ENTRA_SCOPE;

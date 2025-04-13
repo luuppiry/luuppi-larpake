@@ -1,4 +1,4 @@
-import { Q_PARAM, Q_STATUS } from "./constants.js";
+import { Permissions, Q_PARAM, Q_STATUS } from "./constants.js";
 import { PermissionCollection } from "./models/user.js";
 
 export const LANG_FI = "fi";
@@ -85,8 +85,6 @@ export function replaceUrlState(manipulate: (params: URLSearchParams) => void) {
     url.search = params.toString();
     window.history.replaceState({}, "", url);
 }
-
-
 
 export function formatDate(date: Date) {
     if (!date) {
@@ -265,6 +263,23 @@ export function redirect404Page(missingParamName: string | null = null) {
     }
 
     window.location.href = `404.html?${Q_STATUS}=`;
+}
+
+export function hasPermissions(
+    value: number | Permissions | null,
+    required: number | Permissions | null
+) {
+    /* Check that value has at least the same permissions
+     * of the required permissions. Uses bitwise operations */
+    if (!value){
+        return false
+    }
+    if (!required){
+        console.warn("You are checking permissions against null, this might be error!")
+        return false
+    }
+
+    return (value & required) == required;
 }
 
 function getDefaultPermissionsTable(): PermissionCollection {

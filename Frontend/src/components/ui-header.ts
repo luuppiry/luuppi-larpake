@@ -1,66 +1,53 @@
 import HttpClient from "../api_client/http_client.js";
+import { Permissions } from "../constants.js";
+import { getDocumentLangCode, hasPermissions, LANG_EN, removeChildren } from "../helpers.js";
+
 
 class Header extends HTMLElement {
     client: HttpClient;
+    profilePath: string | null = null;
+    adminPath: string | null = null;
+
     constructor() {
         super();
         this.client = new HttpClient();
     }
 
-    connectedCallback() {
-        const hasLanguageOptions: boolean = this.getAttribute("lang-options") === "false" ? false : true;
+
+
+
+    async connectedCallback() {
+        const hasLanguageOptions: boolean =
+            this.getAttribute("lang-options") === "false" ? false : true;
         const indexPath = this.#add_path_correction("index.html");
-        const profilePath = this.#add_path_correction("profile.html");
-        const adminPath = this.#add_path_correction("admin/admin.html");
 
-        const loggedIn = Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"));
-        const currentLang = window.location.href.includes("/en/") ? "en" : "fi";
-
-        const adminBtn = currentLang === "fi" ? `<a href="${adminPath}">Ylläpito</a>` : "";
+        const user = await this.client.trySilentLogin();
 
         const langBtn = hasLanguageOptions
-            ? `
-                    <div
-                        class="menu-icon"
-                        id="ui-header-change-language-btn"
-                        style="display: flex; justify-content: center; align-items: center">
-                        <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
-                    </div>`
+            ? ` <div class="menu-icon header-lang-btn"
+                    id="ui-header-change-language-btn"
+                    >
+                 <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
+                </div>`
             : "<!-- no other languages available -->";
-
-        const profileBtn = loggedIn
-            ? `<div
-                class="menu-icon"
-                id="ui-header-profile-btn"
-                style="display: flex; justify-content: center; align-items: center">
-                <img class="profile-icon" src="/icons/profile-icon.png" height="30px" width="auto" />
-                <div class="profile-dropdown" id="profileDropdown">
-                    <a href="${profilePath}">Profiili</a>
-                    ${adminBtn}
-                    <a href="#" style="color: red;">Kirjaudu ulos</a>
-                </div>
-            </div> `
-            : `<div
-                    class="menu-icon"
-                    id="ui-header-login-btn"
-                    style="display: flex; justify-content: center; align-items: center">
-                    <img class="login-icon" src="/icons/login-icon.png" height="30px" width="auto" />
-                </div> `;
 
         this.innerHTML = `
          <header class="header">
-            <img
+            <img class="header-logo"
                 src="/luuppi.logo.svg"
                 onclick="window.location.href='${indexPath}'"
-                style="height: 60px; cursor: pointer"
                 alt="Luuppi Logo"
             />
             <h1>LÄRPÄKE</h1>
             ${langBtn}
-            ${profileBtn}
-            <div class="menu-icon" id="ui-header-open-menu-btn">☰</div>
+            <div class="_profile-container">
+                <!-- Profile buttons -->
+            </div>
+            <div id="ui-header-open-menu-btn" class="menu-icon">☰</div>
         </header>
          `;
+
+        this.resetProfileBtn(user?.permissions ?? null);
 
         const languageBtn = this.querySelector<HTMLDivElement>("#ui-header-change-language-btn");
         if (languageBtn == null) {
@@ -70,34 +57,6 @@ class Header extends HTMLElement {
             this.changeLanguage();
         });
 
-        if (loggedIn) {
-            const profileBtn = this.querySelector<HTMLDivElement>("#ui-header-profile-btn");
-            if (profileBtn == null) {
-                throw new Error("Profile button not found");
-            }
-            profileBtn.addEventListener("click", (_) => {
-                this.profileDropdown();
-            });
-            const logoutBtn = this.querySelector<HTMLAnchorElement>(".profile-dropdown a[href='#']");
-            if (logoutBtn == null) {
-                throw new Error("Logout button not found");
-            }
-            logoutBtn.addEventListener("click", (event) => {
-                event.preventDefault(); // Prevent default anchor behavior
-                this.logout();
-            });
-        }
-
-        if (!loggedIn) {
-            const logInBtn = this.querySelector<HTMLDivElement>("#ui-header-login-btn");
-            if (logInBtn == null) {
-                throw new Error("Login button not found");
-            }
-            logInBtn.addEventListener("click", (_) => {
-                this.login();
-            });
-        }
-
         const menuBtn = this.querySelector<HTMLDivElement>("#ui-header-open-menu-btn");
         if (menuBtn == null) {
             throw new Error("Menu button not found");
@@ -105,6 +64,78 @@ class Header extends HTMLElement {
         menuBtn.addEventListener("click", (_) => {
             this.toggle();
         });
+    }
+
+
+    #getProfileBtn(permissions: Permissions | null): HTMLElement {
+        if (!permissions) {
+            // Permissions are null, so user is logged out
+            const loginBtn = document.createElement("div");
+            loginBtn.id = "ui-header-login-btn";
+            loginBtn.className = "menu-icon header-profile-btn";
+
+            const loggedOutIcon = document.createElement("img");
+            loggedOutIcon.className = "header-icon";
+            loggedOutIcon.src = "/icons/login-icon.png";
+            loggedOutIcon.height = 30;
+
+            loginBtn.appendChild(loggedOutIcon);
+
+            loginBtn.addEventListener("click", e => {
+                e.preventDefault();
+                this.login();
+            })
+            return loginBtn;
+        }
+
+        // User is logged in
+        const isFinnish = getDocumentLangCode() !== LANG_EN;
+
+        // Create base structure
+        const profileBtn = document.createElement("div");
+        profileBtn.className = "menu-icon header-profile-btn";
+        profileBtn.id = "ui-header-profile-btn";
+
+        const profileIcon = document.createElement("img");
+        profileIcon.className = "header-icon";
+        profileIcon.src = "/icons/profile-icon.png";
+        profileIcon.height = 30;
+
+        const btnContainer = document.createElement("div");
+        btnContainer.id = "profile-dropdown";
+        btnContainer.className = "_btn-container profile-dropdown";
+
+        // Create buttons
+        const profileLink = document.createElement("a");
+        profileLink.href = this.#getProfilePath();
+        profileLink.innerText = isFinnish ? "Profiili" : "Profile";
+
+        const adminLink = this.#getAdminBtn(permissions, isFinnish);
+
+        const logoutLink = document.createElement("a");
+        logoutLink.href = "#";
+        logoutLink.className = "color-red"
+        logoutLink.innerText = isFinnish ? "Kirjaudu ulos" : "Logout";
+
+        profileBtn.appendChild(profileIcon);
+        profileBtn.appendChild(btnContainer);
+
+        btnContainer.appendChild(profileLink);
+        if (adminLink) {
+            btnContainer.appendChild(adminLink);
+        }
+        btnContainer.appendChild(logoutLink);
+
+
+        profileBtn.addEventListener("click", _ => {
+            this.profileDropdown();
+        });
+
+        logoutLink.addEventListener("click", e => {
+            e.preventDefault();
+            this.logout();
+        })
+        return profileBtn;
     }
 
     // Runs when object is disconnected from DOM
@@ -123,8 +154,22 @@ class Header extends HTMLElement {
         profileDropdown();
     }
 
+    resetProfileBtn(permissions: Permissions | null) {
+        const container = this.querySelector<HTMLElement>("._profile-container");
+        if (!container) {
+            console.log("Failed to update header profile button");
+            return;
+        }
+
+        const btn = this.#getProfileBtn(permissions);
+        removeChildren(container);
+        container.appendChild(btn);
+    }
+
     async login() {
         try {
+
+
             const token = await this.client.login();
             if (token) {
                 console.log("Login successful.");
@@ -150,6 +195,26 @@ class Header extends HTMLElement {
             console.error("Logout Error:", error);
         }
     }
+
+    setHttpClient(client: HttpClient){
+        this.client = client;
+    }
+
+    #getProfilePath(): string {
+        if (this.profilePath) {
+            return this.profilePath;
+        }
+        return this.#add_path_correction("profile.html");
+    }
+
+    #getAdminPath(): string {
+        if (this.adminPath) {
+            return this.adminPath;
+        }
+        return this.#add_path_correction("admin/admin.html");
+    }
+
+
     #add_path_correction(path: string): string {
         /* Path depth should be positive number
          * For example 2 = ../../<path>
@@ -171,32 +236,34 @@ class Header extends HTMLElement {
         // Add correction
         return correction + path;
     }
+
+    #getAdminBtn(permissions: number, isFinnish: boolean): HTMLAnchorElement | null {
+        if (!hasPermissions(permissions, Permissions.Tutor)) {
+            return null;
+        }
+        if (!isFinnish) {
+            return null;
+        }
+        const adminPath = this.#getAdminPath();
+
+        // Create button
+        const result = document.createElement("a");
+        result.href = adminPath;
+        result.innerText = isFinnish ? "Ylläpito" : "Administration";
+        return result;
+    }
+
+    
 }
 
 function profileDropdown(): void {
-    const profileDropdown = document.getElementById("profileDropdown");
-    if (!profileDropdown) return;
+    const profileDropdown = document.getElementById("profile-dropdown");
+    if (!profileDropdown) {
+        throw new Error("Profile dropdown not found");
+    }
 
     // Detect current language
-    const currentLang = window.location.href.includes("/en/") ? "en" : "fi";
-
-    // Update the menu items based on language
-    const profileLink = profileDropdown.querySelector("a[href='profile.html']");
-    const adminLink = profileDropdown.querySelector("a[href='admin/admin.html']");
-    const logoutLink = profileDropdown.querySelector("a[href='#']");
-
-    if (profileLink) {
-        profileLink.textContent = currentLang === "en" ? "Profile" : "Profiili";
-    }
-    if (adminLink) {
-        adminLink.textContent = currentLang === "en" ? "Admin" : "Ylläpito";
-    }
-    if (logoutLink) {
-        logoutLink.textContent = currentLang === "en" ? "Logout" : "Kirjaudu ulos";
-    }
-
     profileDropdown.style.display = profileDropdown.style.display === "block" ? "none" : "block";
-
     if (profileDropdown.style.display === "block") {
         // Add event listener to detect clicks outside the dropdown
         document.addEventListener("click", closeDropdownOutside);
@@ -268,7 +335,10 @@ function closeDropdownOutside(event: MouseEvent): void {
     if (!profileDropdown || !profileBtn) return;
 
     // Check if the click is outside the dropdown and the profile button
-    if (!profileDropdown.contains(event.target as Node) && !profileBtn.contains(event.target as Node)) {
+    if (
+        !profileDropdown.contains(event.target as Node) &&
+        !profileBtn.contains(event.target as Node)
+    ) {
         profileDropdown.style.display = "none";
         document.removeEventListener("click", closeDropdownOutside);
     }

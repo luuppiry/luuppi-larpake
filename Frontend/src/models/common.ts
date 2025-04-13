@@ -1,4 +1,8 @@
-import { SERVER_STATUS as SERVER_STATUS } from "../constants.js";
+import { Permissions, SERVER_STATUS as SERVER_STATUS } from "../constants.js";
+
+export type UserInfo = {
+    permissions: Permissions;
+}
 
 export type ApiAction = {
     description: string;
