@@ -1,3 +1,4 @@
+import { UI_HEADER_ID } from "../constants.js";
 import { Container } from "../models/common.js";
 import HttpClient from "./http_client.js";
 
@@ -17,8 +18,8 @@ export type PostRequest = {
 
 export default class RequestEngine {
     client: HttpClient;
-    constructor(client: HttpClient) {
-        this.client = client;
+    constructor(client: HttpClient | null) {
+        this.client = client ?? tryGetHttpClientFromUIHeader() ?? new HttpClient();
     }
 
     async get<T>(req: GetRequest): Promise<T | null> {
@@ -53,4 +54,19 @@ export default class RequestEngine {
         const data: T = await response.json();
         return data;
     }
+}
+
+function tryGetHttpClientFromUIHeader(): HttpClient | null {
+    // Using any to solve any double import cycles
+    const header = document.getElementById(UI_HEADER_ID) as any;
+
+    if (!header || !header.getHttpClient){
+        return null;
+    }
+
+    const client = header.getHttpClient()
+    if (client instanceof HttpClient){
+        return client;
+    }
+    return null;
 }

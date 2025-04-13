@@ -28,6 +28,8 @@ export const Q_KEY_EXPIRED = "KeyExpired";
 
 export const Q_PARAM = "Param";
 
+export const UI_HEADER_ID = "ui-header-component"
+
 export const SIGNATURE_INFO = {
     WIDTH: 450,
     HEIGTH: 100,

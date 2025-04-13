@@ -7,7 +7,7 @@ const FETCH_CHUNK_SIZE = 100;
 
 export class UserClient extends RequestEngine {
     constructor(client: HttpClient | null = null) {
-        super(client ?? new HttpClient());
+        super(client );
     }
 
     async getAllUnpaged(): Promise<User[] | null> {

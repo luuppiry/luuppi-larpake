@@ -5,7 +5,7 @@ import RequestEngine from "./request_engine.js";
 
 export class EventClient extends RequestEngine {
     constructor(client: HttpClient | null = null) {
-        super(client ?? new HttpClient());
+        super(client );
     }
 
     async nextComing(): Promise<OrgEvent[] | null> {

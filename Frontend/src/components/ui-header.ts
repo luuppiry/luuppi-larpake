@@ -1,5 +1,5 @@
 import HttpClient, { AUTHENTICATED_EVENT_NAME } from "../api_client/http_client.js";
-import { Permissions } from "../constants.js";
+import { Permissions, UI_HEADER_ID } from "../constants.js";
 import { getDocumentLangCode, hasPermissions, LANG_EN, removeChildren } from "../helpers.js";
 import { UserAuthenticatedEvent } from "../models/common.js";
 
@@ -15,6 +15,8 @@ class Header extends HTMLElement {
     }
 
     async connectedCallback() {
+        this.id = UI_HEADER_ID;
+
         const hasLanguageOptions: boolean =
             this.getAttribute("lang-options") === "false" ? false : true;
         const indexPath = this.#add_path_correction("index.html");
@@ -73,6 +75,72 @@ class Header extends HTMLElement {
         menuBtn.addEventListener("click", (_) => {
             this.toggle();
         });
+    }
+
+
+
+    // Runs when object is disconnected from DOM
+    disconnectedCallback() {}
+
+    toggle() {
+        const nameOverride = this.getAttribute("side-panel-name");
+        toggleSidePanelOutsider(nameOverride);
+    }
+
+    changeLanguage() {
+        changeLanguage();
+    }
+
+    toggleProfileDropdown() {
+        profileDropdown();
+    }
+
+    resetProfileBtn(permissions: Permissions | null) {
+        const container = this.querySelector<HTMLElement>("._profile-container");
+        if (!container) {
+            console.log("Failed to update header profile button");
+            return;
+        }
+
+        const btn = this.#getProfileBtn(permissions);
+        removeChildren(container);
+        container.appendChild(btn);
+    }
+
+    async login() {
+        try {
+            const token = await this.client.login();
+            if (token) {
+                console.log("Login successful.");
+                location.reload();
+            } else {
+                console.log("Login failed.");
+            }
+        } catch (error) {
+            console.error("Login Error:", error);
+        }
+    }
+
+    async logout() {
+        try {
+            const token = await this.client.logout();
+            if (token) {
+                console.log("Access Token:", token);
+                location.reload();
+            } else {
+                console.log("Logout failed.");
+            }
+        } catch (error) {
+            console.error("Logout Error:", error);
+        }
+    }
+
+    getHttpClient(): HttpClient{
+        return this.client;
+    }
+
+    setHttpClient(client: HttpClient) {
+        this.client = client;
     }
 
     #getProfileBtn(permissions: Permissions | null): HTMLElement {
@@ -164,66 +232,6 @@ class Header extends HTMLElement {
             this.logout();
         });
         return profileDropdown;
-    }
-
-    // Runs when object is disconnected from DOM
-    disconnectedCallback() {}
-
-    toggle() {
-        const nameOverride = this.getAttribute("side-panel-name");
-        toggleSidePanelOutsider(nameOverride);
-    }
-
-    changeLanguage() {
-        changeLanguage();
-    }
-
-    toggleProfileDropdown() {
-        profileDropdown();
-    }
-
-    resetProfileBtn(permissions: Permissions | null) {
-        const container = this.querySelector<HTMLElement>("._profile-container");
-        if (!container) {
-            console.log("Failed to update header profile button");
-            return;
-        }
-
-        const btn = this.#getProfileBtn(permissions);
-        removeChildren(container);
-        container.appendChild(btn);
-    }
-
-    async login() {
-        try {
-            const token = await this.client.login();
-            if (token) {
-                console.log("Login successful.");
-                location.reload();
-            } else {
-                console.log("Login failed.");
-            }
-        } catch (error) {
-            console.error("Login Error:", error);
-        }
-    }
-
-    async logout() {
-        try {
-            const token = await this.client.logout();
-            if (token) {
-                console.log("Access Token:", token);
-                location.reload();
-            } else {
-                console.log("Logout failed.");
-            }
-        } catch (error) {
-            console.error("Logout Error:", error);
-        }
-    }
-
-    setHttpClient(client: HttpClient) {
-        this.client = client;
     }
 
     #getProfilePath(): string {

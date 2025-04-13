@@ -8,7 +8,7 @@ import RequestEngine from "./request_engine.js";
 
 export default class AttendanceClient extends RequestEngine {
     constructor(client: HttpClient | null = null) {
-        super(client ?? new HttpClient());
+        super(client);
     }
 
     async getAll(
@@ -97,7 +97,9 @@ export default class AttendanceClient extends RequestEngine {
     }
 
     async completeKeyed(key: string): Promise<string | MessageResponse> {
-        const response = await this.client.post(`api/attendances/${ATTENDANCE_CODE_HEADER}${key}/complete`);
+        const response = await this.client.post(
+            `api/attendances/${ATTENDANCE_CODE_HEADER}${key}/complete`
+        );
         if (!response.ok) {
             const parsed = await response.json();
             console.warn("Failed to fetch keyed attendance", key, parsed);

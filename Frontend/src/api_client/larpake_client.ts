@@ -10,7 +10,7 @@ type Ids = {
 
 export default class LarpakeClient extends RequestEngine {
     constructor(client: HttpClient | null = null) {
-        super(client ?? new HttpClient());
+        super(client);
     }
 
     async getById(id: number, minimize: boolean = false): Promise<Larpake | null> {

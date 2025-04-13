@@ -19,7 +19,7 @@ type MemberIds = {
 export default class GroupClient extends RequestEngine {
     
     constructor(client: HttpClient | null = null) {
-        super(client ?? new HttpClient());
+        super(client );
     }
 
 
