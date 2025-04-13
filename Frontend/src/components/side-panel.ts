@@ -33,20 +33,24 @@ class SidePanel extends HTMLElement {
                     { href: "larpake.html?page=5", title: { fi: "Normipäivä", en: "Averageday" } },
                     {
                         href: "larpake.html?page=6",
+                        title: { fi: "Normipäivä", en: "Normal day" },
+                    },
+                    {
+                        href: "larpake.html?page=7",
                         title: { fi: "Yliopistoelämää", en: "University life" },
                     },
-                    {
-                        href: "larpake.html?page=8",
-                        title: { fi: "Vaikutusvaltaa", en: "Power usage" },
-                    },
-                    { href: "larpake.html?page=10", title: { fi: "Liikunnallista", en: "Sporty" } },
+                    { href: "larpake.html?page=9", title: { fi: "Vaikutusvaltaa", en: "Influence" } },
                     {
                         href: "larpake.html?page=11",
-                        title: { fi: "Kaikenlaista", en: "Miscellaneous" },
+                        title: { fi: "Liikunnallista", en: "Exercise - Participate" },
                     },
                     {
-                        href: "larpake.html?page=13",
-                        title: { fi: "Tanpereella", en: "Welcome to Tampere" },
+                        href: "larpake.html?page=12",
+                        title: { fi: "Kaikenlaista", en: "This and that" },
+                    },
+                    {
+                        href: "larpake.html?page=14",
+                        title: { fi: "Tanpereella", en: "In Tampere" },
                     },
                 ],
             },
@@ -185,6 +189,8 @@ class SidePanel extends HTMLElement {
     toggleSidePanel() {
         toggleSidePanel();
     }
+
+
 }
 
 function toggleSidePanel(): void {
