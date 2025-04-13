@@ -37,7 +37,7 @@ body {
     font-weight: 200;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    background-color: var(--luuppi-gray);
     overflow-x: hidden;
 }
 
@@ -72,7 +72,7 @@ body {
     height: 48px;
     min-width: 48px;
     text-align: center;
-    background-color: #494d7b;
+    background-color: var(--menu-icon-dark-blue);
     user-select: none;
 }
 
@@ -82,7 +82,7 @@ body {
     position: absolute;
     background-color: #f9f9f9;
     min-width: 200px;
-    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 8px 16px 0px var(--shadow-black);
     z-index: 1;
     top: 85px;
     margin-right: 150px;
@@ -99,7 +99,7 @@ body {
 }
 
 .profile-dropdown a:hover {
-    background-color: #ddd;
+    background-color: var(--disabled-gray);
 }
 
 .container {
@@ -107,7 +107,7 @@ body {
     margin: 20px auto;
     background-color: white;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px var(--shadow-black);
     padding: 20px;
 }
 
@@ -116,7 +116,7 @@ body {
     position: fixed;
     top: 0;
     height: 100%;
-    background-color: #787eba;
+    background-color: var(--accent-blue);
     color: white;
     overflow-y: none;
     padding: 10px;
@@ -210,8 +210,8 @@ body {
 }
 
 .primary-btn:disabled {
-    background-color: #e2e2e9;
-    border: 2px #e2e2e9 solid;
+    background-color: var(--primary-btn-disabled);
+    border: 2px var(--primary-btn-disabled) solid;
 }
 
 .hover-scale:disabled:hover {
@@ -307,12 +307,12 @@ body {
     max-width: 500px;
     padding: 0;
     border: none;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px var(--shadow-black);
     border-radius: 10px;
 }
 
 .default-shadow {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px var(--shadow-black);
 }
 
 .dialog.primary-btn {
@@ -320,7 +320,7 @@ body {
 }
 
 .dialog.error {
-    border: #eb7a8b solid 2px;
+    border: var(--error-red) solid 2px;
 }
 
 .dialog.max-width-300 {

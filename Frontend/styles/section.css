@@ -1,3 +1,5 @@
+@import "colors.css";
+
 .centering {
     /* Center horizontally */
     /* If you want child to expand use max-width: x; and width: 100%; */
@@ -9,7 +11,7 @@
     /*  */
     width: 100%;
     max-width: 1400px;
-    background-color: #ffffff;
+    background-color: white;
     border-radius: 10px;
     overflow: hidden;
     display: flex;
@@ -47,5 +49,5 @@
 
 /* Note that .section-shadow .section must have space between to work */
 .shadow .section {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px var(--shadow-black);
 }

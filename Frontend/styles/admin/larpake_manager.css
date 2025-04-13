@@ -133,7 +133,7 @@ body {
 }
 
 .task-header-titles > img:hover {
-    background-color: #ffc2c5;
+    background-color: var(--delete-pink);
 }
 
 .task-header > img {

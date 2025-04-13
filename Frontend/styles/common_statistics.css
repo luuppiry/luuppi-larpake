@@ -1,11 +1,13 @@
 @import "common.css";
 
+/* OK these colors can be looked at later */
+
 .card {
     background: white;
     padding: 15px;
     margin: 10px 0;
     border-radius: 10px;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 5px var(--shadow-black);
     text-align: center;
 }
 

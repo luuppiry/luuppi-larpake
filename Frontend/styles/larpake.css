@@ -13,8 +13,8 @@ body {
 }
 
 .disabled {
-    background-color: #ddd;
-    color: #999;
+    background-color: var(--disabled-gray);
+    color: var(--disabled-gray-text);
     cursor: not-allowed;
 }
 
@@ -34,12 +34,12 @@ body {
 }
 
 .task-btn:hover {
-    background-color: #f0f0f0;
+    background-color: var(--task-hover-gray);
     cursor: pointer;
 }
 
 .cancelled {
-    background-color: #f0f0f0;
+    background-color: var(--task-hover-gray);
 }
 
 .section-title {

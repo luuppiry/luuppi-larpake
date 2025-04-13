@@ -10,7 +10,7 @@
     transform-origin: left center;
 }
 
-.action-container :hover {
+.action-container > *:hover {
     transform: scale(1.1);
 }
 

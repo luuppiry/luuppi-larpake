@@ -11,7 +11,7 @@ ul {
 }
 
 .header {
-    background-color: #5c61a3;
+    background-color: var(--luuppi-blue);
     color: white;
     padding: 18px;
     text-align: left;
@@ -34,7 +34,7 @@ ul {
     width: 48px;
     height: 48px;
     text-align: center;
-    background-color: #494d7b;
+    background-color: var(--menu-icon-dark-blue);
 }
 
 /* Own tutors */
@@ -43,7 +43,7 @@ ul {
     margin: 20px auto;
     background-color: white;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 5px var(--shadow-black);
     overflow: hidden;
     text-align: left;
     padding: 20px;

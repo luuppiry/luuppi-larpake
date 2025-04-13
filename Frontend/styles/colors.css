@@ -1,12 +1,23 @@
 :root {
     --border-whitish: #f8f8f8; /* very very close to white */
     --luuppi-gray: #f5f5fb; /* Bluish gray */
+    --primary-btn-disabled: #e2e2e9;
     --backgroud-gray: #e7e7e7; /* Nearly white */
     --list-gray: #efeff6;
+    --task-hover-gray: #f0f0f0;
     --section-background: #d5d5d5; /* gray */
     --text-border: #d5d5d5; /* gray */
+    --disabled-gray: #ddd; /* Used with Lärpäke tasks*/
+    --disabled-gray-text: #999; /* Used with Lärpäke task text*/
     --non-highlight: #6b7280; /* Darkish grey */
     --accent-blue: #787eba; /* header buttons background color */
     --luuppi-blue: #5c61a3; /* luuppi header color */
+    --menu-icon-dark-blue: #494d7b; /* Meny icon in groups page */
     --dark-blue: #3e3d75; /* For example header button backgrounds */
+    --shadow-black: rgba(0, 0, 0, 0.2);
+    --border-gray: #ccc;
+    --error-red: #eb7a8b;
+    --fuksi-green: #53de31; /* Used in group manager */
+    --tutor-pink: #fe678e; /* Used in group manager*/
+    --delete-pink: #ffc2c5; /* Used in Lärpäke manager delete icon */
 }

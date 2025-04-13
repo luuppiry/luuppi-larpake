@@ -25,8 +25,8 @@ form {
 .qr-section img {
     max-width: 250px;
     padding: 10px;
-    background-color: #fff;
-    border: 1px solid #ccc;
+    background-color: white;
+    border: 1px solid var(--border-gray);
     border-radius: 10px;
 }
 
