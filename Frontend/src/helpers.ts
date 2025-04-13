@@ -76,6 +76,18 @@ export function pushUrlState(manipulate: (params: URLSearchParams) => void) {
     window.history.pushState({}, "", url);
 }
 
+export function replaceUrlState(manipulate: (params: URLSearchParams) => void) {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    manipulate(params);
+
+    url.search = params.toString();
+    window.history.replaceState({}, "", url);
+}
+
+
+
 export function formatDate(date: Date) {
     if (!date) {
         return "";

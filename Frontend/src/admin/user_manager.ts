@@ -1,7 +1,16 @@
 import { UserClient } from "../api_client/user_client.js";
 import { Q_PAGE_OFFSET, Q_PAGE_SIZE, Q_SEARCH } from "../constants.js";
-import { appendTemplateElement, getDocumentLangCode, isEmpty, LANG_EN, pushUrlState, removeChildren } from "../helpers.js";
+import {
+    appendTemplateElement,
+    getDocumentLangCode,
+    isEmpty,
+    LANG_EN,
+    pushUrlState,
+    removeChildren,
+    replaceUrlState,
+} from "../helpers.js";
 import { User } from "../models/user.js";
+import { userSortFunc } from "../sortFunctions.js";
 import UserManagerUI from "./ui-model/user_manager_ui.js";
 
 const VISIBLE_ID_LENGTH = 6;
@@ -12,7 +21,7 @@ const userClient = new UserClient();
 
 type ChangableUserData = {
     permissions: number;
-    startYear: number;
+    startYear: number | null;
 };
 
 type Paging = {
@@ -28,31 +37,25 @@ class UserBrowser extends UserManagerUI {
     pageSize: number;
     filter: string | null = null;
     debounchTimerId: NodeJS.Timeout | null = null;
+    isInitialPage: boolean = true;
 
     constructor(options: Paging) {
         super();
         this.offset = options.pageOffset;
         this.pageSize = options.pageSize;
 
-        // Bind function to point to correct "this" in event handlers
-        this.renderNext = this.renderNext.bind(this);
-        this.renderPrevious = this.renderPrevious.bind(this);
-        this.renderFiltered = this.renderFiltered.bind(this);
-
         // Add event handlers
-        this.nextPageBtn.addEventListener("click", this.renderNext);
-        this.prevPageBtn.addEventListener("click", this.renderPrevious);
-        this.searchField.addEventListener("input", this.renderFiltered);
+        this.nextPageBtn.addEventListener("click", (_) => this.renderNext());
+        this.prevPageBtn.addEventListener("click", (_) => this.renderPrevious());
+        this.searchField.addEventListener("input", (_) => this.renderFiltered());
 
         if (options.searchValue) {
             this.searchField.value = options.searchValue;
         }
     }
 
-    
-
     setAvailableUsers(users: User[]) {
-        this.allUsers = users;
+        this.allUsers = users.sort(userSortFunc);
         this.#filter();
     }
 
@@ -95,20 +98,33 @@ class UserBrowser extends UserManagerUI {
         const endIndex = Math.min(allUsers.length, offset + this.pageSize);
         this.#renderUsers(allUsers.slice(offset, endIndex));
 
-        pushUrlState((params) => {
+        const stateFunc = (params: URLSearchParams) => {
             params.set(Q_PAGE_SIZE, this.pageSize.toString());
             params.set(Q_PAGE_OFFSET, offset.toString());
-        });
+        };
+        if (this.isInitialPage) {
+            replaceUrlState(stateFunc);
+            this.isInitialPage = false;
+        } else {
+            pushUrlState(stateFunc);
+        }
 
         this.offset = offset;
-        this.#updateIndexes(offset, Math.min(allUsers.length, offset + this.pageSize), allUsers.length);
+        this.#updateIndexes(
+            offset,
+            Math.min(allUsers.length, offset + this.pageSize),
+            allUsers.length
+        );
     }
 
     #renderUsers(users: User[]) {
         removeChildren(this.container, (child) => !child.classList.contains("column-titles"));
 
         for (const user of users) {
-            const elem = appendTemplateElement<HTMLTableRowElement>("user-template", this.container);
+            const elem = appendTemplateElement<HTMLTableRowElement>(
+                "user-template",
+                this.container
+            );
             setUserInformation(user, elem, true);
             addUserDialogListener(user, elem);
         }
@@ -208,7 +224,8 @@ function largestMultipleLessThanOrEqualTo(threshold: number, num: number) {
 }
 
 function setUserInformation(user: User, rootElem: HTMLElement, truncateIds: boolean) {
-    rootElem.querySelector<HTMLTableCellElement>("._email")!.innerText = user.entraUsername ?? "N/A";
+    rootElem.querySelector<HTMLTableCellElement>("._email")!.innerText =
+        user.entraUsername ?? "N/A";
     rootElem.querySelector<HTMLTableCellElement>("._username")!.innerText = user.username ?? "-";
     rootElem.querySelector<HTMLTableCellElement>("._first-name")!.innerText = user.firstName ?? "-";
     rootElem.querySelector<HTMLTableCellElement>("._last-name")!.innerText = user.lastName ?? "-";
@@ -221,12 +238,13 @@ function setUserInformation(user: User, rootElem: HTMLElement, truncateIds: bool
 
     const startYear = rootElem.querySelector<HTMLElement>("._start-year");
     if (startYear instanceof HTMLInputElement) {
-        (startYear as HTMLInputElement).value = user.startYear?.toString() ?? "-";
+        (startYear as HTMLInputElement).value = user.startYear?.toString() ?? "";
     } else {
-        startYear!.innerText = user.startYear?.toString() ?? "-";
+        startYear!.innerText = user.startYear?.toString() ?? "";
     }
 
-    rootElem.querySelector<HTMLInputElement>("._start-year")!.value = user.startYear?.toString() ?? "-";
+    rootElem.querySelector<HTMLInputElement>("._start-year")!.value =
+        user.startYear?.toString() ?? "";
     rootElem.querySelector<HTMLTableCellElement>("._id")!.innerText = truncateIds
         ? truncateId(user.id)
         : user.id ?? "N/A";
@@ -241,9 +259,13 @@ function readUserData(rootElem: HTMLElement): ChangableUserData {
         throw new Error("Invalid permissions value");
     }
 
-    const startYear = parseInt(rootElem.querySelector<HTMLInputElement>("._start-year")!.value);
-    if (Number.isNaN(startYear)) {
-        throw new Error("Invalid start year value");
+    let startYear: null | number = null;
+    const startYearStr = rootElem.querySelector<HTMLInputElement>("._start-year")!.value;
+    if (startYearStr) {
+        startYear = parseInt(startYearStr);
+        if (Number.isNaN(startYear)) {
+            throw new Error("Invalid start year value");
+        }
     }
 
     return {
@@ -293,7 +315,10 @@ function addUserDialogListener(user: User, elem: HTMLElement) {
             if (setPermissions) {
                 const success = await userClient.setPermissions(user.id, data.permissions);
                 if (!success) {
-                    showDialog("error-dialog", "Oikeuksien päivittäminen epäonnistui, katso konsoli (F12 -> console)");
+                    showDialog(
+                        "error-dialog",
+                        "Oikeuksien päivittäminen epäonnistui, katso konsoli (F12 -> console)"
+                    );
                     return;
                 }
             }
@@ -301,14 +326,16 @@ function addUserDialogListener(user: User, elem: HTMLElement) {
             if (setPermissions || setStartYear) {
                 showDialog(
                     "success-dialog",
-                    `Päivitettiin onnistuneesti käyttäjän tiedot: ${setPermissions ? "oikeudet" : ""} ${
-                        setStartYear ? "aloitusvuosi" : ""
-                    }`
+                    `Päivitettiin onnistuneesti käyttäjän tiedot: ${
+                        setPermissions ? "oikeudet" : ""
+                    } ${setStartYear ? "aloitusvuosi" : ""}`
                 );
             }
 
-            elem.querySelector<HTMLElement>("._permissions")!.innerText = data.permissions.toString();
-            elem.querySelector<HTMLElement>("._start-year")!.innerText = data.startYear.toString();
+            elem.querySelector<HTMLElement>("._permissions")!.innerText =
+                data.permissions.toString();
+            elem.querySelector<HTMLElement>("._start-year")!.innerText =
+                data.startYear?.toString() ?? "";
 
             user.startYear = data.permissions;
             user.permissions = data.permissions;
@@ -347,7 +374,11 @@ async function loadPermissionValues() {
     addRole("Fuksi", "Freshman", permissions.roles.freshman);
     addRole("Tutor", "Tutor", permissions.roles.tutor);
     addRole("Admin", "Admin", permissions.roles.admin);
-    addRole("Sudo (Täytyy asettaa muualla)", "Sudo (Set on separate config)", permissions.roles.sudo);
+    addRole(
+        "Sudo (Täytyy asettaa muualla)",
+        "Sudo (Set on separate config)",
+        permissions.roles.sudo
+    );
 
     function addRole(keyFi: string, keyEn: string, value: number) {
         const freshman = appendTemplateElement<HTMLElement>("role-template", container);

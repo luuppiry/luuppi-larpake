@@ -4,8 +4,8 @@ import {
     appendTemplateElement,
     getSearchParams,
     isEmpty,
-    pushUrlState,
     removeChildren,
+    replaceUrlState,
     throwIfAnyNull,
 } from "../helpers.js";
 import { Group } from "../models/user.js";
@@ -71,6 +71,16 @@ class GroupSelector {
     }
 
     async render() {
+        replaceUrlState((x) => {
+            x.set(Q_PAGE_OFFSET, this.offset.toString());
+            x.set(Q_PAGE_SIZE, this.pageSize.toString());
+            if (this.search) {
+                x.set(Q_SEARCH, this.search);
+            } else {
+                x.delete(Q_SEARCH);
+            }
+        });
+
         const groups = await groupClient.getGroupsPaged(
             false,
             isEmpty(this.search) ? null : this.search,
@@ -93,16 +103,6 @@ class GroupSelector {
         this.isLastPage = groups.nextPage < 0;
         this.prevBtn.disabled = !(this.offset > 0);
         this.nextBtn.disabled = this.isLastPage;
-
-        pushUrlState((x) => {
-            x.set(Q_PAGE_OFFSET, this.offset.toString());
-            x.set(Q_PAGE_SIZE, this.pageSize.toString());
-            if (this.search) {
-                x.set(Q_SEARCH, this.search);
-            } else {
-                x.delete(Q_SEARCH);
-            }
-        });
     }
 
     #setData(group: Group, container: HTMLElement) {
