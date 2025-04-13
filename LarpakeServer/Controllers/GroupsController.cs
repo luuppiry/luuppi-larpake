@@ -240,7 +240,7 @@ public class GroupsController : ExtendedControllerBase
         }
 
         // Joined successfully, give common read permissions
-        Result<int> permitted = await _userDb.AppendPermissions(userId, Permissions.CommonRead);
+        Result<int> permitted = await _userDb.AppendPermissions(userId, Permissions.Freshman);
         if (permitted.IsError)
         {
             _logger.LogError("User {userId} did not get common read after group join.", userId);
