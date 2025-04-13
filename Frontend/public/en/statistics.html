@@ -3,42 +3,51 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" href="/styles/statistics.css" />
         <title>Luuppi - Lärpäke</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-            rel="stylesheet"
-        />
-        <!-- Import header and side panel -->
-        <script src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
+        <link rel="stylesheet" href="/styles/statistics.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
     </head>
     <body>
+        <template id="statistics-value">
+            <li class="stat-section">
+                <section>
+                    <h3 class="_title">STATISTIC TITLE</h3>
+                    <p>
+                        <span class="_value">X</span>
+                        <span>/</span>
+                        <span class="_max">Y</span>
+                    </p>
+                </section>
+            </li>
+        </template>
         <ui-header></ui-header>
         <side-panel lang="en"></side-panel>
-
-        <div class="container">
-            <div align="left">Lärpäke / My statistics</div>
-            <p class="greeting">Welcome dear Fuksi, You are at great speed!</p>
-            <ul class="stats-list">
-                <li>FIRST STEPS <span class="stat-value">21 / 49</span></li>
-                <li>FUCKING SMALL LUUPPIAN<span class="stat-value">17 / 58</span></li>
-                <li>PII-CLUB HAPPENINGS <span class="stat-value">5 / 10</span></li>
-                <li>NORMAL DAY <span class="stat-value">20 / 23</span></li>
-                <li>ACADEMIC LIFE <span class="stat-value">8 / 32</span></li>
-                <li>POWER <span class="stat-value">35 / 54</span></li>
-                <li>SPORTY <span class="stat-value">13 / 25</span></li>
-                <li>EVERYTHING <span class="stat-value">24 / 33</span></li>
-                <li>IN TAMPERE<span class="stat-value">18 / 20</span></li>
+        <div class="page">
+            <h2 id="larpake-page-name">Lärpäke / Own statistics</h2>
+            <p class="greeting">
+                Hello dear Fuksi, you are at a great phase!</p>
+            <ul id="statistics-container" class="stats-list">
+                <li>
+                    <section class="error">
+                        <h3>Error!</h3>
+                        <p>
+                            Failed to retrieve statistcs data from the server. Another reason is
+                            that you might not be attending any Lärpäke. 
+                        </p>
+                    </section>
+                </li>
             </ul>
-            <div class="total">YHTEENSÄ: <span class="total-value">161 / 304</span></div>
+            <div class="total">TOTAL: <span class="total-value">161 / 304</span></div>
             <div class="pagination">
-                <a href="larpake.html?page=14"><button id="prev-page" onclick="goToPage(14)">&lt;</button></a>
-                <span id="page-info">16 / 16</span>
+                <a id="back-btn" href="larpake.html">
+                    <button id="prev-page">&lt;</button>
+                </a>
+                <p id="page-info">16 / 16</p>
                 <button id="next-page" disabled>&gt;</button>
             </div>
         </div>
+
+        <script type="module" src="/src/statistics.js"></script>
     </body>
 </html>

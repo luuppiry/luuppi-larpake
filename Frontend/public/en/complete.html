@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Luuppi - Lärpäke</title>
+        <link rel="stylesheet" href="/styles/complete.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+    </head>
+    <body>
+        <dialog id="success-dialog" class="default-shadow">
+            <section>
+                <h1>Attendance marked</h1>
+                <p>Task attendance was successfully marked as completed with id:</p>
+                <p class="_id">id-ref</p>
+                <button class="_ok primary-btn hover-scale cursor-pointer">OK</button>
+            </section>
+        </dialog>
+        <ui-header></ui-header>
+        <side-panel></side-panel>
+        <form-container class="no-pad">
+            <section id="info">
+                <h2>Mark completed</h2>
+                <h3 class="section-title">To user:</h3>
+                <p class="section-value">
+                    <span class="_first-name">first name</span>
+                    <span class="_last-name">last name</span>
+                    (<span class="_username">username</span>)
+                </p>
+
+                <h3 class="section-title">Task:</h3>
+                <p class="section-value">
+                    <span class="_task">Task name</span>
+                    (<span class="_points">X</span><span>P</span>)
+                </p>
+                <p class="_completed hidden">Task is already completed!</p>
+                <div class="btn-container">
+                    <button id="cancel-btn" class="secondary-btn hover-scale cursor-pointer">
+                        Cancel
+                    </button>
+                    <button class="_submit submit primary-btn hover-scale cursor-pointer" disabled>
+                        Accept
+                    </button>
+                </div>
+            </section>
+        </form-container>
+    </body>
+    <script type="module" src="/src/complete.js"></script>
+</html>

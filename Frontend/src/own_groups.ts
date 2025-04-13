@@ -51,8 +51,6 @@ function renderGroupMembers(members: GroupMemberCollection, tutors: HTMLElement,
     }
     for (const freshman of members.members){
         const elem = appendTemplateElement<HTMLElement>("freshman-template", freshmen)!
-        elem.querySelector<HTMLSpanElement>("._first-name")!.innerText = freshman.firstName ?? "N/A"
-        elem.querySelector<HTMLSpanElement>("._last-name")!.innerText = freshman.lastName ?? "N/A"
         elem.querySelector<HTMLSpanElement>("._username")!.innerText = freshman.username ?? "???"
     }
     

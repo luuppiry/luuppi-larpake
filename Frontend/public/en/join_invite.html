@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Luuppi - Join</title>
+        <link rel="stylesheet" href="/styles/join_invite.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+        <script type="module" src="/src/join_invite.js"></script>
+    </head>
+    <body>
+        <dialog id="join-failed-dialog" class="dialog error max-width-400">
+            <section>
+                <h2>Something went wrong!</h2>
+                <p>
+                    Looks like joining failed. You should probably try again and verify link
+                    validity from your tutor!
+                </p>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+
+        <dialog id="malformed-key-dialog" class="dialog error max-width-400">
+            <section>
+                <h2>Something went wrong!</h2>
+                <p>
+                    Looks like joining failed. You should probably try again and verify link
+                    validity from your tutor!a!
+                </p>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+
+        <dialog id="link-expired-dialog" class="dialog error max-width-400">
+            <section>
+                <h2>Link expired!</h2>
+                <p>
+                    Looks like the link you are trying to use is expired and it cannot be used
+                    anymore. Please, ask your tutor for valid link!
+                </p>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+
+        <ui-header></ui-header>
+        <side-panel> </side-panel>
+        <form-container class="shadow">
+            <section class="group-info">
+                <h2 class="join-text">Join Group</h2>
+                <img src="/group-profile.png" class="profile-picture" />
+                <h3 class="group-title">
+                    <span id="group-name">Group</span> (<span id="group-number"></span>)
+                </h3>
+                <p>
+                    You are invited to join a group! Are you ready to take your first steps in the
+                    magical world of Lärpäke? Finalize joining by pressing the button below!
+                </p>
+
+                <button id="join-btn" class="primary-btn">Join!</button>
+            </section>
+        </form-container>
+    </body>
+</html>

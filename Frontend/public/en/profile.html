@@ -3,126 +3,147 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Lärpäke - Profiili</title>
-
-        <link
-            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-            rel="stylesheet"
-        />
+        <title>Lärpäke - Profile</title>
         <link rel="stylesheet" href="/styles/profile.css" />
-        <link rel="stylesheet" href="/styles/common.css" />
-        <script src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
-        <script>
-            if (!Object.keys(sessionStorage).find(key => key.includes("msal.account.keys"))){
-                window.location.replace("unauthorized.html");
-            }
-        </script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
     </head>
+
     <body>
+        <dialog id="max-signatures-dialog" class="dialog error">
+            <section>
+                <h1>Max count reached!</h1>
+                <p>
+                    <b>You can add no more signatures </b> before removing old ones. You can get
+                    information about removing signatures from
+                    <a href="mailto:webmaster@luuppi.en">system admin</a>. However, if you had any
+                    available signature slots, some signatures might have been saved.
+                </p>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+
+        <dialog id="upload-failed-dialog" class="dialog">
+            <section>
+                <h1>Upload failed!</h1>
+                <p>
+                    Saving a signature failed. You can read more information from the console (F12
+                    -> console).
+                </p>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+
+        <dialog id="saved-dialog" class="dialog max-width-400">
+            <section>
+                <h1>Signature saved!</h1>
+                <p><b>Press OK to update the page.</b> Not updating the page might cause errors.</p>
+                <button class="_ok primary-btn">OK</button>
+            </section>
+        </dialog>
+        <template id="signature-template">
+            <li class="_signature signature-field" style="padding: 5px">
+                <p class="_id" hidden></p>
+                <svg
+                    class="_svg"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 450 100"
+                    style="height: 100"
+                ></svg>
+            </li>
+        </template>
         <!-- This dialog does not show on ui if not called from js side -->
         <dialog id="signature-dialog" class="signature-dialog">
-            <div class="section">
-                <div class="section-filler">
-                    <!-- Following empty looking div is important for auto scaling (in css side) -->
-                    <div>
-                        <h1>Lisää signeeraus</h1>
-                        <p>Piirrä alla olevaan ruutuun</p>
-                        <!-- Setting height and width in css mess up the canvas 2d context -->
-                        <canvas height="100" width="450" id="signature-canvas" class="signature-canvas"></canvas>
-                        <div class="dialog-btn-container">
-                            <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">OK</button>
-                            <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">Peruuta</button>
-                        </div>
-                    </div>
+            <form-container>
+                <h1>Add signature</h1>
+                <p>Draw to the canvas below</p>
+                <!-- Setting height and width in css mess up the canvas 2d context -->
+                <canvas
+                    height="100"
+                    width="450"
+                    id="signature-canvas"
+                    class="signature-canvas"
+                ></canvas>
+                <div class="dialog-btn-container">
+                    <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">OK</button>
+                    <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">
+                        Cancel
+                    </button>
                 </div>
-                <div class="stripe"></div>
-            </div>
+            </form-container>
         </dialog>
 
         <ui-header></ui-header>
         <side-panel></side-panel>
 
-        <div class="centering">
-            <div class="section">
-                <div class="section-filler">
-                    <!-- Following empty looking div is important for auto scaling (in css side) -->
-                    <div>
-                        <h2>User information</h2>
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Email</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Email from luuppi.fi database</p>
-                        </div>
-                        <p id="id-field" class="data-value">webmaster@luuppi.fi</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Forename(s)</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">All your official first names. This is information required by section 11 of the Associations Act,
-                                which will be verified upon joining the association. Will not be displayed publicly.</p>
-                        </div>
-                        <p id="first-name-field" class="data-value">Keijo</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Surname</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Official surame. This is information required by section 11 of the Associations Act,
-                                which will be verified upon joining the association. Will not be displayed publicly.</p>
-                        </div>
-                        <p id="last-name-field" class="data-value">Kangas</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Username</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Username is used to identify you on the website. It must be 3-30 characters long. Username can be displayed publicly.</p>
-                        </div>
-                        <p id="username-field" class="data-value">keijok123</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Group</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">All groups you are participant</p>
-                        </div>
-                        <p id="groups-field" class="data-value">2024: Group 11 - High five!</p>
-                        <p id="groups-field" class="data-value">2025: Group 12 - High six!</p>
-                        <p id="groups-field" class="data-value">2026: Group 13 - High seven!</p>
+        <main>
+            <form-container>
+                <section id="profile-container">
+                    <h2>User profile</h2>
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Email</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Email in luuppi.fi system</p>
                     </div>
-                </div>
-                <div class="stripe"></div>
-            </div>
-        </div>
+                    <p class="_email data-value">your email</p>
 
-        <div class="centering" style="padding: 0 0 20px 0">
-            <div class="section">
-                <div class="section-filler">
-                    <!-- Following empty looking div is important for auto scaling (in css side) -->
-                    <div>
-                        <h2>Signature</h2>
-                        <p>
-                            Members with the Tutor role can add up to 5 signatures of their own,
-                            which will appear on the Lärpäke pages next to the recorded event.
-                        </p>
-                        <ul class="signature-container" id="signature-container">
-                            <li id="show-dialog-btn" class="signature-field">
-                                <img src="/icons/plus_icon.svg" alt="add new icon" />
-                            </li>
-
-                            <li class="signature-field signature-unused" id="default-signature" style="padding: 5px">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 450 100"
-                                    id="signature-svg"
-                                    style="height: 100"
-                                ></svg>
-                            </li>
-                        </ul>
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">First name</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">You official first name (Not shown publicly)</p>
                     </div>
-                </div>
-                <div class="stripe"></div>
-            </div>
-        </div>
+                    <p class="_first-name data-value">your first name</p>
+
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Sukunimi</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Official last name (Not shown publicly)</p>
+                    </div>
+                    <p class="_last-name data-value">your last name</p>
+
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Username</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Username (can be shown publicly)</p>
+                    </div>
+                    <p class="_username data-value">you username</p>
+
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Groups</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">All fuksi groups you are part of</p>
+                    </div>
+                    <ul class="_groups groups-container">
+                        <li>&mdash;</li>
+                    </ul>
+
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Role</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">You account role permissions in the system</p>
+                    </div>
+                    <p class="_role data-value">roolisi</p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h2>Signature</h2>
+                    <p>
+                        People with tutor role can add up to 5 of their own signatures.
+                        Sigantures will appear on the Lärpäke pages in the completed tasks. 
+                    </p>
+                    <ul id="signature-container" class="signature-container">
+                        <li id="show-dialog-btn" class="signature-field cursor-pointer">
+                            <img src="/icons/plus_icon.svg" alt="add new icon" />
+                        </li>
+                    </ul>
+                    <button id="save-signatures-btn" class="primary-btn">Save</button>
+                </section>
+            </form-container>
+        </main>
     </body>
 
-    <script type="module" src="/src/profile.ts"></script>
+    <script type="module" src="/src/profile.js"></script>
 </html>

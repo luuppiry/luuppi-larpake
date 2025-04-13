@@ -5,48 +5,55 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Luuppi - Lärpäke</title>
         <link rel="stylesheet" href="/styles/index.css" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-            rel="stylesheet"
-        />
-        <!-- Import header and side panel -->
-        <link rel="stylesheet" href="/styles/common.css" />
-        <script src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/event-previewer.js"></script>
     </head>
     <body>
         <ui-header></ui-header>
         <side-panel lang="en"></side-panel>
 
-        <div class="container">
-            <div class="image-section">
-                <img src="/kiasa.png" alt="Kiasa" />
-                <h2>ENTER THE MAGICAL WORLD OF LÄRPÄKE</h2>
-                <a href="larpake.html" class="main-site-button">⭢</a>
-            </div>
-        </div>
+        <template id="larpake-template">
+            <li class="container hover-scale-03 cursor-pointer">
+                <article class="larpake">
+                    <a class="_href">
+                        <img class="_img image" src="/kiasa.png" alt="Lärpäkkeen tunnelmaa ja teemaa kuvaava kuva." />
+                        <h2 class="_title title" style="text-align: center">Title</h2>
+                        <div class="_href upcoming-events-btn bigger-icon" style="display: flex; justify-content: end">
+                            <p style="margin: 0">⭢</p>
+                        </div>
+                    </a>
+                </article>
+            </li>
+        </template>
 
-        <div class="container">
-            <div class="events-section">
-                <h2>COMING EVENTS</h2>
-                <div class="event">
-                    <h3>Wed 27. Nov. - International Christmas Party</h3>
-                    <p>17:00–21:00</p>
+        <section>
+            <ul id="larpake-container">
+                <section class="container">
+                    <h2>Full of emptiness!</h2>
+                    <p>You have not yet attended any Lärpäke.</p>
                     <p>
-                        Event is mainly for international students, but national students are also welcome! This event
-                        is in english.
+                        If you know you to be attending some Lärpäke, the problem might lie somewhere
+                        on our servers or internet connection. If this keeps happening, contact system
+                        administration.
                     </p>
-                </div>
-                <div class="event">
-                    <h3>Thu 28. Nov. - Science students' christmas voyage</h3>
-                    <p>Thu 28.11 17:00 - Fri 29.11 12:00</p>
-                    <p>Tickets are sold in the Hervanta campus Sähkötalo lobby and Kauppi campus medicine lobby.</p>
-                </div>
-            </div>
-        </div>
+                </section>
+            </ul>
+        </section>
 
-        <script type="module" src="/src/index.ts"></script>
+        <section class="container">
+            <h2>COMING EVENTS</h2>
+            <ul id="event-container" class="event-container">
+                <!-- Go to upcoming events page button -->
+                <li class="hover-scale cursor-pointer flex-last">
+                    <a href="upcoming_events.html" class="upcoming-events-btn flex-row">
+                        <span class="events-button-text">Explore other events</span>
+                        <span class="bigger-icon">⭢</span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+
+        <script type="module" src="/src/index.js"></script>
     </body>
 </html>

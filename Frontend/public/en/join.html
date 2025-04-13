@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Luuppi - Liity</title>
+        <link rel="stylesheet" href="/styles/join.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+        <script type="module" src="/src/join.js"></script>
+    </head>
+    <body>
+        <ui-header></ui-header>
+        <side-panel></side-panel>
+        <form-container class="shadow">
+            <section class="content">
+                <h2>Join group</h2>
+                <p>
+                    In this view, you can join a Fuksi group, by using a 8 character code
+                    given by your tutors. Happy Lärpäke moments!
+                </p>
+                <h3 class="code-title">Invite code</h3>
+                <div class="box-container">
+                    <input id="first-char-field" class="_char box" maxlength="1"></input>
+                    <input class="_char box" maxlength="1"></input>
+                    <input class="_char box" maxlength="1"></input>
+                    <input class="_char box" maxlength="1"></input>
+                    <input class="_char box" maxlength="1"></input>
+                    <input class="_char box" maxlength="1"></input>
+                    <input class="_char box" maxlength="1"></input>
+                    <input class="_char box" maxlength="1"></input>
+                </div>
+                <button class="_join join-btn primary-btn hover-scale">Join</button>
+            </section>
+        </form-container>
+
+    
+    </body>
+</html>

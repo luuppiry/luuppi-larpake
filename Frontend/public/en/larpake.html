@@ -3,38 +3,54 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" href="/styles/larpake.css" />
         <title>Luuppi - Lärpäke</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-            rel="stylesheet"
-        />
-        <!-- Import header and side panel -->
-        <script src="/src/components/side-panel.ts"></script>
-        <script type="module" src="/src/components/ui-header.ts"></script>
+        <link rel="stylesheet" href="/styles/larpake.css" />
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/side-panel.js"></script>
     </head>
     <body>
-        <ui-header></ui-header>
-        <side-panel lang="en"></side-panel>
+        <template id="title-template">
+            <li>
+                <article>
+                    <h3 class="_title section-title"></h3>
+                </article>
+            </li>
+        </template>
 
-        <div class="container">
-            <div id="larpake-page-name">Lärpäke</div>
-            <div id="larpake-button-container">
+        <template id="task-template">
+            <li>
+                <article>
+                    <h3 class="task-title">
+                        <span class="_title"></span>
+                        <span class="_points">0</span>
+                    </h3>
+                    <button class="_btn _signature task-btn hover-scale-03">
+                        <h4 class="_state">COMPLETED</h4>
+                    </button>
+                </article>
+            </li>
+        </template>
+
+        <ui-header side-panel-name="side-panel-element"></ui-header>
+        <side-panel lang="en"></side-panel>
+        <div class="page">
+            <h2 id="larpake-page-name">Lärpäke</h2>
+            <ul id="larpake-task-container" class="task-container">
                 <!-- Buttons will be dynamically generated here -->
-                <button class="button">
-                    <div class="button-text">error</div>
-                    <div class="button-image">ERROR: Page not found!</div>
-                </button>
-            </div>
+                <section class="error">
+                    <h3>Error!</h3>
+                    <p>
+                        Either loading the Lärpäke from the server failed or you are not attending
+                        any...
+                    </p>
+                </section>
+            </ul>
             <div class="pagination">
-                <button id="prev-page" onclick="changePage(-1)" disabled>&lt;</button>
+                <button id="prev-page" disabled>&lt;</button>
                 <span id="page-info">1 / 1</span>
-                <button id="next-page" onclick="changePage(1)">&gt;</button>
+                <button id="next-page">&gt;</button>
             </div>
         </div>
-
-        <script src="/src/larpake.js"></script>
     </body>
+    <script type="module" src="/src/larpake.js"></script>
 </html>
