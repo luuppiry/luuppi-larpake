@@ -259,11 +259,6 @@ export default class HttpClient {
         const event: UserAuthenticatedEvent = new CustomEvent(AUTHENTICATED_EVENT_NAME, {
             detail: data,
         });
-
-        document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
-            console.log("invoked")
-        });
-
         document.dispatchEvent(event);
     }
 }

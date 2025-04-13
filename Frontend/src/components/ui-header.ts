@@ -15,19 +15,6 @@ class Header extends HTMLElement {
     }
 
     async connectedCallback() {
-        const user = await this.client.trySilentLogin();
-        document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
-            const user = e as UserAuthenticatedEvent;
-            if (user) {
-                const permissions = user.detail.permissions;
-                // Does new auth have more permissions
-                if (hasPermissions(this.permissions, permissions)) {
-                    this.permissions = permissions;
-                    this.resetProfileBtn(permissions);
-                }
-            }
-        });
-
         const hasLanguageOptions: boolean =
             this.getAttribute("lang-options") === "false" ? false : true;
         const indexPath = this.#add_path_correction("index.html");
@@ -55,6 +42,19 @@ class Header extends HTMLElement {
             <div id="ui-header-open-menu-btn" class="menu-icon">☰</div>
         </header>
          `;
+
+        const user = await this.client.trySilentLogin();
+        document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
+            const user = e as UserAuthenticatedEvent;
+            if (user) {
+                const permissions = user.detail.permissions;
+                // Does new auth have more permissions
+                if (hasPermissions(this.permissions, permissions)) {
+                    this.permissions = permissions;
+                    this.resetProfileBtn(permissions);
+                }
+            }
+        });
 
         this.resetProfileBtn(user?.permissions ?? null);
 
