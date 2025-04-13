@@ -41,6 +41,12 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
+            VITE_API_BASE_URL=${{ secrets.API_BASE_URL }}
+            VITE_ENTRA_CLIENT_ID=${{ secrets.ENTRA_CLIENT_ID }}
+            VITE_ENTRA_TEDANT_ID=${{ secrets.ENTRA_TEDANT_ID }}
+            VITE_ENTRA_SERVER=${{ secrets.ENTRA_SERVER_NAME }}
+            VITE_ENTRA_SCOPE=${{ secrets.ENTRA_AUTH_SCOPE }}
+            VITE_ENTRA_REDIRECT_URL=${{ secrets.FRONTEND_AUTH_REDIRECT_URL }}
           platforms: linux/amd64
           provenance: false
 
@@ -57,12 +63,6 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
-            VITE_API_BASE_URL=${{ secrets.API_BASE_URL }}
-            VITE_ENTRA_CLIENT_ID=${{ secrets.ENTRA_CLIENT_ID }}
-            VITE_ENTRA_TEDANT_ID=${{ secrets.ENTRA_TEDANT_ID }}
-            VITE_ENTRA_SERVER=${{ secrets.ENTRA_SERVER_NAME }}
-            VITE_ENTRA_SCOPE=${{ secrets.ENTRA_AUTH_SCOPE }}
-            VITE_ENTRA_REDIRECT_URL=${{ secrets.FRONTEND_AUTH_REDIRECT_URL }}
           platforms: linux/amd64
           provenance: false
 
