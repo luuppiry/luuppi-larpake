@@ -8,11 +8,6 @@
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/form-container.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
-        <script>
-            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
-                window.location.replace("unauthorized.html");
-            }
-        </script>
     </head>
     <dialog id="common-data-saved-dialog" class="max-width-400">
         <h1>Yleiset tiedot tallennettu</h1>

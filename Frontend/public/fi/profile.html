@@ -8,11 +8,6 @@
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
         <script type="module" src="/src/components/form-container.js"></script>
-        <script>
-            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
-                window.location.replace("unauthorized.html");
-            }
-        </script>
     </head>
 
     <body>

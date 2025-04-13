@@ -7,11 +7,6 @@
         <link rel="stylesheet" href="/styles/admin/admin.css" />
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
-        <script>
-            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
-                window.location.replace("../unauthorized.html");
-            }
-        </script>
     </head>
     <body>
         <ui-header path-depth="1"></ui-header>

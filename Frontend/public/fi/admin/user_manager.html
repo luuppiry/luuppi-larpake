@@ -4,11 +4,6 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Document</title>
-        <script>
-            if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
-                window.location.replace("unauthorized.html");
-            }
-        </script>
         <link rel="stylesheet" href="/styles/admin/user_manager.css" />
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
