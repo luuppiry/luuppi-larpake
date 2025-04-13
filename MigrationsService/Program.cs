@@ -30,7 +30,6 @@ else
     connectionString = config.GetConnectionString("Default")!;
     logger.LogInformation("Using connection string from appsettings.");
 }
-
 if (connectionString is null)
 {
     logger.LogError("No connection string found.");

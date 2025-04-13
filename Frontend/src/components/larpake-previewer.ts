@@ -38,34 +38,35 @@ export default class LarpakePreview extends HTMLLIElement {
         const numId = this.#getAvailableIdNum();
 
         this.innerHTML = `
-            <a id="larpake-${numId}-link" class="section hover-scale link-section" style="margin: 0px">
-                <div class="stripe"></div>
-                <div class="section-filler">
-                    <div>
-                        <h3 id="larpake-${numId}-title" class="larpake-title">Kiasan SeikkailuLärpäke 2024</h3>
-                        <div style="display: flex" class="cursor-pointer">
-                            <div class="data-container" style="flex: 1">
-                                <p>Vuosi: <b id="larpake-${numId}-year">20XX</b></p>
-                                <p>Osioita: <b id="larpake-${numId}-sections">X</b> kpl</p>
-                                <p>Tehtäviä: <b id="larpake-${numId}-tasks">X</b> kpl</p>
-                                <p>Yhteensä: <b id="larpake-${numId}-total">X</b> pistettä</p>
-                                <p>Ryhmiä: <b id="larpake-${numId}-groups">X</b> kpl</p>
+            <a id="larpake-${numId}-link" class="hover-scale link-section" style="margin: 0px">
+                <form-container>
+                    <h3 id="larpake-${numId}-title" class="larpake-title">Kiasan SeikkailuLärpäke 2024</h3>
+                    <div style="display: flex" class="cursor-pointer">
+                        <div class="data-container" style="flex: 1">
+                            <p>Vuosi: <b id="larpake-${numId}-year">20XX</b></p>
+                            <p>Osioita: <b id="larpake-${numId}-sections">X</b> kpl</p>
+                            <p>Tehtäviä: <b id="larpake-${numId}-tasks">X</b> kpl</p>
+                            <p>Yhteensä: <b id="larpake-${numId}-total">X</b> pistettä</p>
+                            <p>Ryhmiä: <b id="larpake-${numId}-groups">X</b> kpl</p>
 
-                                <p class="line-breaking">
-                                    <span class="line">Luotu: </span>
-                                    <span id="larpake-${numId}-created" class="line">20.2.2024 klo 12:30</span>
-                                </p>
-                                <p class="line-breaking">
-                                    <span>Muokattu: </span>
-                                    <span id="larpake-${numId}-edited">24.2.2024 klo 00.23</span>
-                                </p>
-                            </div>
-                            <div class="image-container">
-                                <img id="larpake-${numId}-title-image" src="/kiasa.png" style="aspect-ratio: 1; width: 100%" />
-                            </div>
+                            <p class="line-breaking">
+                                <span class="line">Luotu: </span>
+                                <span id="larpake-${numId}-created" class="line">20.2.2024 klo 12:30</span>
+                            </p>
+                            <p class="line-breaking">
+                                <span>Muokattu: </span>
+                                <span id="larpake-${numId}-edited">24.2.2024 klo 00.23</span>
+                            </p>
+                        </div>
+                        <div class="image-container">
+                            <img
+                                id="larpake-${numId}-title-image"
+                                src="/kiasa.png"
+                                style="aspect-ratio: 1; width: 100%"
+                            />
                         </div>
                     </div>
-                </div>
+                </form-container>
             </a>
             `;
         this.id = `${idStart}${numId}`;

@@ -7,6 +7,8 @@ body {
     margin-bottom: 150px;
 }
 
+
+
 .section {
     max-width: 600px !important;
 }
@@ -16,7 +18,6 @@ body {
     padding: 0;
     margin: 0;
 }
-
 
 .groups-container > li,
 .data-value {
@@ -49,23 +50,18 @@ body {
 }
 
 /* Dialog styles */
-
 .signature-dialog {
     /* Dialog screen styling */
-    border-radius: 5px;
-    border-width: 0px;
-    padding: 0px;
+    padding: 0;
+    border: none;
 }
 
-.signature-dialog > div {
-    margin: 0px;
-    padding: 0px;
-    border-radius: 0px;
+.signature-dialog {
+    background-color: transparent;
 }
 
-.signature-dialog > div > div {
-    padding: 0px;
-    margin: 0px;
+.signature-dialog .section {
+    margin: 0 !important;
 }
 
 .signature-canvas {
@@ -114,7 +110,3 @@ body {
 .signature-unused {
     display: none;
 }
-
-
-
-

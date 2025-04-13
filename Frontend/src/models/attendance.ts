@@ -1,5 +1,5 @@
-import { LarpakeTask } from "./larpake";
-import { User } from "./user";
+import { LarpakeTask } from "./larpake.js";
+import { User } from "./user.js";
 
 export type Completion = {
     id: string;

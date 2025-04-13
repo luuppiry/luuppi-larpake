@@ -1,5 +1,5 @@
 import AttendanceClient from "./api_client/attendance_client.js";
-import { removeAttendanceCodeHeader as removeAttendanceCodeHeader } from "./builders";
+import { removeAttendanceCodeHeader as removeAttendanceCodeHeader } from "./builders.js";
 import { Q_ATTENDANCE_KEY } from "./constants.js";
 import {
     getDocumentLangCode,

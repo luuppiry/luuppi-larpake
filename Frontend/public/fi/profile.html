@@ -7,6 +7,7 @@
         <link rel="stylesheet" href="/styles/profile.css" />
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
         <script>
             if (!Object.keys(sessionStorage).find((key) => key.includes("msal.account.keys"))) {
                 window.location.replace("unauthorized.html");
@@ -19,9 +20,10 @@
             <section>
                 <h1>Maksimimäärä saavutettu!</h1>
                 <p>
-                    <b>Et voi enää lisätä allekirjoituksia</b> ennen edellisten poistamista. Poistamisesta
-                    saat lisätietoa <a href="mailto:webmaster@luuppi.fi">ylläpidolta</a>.
-                    Mahdollisesti mahtuvat allekirjoitukset kuitenkin tallennetaan.
+                    <b>Et voi enää lisätä allekirjoituksia</b> ennen edellisten poistamista.
+                    Poistamisesta saat lisätietoa
+                    <a href="mailto:webmaster@luuppi.fi">ylläpidolta</a>. Mahdollisesti mahtuvat
+                    allekirjoitukset kuitenkin tallennetaan.
                 </p>
                 <button class="_ok primary-btn">OK</button>
             </section>
@@ -61,113 +63,94 @@
         </template>
         <!-- This dialog does not show on ui if not called from js side -->
         <dialog id="signature-dialog" class="signature-dialog">
-            <div class="section">
-                <div class="section-filler">
-                    <!-- Following empty looking div is important for auto scaling (in css side) -->
-                    <div>
-                        <h1>Lisää signeeraus</h1>
-                        <p>Piirrä alla olevaan ruutuun</p>
-                        <!-- Setting height and width in css mess up the canvas 2d context -->
-                        <canvas
-                            height="100"
-                            width="450"
-                            id="signature-canvas"
-                            class="signature-canvas"
-                        ></canvas>
-                        <div class="dialog-btn-container">
-                            <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">
-                                OK
-                            </button>
-                            <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">
-                                Peruuta
-                            </button>
-                        </div>
-                    </div>
+            <form-container>
+                <h1>Lisää signeeraus</h1>
+                <p>Piirrä alla olevaan ruutuun</p>
+                <!-- Setting height and width in css mess up the canvas 2d context -->
+                <canvas
+                    height="100"
+                    width="450"
+                    id="signature-canvas"
+                    class="signature-canvas"
+                ></canvas>
+                <div class="dialog-btn-container">
+                    <button id="submit-dialog-btn" class="dialog-btn dialog-ok-btn">OK</button>
+                    <button id="close-dialog-btn" class="dialog-btn dialog-cancel-btn">
+                        Peruuta
+                    </button>
                 </div>
-                <div class="stripe"></div>
-            </div>
+            </form-container>
         </dialog>
 
         <ui-header></ui-header>
         <side-panel></side-panel>
 
-        <section class="centering">
-            <div class="section">
-                <div class="section-filler">
-                    <!-- Following empty looking div is important for auto scaling (in css side) -->
-                    <div id="profile-container">
-                        <h2>Käyttäjätiedot</h2>
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Sähköposti</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Sähköposti luuppi.fi järjestelmässä</p>
-                        </div>
-                        <p class="_email data-value">sähköpostisi</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Etunimi</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Virallinen etunimi (ei näytetä julkisesti)</p>
-                        </div>
-                        <p class="_first-name data-value">etunimesi</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Sukunimi</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Virallinen sukunimi (ei näytetä julkisesti)</p>
-                        </div>
-                        <p class="_last-name data-value">sukunimesi</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Käyttäjänimi</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Käyttäjänimi (voi näkyä sivustolla)</p>
-                        </div>
-                        <p class="_username data-value">käyttäjänimesi</p>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Ryhmät</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Kaikki ryhmät joissa olet osallisena</p>
-                        </div>
-                        <ul class="_groups groups-container">
-                            <li>&mdash;</li>
-                        </ul>
-
-                        <div class="tooltipped-title">
-                            <h3 class="text-field">Rooli</h3>
-                            <img src="/icons/tooltip.svg" alt="tooltip icon" />
-                            <p class="tooltip">Tilisi oikeudet järjestelmässä</p>
-                        </div>
-                        <p class="_role data-value">roolisi</p>
+        <main>
+            <form-container>
+                <section id="profile-container">
+                    <h2>Käyttäjätiedot</h2>
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Sähköposti</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Sähköposti luuppi.fi järjestelmässä</p>
                     </div>
-                </div>
-                <div class="stripe"></div>
-            </div>
-        </section>
+                    <p class="_email data-value">sähköpostisi</p>
 
-        <section id="signature-section" class="centering" style="padding: 0 0 20px 0">
-            <div class="section">
-                <div class="section-filler">
-                    <!-- Following empty looking div is important for auto scaling (in css side) -->
-                    <div>
-                        <h2>Signeeraus</h2>
-                        <p>
-                            Tutor -roolilliset jäsenet voivat lisätä itselleen jopa 5 omaa
-                            signeerausta, jotka tulevat näkyviin lärpäkkeen sivuilla kirjatun
-                            tapahtuman kohdalle.
-                        </p>
-                        <ul id="signature-container" class="signature-container">
-                            <li id="show-dialog-btn" class="signature-field cursor-pointer">
-                                <img src="/icons/plus_icon.svg" alt="add new icon" />
-                            </li>
-                        </ul>
-                        <button id="save-signatures-btn" class="primary-btn">Tallenna</button>
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Etunimi</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Virallinen etunimi (ei näytetä julkisesti)</p>
                     </div>
-                </div>
-                <div class="stripe"></div>
-            </div>
-        </section>
+                    <p class="_first-name data-value">etunimesi</p>
+
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Sukunimi</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Virallinen sukunimi (ei näytetä julkisesti)</p>
+                    </div>
+                    <p class="_last-name data-value">sukunimesi</p>
+
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Käyttäjänimi</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Käyttäjänimi (voi näkyä sivustolla)</p>
+                    </div>
+                    <p class="_username data-value">käyttäjänimesi</p>
+
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Ryhmät</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Kaikki ryhmät joissa olet osallisena</p>
+                    </div>
+                    <ul class="_groups groups-container">
+                        <li>&mdash;</li>
+                    </ul>
+
+                    <div class="tooltipped-title">
+                        <h3 class="text-field">Rooli</h3>
+                        <img src="/icons/tooltip.svg" alt="tooltip icon" />
+                        <p class="tooltip">Tilisi oikeudet järjestelmässä</p>
+                    </div>
+                    <p class="_role data-value">roolisi</p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h2>Signeeraus</h2>
+                    <p>
+                        Tutor -roolilliset jäsenet voivat lisätä itselleen jopa 5 omaa signeerausta,
+                        jotka tulevat näkyviin lärpäkkeen sivuilla kirjatun tapahtuman kohdalle.
+                    </p>
+                    <ul id="signature-container" class="signature-container">
+                        <li id="show-dialog-btn" class="signature-field cursor-pointer">
+                            <img src="/icons/plus_icon.svg" alt="add new icon" />
+                        </li>
+                    </ul>
+                    <button id="save-signatures-btn" class="primary-btn">Tallenna</button>
+                </section>
+            </form-container>
+        </main>
     </body>
 
     <script type="module" src="/src/profile.js"></script>

@@ -4,7 +4,7 @@ import HttpClient from "./http_client.js";
 import RequestEngine from "./request_engine.js";
 
 export class EventClient extends RequestEngine {
-    constructor(client: HttpClient) {
+    constructor(client: HttpClient | null = null) {
         super(client ?? new HttpClient());
     }
 

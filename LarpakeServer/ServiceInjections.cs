@@ -4,6 +4,7 @@ using LarpakeServer.Data.PostgreSQL;
 using LarpakeServer.Data.TypeHandlers;
 using LarpakeServer.Identity;
 using LarpakeServer.Identity.EntraId;
+using LarpakeServer.Middleware;
 using LarpakeServer.Services;
 using LarpakeServer.Services.Implementations;
 using LarpakeServer.Services.Options;
@@ -240,6 +241,30 @@ public static class ServiceInjections
         return builder;
     }
 
+
+    public static WebApplication AddStaticFrontend(
+        this WebApplication app, ILogger<DITypeMarker> logger)
+    {
+        // Production add frontend page serving
+        logger.LogInformation("Adding frontend serving.");
+        app.AddFrontendServing(logger);
+        try
+        {
+            if (Directory.Exists("wwwroot"))
+            {
+                logger.LogInformation("wwwroot exists");
+            }
+            else
+            {
+                logger.LogInformation("wwwroot does not exist");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Error checking wwwroot directory");
+        }
+        return app;
+    }
 
 
     private static class Options
