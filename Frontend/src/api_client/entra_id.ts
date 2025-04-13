@@ -30,6 +30,13 @@ export default class EntraId {
     async fetchAzureLogin(): Promise<string | null> {
         await this.#initialize();
 
+        const redirectResponse = await this.msalInstance?.handleRedirectPromise();
+        if (redirectResponse != null) {
+            if (redirectResponse.accessToken) {
+                return redirectResponse.accessToken;
+            }
+        }
+
         const request = await this.#createRequest();
 
         if (this.accounts?.length! > 0) {
@@ -38,7 +45,8 @@ export default class EntraId {
                 return token;
             }
         }
-        return await this.fetchPopup(request);
+        await this.fetchRedirect(request);
+        throw new Error("Redirect failed, failed to authenicate user")
     }
 
     async fetchSilent(request: SilentRequest): Promise<string | null> {
@@ -70,7 +78,7 @@ export default class EntraId {
         }
     }
 
-    async fetchRedirect(request: RedirectRequest) {
+    async fetchRedirect(request: RedirectRequest): Promise<void> {
         await this.#initialize();
         try {
             await this.msalInstance!.acquireTokenRedirect(request);
@@ -109,7 +117,9 @@ export default class EntraId {
         //  Create client if not already initialized.
         if (this.msalInstance === null) {
             this.isInitialized = true;
-            this.msalInstance = await PublicClientApplication.createPublicClientApplication(this.config);
+            this.msalInstance = await PublicClientApplication.createPublicClientApplication(
+                this.config
+            );
             this.accounts = this.msalInstance.getAllAccounts() ?? [];
         }
     }
