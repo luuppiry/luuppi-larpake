@@ -88,12 +88,6 @@ services:
             - LARPAKE_ENTRA_SUDO_USERS=${ENTRA_SUDO_USERS}
             - LARPAKE_JWT_ISSUER=${JWT_ISSUER}
             - LARPAKE_JWT_AUDIENCE=${JWT_AUDIENCE}
-            - VITE_API_BASE_URL=${API_BASE_URL}
-            - VITE_ENTRA_CLIENT_ID=${ENTRA_CLIENT_ID}
-            - VITE_ENTRA_TEDANT_ID=${ENTRA_TEDANT_ID}
-            - VITE_ENTRA_SERVER=${ENTRA_SERVER_NAME}
-            - VITE_ENTRA_SCOPE=${ENTRA_AUTH_SCOPE}
-            - VITE_ENTRA_REDIRECT_URL=${FRONTEND_AUTH_REDIRECT_URL}
         depends_on:
             larpake_migrations_production:
                 condition: service_completed_successfully
