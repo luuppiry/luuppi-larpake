@@ -81,10 +81,11 @@ export default class HttpClient {
         }
 
         // Try API token refresh
-        const resp = await this.#fetchRefresh();
-        if (resp) {
+        this.accessToken = await this.#fetchRefresh();
+        if (this.accessToken) {
+            this.#authenticated(this.accessToken);
             return {
-                permissions: resp.permissions,
+                permissions: this.accessToken.permissions,
             };
         }
 
@@ -252,14 +253,17 @@ export default class HttpClient {
 
     async #authenticated(token: AccessToken) {
         const data: UserInfo = {
-            permissions: token.permissions
-        }
+            permissions: token.permissions,
+        };
 
         const event: UserAuthenticatedEvent = new CustomEvent(AUTHENTICATED_EVENT_NAME, {
-            detail: data
-        })
+            detail: data,
+        });
+
+        document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
+            console.log("invoked")
+        });
 
         document.dispatchEvent(event);
-
     }
 }

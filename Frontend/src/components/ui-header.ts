@@ -7,6 +7,7 @@ class Header extends HTMLElement {
     client: HttpClient;
     profilePath: string | null = null;
     adminPath: string | null = null;
+    permissions: Permissions | null = null;
 
     constructor() {
         super();
@@ -14,11 +15,22 @@ class Header extends HTMLElement {
     }
 
     async connectedCallback() {
+        const user = await this.client.trySilentLogin();
+        document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
+            const user = e as UserAuthenticatedEvent;
+            if (user) {
+                const permissions = user.detail.permissions;
+                // Does new auth have more permissions
+                if (hasPermissions(this.permissions, permissions)) {
+                    this.permissions = permissions;
+                    this.resetProfileBtn(permissions);
+                }
+            }
+        });
+
         const hasLanguageOptions: boolean =
             this.getAttribute("lang-options") === "false" ? false : true;
         const indexPath = this.#add_path_correction("index.html");
-
-        const user = await this.client.trySilentLogin();
 
         const langBtn = hasLanguageOptions
             ? ` <div class="menu-icon header-lang-btn"
@@ -83,6 +95,7 @@ class Header extends HTMLElement {
             });
 
             document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
+                console.log("Auth handled");
                 const typed = e as UserAuthenticatedEvent;
                 if (typed) {
                     this.resetProfileBtn(typed.detail.permissions);
@@ -138,11 +151,11 @@ class Header extends HTMLElement {
             if (!target) {
                 return;
             }
-            if (dropdown.style.display === "none"){
+            if (dropdown.style.display === "none") {
                 return;
             }
             if (!profileDropdown.contains(target)) {
-                dropdown.style.display = "none"
+                dropdown.style.display = "none";
             }
         });
 
@@ -168,7 +181,6 @@ class Header extends HTMLElement {
     toggleProfileDropdown() {
         profileDropdown();
     }
-
 
     resetProfileBtn(permissions: Permissions | null) {
         const container = this.querySelector<HTMLElement>("._profile-container");
@@ -334,7 +346,6 @@ function toggleSidePanelOutsider(nameOverride: string | null = null): void {
         panel.classList.toggle("open");
     }
 }
-
 
 if ("customElements" in window) {
     customElements.define("ui-header", Header);

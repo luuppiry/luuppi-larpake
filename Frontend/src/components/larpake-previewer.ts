@@ -17,18 +17,16 @@ export type PreviewData = {
 };
 
 export default class LarpakePreview extends HTMLLIElement {
-    idNumber: number | null = null;
-    titleImage: HTMLImageElement | null = null;
     link: HTMLAnchorElement | null = null;
     image: HTMLImageElement | null = null;
-    titleText: HTMLHeadingElement | null = null;
-    year: HTMLParagraphElement | null = null;
-    sections: HTMLParagraphElement | null = null;
-    tasks: HTMLParagraphElement | null = null;
-    total: HTMLParagraphElement | null = null;
-    groups: HTMLParagraphElement | null = null;
-    created: HTMLSpanElement | null = null;
-    edited: HTMLSpanElement | null = null;
+    titleText: HTMLElement | null = null;
+    year: HTMLElement | null = null;
+    sections: HTMLElement | null = null;
+    tasks: HTMLElement | null = null;
+    total: HTMLElement | null = null;
+    groups: HTMLElement | null = null;
+    created: HTMLElement | null = null;
+    edited: HTMLElement | null = null;
 
     constructor() {
         super();
@@ -38,48 +36,51 @@ export default class LarpakePreview extends HTMLLIElement {
         const numId = this.#getAvailableIdNum();
 
         this.innerHTML = `
-            <a id="larpake-${numId}-link" class="hover-scale link-section" style="margin: 0px">
-                <form-container>
-                    <h3 id="larpake-${numId}-title" class="larpake-title">Kiasan SeikkailuLärpäke 2024</h3>
-                    <div style="display: flex" class="cursor-pointer">
-                        <div class="data-container" style="flex: 1">
-                            <p>Vuosi: <b id="larpake-${numId}-year">20XX</b></p>
-                            <p>Osioita: <b id="larpake-${numId}-sections">X</b> kpl</p>
-                            <p>Tehtäviä: <b id="larpake-${numId}-tasks">X</b> kpl</p>
-                            <p>Yhteensä: <b id="larpake-${numId}-total">X</b> pistettä</p>
-                            <p>Ryhmiä: <b id="larpake-${numId}-groups">X</b> kpl</p>
+            <article class="hover-scale">
+                <a class="_link link-section" style="margin: 0px">
+                    <form-container>
+                        <h3 class="_title" class="larpake-title">Kiasan SeikkailuLärpäke 2024</h3>
+                        <div style="display: flex" class="cursor-pointer">
+                            <div class="data-container" style="flex: 1">
+                                <p>Vuosi: <b class="_year">20XX</b></p>
+                                <p>Osioita: <b class="_sections">X</b> kpl</p>
+                                <p>Tehtäviä: <b class="_tasks">X</b> kpl</p>
+                                <p>Yhteensä: <b class="_points">X</b> pistettä</p>
+                                <p>Ryhmiä: <b class="_groups">X</b> kpl</p>
 
-                            <p class="line-breaking">
-                                <span class="line">Luotu: </span>
-                                <span id="larpake-${numId}-created" class="line">20.2.2024 klo 12:30</span>
-                            </p>
-                            <p class="line-breaking">
-                                <span>Muokattu: </span>
-                                <span id="larpake-${numId}-edited">24.2.2024 klo 00.23</span>
-                            </p>
+                                <p class="line-breaking">
+                                    <span class="line">Luotu: </span>
+                                    <span class="_created" class="line">20.2.2024 klo 12:30</span>
+                                </p>
+                                <p class="line-breaking">
+                                    <span>Muokattu: </span>
+                                    <span class="_edited">24.2.2024 klo 00.23</span>
+                                </p>
+                            </div>
+                            <div class="image-container">
+                                <img
+                                    class="_image"
+                                    src="/kiasa.png"
+                                    style="aspect-ratio: 1; width: 100%"
+                                />
+                            </div>
                         </div>
-                        <div class="image-container">
-                            <img
-                                id="larpake-${numId}-title-image"
-                                src="/kiasa.png"
-                                style="aspect-ratio: 1; width: 100%"
-                            />
-                        </div>
-                    </div>
-                </form-container>
-            </a>
+                    </form-container>
+                </a>
+            </article>
+            
             `;
         this.id = `${idStart}${numId}`;
-        this.link = document.getElementById(`larpake-${numId}-link`) as HTMLAnchorElement;
-        this.image = document.getElementById(`larpake-${numId}-title-image`) as HTMLImageElement;
-        this.titleText = document.getElementById(`larpake-${numId}-title`) as HTMLHeadingElement;
-        this.year = document.getElementById(`larpake-${numId}-year`) as HTMLParagraphElement;
-        this.sections = document.getElementById(`larpake-${numId}-sections`) as HTMLParagraphElement;
-        this.tasks = document.getElementById(`larpake-${numId}-tasks`) as HTMLParagraphElement;
-        this.total = document.getElementById(`larpake-${numId}-total`) as HTMLParagraphElement;
-        this.groups = document.getElementById(`larpake-${numId}-groups`) as HTMLParagraphElement;
-        this.created = document.getElementById(`larpake-${numId}-created`) as HTMLSpanElement;
-        this.edited = document.getElementById(`larpake-${numId}-edited`) as HTMLSpanElement;
+        this.link = this.querySelector<HTMLAnchorElement>(`._link`)!;
+        this.image = this.querySelector<HTMLImageElement>(`._image`)!;
+        this.titleText = this.querySelector<HTMLElement>(`._title`)!;
+        this.year = this.querySelector<HTMLElement>(`._year`)!;
+        this.sections = this.querySelector<HTMLElement>(`._sections`)!;
+        this.tasks = this.querySelector<HTMLElement>(`._tasks`)!;
+        this.total = this.querySelector<HTMLElement>(`._points`)!;
+        this.groups = this.querySelector<HTMLElement>(`._groups`)!;
+        this.created = this.querySelector<HTMLElement>(`._created`)!;
+        this.edited = this.querySelector<HTMLElement>(`._edited`)!;
 
         throwIfAnyNull([
             this.link,
