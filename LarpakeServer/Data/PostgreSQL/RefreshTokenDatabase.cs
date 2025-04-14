@@ -1,14 +1,26 @@
 ﻿using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
+using Microsoft.Extensions.Options;
 using Npgsql;
 using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
-public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogger<RefreshTokenDatabase> logger)
-    : PostgresDb(connectionString, logger), IRefreshTokenDatabase
+public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
 {
+    readonly LarpakeIdOptions _options;
+
+    public RefreshTokenDatabase(
+        NpgsqlConnectionString connectionString, 
+        ILogger<RefreshTokenDatabase> logger,
+        IOptions<LarpakeIdOptions> options)
+        : base(connectionString, logger)
+    {
+        _options = options.Value;
+    }
+
+
     public async Task<Result> Add(RefreshToken token)
     {
         if (token.UserId == Guid.Empty)
@@ -186,8 +198,12 @@ public class RefreshTokenDatabase(NpgsqlConnectionString connectionString, ILogg
         /* If token is already invalidated,
         * All other tokens created from it should be invalidated as well.
         */
+
+        
+        DateTime nowOffset = DateTime.UtcNow.AddSeconds(_options.RefreshTokenExpirationCooldownSeconds);
+
         bool isTimeInvalidated = token.InvalidAt < DateTime.UtcNow;
-        bool isUserInvalidated = token.InvalidatedAt is not null;
+        bool isUserInvalidated = token.InvalidatedAt is not null && nowOffset > token.InvalidatedAt;
         if (isTimeInvalidated || isUserInvalidated)
         {
             Logger.LogWarning("Token with hash {hashStart}*** is invalidated for user {id}, revoking family, double use.",

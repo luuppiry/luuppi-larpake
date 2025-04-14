@@ -63,6 +63,8 @@ public static class ServiceInjections
         LarpakeIdOptions idOptions = Options.GetLarpakeIdOptions(configuration, logger);
         services.AddSingleton<IOptions<LarpakeIdOptions>>(new OptionsContainer<LarpakeIdOptions>(idOptions));
 
+        idOptions.LogValues(logger);
+
         // EntraId
         EntraIdOptions entraIdOptions = Options.GetEntraIdOptions(configuration, logger);
         services.AddSingleton<IOptions<EntraIdOptions>>(new OptionsContainer<EntraIdOptions>(entraIdOptions));
