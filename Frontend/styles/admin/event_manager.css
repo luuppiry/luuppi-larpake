@@ -1,0 +1,13 @@
+@import "../common.css";
+
+main {
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.content {
+    padding: 30px;
+    background-color: white;
+    border-radius: 10px;
+}

@@ -4,16 +4,22 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Lärpäke - Admin</title>
-        <link rel="stylesheet" href="/styles/common.css" />
+        <link rel="stylesheet" href="/styles/admin/event_manager.css" />
+        <script type="module" src="/src/admin/event_manager.js"></script>
         <script type="module" src="/src/components/side-panel.js"></script>
-        <script type="module" src="/src/components/ui-header.js"></script>        
-
+        <script type="module" src="/src/components/ui-header.js"></script>
     </head>
     <body>
         <ui-header path-depth="1"></ui-header>
         <side-panel path-depth="1"></side-panel>
-        <h2>Tapahtuma Manager</h2>
-        <p>Tämä sivu on vielä kesken ja toiminnot vaativat SUDO-roolia.</p>
-        <button id="pull-events-btn" class="primary-btn hover-scale">Vedä ulkoiset tapahtumat</button>
+        <main>
+            <div class="content">
+                <h2>Tapahtuma Manager</h2>
+                <p>Tämä sivu on vielä kesken ja toiminnot vaativat SUDO-roolia.</p>
+                <button id="pull-events-btn" class="primary-btn hover-scale">
+                    Vedä ulkoiset tapahtumat
+                </button>
+            </div>
+        </main>
     </body>
 </html>
