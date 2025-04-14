@@ -20,7 +20,7 @@
                         <img class="_img image" src="/kiasa.png" alt="Lärpäkkeen tunnelmaa ja teemaa kuvaava kuva." />
                         <h2 class="_title title" style="text-align: center">Otsikko</h2>
                         <div class="_href upcoming-events-btn bigger-icon" style="display: flex; justify-content: end">
-                            <p style="margin: 0">⭢</p>
+                            <img class="_img image" src="/right-arrow.png" style="height: 40px; width: 85px; margin: 20px" alt="Nuoli oikealle" />
                         </div>
                     </a>
                 </article>
@@ -30,12 +30,15 @@
         <section>
             <ul id="larpake-container">
                 <section class="container">
-                    <h2>Tyhjää täynnä!</h2>
-                    <p>Et ole osallistunut vielä yhteenkään Lärpäkkeeseen.</p>
-                    <p>
-                        Jos kuitenkin tiedät olevasi merkattu osallistujana Lärpäkkeeseen, saattaa vika olla
-                        palvelimella tai nettiyhteydessä. Jos ongelma toistuu, ota yhteyttä ylläpitoon.
-                    </p>
+                    <article class="larpake">
+                        <a class="_href">
+                            <img class="_img image loader" src="" style="width: 100%; aspect-ratio: 1 / 1"/>
+                            <h2 class="_title title loader" style="margin-left: auto; margin-right: auto; width: 50%">&nbsp;</h2>
+                            <div class="_href upcoming-events-btn bigger-icon" style="display: flex; justify-content: end">
+                                <img class="_img image" src="/right-arrow.png" style="height: 40px; width: 85px; margin: 20px" alt="Nuoli oikealle" />
+                            </div>
+                        </a>
+                    </article>
                 </section>
             </ul>
         </section>
@@ -47,12 +50,11 @@
                 <li class="hover-scale cursor-pointer flex-last">
                     <a href="upcoming_events.html" class="upcoming-events-btn flex-row">
                         <span class="events-button-text">Tutustu muihin tapahtumiin</span>
-                        <span class="bigger-icon">⭢</span>
+                        <span class="bigger-icon"><img class="_img image" src="/right-arrow.png" style="height: 40px; margin: 0px;" alt="Nuoli oikealle" /></span>
                     </a>
                 </li>
             </ul>
         </section>
-
         <script type="module" src="/src/index.js"></script>
     </body>
 </html>
