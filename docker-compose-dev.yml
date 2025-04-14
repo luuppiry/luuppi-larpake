@@ -4,7 +4,7 @@
 services:
     larpake_pg_dev:
         container_name: larpake_pg_dev
-        env_file: "dev.env"
+        env_file: ".env"
         platform: linux/amd64
         image: postgres:17.3-bookworm
         environment:
@@ -22,7 +22,7 @@ services:
         container_name: larpake_pg_create_users_dev
         platform: linux/amd64
         image: postgres:17.3-bookworm
-        env_file: "dev.env"
+        env_file: ".env"
         environment:
             - PGHOST=larpake_pg_dev
             - PGPORT=5432
@@ -31,7 +31,6 @@ services:
             - PGPASSWORD=${POSTGRES_ADMIN_PASSWORD}
             - PG_API_CLIENT_PASSWORD=${PG_API_CLIENT_PASSWORD}
             - PG_API_MIGRATIONS_PASSWORD=${PG_API_MIGRATIONS_PASSWORD}
-
         volumes:
             - ./create-db-dev.sh:/tmp/create-db.sh
         networks:
@@ -43,7 +42,7 @@ services:
 
     larpake_migrations_dev:
         container_name: larpake_migrations_dev
-        env_file: "dev.env"
+        env_file: ".env"
         build:
           dockerfile: migrations.Dockerfile
         networks:
@@ -57,7 +56,7 @@ services:
 
     larpake_api_dev:
         container_name: larpake_api_dev
-        env_file: "dev.env"
+        env_file: ".env"
         build:
           dockerfile: api-dev.Dockerfile
         ports:

@@ -1,8 +1,8 @@
 #! /bin/sh
 
-echo "sleeping 5s..."
+echo "sleeping 10s..."
 
-sleep 5
+sleep 10
 
 psql -c 'CREATE DATABASE larpake_dev;'
 
