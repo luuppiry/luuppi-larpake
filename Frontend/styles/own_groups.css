@@ -10,49 +10,75 @@ ul {
     padding: 0;
 }
 
-.header {
-    background-color: var(--luuppi-blue);
-    color: white;
-    padding: 18px;
-    text-align: left;
+h5 {
+    font-size: medium;
+    margin: 0;
+}
+
+.section {
+    max-width: 800px !important;
+}
+
+.page-title {
+    text-align: center;
+    font-size: xx-large;
+    margin: 0;
+    padding: 20px 0 0 0;
+}
+
+#group-container{
+    margin: 0;
+}
+
+.group-title {
+    text-decoration: underline 2px;
+    margin: 0;
+}
+
+.only-child {
+    font-weight: 700;
+    text-align: center;
+    display: none;
+}
+
+.only-child:only-child {
+    display: block;
+}
+
+.type-header {
+    font-size: large;
+    margin: 10px 0 0 0;
+    text-align: center;
+
+}
+
+.user-container {
     display: flex;
-    align-items: center;
-    height: 64px;
+    flex-flow: column;
+
 }
 
-.header h1 {
-    font-size: 5x;
-    flex-grow: 1;
-    text-align: center;
+.list-item {
+    margin: 0;
+    padding: 5px 10px;
+    border-radius: 5px;
 }
 
-.menu-icon {
-    font-size: 32px;
-    cursor: pointer;
-    margin-left: auto;
-    margin-right: 10px;
-    width: 48px;
-    height: 48px;
-    text-align: center;
-    background-color: var(--menu-icon-dark-blue);
+.tutor {
+    padding: 20px 10px;
+    background-color: var(--luuppi-gray);
 }
 
-/* Own tutors */
-.tutor-container {
-    max-width: 600px;
-    margin: 20px auto;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px var(--shadow-black);
-    overflow: hidden;
-    text-align: left;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: 60% 40%;
+.tutor p {
+    margin: 2px 0;
+    font-size: small;
 }
 
-.card-title {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 5px;
+.list-item:nth-child(2n){
+    background-color: var(--luuppi-gray);
 }
+
+
+
+
+

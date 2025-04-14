@@ -7,28 +7,25 @@
         <link rel="stylesheet" href="/styles/own_groups.css" />
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
-        <script type="module" src="/src/components/ui-header.js"></script>
         <script type="module" src="/src/components/form-container.js"></script>
     </head>
     <body>
         <template id="freshman-template">
-            <li>
+            <li class="list-item">
                 <div>
-                    <h3>
-                        (<span class="_username">käyttäjänimi</span>)
-                    </h3>
+                    <h5><span class="_username">käyttäjänimi</span></h5>
                 </div>
             </li>
         </template>
 
         <template id="tutor-template">
-            <li>
+            <li class="list-item tutor">
                 <div>
-                    <h3>
+                    <h5>
                         <span class="_first-name">Etunimi</span>
                         <span class="_last-name">Sukunimi</span>
                         (<span class="_username">käyttäjänimi</span>)
-                    </h3>
+                    </h5>
                     <p>
                         <span>Opiskeluvuosi:</span>
                         <span class="_start-year">20XX</span>
@@ -36,14 +33,14 @@
 
                     <p>
                         <span>Kotoisin:</span>
-                        <span class="_from">Kotikaupunki</span>
+                        <span class="_from"></span>
                     </p>
                     <p>
                         <span>Lempitapahtuma:</span>
                         <span class="_from">ATK-YTP, aina (tää on placeholder)</span>
                     </p>
                 </div>
-                <img src="/gambina-profiili-kuva.png" alt="Tuutorin profiilikuva" />
+                <!-- <img src="/gambina-profiili-kuva.png" alt="Tuutorin profiilikuva" /> -->
             </li>
         </template>
 
@@ -51,14 +48,19 @@
             <li>
                 <form-container>
                     <article>
-                        <h4>
+                        <h3 class="group-title">
                             <span class="_group-name">Ryhmän nimi</span> (<span
                                 class="_group-number"
                                 >XX</span
                             >)
-                        </h4>
-                        <ul class="_tutors"></ul>
-                        <ul class="_freshmen"></ul>
+                        </h3>
+                        <h4 class="type-header">Tuutorit</h4>
+                        <ul class="_tutors user-container">
+                        <li class="only-child">&mdash;</li>
+
+                        </ul>
+                        <h4 class="type-header">Fuksit</h4>
+                        <ul class="_freshmen user-container"></ul>
                     </article>
                 </form-container>
             </li>
@@ -66,8 +68,10 @@
 
         <ui-header></ui-header>
         <side-panel lang="fi"></side-panel>
-        <h2>Omat ryhmät</h2>
-        <ul id="group-container"></ul>
+        <main>
+            <h2 class="page-title">Omat ryhmät</h2>
+            <ul id="group-container"></ul>
+        </main>
 
         <script type="module" src="/src/own_groups.js"></script>
     </body>
