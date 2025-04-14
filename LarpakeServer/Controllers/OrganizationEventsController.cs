@@ -34,7 +34,6 @@ public class OrganizationEventsController : ExtendedControllerBase
     }
 
     [HttpGet]
-    [RequiresPermissions(Permissions.CommonRead)]
     [ProducesResponseType(typeof(OrgEventsGetDto), 200)]
     public async Task<IActionResult> GetEvents([FromQuery] EventQueryOptions options)
     {
@@ -54,7 +53,6 @@ public class OrganizationEventsController : ExtendedControllerBase
     }
 
     [HttpGet("{eventId}")]
-    [RequiresPermissions(Permissions.CommonRead)]
     [ProducesResponseType(typeof(OrganizationEventGetDto), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetEvent(long eventId)
