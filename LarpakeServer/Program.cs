@@ -45,10 +45,11 @@ builder.Services.AddRouting(options =>
 
 WebApplication app = builder.Build();
 
-//#if !DEBUG
+#if !DEBUG
+app.UseMiddleware<LanguageMiddleware>(app.Environment);
 app.UseMiddleware<HtmlFileMiddleware>(app.Environment);
 app.AddStaticFrontend(logger);
-//#endif
+#endif
 
 
 

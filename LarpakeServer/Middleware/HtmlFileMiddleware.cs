@@ -40,7 +40,6 @@ public sealed class HtmlFileMiddleware
             string newPath = $"{path[..^html.Length]}{query}";
 
             context.Response.Redirect(newPath, true);
-            await _next(context);
             return;
         }
 
