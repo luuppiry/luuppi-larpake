@@ -1,32 +1,32 @@
 // Query parameters
-export const Q_LARPAKE_ID = "LarpakeId";
-export const Q_TASK_ID = "TaskId";
-export const Q_SECTION_ID = "SectionId";
-export const Q_PAGE = "Page";
+export const Q_LARPAKE_ID = "larpakeId";
+export const Q_TASK_ID = "taskId";
+export const Q_SECTION_ID = "sectionId";
+export const Q_PAGE = "page";
 
-export const Q_LAST_PAGE = "LastPage";
-export const Q_OF_PAGES = "OfPages";
+export const Q_LAST_PAGE = "lastPage";
+export const Q_OF_PAGES = "ofPages";
 
-export const Q_GROUP_ID = "GroupId";
+export const Q_GROUP_ID = "groupId";
 
-export const Q_NEW = "New";
-export const Q_STATUS = "Status";
+export const Q_NEW = "new";
+export const Q_STATUS = "status";
 
-export const Q_PAGE_SIZE = "PageSize";
-export const Q_PAGE_OFFSET = "PageOffset";
-export const Q_SEARCH = "Search";
+export const Q_PAGE_SIZE = "pageSize";
+export const Q_PAGE_OFFSET = "pageOffset";
+export const Q_SEARCH = "search";
 
-export const Q_INVITE_KEY = "InviteKey";
-export const Q_ATTENDANCE_KEY = "AttendanceKey";
+export const Q_INVITE_KEY = "inviteKey";
+export const Q_ATTENDANCE_KEY = "attendanceKey";
 
 export const ATTENDANCE_KEY_LENGTH = 6;
 export const ATTENDANCE_CODE_HEADER = "lak-v1_";
 
 export const INVITE_KEY_LENGTH = 8;
-export const Q_KEY_MALFORMED = "KeyMalformed";
-export const Q_KEY_EXPIRED = "KeyExpired";
+export const Q_KEY_MALFORMED = "keyMalformed";
+export const Q_KEY_EXPIRED = "keyExpired";
 
-export const Q_PARAM = "Param";
+export const Q_PARAM = "param";
 
 export const UI_HEADER_ID = "ui-header-component"
 

@@ -24,20 +24,104 @@
         <ui-header></ui-header>
         <side-panel lang="fi"></side-panel>
         <div class="page">
-            <h2 id="larpake-page-name">Lärpäke / Oma statistiikka</h2>
+            <h2 id="larpake-page-name">Lärpäke / Omat tilastot</h2>
             <p class="greeting">Tervehdys arvon fuksi, olet mahtavassa vauhdissa!</p>
             <ul id="statistics-container" class="stats-list">
-                <li>
-                    <section class="error">
-                        <h3>Virhe!</h3>
+                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
                         <p>
-                            Statistiikan hakeminen palvelimelta epäonnistui, tai et ole vielä
-                            osallisena yhdessäkään Lärpäkkeessä.
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        </p>
+                    </section>
+                </li>
+                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
+                        <p>
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        </p>
+                    </section>
+                </li>
+                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
+                        <p>
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        </p>
+                    </section>
+                </li>
+                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
+                        <p>
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        </p>
+                    </section>
+                </li>
+                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
+                        <p>
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        </p>
+                    </section>
+                </li>
+                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
+                        <p>
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        </p>
+                    </section>
+                </li>
+                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
+                        <p>
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        </p>
+                    </section>
+                </li>
+                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
+                        <p>
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        </p>
+                    </section>
+                </li>                <li class="stat-section">
+                    <section>
+                        <h3 class="_title loader" style="width: 50%">&nbsp;</h3>
+                        <p>
+                            <span class="_value loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                            <span>/</span>
+                            <span class="_max loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                         </p>
                     </section>
                 </li>
             </ul>
-            <div class="total">YHTEENSÄ: <span class="total-value">161 / 304</span></div>
+            <div class="total" id="totalPointsHolder">YHTEENSÄ:
+                <span class="loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span>/</span>
+                <span class="loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            </div>
             <div class="pagination">
                 <a id="back-btn" href="larpake.html">
                     <button id="prev-page">&lt;</button>
@@ -46,7 +130,6 @@
                 <button id="next-page" disabled>&gt;</button>
             </div>
         </div>
-
         <script type="module" src="/src/statistics.js"></script>
     </body>
 </html>

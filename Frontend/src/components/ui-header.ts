@@ -271,7 +271,7 @@ class Header extends HTMLElement {
     }
 
     #getAdminBtn(permissions: number, isFinnish: boolean): HTMLAnchorElement | null {
-        if (!hasPermissions(permissions, Permissions.Tutor)) {
+        if (!hasPermissions(permissions, Permissions.Admin)) {
             return null;
         }
         if (!isFinnish) {
