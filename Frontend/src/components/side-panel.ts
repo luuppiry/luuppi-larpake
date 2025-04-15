@@ -1,7 +1,6 @@
-import HttpClient, { AUTHENTICATED_EVENT_NAME } from "../api_client/http_client.js";
-import { Permissions, UI_HEADER_ID } from "../constants.js";
-import { getDocumentLangCode, hasPermissions, LANG_EN, removeChildren } from "../helpers.js";
-import { UserAuthenticatedEvent } from "../models/common.js";
+import HttpClient from "../api_client/http_client.js";
+import { Permissions } from "../constants.js";
+import { hasPermissions } from "../helpers.js";
 
 type ListItem = {
     href: string;
