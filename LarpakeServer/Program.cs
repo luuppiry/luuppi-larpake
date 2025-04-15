@@ -45,9 +45,10 @@ builder.Services.AddRouting(options =>
 
 WebApplication app = builder.Build();
 
-#if !DEBUG
+//#if !DEBUG
+app.UseMiddleware<HtmlFileMiddleware>(app.Environment);
 app.AddStaticFrontend(logger);
-#endif
+//#endif
 
 
 
@@ -71,6 +72,5 @@ app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.Run();

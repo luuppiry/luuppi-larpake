@@ -12,7 +12,8 @@
 	<PropertyGroup>
 		<!-- Ignore not using primary constructor IDE0290 -->
 		<!-- Simplify collection initialization IDE0305 -->
-		<NoWarn>IDE0290; IDE0305</NoWarn>
+		<!-- Simplify collection initialization IDE0302 -->
+		<NoWarn>IDE0290; IDE0305; IDE0302</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
