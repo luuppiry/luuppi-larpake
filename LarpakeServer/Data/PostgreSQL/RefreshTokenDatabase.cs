@@ -200,10 +200,10 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
         */
 
         
-        DateTime nowOffset = DateTime.UtcNow.AddSeconds(_options.RefreshTokenExpirationCooldownSeconds);
+        DateTime invalidatedOffset = DateTime.UtcNow.AddSeconds(_options.RefreshTokenExpirationCooldownSeconds);
 
         bool isTimeInvalidated = token.InvalidAt < DateTime.UtcNow;
-        bool isUserInvalidated = token.InvalidatedAt is not null && nowOffset > token.InvalidatedAt;
+        bool isUserInvalidated = token.InvalidatedAt is not null && DateTime.UtcNow > invalidatedOffset;
         if (isTimeInvalidated || isUserInvalidated)
         {
             Logger.LogWarning("Token with hash {hashStart}*** is invalidated for user {id}, revoking family, double use.",
