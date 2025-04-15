@@ -20,7 +20,7 @@
                         <img class="_img image" src="/kiasa.png" alt="Lärpäkkeen tunnelmaa ja teemaa kuvaava kuva." />
                         <h2 class="_title title" style="text-align: center">Title</h2>
                         <div class="_href upcoming-events-btn bigger-icon" style="display: flex; justify-content: end">
-                            <p style="margin: 0">⭢</p>
+                            <img class="_img image" src="/right-arrow.png" style="height: 40px; width: 85px; margin: 20px" alt="Arrow to the right" />
                         </div>
                     </a>
                 </article>
@@ -30,30 +30,31 @@
         <section>
             <ul id="larpake-container">
                 <section class="container">
-                    <h2>Full of emptiness!</h2>
-                    <p>You have not yet attended any Lärpäke.</p>
-                    <p>
-                        If you know you to be attending some Lärpäke, the problem might lie somewhere
-                        on our servers or internet connection. If this keeps happening, contact system
-                        administration.
-                    </p>
+                    <article class="larpake">
+                        <a class="_href">
+                            <img class="_img image loader" src="" style="width: 100%; aspect-ratio: 1 / 1"/>
+                            <h2 class="_title title loader" style="margin-left: auto; margin-right: auto; width: 50%">&nbsp;</h2>
+                            <div class="_href upcoming-events-btn bigger-icon" style="display: flex; justify-content: end">
+                                <img class="_img image" src="/right-arrow.png" style="height: 40px; width: 85px; margin: 20px" alt="Arrow to the right" />
+                            </div>
+                        </a>
+                    </article>
                 </section>
             </ul>
         </section>
 
         <section class="container">
-            <h2>COMING EVENTS</h2>
+            <h2>UPCOMING EVENTS</h2>
             <ul id="event-container" class="event-container">
                 <!-- Go to upcoming events page button -->
                 <li class="hover-scale cursor-pointer flex-last">
                     <a href="upcoming_events.html" class="upcoming-events-btn flex-row">
                         <span class="events-button-text">Explore other events</span>
-                        <span class="bigger-icon">⭢</span>
+                        <span class="bigger-icon"><img class="_img image" src="/right-arrow.png" style="height: 40px; margin: 0px;" alt="Nuoli oikealle" /></span>
                     </a>
                 </li>
             </ul>
         </section>
-
         <script type="module" src="/src/index.js"></script>
     </body>
 </html>

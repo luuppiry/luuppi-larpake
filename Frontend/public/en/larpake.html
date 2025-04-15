@@ -19,15 +19,13 @@
 
         <template id="task-template">
             <li>
-                <article>
-                    <h3 class="task-title">
-                        <span class="_title"></span>
-                        <span class="_points">0</span>
-                    </h3>
-                    <button class="_btn _signature task-btn hover-scale-03">
-                        <h4 class="_state">COMPLETED</h4>
-                    </button>
-                </article>
+                <h3 class="task-title">
+                    <span class="_title"></span>
+                    <span class="_points">0</span>
+                </h3>
+                <a class="_link _signature task-btn hover-scale-03">
+                    <h4 class="_state">COMPLETED</h4>
+                </a>
             </li>
         </template>
 
@@ -37,18 +35,54 @@
             <h2 id="larpake-page-name">Lärpäke</h2>
             <ul id="larpake-task-container" class="task-container">
                 <!-- Buttons will be dynamically generated here -->
-                <section class="error">
-                    <h3>Error!</h3>
-                    <p>
-                        Either loading the Lärpäke from the server failed or you are not attending
-                        any...
-                    </p>
-                </section>
+
+                <!-- Placeholder -->
+                <li>
+                    <article>
+                        <h3 class="_title section-title loader">&nbsp;</h3>
+                    </article>
+                </li>
+                <li>
+                    <article>
+                        <h3 class="task-title loader">&nbsp;</h3>
+                        <button class="_btn _signature task-btn loader"></button>
+                    </article>
+                </li>
+                <li>
+                    <article>
+                        <h3 class="task-title loader">&nbsp;</h3>
+                        <button class="_btn _signature task-btn loader"></button>
+                    </article>
+                </li>
+                <li>
+                    <article>
+                        <h3 class="task-title loader">&nbsp;</h3>
+                        <button class="_btn _signature task-btn loader"></button>
+                    </article>
+                </li>
+                <li>
+                    <article>
+                        <h3 class="task-title loader">&nbsp;</h3>
+                        <button class="_btn _signature task-btn loader"></button>
+                    </article>
+                </li>
+                <li>
+                    <article>
+                        <h3 class="task-title loader">&nbsp;</h3>
+                        <button class="_btn _signature task-btn loader"></button>
+                    </article>
+                </li>
+                <li>
+                    <article>
+                        <h3 class="task-title loader">&nbsp;</h3>
+                        <button class="_btn _signature task-btn loader"></button>
+                    </article>
+                </li>
             </ul>
             <div class="pagination">
                 <button id="prev-page" disabled>&lt;</button>
                 <span id="page-info">1 / 1</span>
-                <button id="next-page">&gt;</button>
+                <button id="next-page" disabled>&gt;</button>
             </div>
         </div>
     </body>
