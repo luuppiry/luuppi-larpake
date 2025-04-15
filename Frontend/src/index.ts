@@ -22,6 +22,32 @@ async function loadLarpakkeet() {
         throw new Error("Could not load larpakkeet from server.");
     }
 
+    if (larpakkeet.length === 0) {
+        const lang = getDocumentLangCode();
+        const translations = {
+            fi: {
+                emptyTitle: "Tyhjää täynnä!",
+                emptyDesc1: "Et ole osallistunut vielä yhteenkään Lärpäkkeeseen.",
+                emptyDesc2: "Jos kuitenkin tiedät olevasi merkattu osallistujana Lärpäkkeeseen, saattaa vika olla palvelimella tai nettiyhteydessä. Jos ongelma toistuu, ota yhteyttä ylläpitoon.",
+            },
+            en: {
+                emptyTitle: "Full of emptiness!",
+                emptyDesc1: "You have not yet attended any Lärpäke.",
+                emptyDesc2: "If you know you to be attending some Lärpäke, the problem might lie somewhere on our servers or internet connection. If this keeps happening, contact system administration.",
+            },
+        };
+
+        const t = translations[lang]; // Pick the right language
+        container.innerHTML = `
+            <section class="container">
+                <h2>${t.emptyTitle}</h2>
+                <p>${t.emptyDesc1}</p>
+                <p>${t.emptyDesc2}</p>
+            </section>
+        `;
+        return;
+    }    
+
     removeChildren(container);
     for (const larpake of larpakkeet) {
         const element = appendTemplateElement<HTMLElement>("larpake-template", container);
