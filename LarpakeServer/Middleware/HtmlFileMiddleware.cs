@@ -19,10 +19,6 @@ public sealed class HtmlFileMiddleware
             return;
         }
         ReadOnlySpan<char> path = context.Request.Path.Value.AsSpan();
-        if (path.EndsWith(".js") is false)
-        {
-            Console.WriteLine(path.ToString());
-        }
 
         /* Check if path meets conditions
          * - No api endpoint /api 
@@ -58,26 +54,12 @@ public sealed class HtmlFileMiddleware
         bool isApi = path.StartsWith("/api");
         bool isFinnish = path.StartsWith("/fi");
         bool isEnglish = path.StartsWith("/en");
-        bool isHtmlFile = path.EndsWith(".html") || IsExtensionless(path);
+        bool isHtmlFile = path.EndsWith(".html") || MiddlewareHelpers.IsExtensionless(path);
 
         return isApi is false && (isFinnish || isEnglish) && isHtmlFile;
 
     }
 
-    private static bool IsExtensionless(ReadOnlySpan<char> path)
-    {
-        for (int i = path.Length - 1; i >= 0; i--)
-        {
-            if (path[i] is '.')
-            {
-                return false;
-            }
-            if (path[i] is '/')
-            {
-                return true;
-            }
-        }
-        return true;
-    }
+  
 
 }

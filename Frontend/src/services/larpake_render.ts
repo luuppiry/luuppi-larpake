@@ -268,10 +268,15 @@ export class LarpakeRenderer {
         const element = appendTemplateElement<HTMLElement>("task-template", this.taskContainer);
 
         const link = `task_info.html?${Q_TASK_ID}=${task.id}&${Q_LARPAKE_ID}=${this.larpakeId}`;
-        console.log(link);
         element.querySelector<HTMLHeadingElement>("._title")!.innerText = task.title;
         element.querySelector<HTMLHeadingElement>("._points")!.innerText = `${task.points ?? 0}P`;
-        element.querySelector<HTMLAnchorElement>("._link")!.href = link;
+        const linkElem = element.querySelector<HTMLAnchorElement>("._link");
+        if (!linkElem){
+            console.error("Failed to load link elem in lärpäke renderer, I don't know where this error comes from.")
+        }
+        else {
+            linkElem.href = link
+        }
 
         if (task.isCancelled) {
             this.#taskStateCancelled(element);
