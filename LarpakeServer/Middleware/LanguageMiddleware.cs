@@ -3,12 +3,10 @@
 public class LanguageMiddleware
 {
     readonly RequestDelegate _next;
-    readonly IWebHostEnvironment _env;
 
-    public LanguageMiddleware(RequestDelegate next, IWebHostEnvironment env)
+    public LanguageMiddleware(RequestDelegate next)
     {
         _next = next;
-        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)

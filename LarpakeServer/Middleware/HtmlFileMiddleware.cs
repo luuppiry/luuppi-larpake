@@ -3,12 +3,10 @@
 public sealed class HtmlFileMiddleware
 {
     readonly RequestDelegate _next;
-    readonly IWebHostEnvironment _env;
 
-    public HtmlFileMiddleware(RequestDelegate next, IWebHostEnvironment env)
+    public HtmlFileMiddleware(RequestDelegate next)
     {
         _next = next;
-        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)

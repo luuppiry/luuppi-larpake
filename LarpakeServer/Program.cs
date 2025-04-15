@@ -46,8 +46,9 @@ builder.Services.AddRouting(options =>
 WebApplication app = builder.Build();
 
 #if !DEBUG
-app.UseMiddleware<LanguageMiddleware>(app.Environment);
-app.UseMiddleware<HtmlFileMiddleware>(app.Environment);
+app.UseMiddleware<RootPathMiddleware>();
+app.UseMiddleware<LanguageMiddleware>();
+app.UseMiddleware<HtmlFileMiddleware>();
 app.AddStaticFrontend(logger);
 #endif
 
