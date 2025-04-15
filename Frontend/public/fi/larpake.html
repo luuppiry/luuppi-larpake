@@ -19,15 +19,13 @@
 
         <template id="task-template">
             <li>
-                <article>
-                    <h3 class="task-title">
-                        <span class="_title"></span>
-                        <span class="_points">0</span>
-                    </h3>
-                    <button class="_btn _signature task-btn hover-scale-03">
-                        <h4 class="_state">SUORITETTU</h4>
-                    </button>
-                </article>
+                <h3 class="task-title">
+                    <span class="_title"></span>
+                    <span class="_points">0</span>
+                </h3>
+                <a class="_link _signature task-btn hover-scale-03">
+                    <h4 class="_state">SUORITETTU</h4>
+                </a>
             </li>
         </template>
 
@@ -39,7 +37,10 @@
                 <!-- Buttons will be dynamically generated here -->
                 <section class="error">
                     <h3>Virhe!</h3>
-                    <p>Joko Lärpäkkeen lataaminen palvelimelta epäonnistui tai et ole vielä osallisena yhteenkään...</p>
+                    <p>
+                        Joko Lärpäkkeen lataaminen palvelimelta epäonnistui tai et ole vielä
+                        osallisena yhteenkään...
+                    </p>
                 </section>
             </ul>
             <div class="pagination">

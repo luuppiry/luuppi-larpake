@@ -18,7 +18,7 @@ body {
     cursor: not-allowed;
 }
 
-.task-container{
+.task-container {
     display: flex;
     flex-flow: column;
     list-style: none;
@@ -27,10 +27,23 @@ body {
 }
 
 .task-btn {
-    height: 70px;
+    display: flex;
+    text-decoration: none;
+    justify-content: center;
+    height: 65px;
     background-color: white;
     width: 100%;
-    border: 2px solid #000;
+    border: 2px solid black;
+    color: black;
+}
+
+.task-btn * {
+    font-weight: 600;
+
+}
+.task-btn:visited {
+    text-decoration: none;
+
 }
 
 .task-btn:hover {
@@ -49,15 +62,7 @@ body {
     margin: 0;
 }
 
-.task-title{
+.task-title {
     text-align: center;
     margin: 0px 0 5px 0;
 }
-
-
-
-
-
-
-
-

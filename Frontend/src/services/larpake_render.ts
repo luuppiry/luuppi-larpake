@@ -48,7 +48,7 @@ class Task {
         this.points = points;
     }
 }
-class Filler { }
+class Filler {}
 
 type Page = {
     header: string;
@@ -86,7 +86,13 @@ export class LarpakeRenderer {
         this.pages = [];
         this.signatures = new Map<string, Signature>();
 
-        throwIfAnyNull([this.header, this.taskContainer, this.indexer, this.nextBtn, this.previousBtn]);
+        throwIfAnyNull([
+            this.header,
+            this.taskContainer,
+            this.indexer,
+            this.nextBtn,
+            this.previousBtn,
+        ]);
 
         this.previousBtn.addEventListener("click", (_) => {
             this.#changePage(-1);
@@ -261,11 +267,11 @@ export class LarpakeRenderer {
     #appendTask(task: Task) {
         const element = appendTemplateElement<HTMLElement>("task-template", this.taskContainer);
 
+        const link = `task_info.html?${Q_TASK_ID}=${task.id}&${Q_LARPAKE_ID}=${this.larpakeId}`;
+        console.log(link);
         element.querySelector<HTMLHeadingElement>("._title")!.innerText = task.title;
         element.querySelector<HTMLHeadingElement>("._points")!.innerText = `${task.points ?? 0}P`;
-        element.addEventListener("click", (_) => {
-            window.location.href = `task_info.html?${Q_TASK_ID}=${task.id}&${Q_LARPAKE_ID}=${this.larpakeId}`;
-        });
+        element.querySelector<HTMLAnchorElement>("._link")!.href = link;
 
         if (task.isCancelled) {
             this.#taskStateCancelled(element);
@@ -303,7 +309,7 @@ export class LarpakeRenderer {
         const state = this.language === LANG_EN ? "CANCELLED" : "PERUUTETTU";
         elem.querySelector<HTMLHeadingElement>("._state")!.innerText = state;
 
-        const btn = elem.querySelector<HTMLElement>("._btn")!;
+        const btn = elem.querySelector<HTMLElement>("._link")!;
         btn.classList.add("cancelled");
         btn.classList.remove("hover-scale-03");
     }

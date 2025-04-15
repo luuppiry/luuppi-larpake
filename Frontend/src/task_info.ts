@@ -65,10 +65,9 @@ function render(task: LarpakeTask, completionKey: AttendanceKey | null, section:
 
     if (!task.cancelledAt) {
         renderAttendanceCodes(completionKey);
-    }
-    else {
+    } else {
         const label = document.getElementById("cancelled-label") as HTMLParagraphElement;
-        label.classList.remove("hidden")
+        label.classList.remove("hidden");
     }
 }
 
