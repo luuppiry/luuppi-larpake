@@ -51,10 +51,6 @@ body {
     cursor: pointer;
 }
 
-.task-btn:hover.loader {
-    cursor: auto;
-}
-
 .cancelled {
     background-color: var(--task-hover-gray);
 }
@@ -69,16 +65,4 @@ body {
 .task-title {
     text-align: center;
     margin: 0px 0 5px 0;
-}
-
-.loader.task-title {
-    margin-left: auto;
-    margin-right: auto;
-    width: 200px;
-}
-
-.loader.section-title {
-    margin-left: auto;
-    margin-right: auto;
-    width: 320px;
 }
