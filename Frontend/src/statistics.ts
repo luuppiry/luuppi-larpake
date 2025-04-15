@@ -55,6 +55,9 @@ const data: Statistic[] = [
     },
 ];
 
+const currentPoints = 161;
+const maxPoints = 305;
+
 async function main() {
     const params = getSearchParams();
     const larpakeId = params.get(Q_LARPAKE_ID);
@@ -76,6 +79,10 @@ async function main() {
     });
 
     // Metadata
+    const totalPoinsHolder = document.getElementById("totalPointsHolder") as HTMLDivElement;
+    removeChildren(totalPoinsHolder);
+    totalPoinsHolder.append(`${currentPoints} / ${maxPoints}`);
+
     const page = parseInt(params.get(Q_PAGE) ?? "0");
     const maxPage = parseInt(params.get(Q_OF_PAGES) ?? "0");
 
