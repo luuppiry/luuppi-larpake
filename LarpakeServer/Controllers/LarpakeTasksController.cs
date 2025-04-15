@@ -57,11 +57,12 @@ public class LarpakeTasksController : ExtendedControllerBase
     }
 
     [HttpGet("{taskId}")]
-    [RequiresPermissions(Permissions.ReadAllData)]
+    [RequiresPermissions(Permissions.CommonRead)]
     [ProducesResponseType(typeof(LarpakeTaskGetDto), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> Get(long taskId)
     {
+        // TODO: Make sure that the user has access to this task, now I dont see it as a problem
         var record = await _db.GetTask(taskId);
         if (record is null)
         {
