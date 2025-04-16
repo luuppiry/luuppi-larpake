@@ -13,11 +13,31 @@ body {
 .title {
     font-size: xx-large;
     margin: 20px 0 0 0;
+    max-width: 95%;
+    overflow-wrap: break-word;
+}
+
+.loader.title {
+    width: 66%;
 }
 
 .updated {
     color: #ccc;
     margin: 0px;
+    max-width: 90%;
+}
+
+.loader.updated {
+    width: 30%;
+}
+
+.description {
+    margin: 20px 0 0 0;
+    max-width: 95%;
+}
+
+.loader.description {
+    width: 40%;
 }
 
 .qr-container {
@@ -43,15 +63,17 @@ body {
     border: 3px solid var(--text-border);
     border-radius: 10px;
     display: grid;
+    width: 100%;
+    max-width: 300px;
 }
 
 .qr > img {
     padding: 20px;
-    width: 250px;
-    max-width: 100%;
+    width: 100%;
     border-radius: 10px;
     grid-column: 1;
     grid-row: 1;
+    box-sizing: border-box;
 }
 
 .code-container {
@@ -85,4 +107,10 @@ body {
     border-radius: 10px;
     min-width: 200px;
     min-height: 20px;
+}
+
+#award-icon {
+    max-width: 300px;
+    height: auto;
+    width: 95%;
 }

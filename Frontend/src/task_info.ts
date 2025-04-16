@@ -9,7 +9,6 @@ import ClickerService from "./services/clicker_service.js";
 
 const taskClient = new LarpakeClient();
 const attendanceClient = new AttendanceClient(taskClient.client);
-// TODO: task completed SSE event
 
 async function main() {
     const params = getSearchParams();
@@ -47,8 +46,11 @@ function redirectNotFound() {
     window.location.href = "404.html";
 }
 
-function render(task: LarpakeTask, completionKey: AttendanceKey | null, section: Section | null) {
+async function render(task: LarpakeTask, completionKey: AttendanceKey | null, section: Section | null) {
     const container = document.getElementById("event-container") as HTMLElement;
+
+    // Removing all loader animations
+    removeLoaderClasses();
 
     const taskText = getMatchingLangObject<LarpakeTaskTextData>(task.textData);
     const sectionText = getMatchingLangObject<SectionTextData>(section?.textData ?? null);
@@ -63,6 +65,21 @@ function render(task: LarpakeTask, completionKey: AttendanceKey | null, section:
     container.querySelector<HTMLParagraphElement>("._description")!.innerText =
         taskText?.body ?? "";
 
+    // Checking whether task is already done and displaying information if so
+    let attendances = await attendanceClient.getAll(null, true, true, 20);
+    console.log(attendances);
+    let taskCompleted = false;
+    if(attendances != null){
+        taskCompleted = attendances.some(item => item.larpakeTaskId === task.id);
+        if (taskCompleted) {
+            const container = document.getElementById("qr-container") as HTMLElement;
+            const foundTask = attendances.find(item => item.larpakeTaskId === task.id);
+            const formattedTime = formatLocalTime(foundTask.completed.completedAt);
+            container.innerHTML = `<h1>Onneksi olkoon!</h1><p>Tehtävä on suoritettu ajassa: ${formattedTime}</p>
+            <img id="award-icon" src="/icons/award-icon.png" alt="Suoritettu jee jee"/>`;
+        }
+    }
+
     if (!task.cancelledAt) {
         renderAttendanceCodes(completionKey);
     } else {
@@ -70,6 +87,25 @@ function render(task: LarpakeTask, completionKey: AttendanceKey | null, section:
         label.classList.remove("hidden");
     }
 }
+
+function formatLocalTime(isoString) {
+    const date = new Date(isoString);
+    const pad = (num) => String(num).padStart(2, '0');
+  
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+    const day = pad(date.getDate());
+    const month = pad(date.getMonth() + 1);
+    const year = date.getFullYear();
+  
+    return `${hours}:${minutes} ${day}.${month}.${year}`;
+}
+
+function removeLoaderClasses() {
+    document.querySelectorAll(".loader").forEach((el) => {
+        el.classList.remove("loader");
+    });
+} 
 
 function renderAttendanceCodes(completionKey: AttendanceKey | null) {
     const container = document.getElementById("qr-container") as HTMLElement;

@@ -16,9 +16,9 @@
                 <span>Lärpäke</span>
                 <span class="_name"></span>
             </h2>
-            <h3 class="_title title">Task title</h3>
-            <p class="_updated updated">Updated: N/A</p>
-            <p class="_description">Short description of the task...</p>
+            <h3 class="_title title loader">&nbsp;</h3>
+            <p class="_updated updated loader">&nbsp;</p>
+            <p class="_description description loader">&nbsp;</p>
             <div id="qr-container" class="qr-container">
                 <p>Show this QR-code to your tutor to complete it</p>
                 <p id="cancelled-label" class="hidden cancelled">TASK IS CANCELLED</p>
@@ -33,7 +33,7 @@
                 <p>or use this code</p>
                 <div class="code-container">
                     <p class="_copied copied default-shadow no-interact">Copied</p>
-                    <p class="_code code cursor-pointer hover-scale"></p>
+                    <p class="_code code cursor-pointer hover-scale loader"></p>
                 </div>
             </div>
         </section>
@@ -41,10 +41,53 @@
             <div class="events-section">
                 <h2>Related events:</h2>
                 <ul>
+                    <!--TODO: Add list of related events-->
                     <li>This functionality is not currently ready.</li>
                 </ul>
             </div>
         </section>
         <script type="module" src="/src/task_info.js"></script>
+        <script type="module">
+            import LarpakeClient from "/src/api_client/larpake_client.js";
+            import AttendanceClient from "/src/api_client/attendance_client.js";
+
+            const intervalId = setInterval(checkIsTaskCompleted, 2000);
+            
+            const taskClient = new LarpakeClient();
+            const attendanceClient = new AttendanceClient(taskClient.client);
+            const queryParams = new URLSearchParams(window.location.search);
+            const taskId = queryParams.get("taskId");
+            const task = await taskClient.getTaskById(taskId);
+
+            function formatLocalTime(isoString) {
+                const date = new Date(isoString);
+                const pad = (num) => String(num).padStart(2, '0');
+            
+                const hours = pad(date.getHours());
+                const minutes = pad(date.getMinutes());
+                const day = pad(date.getDate());
+                const month = pad(date.getMonth() + 1);
+                const year = date.getFullYear();
+            
+                return `${hours}:${minutes} ${day}.${month}.${year}`;
+            }
+
+            async function checkIsTaskCompleted() {
+                let attendances = await attendanceClient.getAll(null, true, true, 20);
+                let taskCompleted = false;
+                if(attendances != null){
+                    taskCompleted = attendances.some(item => item.larpakeTaskId === task.id);
+                    if (taskCompleted) {
+                        clearInterval(intervalId);
+                        const container = document.getElementById("qr-container");
+                        const foundTask = attendances.find(item => item.larpakeTaskId === task.id);
+                        const formattedTime = formatLocalTime(foundTask.completed.completedAt);
+                        container.innerHTML = `<h1>Onneksi olkoon!</h1><p>Tehtävä on suoritettu ajassa: ${formattedTime}</p>
+                        <img id="award-icon" src="/icons/award-icon.png" alt="Suoritettu jee jee"/>`;
+                        return;
+                    }
+                }
+            }
+        </script>
     </body>
 </html>
