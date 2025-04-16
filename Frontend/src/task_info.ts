@@ -50,7 +50,14 @@ async function render(task: LarpakeTask, completionKey: AttendanceKey | null, se
     const container = document.getElementById("event-container") as HTMLElement;
 
     // Removing all loader animations
-    removeLoaderClasses();
+    const title = document.querySelector('h3._title.title.loader');
+    const updated = document.querySelector('p._updated.updated.loader');
+    const description = document.querySelector('p._description.description.loader');
+    const code = document.querySelector('p._code.code.loader');
+    title?.classList.remove('loader');
+    updated?.classList.remove('loader');
+    description?.classList.remove('loader');
+    code?.classList.remove('loader');
 
     const taskText = getMatchingLangObject<LarpakeTaskTextData>(task.textData);
     const sectionText = getMatchingLangObject<SectionTextData>(section?.textData ?? null);
@@ -102,12 +109,6 @@ function formatLocalTime(isoString: Date) {
   
     return `${hours}:${minutes} ${day}.${month}.${year}`;
 }
-
-function removeLoaderClasses() {
-    document.querySelectorAll(".loader").forEach((el) => {
-        el.classList.remove("loader");
-    });
-} 
 
 function renderAttendanceCodes(completionKey: AttendanceKey | null) {
     const container = document.getElementById("qr-container") as HTMLElement;
