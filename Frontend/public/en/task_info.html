@@ -57,7 +57,6 @@
             const attendanceClient = new AttendanceClient(taskClient.client);
             const queryParams = new URLSearchParams(window.location.search);
             const taskId = queryParams.get("taskId");
-            const task = await taskClient.getTaskById(taskId);
 
             function formatLocalTime(isoString) {
                 const date = new Date(isoString);
@@ -76,6 +75,7 @@
                 let attendances = await attendanceClient.getAll(null, true, true, 20);
                 let taskCompleted = false;
                 if(attendances != null){
+                    const task = await taskClient.getTaskById(taskId);
                     taskCompleted = attendances.some(item => item.larpakeTaskId === task.id);
                     if (taskCompleted) {
                         clearInterval(intervalId);
