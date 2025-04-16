@@ -124,7 +124,7 @@ export default class GroupClient extends RequestEngine {
     }
 
     async getGroupMembers(groupId: number): Promise<null | string[]> {
-        const response = await this.client.get(`api/groups/${groupId}/members`);
+        const response = await this.client.get(`api/groups/${groupId}/member-ids`);
         if (!response.ok) {
             console.warn(`Failed to fetch group ${groupId} members`, await response.json());
             return null;
