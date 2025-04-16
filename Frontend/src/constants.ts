@@ -1,30 +1,30 @@
 // Query parameters
-export const Q_LARPAKE_ID = "larpakeId";
-export const Q_TASK_ID = "taskId";
-export const Q_SECTION_ID = "sectionId";
+export const Q_LARPAKE_ID = "larpakeid";
+export const Q_TASK_ID = "taskid";
+export const Q_SECTION_ID = "sectionid";
 export const Q_PAGE = "page";
 
-export const Q_LAST_PAGE = "lastPage";
-export const Q_OF_PAGES = "ofPages";
+export const Q_LAST_PAGE = "lastpage";
+export const Q_OF_PAGES = "ofpages";
 
-export const Q_GROUP_ID = "groupId";
+export const Q_GROUP_ID = "groupid";
 
 export const Q_NEW = "new";
 export const Q_STATUS = "status";
 
-export const Q_PAGE_SIZE = "pageSize";
-export const Q_PAGE_OFFSET = "pageOffset";
+export const Q_PAGE_SIZE = "pagesize";
+export const Q_PAGE_OFFSET = "pageoffset";
 export const Q_SEARCH = "search";
 
-export const Q_INVITE_KEY = "inviteKey";
-export const Q_ATTENDANCE_KEY = "attendanceKey";
+export const Q_INVITE_KEY = "invitekey";
+export const Q_ATTENDANCE_KEY = "attendancekey";
 
 export const ATTENDANCE_KEY_LENGTH = 6;
 export const ATTENDANCE_CODE_HEADER = "lak-v1_";
 
 export const INVITE_KEY_LENGTH = 8;
-export const Q_KEY_MALFORMED = "keyMalformed";
-export const Q_KEY_EXPIRED = "keyExpired";
+export const Q_KEY_MALFORMED = "keymalformed";
+export const Q_KEY_EXPIRED = "keyexpired";
 
 export const Q_PARAM = "param";
 
