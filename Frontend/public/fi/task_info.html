@@ -56,6 +56,11 @@
             const attendanceClient = new AttendanceClient(taskClient.client);
             const queryParams = new URLSearchParams(window.location.search);
             const taskId = queryParams.get("taskId");
+            
+            function removeLoaderClasses() {
+                document.querySelectorAll(".loader").forEach((el) => {
+                el.classList.remove("loader");});
+            }
 
             function formatLocalTime(isoString) {
                 const date = new Date(isoString);
@@ -78,6 +83,7 @@
                     taskCompleted = attendances.some(item => item.larpakeTaskId === task.id);
                     if (taskCompleted) {
                         clearInterval(intervalId);
+                        removeLoaderClasses();
                         const container = document.getElementById("qr-container");
                         const foundTask = attendances.find(item => item.larpakeTaskId === task.id);
                         const formattedTime = formatLocalTime(foundTask.completed.completedAt);
