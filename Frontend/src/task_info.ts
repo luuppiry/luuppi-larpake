@@ -74,9 +74,11 @@ async function render(task: LarpakeTask, completionKey: AttendanceKey | null, se
         if (taskCompleted) {
             const container = document.getElementById("qr-container") as HTMLElement;
             const foundTask = attendances.find(item => item.larpakeTaskId === task.id);
-            const formattedTime = formatLocalTime(foundTask.completed.completedAt);
-            container.innerHTML = `<h1>Onneksi olkoon!</h1><p>Tehtävä on suoritettu ajassa: ${formattedTime}</p>
-            <img id="award-icon" src="/icons/award-icon.png" alt="Suoritettu jee jee"/>`;
+            if (foundTask?.completed){
+                const formattedTime = formatLocalTime(foundTask.completed.completedAt);
+                container.innerHTML = `<h1>Onneksi olkoon!</h1><p>Tehtävä on suoritettu ajassa: ${formattedTime}</p>
+                <img id="award-icon" src="/icons/award-icon.png" alt="Suoritettu jee jee"/>`;
+            }
         }
     }
 
@@ -88,9 +90,9 @@ async function render(task: LarpakeTask, completionKey: AttendanceKey | null, se
     }
 }
 
-function formatLocalTime(isoString) {
+function formatLocalTime(isoString: Date) {
     const date = new Date(isoString);
-    const pad = (num) => String(num).padStart(2, '0');
+    const pad = (num: number) => String(num).padStart(2, '0');
   
     const hours = pad(date.getHours());
     const minutes = pad(date.getMinutes());
