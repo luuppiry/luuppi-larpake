@@ -9,7 +9,7 @@ document.querySelector<HTMLButtonElement>("._join")?.addEventListener("click", (
     const input = parseFromInputRow(first);
     console.log("Given code was:", input);
 
-    const link = parseInviteLink(input)?.toUpperCase();
+    const link = parseInviteLink(input);
     if (link) {
         window.location.href = link;
     } else {
