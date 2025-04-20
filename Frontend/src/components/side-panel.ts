@@ -22,7 +22,7 @@ class SidePanel extends HTMLElement {
     async connectedCallback() {
         this.#addClickListeners();
         const user = await this.client.trySilentLogin();
-        let items: ListItem[] = [{ href: "index.html", title: { fi: "Koti", en: "Home" } },];
+        let items: ListItem[] = [{ href: "index.html", title: { fi: "Koti", en: "Home" } }];
         if (hasPermissions(user?.permissions ?? null, Permissions.Freshman)) {
             items = [
                 { href: "index.html", title: { fi: "Koti", en: "Home" } },
@@ -42,7 +42,10 @@ class SidePanel extends HTMLElement {
                             href: "larpake.html?page=4",
                             title: { fi: "Pii-Klubilla tapahtuu", en: "Pii-Klubi happenings" },
                         },
-                        { href: "larpake.html?page=5", title: { fi: "Normipäivä", en: "Averageday" } },
+                        {
+                            href: "larpake.html?page=5",
+                            title: { fi: "Normipäivä", en: "Averageday" },
+                        },
                         {
                             href: "larpake.html?page=6",
                             title: { fi: "Normipäivä", en: "Normal day" },
@@ -51,7 +54,10 @@ class SidePanel extends HTMLElement {
                             href: "larpake.html?page=7",
                             title: { fi: "Yliopistoelämää", en: "University life" },
                         },
-                        { href: "larpake.html?page=9", title: { fi: "Vaikutusvaltaa", en: "Influence" } },
+                        {
+                            href: "larpake.html?page=9",
+                            title: { fi: "Vaikutusvaltaa", en: "Influence" },
+                        },
                         {
                             href: "larpake.html?page=11",
                             title: { fi: "Liikunnallista", en: "Exercise - Participate" },
@@ -90,24 +96,35 @@ class SidePanel extends HTMLElement {
                     href: "join.html",
                     title: { fi: "Liity ryhmään", en: "Join group" },
                 },
+                {
+                    href: "faq.html",
+                    title: { fi: "UKK", en: "FAQ" },
+                },
+                {
+                    href: "contact_us.html",
+                    title: { fi: "Ota yhteyttä", en: "Contact us" },
+                },
             ];
-        } 
+        }
 
         if (hasPermissions(user?.permissions ?? null, Permissions.Tutor)) {
-            items.push({href: "read.html",
-                title: {fi: "Tuutori - Allekirjoita", en: "Tutor - Sign Task" },
+            items.push({
+                href: "read.html",
+                title: { fi: "Tuutori - Allekirjoita", en: "Tutor - Sign Task" },
             });
         }
 
         if (hasPermissions(user?.permissions ?? null, Permissions.Admin)) {
-            items.push({href: "admin/admin.html",
-                title: {fi: "Ylläpito", en: "Admin ONLY IN FI"},
+            items.push({
+                href: "admin/admin.html",
+                title: { fi: "Ylläpito", en: "Admin ONLY IN FI" },
             });
         }
 
         if (hasPermissions(user?.permissions ?? null, Permissions.Sudo)) {
-            items.push({href: "admin/admin.html",
-                title: {fi: "SUDO Ylläpito", en: "Sudo Admin ONLY IN FI"},
+            items.push({
+                href: "admin/admin.html",
+                title: { fi: "SUDO Ylläpito", en: "Sudo Admin ONLY IN FI" },
             });
         }
 
@@ -213,8 +230,6 @@ class SidePanel extends HTMLElement {
     toggleSidePanel() {
         toggleSidePanel();
     }
-
-
 }
 
 function toggleSidePanel(): void {

@@ -16,9 +16,15 @@ export function parseInviteLink(inviteCode: string | null, groupId: number | nul
     if (!inviteCode || inviteCode.length !== INVITE_KEY_LENGTH) {
         return null;
     }
-    return `${getUrlHostPart()}/join_invite.html?${Q_INVITE_KEY}=${inviteCode}&${Q_GROUP_ID}=${
-        groupId ? groupId : "unknown"
-    }`;
+    const formattedCode = inviteCode.toUpperCase();
+
+    const params = new URLSearchParams();
+    params.append(Q_INVITE_KEY, formattedCode);
+    if (groupId){
+        params.append(Q_GROUP_ID, groupId.toString());
+    }
+
+    return `${getUrlHostPart()}/join_invite.html?${params.toString()}`
 }
 
 export function parseAttendanceLink(attendanceKey: string | null) {

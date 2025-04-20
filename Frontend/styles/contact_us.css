@@ -1,0 +1,54 @@
+@import "common.css";
+@import "section.css";
+
+body {
+    padding-bottom: 150px;
+}
+
+.section {
+    max-width: 700px;
+}
+
+.title {
+    text-align: center;
+}
+
+.content a {
+    color: black;
+    text-decoration: underline;
+}
+
+.content b {
+    font-weight: 600;
+}
+
+.content a {
+    margin-top: 20px;
+    display: block;
+}
+
+.no-margin {
+    margin: 0;
+}
+
+.association > h4 {
+    margin: 20px 0 0 0;
+}
+
+.authors {
+    padding-top: 20px;
+}
+
+.authors > h4 {
+    margin: 0;
+}
+
+.authors > ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.authors > ul > li {
+    font-weight: 500;
+}
