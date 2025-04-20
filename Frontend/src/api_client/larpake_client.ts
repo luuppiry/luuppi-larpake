@@ -116,6 +116,11 @@ export default class LarpakeClient extends RequestEngine {
     }
 
     async getTaskById(taskId: number): Promise<LarpakeTask | null> {
+        if (!taskId){
+            console.warn("Cannot fetch provided null task id")
+            return null;
+        }
+        
         return await this.get<LarpakeTask>({
             url: `api/larpake-tasks/${taskId}`,
             params: null,

@@ -1,5 +1,6 @@
 ﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.IdQueryObject;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services.Options;
@@ -23,28 +24,23 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
     public async Task<OrganizationEvent[]> Get(EventQueryOptions options)
     {
         SelectQuery query = new();
-
         query.AppendLine($"""
-            SELECT 
-                e.id, 
-                e.starts_at,
-                e.ends_at,
-                e.created_by,
-                e.created_at,
-                e.updated_by,
-                e.updated_at,
-                e.cancelled_at,
-                e.external_id,
-                loc.title,
-                loc.body,
-                loc.location,
-                loc.image_url,
-                loc.website_url,
-                GetLanguageCode(loc.language_id) AS language_code,
-                loc.organization_event_id
-            FROM organization_events e
-                LEFT JOIN organization_event_localizations loc
-                    ON e.id = loc.organization_event_id
+            SELECT DISTINCT(id)
+                id, 
+                starts_at,
+                ends_at,
+                created_by,
+                created_at,
+                updated_by,
+                updated_at,
+                cancelled_at,
+                external_id
+            FROM organization_events
+            """);
+
+        query.IfTrue(options.IsFreshmanEvent).AppendLine($"""
+            INNER JOIN event_map
+                ON id = organization_event_id
             """);
 
         query.AppendConditionLine("cancelled_at IS NULL");
@@ -61,7 +57,7 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
 
         // If event title like string
         query.IfNotNull(options.Title).AppendConditionLine($"""
-            e.id IN (
+            id IN (
                 SELECT organization_event_id
                 FROM organization_event_localizations
                 WHERE title ILIKE '%' || @{nameof(options.Title)} || '%'
@@ -74,11 +70,37 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
             OFFSET @{nameof(options.PageOffset)};
             """);
 
+        string sql = query.ToString();
+        
         using var connection = GetConnection();
-        var records = await connection.QueryLocalizedAsync<OrganizationEvent, OrganizationEventLocalization>(
-            query.ToString(), options, splitOn: "title");
+        var records = await connection.QueryAsync<OrganizationEvent>(
+            query.ToString(), options);
 
-        OrganizationEvent[] result = records.Values.ToArray();
+        OrganizationEvent[] result = records.ToArray();
+
+        
+        long[] ids = records.Select(x => x.Id).ToArray();
+        var rawLocalizations = await connection.QueryAsync<EventIdObject>($"""
+            SELECT 
+                organization_event_id,
+                title,
+                body,
+                location,
+                image_url,
+                website_url,
+                GetLanguageCode(language_id) AS language_code
+            FROM organization_event_localizations
+                WHERE organization_event_id = ANY(@ids);
+            """, new { ids });
+
+        var localizations = rawLocalizations.GroupBy(x => x.OrganizationEventId).ToDictionary(x => x.Key, x => x.Select(x => (OrganizationEventLocalization)x).ToList());
+        foreach (var record in records)
+        {
+            if (localizations.TryGetValue(record.Id, out var textData))
+            {
+                record.TextData = textData;
+            }
+        }
 
         AppendImageUrlsToAbsolute(result);
         return result;

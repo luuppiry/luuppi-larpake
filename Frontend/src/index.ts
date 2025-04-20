@@ -1,6 +1,7 @@
 import { EventClient } from "./api_client/event_client.js";
 import LarpakeClient from "./api_client/larpake_client.js";
 import EventPreviewer from "./components/event-previewer.js";
+import { Q_LARPAKE_ID } from "./constants.js";
 import { appendTemplateElement, getDocumentLangCode, removeChildren } from "./helpers.js";
 
 const eventClient = new EventClient();
@@ -57,7 +58,7 @@ async function loadLarpakkeet() {
             larpake.textData.filter((x) => x.languageCode == lang)[0] ?? larpake.textData[0];
 
         const params = new URLSearchParams();
-        params.append("LarpakeId", larpake.id.toString());
+        params.append(Q_LARPAKE_ID, larpake.id.toString());
 
         element.querySelector<HTMLHeadingElement>("._title")!.innerText = text.title;
         element.querySelector<HTMLAnchorElement>(

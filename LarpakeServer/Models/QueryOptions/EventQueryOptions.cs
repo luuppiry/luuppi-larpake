@@ -13,7 +13,7 @@ public class EventQueryOptions : QueryOptions
     [MaxLength(30)]
     public string? Title { get; set; } = null;
     public bool DoMinimize { get; set; } = false;
-
+    public bool IsFreshmanEvent { get; set; } = false;
     public bool OrderDateAscending { get; set; } = false;
 
 }
