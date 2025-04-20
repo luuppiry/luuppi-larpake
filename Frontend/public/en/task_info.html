@@ -50,13 +50,14 @@
         <script type="module">
             import LarpakeClient from "/src/api_client/larpake_client.js";
             import AttendanceClient from "/src/api_client/attendance_client.js";
+            import { Q_TASK_ID } from "/src/constants.js";
 
             const intervalId = setInterval(checkIsTaskCompleted, 2000);
             
             const taskClient = new LarpakeClient();
             const attendanceClient = new AttendanceClient(taskClient.client);
             const queryParams = new URLSearchParams(window.location.search);
-            const taskId = queryParams.get("taskId");
+            const taskId = queryParams.get(Q_TASK_ID);
 
             function formatLocalTime(isoString) {
                 const date = new Date(isoString);
