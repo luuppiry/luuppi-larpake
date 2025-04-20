@@ -4,6 +4,7 @@
 
 .section {
     max-width: 600px !important;
+    margin: 20px 20px 0 20px;
 }
 
 .section-filler > div {
@@ -11,14 +12,11 @@
 }
 
 .content {
-    display: flex;
-    flex-flow: column;
     justify-content: center;
-    text-align: center;
+    text-align: left;
 }
 
-.join-btn {
-    margin: 30px auto 0 auto;
-    padding: 8px 120px !important;
+.box-container {
+    max-width: 205px;
+    margin-bottom: 2rem;
 }
-

@@ -22,27 +22,33 @@
         </ui-header>
         <side-panel></side-panel>
         <form-container class="shadow">
-            <section class="content">
+            <!-- Visibiility none while loading, revealed when all CSS loaded -->
+            <section class="content" style="visibility: hidden">
                 <h2>Join group</h2>
                 <p>
                     In this view, you can join a Fuksi group, by using a 8 character code
                     given by your tutors. Happy Lärpäke moments!
                 </p>
                 <h3 class="code-title">Invite code</h3>
-                <div class="box-container">
-                    <input id="first-char-field" class="_char box" maxlength="1"></input>
-                    <input class="_char box" maxlength="1"></input>
-                    <input class="_char box" maxlength="1"></input>
-                    <input class="_char box" maxlength="1"></input>
-                    <input class="_char box" maxlength="1"></input>
-                    <input class="_char box" maxlength="1"></input>
-                    <input class="_char box" maxlength="1"></input>
-                    <input class="_char box" maxlength="1"></input>
-                </div>
+                <div class="box-container" style="max-width: 205px; margin-bottom: 2rem;">
+                    <div class="box-row">
+                        <input id="first-char-field" class="_char box" maxlength="1" />
+                        <input class="_char box" maxlength="1" />
+                        <input class="_char box" maxlength="1" />
+                        <input class="_char box" maxlength="1" />
+                        <input class="_char box" maxlength="1" />
+                        <input class="_char box" maxlength="1" />
+                        <input class="_char box" maxlength="1" />
+                        <input class="_char box" maxlength="1" />
+                    </div>
+                </div> 
                 <button class="_join join-btn primary-btn hover-scale">Join</button>
             </section>
         </form-container>
-
-    
     </body>
+    <script>
+        window.onload = function() {
+            document.querySelector('form-container section').style.visibility = 'visible';
+        };    
+    </script>
 </html>
