@@ -10,7 +10,16 @@
         <script type="module" src="/src/components/event-previewer.js"></script>
     </head>
     <body>
-        <ui-header></ui-header>
+        <ui-header>
+            <header class="header placeholder">
+                <img class="header-logo" src="/luuppi.logo.svg" onclick="window.location.href='index.html'" alt="Luuppi Logo"/>
+                <h1>LÄRPÄKE</h1>
+                <div class="menu-icon header-lang-btn" id="ui-header-change-language-btn">
+                    <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
+                </div>
+                <div id="ui-header-open-menu-btn" class="menu-icon">☰</div>
+            </header>
+        </ui-header>
         <side-panel lang="en"></side-panel>
 
         <template id="larpake-template">
@@ -18,9 +27,9 @@
                 <article class="larpake">
                     <a class="_href">
                         <img class="_img image" src="/kiasa.png" alt="Lärpäkkeen tunnelmaa ja teemaa kuvaava kuva." />
-                        <h2 class="_title title" style="text-align: center">Title</h2>
+                        <h2 class="_title title" style="text-align: center">Otsikko</h2>
                         <div class="_href upcoming-events-btn bigger-icon" style="display: flex; justify-content: end">
-                            <img class="_img image" src="/right-arrow.png" style="height: 40px; width: 85px; margin: 20px" alt="Arrow to the right" />
+                            <img class="_img image" src="/icons/right-arrow.png" style="height: 40px; width: 85px; margin: 20px" alt="Nuoli oikealle" />
                         </div>
                     </a>
                 </article>
@@ -32,10 +41,11 @@
                 <section class="container">
                     <article class="larpake">
                         <a class="_href">
-                            <img class="_img image loader" src="" style="width: 100%; aspect-ratio: 1 / 1"/>
+                            <!-- Placeholder -->
+                            <p class="_img image loader" style="width: 100%; aspect-ratio: 1 / 1; margin: 0px; padding: 0px"></p>
                             <h2 class="_title title loader" style="margin-left: auto; margin-right: auto; width: 50%">&nbsp;</h2>
                             <div class="_href upcoming-events-btn bigger-icon" style="display: flex; justify-content: end">
-                                <img class="_img image" src="/right-arrow.png" style="height: 40px; width: 85px; margin: 20px" alt="Arrow to the right" />
+                                <p class="_img image loader" style="height: 40px; width: 85px; margin: 20px" alt="Nuoli oikealle"></p>
                             </div>
                         </a>
                     </article>
@@ -44,13 +54,13 @@
         </section>
 
         <section class="container">
-            <h2>UPCOMING EVENTS</h2>
+            <h2>TULEVAT LÄRPÄKETAPAHTUMAT</h2>
             <ul id="event-container" class="event-container">
                 <!-- Go to upcoming events page button -->
                 <li class="hover-scale cursor-pointer flex-last">
                     <a href="upcoming_events.html" class="upcoming-events-btn flex-row">
-                        <span class="events-button-text">Explore other events</span>
-                        <span class="bigger-icon"><img class="_img image" src="/right-arrow.png" style="height: 40px; margin: 0px;" alt="Nuoli oikealle" /></span>
+                        <span class="events-button-text">Tutustu muihin tapahtumiin</span>
+                        <span class="bigger-icon"><img class="_img image" src="/icons/right-arrow.png" style="height: 40px; margin: 0px" alt="Nuoli oikealle"/></span>
                     </a>
                 </li>
             </ul>

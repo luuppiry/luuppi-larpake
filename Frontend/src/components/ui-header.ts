@@ -15,6 +15,11 @@ class Header extends HTMLElement {
     }
 
     async connectedCallback() {
+        const placeholder = this.querySelector('.placeholder');
+        if (placeholder) {
+            placeholder.remove();
+        }
+
         this.id = UI_HEADER_ID;
 
         const hasLanguageOptions: boolean =
