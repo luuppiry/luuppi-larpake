@@ -15,7 +15,7 @@ class Header extends HTMLElement {
     }
 
     async connectedCallback() {
-        const placeholder = this.querySelector('.placeholder');
+        const placeholder = this.querySelector(".placeholder");
         if (placeholder) {
             placeholder.remove();
         }
@@ -82,8 +82,6 @@ class Header extends HTMLElement {
         });
     }
 
-
-
     // Runs when object is disconnected from DOM
     disconnectedCallback() {}
 
@@ -140,7 +138,7 @@ class Header extends HTMLElement {
         }
     }
 
-    getHttpClient(): HttpClient{
+    getHttpClient(): HttpClient {
         return this.client;
     }
 
@@ -196,7 +194,7 @@ class Header extends HTMLElement {
 
         // Create buttons
         const profileLink = document.createElement("a");
-        profileLink.href = this.#getProfilePath();
+        profileLink.href = this.#add_path_correction("profile.html");
         profileLink.innerText = isFinnish ? "Profiili" : "Profile";
 
         const adminLink = this.#getAdminBtn(permissions, isFinnish);
@@ -239,20 +237,6 @@ class Header extends HTMLElement {
         return profileDropdown;
     }
 
-    #getProfilePath(): string {
-        if (this.profilePath) {
-            return this.profilePath;
-        }
-        return this.#add_path_correction("profile.html");
-    }
-
-    #getAdminPath(): string {
-        if (this.adminPath) {
-            return this.adminPath;
-        }
-        return this.#add_path_correction("admin/admin.html");
-    }
-
     #add_path_correction(path: string): string {
         /* Path depth should be positive number
          * For example 2 = ../../<path>
@@ -282,7 +266,7 @@ class Header extends HTMLElement {
         if (!isFinnish) {
             return null;
         }
-        const adminPath = this.#getAdminPath();
+        const adminPath = this.#add_path_correction("admin/admin.html");
 
         // Create button
         const result = document.createElement("a");
