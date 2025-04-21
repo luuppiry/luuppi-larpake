@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,7 +11,7 @@
     </head>
 
     <body>
-        <ui-header>
+        <ui-header path-depth="1">
             <header class="header placeholder">
                 <img class="header-logo" src="/luuppi.logo.svg" onclick="window.location.href='index.html'" alt="Luuppi Logo"/>
                 <h1>LÄRPÄKE</h1>
@@ -20,19 +20,18 @@
                 <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
             </header>
         </ui-header>
-        <side-panel></side-panel>
-        
-        <h2 class="title">Ota yhteyttä</h2>
-        <!-- Visibiility none while loading, revealed when all CSS loaded -->
+        <side-panel lang="en"></side-panel>
+
+        <h2 class="title">Contact Us</h2>
+        <!-- Visibility none while loading, revealed when all CSS loaded -->
         <article class="content" style="visibility: hidden;">
             <form-container>
                 <section>
-                    <h3>Luupin tuutorointi</h3>
+                    <h3>Luuppi Tutoring</h3>
                     <p>
-                        Lähetä tänne viestiä, jos sinulla on kysyttävä Lärpäkkeen suorittamisesta
-                        tai tarkentavia kysymyksiä yksittäiseen tehtävään liittyen. Tänne voit
-                        lähettää myös minkä tahansa yliopistoelämään/tuutorointiin liittyvän
-                        kysymyksen.
+                        Send a message here if you have questions about completing Lärpäke
+                        or specific questions related to individual tasks. You can also
+                        send any university life/tutoring-related questions here.
                     </p>
                     <a href="mailto:tutor@luuppi.fi">tutor@luuppi.fi</a>
                 </section>
@@ -40,42 +39,43 @@
 
             <form-container>
                 <section>
-                    <h3>Tekniset kysymykset / vikailmoitus / parannusehdotus</h3>
+                    <h3>Technical Questions / Bug Report / Improvement Suggestion</h3>
                     <p>
-                        Huomasitko Lärpäkkeessä jotain pielessä tai haluatko vaikuttaa miltä Lärpäke
-                        näyttää huomenna? Kehitystiimiin voit ottaa yhteyttä alla olevista
-                        osoitteista. Bugi-ilmoituksiin on hyvä liittää näytönkaappaus ja pieni
-                        selostus mitä mielestäsi pitäis/ei pitäisi tapahtua. Voit myös mielellään
-                        luoda Githubissa vapaamuotoisen issuen!
+                        Did you notice something wrong with Lärpäke or want to influence what Lärpäke
+                        will look like tomorrow? You can contact the development team via the addresses below.
+                        For bug reports, it’s helpful to attach a screenshot and a short description
+                        of what you think should/shouldn't happen. You're also welcome
+                        to create an informal issue on GitHub!
                     </p>
                     <a class="block" href="mailto:webmaster@luuppi.fi">webmaster@luuppi.fi</a>
-                    <a class="block" href="https://github.com/luuppiry/luuppi-larpake/issues"
-                        >Lärpäkkeen Github</a
-                    >
+                    <a class="block" href="https://github.com/luuppiry/luuppi-larpake/issues">
+                        Lärpäke's GitHub
+                    </a>
                 </section>
             </form-container>
 
             <form-container>
                 <section class="association">
-                    <h3>Yhdistys</h3>
-                    <h4>Postiosoite</h4>
+                    <h3>Association</h3>
+                    <h4>Postal Address</h4>
                     <p class="no-margin">Luuppi ry, Yliopistonkatu 58b, 33100 Tampere</p>
-                    <h4>Hallitus ja toimihenkilöt</h4>
+                    <h4>Board and Officials</h4>
                     <a href="mailto:hallitus@luuppi.fi">hallitus@luuppi.fi</a>
-                    <h4>Yhdenvertaisuusvastaavat</h4>
-                    <a href="yhdenvertaisuus@luuppi.fi">yhdenvertaisuus@luuppi.fi</a>
-                    <h4>Y-tunnus</h4>
+                    <h4>Equality Officers</h4>
+                    <a href="mailto:yhdenvertaisuus@luuppi.fi">yhdenvertaisuus@luuppi.fi</a>
+                    <h4>Business ID</h4>
                     <p class="no-margin">0512347-2</p>
                 </section>
             </form-container>
+
             <form-container>
                 <section>
-                    <h3>Sähköisestä Lärpäkkeestä</h3>
+                    <h3>About the Electronic Lärpäke</h3>
                     <p class="no-margin">
-                        Sähköinen Lärpäke on Luupin WWW/IT-tiimin kehittämä projekti.
+                        The electronic Lärpäke is a project developed by Luuppi's WWW/IT team.
                     </p>
                     <section class="authors">
-                        <h4>Pääkehittäjät</h4>
+                        <h4>Main Developers</h4>
                         <ul>
                             <li>Henri Vainio</li>
                             <li>Juliusz Kotelba</li>
@@ -89,6 +89,6 @@
     <script>
         window.onload = function() {
             document.querySelector('article').style.visibility = 'visible';
-        };    
+        };
     </script>
 </html>

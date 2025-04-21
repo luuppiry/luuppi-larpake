@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lärpäke - FAQ</title>
+        <link rel="stylesheet" href="/styles/faq.css" />
+        <script type="module" src="/src/components/side-panel.js"></script>
+        <script type="module" src="/src/components/ui-header.js"></script>
+        <script type="module" src="/src/components/form-container.js"></script>
+    </head>
+
+    <body>
+        <ui-header>
+            <header class="header placeholder">
+                <img class="header-logo" src="/luuppi.logo.svg" onclick="window.location.href='index.html'" alt="Luuppi Logo"/>
+                <h1>LÄRPÄKE</h1>
+                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
+                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
+                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
+            </header>
+        </ui-header>
+        <side-panel lang="en"></side-panel>
+
+        <h2 class="title">Frequently Asked Questions</h2>
+        <!-- Visibility none while loading, revealed when all CSS loaded -->
+        <article class="content" style="visibility: hidden;">
+            <form-container>
+                <section>
+                    <h3>How can I try the digital Lärpäke?</h3>
+                    <p>
+                        Ask the development team for a link to join the test group. Once you receive the link, you can browse the 2024 Lärpäke and its tasks just like a freshman!
+                    </p>
+                </section>
+            </form-container>
+            <form-container>
+                <section>
+                    <h3>Do I need a new user account?</h3>
+                    <p>
+                        No! The digital Lärpäke uses the same luuppi.fi account you've used to log in to Luuppi's website before.
+                    </p>
+                </section>
+            </form-container>
+            <form-container>
+                <section>
+                    <h3>What happens to the paper Lärpäke?</h3>
+                    <p>
+                        It's not going anywhere—each freshman can decide whether to complete the Lärpäke in paper or digital form.
+                    </p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h3>Why are the images on the site low quality?</h3>
+                    <p>
+                        Most of the images on the site are temporary, which often shows in their resolution or subject matter.
+                    </p>
+                </section>
+            </form-container>
+            <form-container>
+                <section>
+                    <h3>How does event logging work?</h3>
+                    <p>
+                        The freshman shows a QR code, which the tutor scans. Or, the freshman gives a 6-character code, which the tutor enters into the system. The QR code also works, for example, with the tutor’s phone camera, so they don’t always have to visit the website separately!
+                    </p>
+                </section>
+            </form-container>
+            <form-container>
+                <section>
+                    <h3>
+                        How will things like collecting tutor signatures / Lärpäke decoration / Returning it work?
+                    </h3>
+                    <p>In progress — will be ready by fall with a VERY high probability…</p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h3>Can I also make a tutor version of the Lärpäke with this?</h3>
+                    <p>
+                        Yes! Multiple Lärpäkes can be active at the same time, and task validation rights can be assigned per Lärpäke.
+                    </p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h3>Can I still make a fun Tutor signature?</h3>
+                    <p>
+                        Yes! On your profile page, you can add your own signature by drawing it (requires tutor rights). When you mark a freshman's task as complete, the system randomly chooses one of your signatures to show on the freshman’s view as the completion mark.
+                    </p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h3>What does using Lärpäke require from a tutor?</h3>
+                    <p>
+                        For the digital Lärpäke to work, all tutors need to activate their accounts in advance by logging into Lärpäke at least once.
+                    </p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h3>Do I have to be an official member of Luuppi?</h3>
+                    <p>
+                        No, although membership is recommended, you can use Lärpäke even without being a member of Luuppi.
+                    </p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h3>Where can I get help with a tutoring-related question?</h3>
+                    <p>Tutoring contact information is available <a href="/contact_us.html">here</a>.</p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h3>What should I do if I find a bug or have a suggestion?</h3>
+                    <p>
+                        Send us a bug report or suggestion! Technical contact info can be found <a href="/contact_us.html">here</a>.
+                    </p>
+                </section>
+            </form-container>
+
+            <form-container>
+                <section>
+                    <h3>Who coded this <i>DIAMOND</i> software?</h3>
+                    <p>Henri Vainio and Juliusz Kotelba from Luuppi’s web team (WWW/IT)</p>
+                </section>
+            </form-container>
+        </article>
+    </body>
+    <script>
+        window.onload = function() {
+            document.querySelector('article').style.visibility = 'visible';
+        };    
+    </script>
+</html>
