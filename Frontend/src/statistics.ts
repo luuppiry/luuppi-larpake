@@ -1,62 +1,19 @@
+import AttendanceClient from "./api_client/attendance_client.js";
+import LarpakeClient from "./api_client/larpake_client.js";
+import { Larpake, LarpakeTask } from "./models/larpake.js";
+import { ToDictionary } from "./helpers.js";
 import { Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "./constants.js";
 import { appendTemplateElement, getSearchParams, removeChildren } from "./helpers.js";
 
+const client = new LarpakeClient();
+const attendanceClient = new AttendanceClient(client.client);
+
 type Statistic = {
+    larpakeSectionId: number;
     title: string;
-    value: number;
-    max: number;
+    totalPoints: number;
+    earnedPoints: number;
 };
-
-const data: Statistic[] = [
-    {
-        title: "ENSI ASKELEET",
-        value: 21,
-        max: 49,
-    },
-    {
-        title: "PIENEN PIENI LUUPPILAINEN",
-        value: 17,
-        max: 59,
-    },
-    {
-        title: "PII-KLUBILLA TAPAHTUU",
-        value: 5,
-        max: 10,
-    },
-    {
-        title: "NORMIPÄIVÄ",
-        value: 20,
-        max: 23,
-    },
-    {
-        title: "YLIOPISTOELÄMÄÄ",
-        value: 8,
-        max: 32,
-    },
-    {
-        title: "VAIKUTUSVALTAA",
-        value: 35,
-        max: 54,
-    },
-    {
-        title: "LIIKUNNALISTA",
-        value: 13,
-        max: 25,
-    },
-    {
-        title: "KAIKENLAISTA",
-        value: 24,
-        max: 33,
-    },
-    {
-        title: "TANPEREELLA",
-        value: 18,
-        max: 20,
-    },
-];
-
-const currentPoints = 161;
-const maxPoints = 305;
 
 async function main() {
     const params = getSearchParams();
@@ -71,17 +28,19 @@ async function main() {
 
     removeChildren(container);
 
+    const totalEarnedPoints = statistics.reduce((sum, s) => sum + s.earnedPoints, 0);
+    const totalPointsAllSections = statistics.reduce((sum, s) => sum + s.totalPoints, 0);
     statistics.forEach((statistic) => {
         const elem = appendTemplateElement<HTMLLIElement>("statistics-value", container);
         elem.querySelector<HTMLSpanElement>("._title")!.innerText = statistic.title;
-        elem.querySelector<HTMLSpanElement>("._value")!.innerText = statistic.value.toString();
-        elem.querySelector<HTMLSpanElement>("._max")!.innerText = statistic.max.toString();
+        elem.querySelector<HTMLSpanElement>("._value")!.innerText = statistic.earnedPoints.toString();
+        elem.querySelector<HTMLSpanElement>("._max")!.innerText = statistic.totalPoints.toString();
     });
 
     // Metadata
     const totalPoinsHolder = document.getElementById("totalPointsHolder") as HTMLDivElement;
     removeChildren(totalPoinsHolder);
-    totalPoinsHolder.append(`${currentPoints} / ${maxPoints}`);
+    totalPoinsHolder.append(`${totalEarnedPoints} / ${totalPointsAllSections}`);
 
     const page = parseInt(params.get(Q_PAGE) ?? "0");
     const maxPage = parseInt(params.get(Q_OF_PAGES) ?? "0");
@@ -98,8 +57,48 @@ async function main() {
 }
 
 async function fetchStatistics(larpakeId: number): Promise<Statistic[]> {
-    console.log("Fetch Lärpäke statistics called, returning static data. Id was:", larpakeId);
+    const larpake = await getLarpake(larpakeId);
+    await addSectionTasks(larpake);
+    const attendances = (await attendanceClient.getAll(larpake.id)) ?? [];
+    const completedTaskIds = new Set(attendances.map(a => a.larpakeTaskId));
+    const data: Statistic[] = (larpake.sections ?? []).map(section => {
+      const totalPoints = section.tasks?.reduce((sum, task) => sum + (task.points || 0), 0) ?? 0;
+      const sectionName = section.textData?.find(t => t.languageCode === document.documentElement.lang)?.title || 'Untitled Section';
+      const earnedPoints =
+        section.tasks?.reduce((sum, task) => {
+          return completedTaskIds.has(task.id) ? sum + (task.points || 0) : sum;
+        }, 0) ?? 0;
+  
+      return {
+        larpakeSectionId: section.id,
+        title: sectionName,
+        totalPoints,
+        earnedPoints
+      };
+    });
     return data;
+}  
+
+async function getLarpake(larpakeId: number): Promise<Larpake> {
+    if (!Number.isNaN(larpakeId)) {
+        const result = await client.getById(larpakeId, false);
+        if (result) {
+            return result;
+        }
+    }
+    const available = await client.getOwn();
+    if (!available) {
+        throw new Error("Could not load any larpake from server.");
+    }
+    return available![0];
+}
+
+async function addSectionTasks(larpake: Larpake) {
+    const unmappedTasks = (await client.getTasksByLarpakeId(larpake.id)) ?? [];
+    const tasks = ToDictionary<number, LarpakeTask>(unmappedTasks, (x) => x.larpakeSectionId);
+    for (const section of larpake.sections ?? []) {
+        section.tasks = tasks.get(section.id) ?? [];
+    }
 }
 
 main();
