@@ -115,10 +115,10 @@ async function loadProfile() {
 
 async function loadSignatures(user: User, permissionsTable: PermissionCollection | null) {
     if (!hasRole(user.permissions, Role.Tutor, permissionsTable)) {
-        document.getElementById("signature-section")!.style.display = "none";
         return;
     }
 
+    document.getElementById("signature-form-container")!.style.visibility = "visible";
     const signatures = await userClient.getOwnSignatures();
     if (!signatures) {
         throw new Error("Failed to fetch user signatures");
