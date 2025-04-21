@@ -11,27 +11,50 @@
     </head>
 
     <body>
-        <ui-header path-depth="1">
+        <ui-header>
             <header class="header placeholder">
-                <img class="header-logo" src="/luuppi.logo.svg" onclick="window.location.href='index.html'" alt="Luuppi Logo"/>
+                <img
+                    class="header-logo"
+                    src="/luuppi.logo.svg"
+                    onclick="window.location.href='index.html'"
+                    alt="Luuppi Logo"
+                />
                 <h1>LÄRPÄKE</h1>
-                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
-                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
-                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
+                <div class="menu-icon">
+                    <div
+                        class="loader"
+                        style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px"
+                    ></div>
+                    &nbsp;
+                </div>
+                <div class="menu-icon">
+                    <div
+                        class="loader"
+                        style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px"
+                    ></div>
+                    &nbsp;
+                </div>
+                <div class="menu-icon">
+                    <div
+                        class="loader"
+                        style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px"
+                    ></div>
+                    &nbsp;
+                </div>
             </header>
         </ui-header>
         <side-panel lang="en"></side-panel>
 
         <h2 class="title">Contact Us</h2>
         <!-- Visibility none while loading, revealed when all CSS loaded -->
-        <article class="content" style="visibility: hidden;">
+        <article class="content" style="visibility: hidden">
             <form-container>
                 <section>
                     <h3>Luuppi Tutoring</h3>
                     <p>
-                        Send a message here if you have questions about completing Lärpäke
-                        or specific questions related to individual tasks. You can also
-                        send any university life/tutoring-related questions here.
+                        Send a message here if you have questions about completing Lärpäke or
+                        specific questions related to individual tasks. You can also send any
+                        university life/tutoring-related questions here.
                     </p>
                     <a href="mailto:tutor@luuppi.fi">tutor@luuppi.fi</a>
                 </section>
@@ -41,11 +64,11 @@
                 <section>
                     <h3>Technical Questions / Bug Report / Improvement Suggestion</h3>
                     <p>
-                        Did you notice something wrong with Lärpäke or want to influence what Lärpäke
-                        will look like tomorrow? You can contact the development team via the addresses below.
-                        For bug reports, it’s helpful to attach a screenshot and a short description
-                        of what you think should/shouldn't happen. You're also welcome
-                        to create an informal issue on GitHub!
+                        Did you notice something wrong with Lärpäke or want to influence what
+                        Lärpäke will look like tomorrow? You can contact the development team via
+                        the addresses below. For bug reports, it’s helpful to attach a screenshot
+                        and a short description of what you think should/shouldn't happen. You're
+                        also welcome to create an informal issue on GitHub!
                     </p>
                     <a class="block" href="mailto:webmaster@luuppi.fi">webmaster@luuppi.fi</a>
                     <a class="block" href="https://github.com/luuppiry/luuppi-larpake/issues">
@@ -87,8 +110,8 @@
         </article>
     </body>
     <script>
-        window.onload = function() {
-            document.querySelector('article').style.visibility = 'visible';
+        window.onload = function () {
+            document.querySelector("article").style.visibility = "visible";
         };
     </script>
 </html>
