@@ -41,7 +41,7 @@ public class StatisticsController : ExtendedControllerBase
     public async Task<IActionResult> GetAllAverage(long larpakeId)
     {
         long? points = await _statisticsService.GetAveragePoints(larpakeId);
-        return points is null 
+        return points is null
             ? IdNotFound() : OkData(points);
     }
 
@@ -138,19 +138,16 @@ public class StatisticsController : ExtendedControllerBase
     }
 
 
+    public record SectionStatisticsResponse(long LarpakeId, Guid UserId, SectionPoints[] Data);
 
     [HttpGet("own/larpake/{larpakeId}")]
     [RequiresPermissions(Permissions.CommonRead)]
+    [ProducesResponseType<SectionStatisticsResponse>(200)]
     public async Task<IActionResult> GetOwnLarpakeStatistic(long larpakeId)
     {
         Guid userId = GetRequestUserId();
         SectionPoints[] points = await _statisticsService.GetOwnLarpakePoints(userId, larpakeId);
-        return Ok(new
-        {
-            LarpakeId = larpakeId,
-            UserId = userId,
-            Data = points
-        });
+        return Ok(new SectionStatisticsResponse(larpakeId, userId, points));
     }
 
 }

@@ -1,12 +1,12 @@
-import AttendanceClient from "./api_client/attendance_client.js";
 import LarpakeClient from "./api_client/larpake_client.js";
-import { Larpake, LarpakeTask } from "./models/larpake.js";
-import { ToDictionary } from "./helpers.js";
+import { Larpake, LarpakeTask, SectionTextData } from "./models/larpake.js";
+import { getMatchingLangObject, ToDictionary, ToOverwriteDictionary } from "./helpers.js";
 import { Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "./constants.js";
 import { appendTemplateElement, getSearchParams, removeChildren } from "./helpers.js";
+import StatsClient from "./api_client/stats_client.js";
 
 const client = new LarpakeClient();
-const attendanceClient = new AttendanceClient(client.client);
+const statisticsClient = new StatsClient(client.client);
 
 type Statistic = {
     larpakeSectionId: number;
@@ -33,7 +33,8 @@ async function main() {
     statistics.forEach((statistic) => {
         const elem = appendTemplateElement<HTMLLIElement>("statistics-value", container);
         elem.querySelector<HTMLSpanElement>("._title")!.innerText = statistic.title;
-        elem.querySelector<HTMLSpanElement>("._value")!.innerText = statistic.earnedPoints.toString();
+        elem.querySelector<HTMLSpanElement>("._value")!.innerText =
+            statistic.earnedPoints.toString();
         elem.querySelector<HTMLSpanElement>("._max")!.innerText = statistic.totalPoints.toString();
     });
 
@@ -59,25 +60,35 @@ async function main() {
 async function fetchStatistics(larpakeId: number): Promise<Statistic[]> {
     const larpake = await getLarpake(larpakeId);
     await addSectionTasks(larpake);
-    const attendances = (await attendanceClient.getAll(larpake.id)) ?? [];
-    const completedTaskIds = new Set(attendances.map(a => a.larpakeTaskId));
-    const data: Statistic[] = (larpake.sections ?? []).map(section => {
-      const totalPoints = section.tasks?.reduce((sum, task) => sum + (task.points || 0), 0) ?? 0;
-      const sectionName = section.textData?.find(t => t.languageCode === document.documentElement.lang)?.title || 'Untitled Section';
-      const earnedPoints =
-        section.tasks?.reduce((sum, task) => {
-          return completedTaskIds.has(task.id) ? sum + (task.points || 0) : sum;
-        }, 0) ?? 0;
-  
-      return {
-        larpakeSectionId: section.id,
-        title: sectionName,
-        totalPoints,
-        earnedPoints
-      };
+
+    const statistics = await statisticsClient.getOwnLarpakeStatistics(larpakeId);
+    if (!statistics) {
+        throw new Error("Failed to fetch own statistics");
+    }
+    const mapped = ToOverwriteDictionary(statistics?.data, (x) => x.sectionId);
+
+    larpake.sections ??= [];
+
+    return larpake.sections.map((x) => {
+        const text = getMatchingLangObject<SectionTextData>(x.textData);
+        const stats = mapped.get(x.id);
+        if (!stats) {
+            return {
+                larpakeSectionId: x.id,
+                title: text?.title ?? "N/A",
+                totalPoints: 0,
+                earnedPoints: 0,
+            };
+        }
+        const result: Statistic = {
+            larpakeSectionId: x.id,
+            title: text?.title ?? "N/A",
+            totalPoints: stats.totalPoints,
+            earnedPoints: stats.earnedPoints,
+        };
+        return result;
     });
-    return data;
-}  
+}
 
 async function getLarpake(larpakeId: number): Promise<Larpake> {
     if (!Number.isNaN(larpakeId)) {
