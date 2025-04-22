@@ -54,6 +54,10 @@ Front end is built with minimal vite + Typescript, HTML, CSS stack.
 
 For UI design drawings see `Wiki` -> `Design` ([here](https://github.com/henrivain/Larpake/wiki/Design)).
 
+### Authentication
+
+Project uses luuppi's existing Azure Entra Id auth system with minor tweaks.
+
 ## Project Timeline
 
 Project is up an running in larpake.luuppi.fi. Project is in beta stage and should be ready to take real users in the the end of the summer in 2025.
