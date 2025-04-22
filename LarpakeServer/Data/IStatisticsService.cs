@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models;
+using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 
 namespace LarpakeServer.Data;
@@ -14,4 +15,5 @@ public interface IStatisticsService
     Task<UserPoints[]> GetLeadingUsers(StatisticsQueryOptions options);
     Task<long?> GetGroupPoints(long groupId);
     Task<GroupTotalPoints[]> GetGroupPoints(Guid userId);
+    Task<SectionPoints[]> GetOwnLarpakePoints(Guid userId, long larpakeId);
 }

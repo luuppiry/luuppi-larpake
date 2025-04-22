@@ -1,4 +1,5 @@
-﻿using LarpakeServer.Models.DatabaseModels;
+﻿using LarpakeServer.Models;
+using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
 using Microsoft.Extensions.Options;
 using System.Runtime.CompilerServices;
@@ -107,6 +108,24 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
         var records = await connection.QueryAsync<GroupTotalPoints>($"""
             SELECT larpake_id, group_id, total_points FROM GetGroupTotalByUser(@{nameof(userId)});
             """, new { userId });
+        return records.ToArray();
+    }
+
+    public async Task<SectionPoints[]> GetOwnLarpakePoints(Guid userId, long larpakeId)
+    {
+        using var connection = GetConnection();
+        var records = await connection.QueryAsync<SectionPoints>($"""
+            SELECT 
+                section_id, 
+                ordering_weight_number,
+                total_points,
+                earned_points
+            FROM GetLarpakeUserTotal(
+                @{nameof(userId)},
+                @{nameof(larpakeId)}
+            );
+            """, new { userId, larpakeId });
+
         return records.ToArray();
     }
 }

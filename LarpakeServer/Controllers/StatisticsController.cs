@@ -1,8 +1,10 @@
 ﻿using LarpakeServer.Data;
 using LarpakeServer.Identity;
+using LarpakeServer.Models;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.GetDtos.Templates;
 using LarpakeServer.Models.QueryOptions;
+using Microsoft.AspNetCore.Identity;
 
 namespace LarpakeServer.Controllers;
 
@@ -133,6 +135,22 @@ public class StatisticsController : ExtendedControllerBase
             .AppendPaging(options);
 
         return Ok(result);
+    }
+
+
+
+    [HttpGet("own/larpake/{larpakeId}")]
+    [RequiresPermissions(Permissions.CommonRead)]
+    public async Task<IActionResult> GetOwnLarpakeStatistic(long larpakeId)
+    {
+        Guid userId = GetRequestUserId();
+        SectionPoints[] points = await _statisticsService.GetOwnLarpakePoints(userId, larpakeId);
+        return Ok(new
+        {
+            LarpakeId = larpakeId,
+            UserId = userId,
+            Data = points
+        });
     }
 
 }
