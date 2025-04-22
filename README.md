@@ -56,7 +56,7 @@ For UI design drawings see `Wiki` -> `Design` ([here](https://github.com/henriva
 
 ## Project Timeline
 
-This project is meant to be production ready for Freshmen starting their studies in fall 2025.
+Project is up an running in larpake.luuppi.fi. Project is in beta stage and should be ready to take real users in the the end of the summer in 2025.
 
 ## Contributing
 
