@@ -36,9 +36,9 @@ export default class LarpakeClient extends RequestEngine {
         return container.data;
     }
 
-    async getOwn(): Promise<Larpake[] | null> {
+    async getOwn(minimize: boolean = false): Promise<Larpake[] | null> {
         const query = new URLSearchParams();
-        query.append("minimize", "false");
+        query.append("minimize", minimize ? "true" : "false");
 
         const response = await this.client.get("api/larpakkeet/own", query);
         if (!response.ok) {
@@ -116,11 +116,11 @@ export default class LarpakeClient extends RequestEngine {
     }
 
     async getTaskById(taskId: number): Promise<LarpakeTask | null> {
-        if (!taskId){
-            console.warn("Cannot fetch provided null task id")
+        if (!taskId) {
+            console.warn("Cannot fetch provided null task id");
             return null;
         }
-        
+
         return await this.get<LarpakeTask>({
             url: `api/larpake-tasks/${taskId}`,
             params: null,

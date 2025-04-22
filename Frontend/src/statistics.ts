@@ -1,6 +1,11 @@
 import LarpakeClient from "./api_client/larpake_client.js";
-import { Larpake, LarpakeTask, SectionTextData } from "./models/larpake.js";
-import { getMatchingLangObject, ToDictionary, ToOverwriteDictionary } from "./helpers.js";
+import { Larpake, SectionTextData } from "./models/larpake.js";
+import {
+    getMatchingLangObject,
+    pushUrlState,
+    replaceUrlState,
+    ToOverwriteDictionary,
+} from "./helpers.js";
 import { Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "./constants.js";
 import { appendTemplateElement, getSearchParams, removeChildren } from "./helpers.js";
 import StatsClient from "./api_client/stats_client.js";
@@ -17,7 +22,18 @@ type Statistic = {
 
 async function main() {
     const params = getSearchParams();
-    const larpakeId = params.get(Q_LARPAKE_ID);
+    let larpakeId = params.get(Q_LARPAKE_ID);
+
+    if (!larpakeId) {
+        const ids = await client.getOwn(true);
+        if (!ids || ids.length < 1) {
+            throw new Error("No Larpake id defined and not attending any");
+        }
+        larpakeId = ids[0].id.toString();
+        replaceUrlState((params) => {
+            params.set(Q_LARPAKE_ID, larpakeId!);
+        });
+    }
 
     const container = document.getElementById("statistics-container") as HTMLUListElement;
 
@@ -59,7 +75,6 @@ async function main() {
 
 async function fetchStatistics(larpakeId: number): Promise<Statistic[]> {
     const larpake = await getLarpake(larpakeId);
-    await addSectionTasks(larpake);
 
     const statistics = await statisticsClient.getOwnLarpakeStatistics(larpakeId);
     if (!statistics) {
@@ -102,14 +117,6 @@ async function getLarpake(larpakeId: number): Promise<Larpake> {
         throw new Error("Could not load any larpake from server.");
     }
     return available![0];
-}
-
-async function addSectionTasks(larpake: Larpake) {
-    const unmappedTasks = (await client.getTasksByLarpakeId(larpake.id)) ?? [];
-    const tasks = ToDictionary<number, LarpakeTask>(unmappedTasks, (x) => x.larpakeSectionId);
-    for (const section of larpake.sections ?? []) {
-        section.tasks = tasks.get(section.id) ?? [];
-    }
 }
 
 main();
