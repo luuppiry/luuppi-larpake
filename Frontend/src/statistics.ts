@@ -1,11 +1,6 @@
 import LarpakeClient from "./api_client/larpake_client.js";
 import { Larpake, SectionTextData } from "./models/larpake.js";
-import {
-    getMatchingLangObject,
-    pushUrlState,
-    replaceUrlState,
-    ToOverwriteDictionary,
-} from "./helpers.js";
+import { getMatchingLangObject, replaceUrlState, ToOverwriteDictionary } from "./helpers.js";
 import { Q_LARPAKE_ID, Q_LAST_PAGE, Q_OF_PAGES, Q_PAGE } from "./constants.js";
 import { appendTemplateElement, getSearchParams, removeChildren } from "./helpers.js";
 import StatsClient from "./api_client/stats_client.js";
