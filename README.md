@@ -15,14 +15,11 @@ Fuksilärpäke is traditional part of freshman year for students in Luuppi. Fres
 
 ## Getting started
 
-Instructions for running the project can be found on [Setup wiki](https://github.com/henrivain/Larpake/wiki/Setup) 
+Instructions for running the project can be found on [wiki](https://github.com/luuppiry/luuppi-larpake/wiki) 
 
 ### Requirements
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-- [ASP.NET Core 9 Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-- [PostgreSQL 17 server](https://www.postgresql.org/download/)
-- [NodeJs](https://nodejs.org/en/download)
+Docker + NodeJs (for minimal front end dev setup)
 
 ## Technologies
 
