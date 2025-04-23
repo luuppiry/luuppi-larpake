@@ -1,12 +1,30 @@
 ﻿using LarpakeServer.Extensions;
 using LarpakeServer.Identity;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Diagnostics.CodeAnalysis;
 
 namespace LarpakeServer.Helpers;
 
 public class ExtendedControllerBase : ControllerBase
 {
-    protected record ErrorMessageResponse(string Message, string? Details, ErrorCode ApplicationError);
+    protected class ErrorMessageResponse
+    {
+        public ErrorMessageResponse() { }
+
+        [SetsRequiredMembers]
+        public ErrorMessageResponse(string message, string? details, ErrorCode applicationError)
+        {
+            Message = message;
+            Details = details;
+            ApplicationError = applicationError;
+        }
+
+        public required string Message { get; init; }
+        public string? Details { get; init; }
+        public required ErrorCode ApplicationError { get; init; }
+    }
+
+
     protected record struct RowsAffectedResponse(int RowsAffected);
     protected record struct DataResponse<T>(T Data);
     protected record struct LongIdResponse(long Id);

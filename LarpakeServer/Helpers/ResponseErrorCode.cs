@@ -42,4 +42,10 @@ public enum ErrorCode
     // Runtime action errors
     ActionNotAllowed = 2000, // Action is not allowed for some reason
     ActionNotAllowedInRuntime = 2001, // Action must be done in app configuration (e.g. setting sudo permissions)
+
+    // SSE
+    SSEError = 2100,            // Unknown error in server SSE handling
+    MaxUserConnections = 2101,  // Specific user has max amount of live connections, new connections rejected
+    ConnectionPoolFull = 2102,  // SSE connection pool is already full, new connections rejected
+
 }

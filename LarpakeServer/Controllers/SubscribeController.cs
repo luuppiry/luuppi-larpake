@@ -35,7 +35,7 @@ public class SubscribeController : ExtendedControllerBase
         Guid userId = GetRequestUserId();
         if (userId == Guid.Empty)
         {
-            return BadRequest("Invalid user id", "User id cannot be empty");
+            return BadRequest("Invalid user id", "User id cannot be empty", ErrorCode.NullId);
         }
 
         // Add client to pool
@@ -46,20 +46,19 @@ public class SubscribeController : ExtendedControllerBase
         {
             return insertStatus switch
             {
-                PoolInsertStatus.Full => StatusCode(503, new
+                PoolInsertStatus.Full => StatusCode(503, new ErrorMessageResponse
                 {
                     Message = "Service Unavailable",
-                    Details = "SSE server is currently full, try again later"
+                    Details = "SSE server is currently full, try again later",
+                    ApplicationError = ErrorCode.SSEError
                 }),
-                PoolInsertStatus.Blocked => StatusCode(403, new
+                PoolInsertStatus.Blocked => StatusCode(403, new ErrorMessageResponse
                 {
                     Message = "Forbidden",
-                    Details = "User is already connected to the SSE server"
+                    Details = "User is already connected to the SSE server",
+                    ApplicationError = ErrorCode.MaxUserConnections
                 }),
-                PoolInsertStatus.Failed => StatusCode(500, new
-                {
-                    Message = "Internal Server Error",
-                }),
+                PoolInsertStatus.Failed => InternalServerError("Internal Server Error"),
                 _ => throw new InvalidOperationException($"Invalid {nameof(PoolInsertStatus)}")
             };
         }
@@ -85,14 +84,14 @@ public class SubscribeController : ExtendedControllerBase
         bool isRemoved = _clientPool.Remove(userId, client);
 
         _logger.IfFalse(isRemoved)
-               .LogWarning("Client {clientId} was not removed from the pool.", userId);
+               .LogInformation("Client {clientId} was not removed from the pool.", userId);
 
         return Ok();
     }
 
     private async Task HandleTask(AttendedCreated e)
     {
-        _logger.LogInformation("New SSE message for user {userId}.", e.UserId);
+        _logger.LogTrace("New SSE message for user {userId}.", e.UserId);
 
         // jsonify event
         var json = JsonSerializer.Serialize((Completed)e, _jsonOptions);
