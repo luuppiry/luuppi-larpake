@@ -6,7 +6,7 @@ public enum ErrorCode
 
     // Id errors
     IdError = 1100,
-    InvalidId = 1101,       // 
+    InvalidId = 1101,       // Id or Key in invalid format or otherwise invalid
     IdNotFound = 1102,      // Id not found from database
     KeyInvalidated = 1103,  // Key is expired and cannot be used anymore
     NullId = 1104,          // Id is invalid or null (empty guid, or long -1)

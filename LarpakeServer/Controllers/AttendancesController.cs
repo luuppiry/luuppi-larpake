@@ -45,7 +45,7 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpGet]
     [RequiresPermissions(Permissions.CommonRead)]
-    [ProducesResponseType(typeof(AttendancesGetDto), 200)]
+    [ProducesResponseType<AttendancesGetDto>(200)]
     public async Task<IActionResult> Get([FromQuery] AttendanceQueryOptions options)
     {
         /* Everyone can read their own attendances,
@@ -111,10 +111,10 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("{eventId}")]
     [RequiresPermissions(Permissions.AttendEvent)]
-    [ProducesResponseType(typeof(AttendanceKey), 200)]
-    [ProducesResponseType(typeof(ErrorMessageResponse), 400)]
-    [ProducesResponseType(typeof(ErrorMessageResponse), 403)]
-    [ProducesResponseType(typeof(ErrorMessageResponse), 500)]
+    [ProducesResponseType<AttendanceKey>(200)]
+    [ProducesResponseType<ErrorMessageResponse>(400)]
+    [ProducesResponseType<ErrorMessageResponse>(403)]
+    [ProducesResponseType<ErrorMessageResponse>(500)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> GenerateAttendanceKey(long eventId)
     {
@@ -133,17 +133,17 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("{key}/complete")]
     [RequiresPermissions(Permissions.CompleteAttendance)]
-    [ProducesResponseType(typeof(GuidIdResponse), 201)]
+    [ProducesResponseType<GuidIdResponse>(201)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Complete(string key)
     {
         if (key.StartsWith(_keyOptions.Header) is false)
         {
-            return BadRequest("Invalid key header.");
+            return BadRequest("Invalid key header.", error: ErrorCode.InvalidId);
         }
         if (key.Length != _keyOptions.ValidFullKeyLength)
         {
-            return BadRequest("Invalid key length.");
+            return BadRequest("Invalid key length.", error: ErrorCode.InvalidId);
         }
 
         /* Database should here handle validation 
@@ -169,47 +169,44 @@ public class AttendancesController : ExtendedControllerBase
 
     [HttpPost("complete")]
     [RequiresPermissions(Permissions.Admin)]
-    [ProducesResponseType(typeof(GuidIdResponse), 201)]
+    [ProducesResponseType<GuidIdResponse>(201)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Complete([FromBody] CompletionPutDto dto)
     {
-        /* User cannot sign their own attendance.
-         */
+        // User cannot sign their own attendance.
         Guid signerId = _claimsReader.ReadAuthorizedUserId(Request);
         if (dto.UserId == signerId)
         {
-            return BadRequest("User cannot sign their own attendance.");
+            return BadRequest("User cannot sign their own attendance.", error: ErrorCode.SelfActionInvalid);
         }
 
         var record = CompletionMetadata.From(dto, signerId);
 
         Result<AttendedCreated> completed = await _db.Complete(record);
-        if (completed)
+        if (completed.IsError)
         {
-            _logger.LogInformation("User {user} completed event {event}.", dto.UserId, dto.EventId);
-
-            _messageService.SendAttendanceCompletedMessage((AttendedCreated)completed);
-            return CreatedId(((AttendedCreated)completed).CompletionId);
+            return FromError(completed);
         }
-        return FromError(completed);
+
+        _logger.LogTrace("User {user} completed event {event}.", dto.UserId, dto.EventId);
+
+        _messageService.SendAttendanceCompletedMessage((AttendedCreated)completed);
+        return CreatedId(((AttendedCreated)completed).CompletionId);
     }
 
     [HttpPost("uncomplete")]
     [RequiresPermissions(Permissions.DeleteAttendance)]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Uncomplete([FromBody] UncompletedPutDto dto)
     {
-
         Result<int> result = await _db.Uncomplete(dto.UserId, dto.EventId);
 
         _logger.IfPositive((int)result)
-            .LogInformation("{admin} deleted attendance for user {user} and event {event}.",
+            .LogTrace("{admin} deleted attendance for user {user} and event {event}.",
                 GetRequestUserId(), dto.UserId, dto.EventId);
 
-        return result.ToActionResult(
-            ok: OkRowsAffected,
-            error: FromError);
+        return ToResponse(result, OkRowsAffected);
     }
 
     [HttpPost("clean")]
@@ -219,7 +216,7 @@ public class AttendancesController : ExtendedControllerBase
     {
         int rowsAffected = await _db.Clean();
 
-        _logger.LogInformation("Cleaned {count} attendances.", rowsAffected);
+        _logger.LogTrace("Cleaned {count} attendances.", rowsAffected);
 
         return OkRowsAffected(rowsAffected);
     }
