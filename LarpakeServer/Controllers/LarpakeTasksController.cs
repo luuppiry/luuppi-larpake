@@ -137,8 +137,4 @@ public class LarpakeTasksController : ExtendedControllerBase
         long[] orgEvents = await _db.GetRefOrganizationEvents(taskId);
         return Ok(new OrgEventIdsResponse(orgEvents));
     }
-    
-
-
-
 }

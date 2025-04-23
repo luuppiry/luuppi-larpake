@@ -43,14 +43,19 @@ public class ExtendedControllerBase : ControllerBase
     protected Guid GetRequestUserId() => _claimsReader.ReadAuthorizedUserId(Request);
     protected Permissions GetRequestPermissions() => _claimsReader.ReadAuthorizedUserPermissions(Request);
     protected int? GetRequestUserStartYear() => _claimsReader.ReadAuthorizedUserStartYear(Request);
-
-
-
-
-
+    
+    
     protected ObjectResult FromError(Result result) => FromError((Error)result);
     protected ObjectResult FromError<T>(Result<T> error) => FromError((Error)error);
 
+    protected ObjectResult ToResponse<T>(Result<T> result, Func<T, IActionResult> ok)
+    {
+        if (result.IsOk)
+        {
+            ok((T)result);
+        }
+        return FromError(result);
+    }
 
     protected ObjectResult OkRowsAffected(int rowsAffected)
     {

@@ -67,6 +67,7 @@ public class Result<T>
         return result.IsOk;
     }
 
+
     /// <summary>
     /// Map both possible outcomes to <see cref="IActionResult"/>.
     /// </summary>

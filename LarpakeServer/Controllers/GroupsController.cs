@@ -218,9 +218,7 @@ public class GroupsController : ExtendedControllerBase
         var record = FreshmanGroup.MapFrom(dto);
         Result<long> result = await _db.Insert(record);
 
-        return result.ToActionResult(
-            ok: CreatedId,
-            error: FromError);
+        return ToResponse(result, CreatedId);
     }
 
     [HttpPost("{key}/join")]    // No permissions required
@@ -254,6 +252,8 @@ public class GroupsController : ExtendedControllerBase
 
             return FromError(error);
         }
+
+        _logger.LogTrace("User {id} joined group with key {key}", userId, key);
         return OkRowsAffected(permitted);
     }
 
@@ -275,10 +275,7 @@ public class GroupsController : ExtendedControllerBase
         }
 
         Result<int> result = await _db.InsertMembers(groupId, members.MemberIds);
-        return result.ToActionResult(
-            ok: OkRowsAffected,
-            error: FromError
-        );
+        return ToResponse(result, OkRowsAffected);  
     }
 
     [HttpPost("{groupId}/members/non-competing")]
@@ -295,9 +292,7 @@ public class GroupsController : ExtendedControllerBase
         }
 
         Result<int> result = await _db.InsertNonCompeting(groupId, members.Members);
-        return result.ToActionResult(
-            ok: OkRowsAffected,
-            error: FromError);
+        return ToResponse(result, OkRowsAffected);
     }
 
     [HttpPut("{groupId}")]
@@ -318,9 +313,7 @@ public class GroupsController : ExtendedControllerBase
         var record = FreshmanGroup.MapFrom(dto);
         record.Id = groupId;
         Result<int> result = await _db.Update(record);
-        return result.ToActionResult(
-            ok: OkRowsAffected,
-            error: FromError);
+        return ToResponse(result, OkRowsAffected);
     }
 
     [HttpDelete("{groupId}/members")]
@@ -346,7 +339,7 @@ public class GroupsController : ExtendedControllerBase
         {
             foreach (var memberId in members.MemberIds)
             {
-                _logger.LogInformation("Removed member {memberId} from group {groupId} by {userId}.",
+                _logger.LogTrace("Removed member {memberId} from group {groupId} by {userId}.",
                     memberId, groupId, authorId);
             }
         }
@@ -362,7 +355,7 @@ public class GroupsController : ExtendedControllerBase
         int result = await _db.Delete(groupId);
 
         _logger.IfPositive(result)
-            .LogInformation("Group {groupId} deleted by {authorId}.",
+            .LogTrace("Group {groupId} deleted by {authorId}.",
                 groupId, GetRequestUserId());
 
         return OkRowsAffected(result);
@@ -385,12 +378,12 @@ public class GroupsController : ExtendedControllerBase
         if (members is null)
         {
             // Group not found
-            return Error.NotFound("Group not found");
+            return Error.NotFound("Group not found", ErrorCode.IdNotFound);
         }
         if (members.Contains(userId) is false)
         {
             // Not a member
-            return Error.Unauthorized("Must be admin or group member.");
+            return Error.Unauthorized("Must be admin or group member.", ErrorCode.RequiresHigherRole);
         }
         // Is member
         return Result.Ok;
