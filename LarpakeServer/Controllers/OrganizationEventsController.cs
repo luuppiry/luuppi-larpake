@@ -57,12 +57,13 @@ public class OrganizationEventsController : ExtendedControllerBase
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetEvent(long eventId)
     {
-        var record = await _db.Get(eventId);
+        OrganizationEvent? record = await _db.Get(eventId);
         if (record is null)
         {
             return IdNotFound();
         }
-        return Ok(OrganizationEventGetDto.From(record));
+        var dto = OrganizationEventGetDto.From(record);
+        return Ok(dto);
     }
 
     [HttpPost]
@@ -72,12 +73,12 @@ public class OrganizationEventsController : ExtendedControllerBase
     public async Task<IActionResult> CreateEvent([FromBody] OrganizationEventPostDto dto)
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
-        var record = OrganizationEvent.MapFrom(dto, userId);
+        OrganizationEvent? record = OrganizationEvent.MapFrom(dto, userId);
         
         Result<long> result = await _db.Insert(record);
         
         _logger.IfTrue(result)
-            .LogInformation("User {userId} created event {eventId}", 
+            .LogTrace("User {userId} created event {eventId}", 
                 GetRequestUserId(), (long)result);
         
         return result.ToActionResult(
@@ -97,7 +98,7 @@ public class OrganizationEventsController : ExtendedControllerBase
         
         Result<int> result = await _db.Update(record);
         _logger.IfTrue(result)
-            .LogInformation("User {userId} updated event {eventId}", 
+            .LogTrace("User {userId} updated event {eventId}", 
                 GetRequestUserId(), eventId);
 
         return result.ToActionResult(
@@ -114,7 +115,7 @@ public class OrganizationEventsController : ExtendedControllerBase
         
         int rowsAffected = await _db.SoftDelete(eventId, userId);
         _logger.IfPositive(rowsAffected)
-            .LogInformation("User {userId} deleted event {eventId}", 
+            .LogTrace("User {userId} deleted event {eventId}", 
                 userId, eventId);
 
         return OkRowsAffected(rowsAffected);
@@ -127,7 +128,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     {
         int rowsAffected = await _db.HardDelete(eventId);
         _logger.IfPositive(rowsAffected)
-            .LogInformation("User {userId} hard deleted event {eventId}", 
+            .LogTrace("User {userId} hard deleted event {eventId}", 
                 GetRequestUserId(), eventId);
         
         return OkRowsAffected(rowsAffected);
