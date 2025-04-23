@@ -45,6 +45,8 @@ builder.Services.AddRouting(options =>
 
 WebApplication app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlerMiddleware>();
+
 #if !DEBUG
 app.UseMiddleware<RootPathMiddleware>();
 app.UseMiddleware<LanguageMiddleware>();
@@ -65,8 +67,6 @@ app.MapScalarApiReference(options =>
         PreferredSecurityScheme = "Bearer",
     };
 });
-
-// TODO: Add exception handling middleware
 
 app.UseRateLimiter();
 app.UseHttpsRedirection();
