@@ -219,6 +219,7 @@ public class AuthenticationController : ExtendedControllerBase
     {
         Guard.ThrowIfNull(user);
         Guard.ThrowIfNull(tokens);
+        Guard.ThrowIfNull(tokens.RefreshToken);
         Guard.ThrowIfNull(tokens.RefreshTokenExpiresAt);
         Guard.ThrowIfNull(tokens.AccessTokenExpiresAt);
 

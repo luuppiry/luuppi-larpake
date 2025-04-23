@@ -58,13 +58,11 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             OFFSET @{nameof(options.PageOffset)}
             """);
 
-        string q = query.ToString();
-
+        string parsed = query.ToString();
         using var connection = GetConnection();
-
-        var rawGroups = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
+        var rawGroups = await connection.QueryAsync<FreshmanGroup>(parsed, options);
+        
         var groups = rawGroups.ToArray();
-
         var rawMembers = await connection.QueryAsync<FreshmanGroupMember>($"""
             SELECT 
                 m.group_id,
@@ -77,7 +75,10 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             """, new { Ids = groups.Select(x => x.Id).ToArray() });
 
         // Map members to groups
-        Dictionary<long, List<FreshmanGroupMember>> memberMap = rawMembers.GroupBy(x => x.GroupId).ToDictionary(x => x.Key, x => x.ToList());
+        Dictionary<long, List<FreshmanGroupMember>> memberMap = rawMembers
+            .GroupBy(x => x.GroupId)
+            .ToDictionary(x => x.Key, x => x.ToList());
+
         foreach (var group in groups)
         {
             if (memberMap.TryGetValue(group.Id, out var value))
@@ -116,8 +117,9 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             OFFSET @{nameof(options.PageOffset)}
             """);
 
+        string parsed = query.ToString();
         using var connection = GetConnection();
-        var minimized = await connection.QueryAsync<FreshmanGroup>(query.ToString(), options);
+        var minimized = await connection.QueryAsync<FreshmanGroup>(parsed, options);
         return minimized.ToArray();
     }
 

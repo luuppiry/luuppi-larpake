@@ -1,12 +1,9 @@
 ﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
-using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
-using Microsoft.Extensions.Logging;
 using Npgsql;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -35,7 +32,6 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 e.updated_at,
                 e.cancelled_at         
             FROM larpake_events e
-
             """);
 
         bool requireSections = options.LarpakeId is not null || options.UserId is not null;
@@ -236,7 +232,7 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 ordering_weight_number = @{nameof(record.OrderingWeightNumber)},
                 updated_at = NOW()
             WHERE id = @{nameof(record.Id)};
-            """, record);
+            """, record, transaction);
 
         var localizations = record.TextData
             .Select(x => new { x.Title, x.Body, record.Id, x.LanguageCode })
@@ -257,7 +253,7 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             DO UPDATE SET
                 title = @{nameof(LarpakeTaskLocalization.Title)},
                 body = @{nameof(LarpakeTaskLocalization.Body)};
-            """, localizations);
+            """, localizations, transaction);
 
         Debug.Assert(rowsAffected == localizations.Length + 1, "Rows affected does not match.");
 
@@ -324,8 +320,4 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
             """, new { id });
         return records.ToArray();
     }
-
-
-   
-
 }

@@ -137,7 +137,7 @@ public class SubscribeController : ExtendedControllerBase
         public static implicit operator Completed(AttendedCreated e) => new()
         {
             UserId = e.UserId,
-            EventId = e.LarpakeEventId,
+            EventId = e.LarpakeTaskId,
             CompletionId = e.CompletionId
         };
     }

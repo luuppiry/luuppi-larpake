@@ -7,6 +7,7 @@ using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using System.Diagnostics;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -105,11 +106,11 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             OFFSET @{nameof(options.PageOffset)}
             """);
 
-        string q = query.ToString();
+        string parsed = query.ToString();
 
         using var connection = GetConnection();
         var records = await connection.QueryAsync<Attendance, Completion, Attendance>(
-            query.ToString(),
+            parsed,
             (attendance, completion) =>
             {
                 attendance.Completion = completion;
@@ -169,16 +170,14 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
          * - If key already exists refreshes invalidation date and returns existing key
          */
 
-        for (int retriesLeft = _retryPolicy.MaxRetries; retriesLeft > 0; retriesLeft--)
-        {
-            AttendanceKey key = _keyService.GenerateKey();
-            attendance.QrCodeKey = key.QrCodeKey;
-            attendance.KeyInvalidAt = key.KeyInvalidAt;
+        AttendanceKey key = _keyService.GenerateKey();
+        attendance.QrCodeKey = key.QrCodeKey;
+        attendance.KeyInvalidAt = key.KeyInvalidAt;
 
-            try
-            {
-                using var connection = GetConnection();
-                IEnumerable<bool> competingStatuses = await connection.QueryAsync<bool>($"""
+        try
+        {
+            using var connection = GetConnection();
+            IEnumerable<bool> competingStatuses = await connection.QueryAsync<bool>($"""
                      SELECT 
                         m.is_competing 
                     FROM larpake_events e
@@ -192,23 +191,23 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                         AND m.user_id = @{nameof(attendance.UserId)};
                     """, attendance);
 
-                bool[] statuses = competingStatuses.ToArray();
+            bool[] statuses = competingStatuses.ToArray();
 
-                // User and event not found
-                if (statuses.Length <= 0)
-                {
-                    return Error.BadRequest("User not attending given larpake.",
-                        ErrorCode.UserNotAttending);
-                }
+            // User and event not found
+            if (statuses.Length <= 0)
+            {
+                return Error.BadRequest("User not attending given larpake.",
+                    ErrorCode.UserNotAttending);
+            }
 
-                // User and event found, but user is tutor and cannot attend
-                if (statuses.All(x => x is false))
-                {
-                    return Error.Forbidden("User has non competing status.",
-                        ErrorCode.UserStatusTutor);
-                }
+            // User and event found, but user is tutor and cannot attend
+            if (statuses.All(x => x is false))
+            {
+                return Error.Forbidden("User has non competing status.",
+                    ErrorCode.UserStatusTutor);
+            }
 
-                key = await connection.QueryFirstAsync<AttendanceKey>($"""
+            key = await connection.QueryFirstAsync<AttendanceKey>($"""
                 INSERT INTO attendances (
                     user_id, 
                     larpake_event_id,
@@ -229,23 +228,18 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                         key_invalid_at = @{nameof(attendance.KeyInvalidAt)}
                 RETURNING qr_code_key, key_invalid_at;
                 """, attendance);
-                return key;
-            }
-            catch (PostgresException ex) when (ex.SqlState is PostgresError.UniqueViolation)
-            {
-                Logger.LogInformation("QrCodeKey conflict for {hash}, retrying ({count} left).",
-                    attendance.GetHashCode(), retriesLeft);
-                continue;
-
-            }
-            catch (Exception ex)
-            {
-                // TODO: Handle exception
-                Logger.LogError(ex, "Failed to insert uncompleted attendance");
-                throw;
-            }
+            return key;
         }
-        return Error.InternalServerError("Key generation failed, retry with same parameters.", ErrorCode.KeyGenFailed);
+        catch (PostgresException ex) when (ex.SqlState is PostgresError.UniqueViolation)
+        {
+            return Error.InternalServerError("Attendance key gen failed, please retry", ErrorCode.KeyGenFailed);
+        }
+        catch (Exception ex)
+        {
+            // TODO: Handle exception
+            Logger.LogError(ex, "Failed to insert uncompleted attendance");
+            throw;
+        }
     }
 
     public async Task<Result<AttendedCreated>> CompletedKeyed(KeyedCompletionMetadata completion)
@@ -260,11 +254,11 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
         if (string.IsNullOrWhiteSpace(completion.Key))
         {
-            return Error.BadRequest("Key cannot be null or empty.");
+            return Error.BadRequest("Key cannot be null or empty", ErrorCode.NullId);
         }
         if (completion.SignerId == Guid.Empty)
         {
-            return Error.BadRequest("SignerId cannot be null.");
+            return Error.BadRequest("SignerId cannot be null", ErrorCode.NullId);
         }
 
         try
@@ -280,7 +274,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             using var transaction = await connection.BeginTransactionAsync();
 
             // Get attendance, Note that signer cannot get attendance with same userId as signerId 
-            var attendance = await connection.QueryFirstOrDefaultAsync<Attendance>($"""
+            Attendance? attendance = await connection.QueryFirstOrDefaultAsync($"""
                 UPDATE attendances
                     SET 
                         key_invalid_at = NOW(),
@@ -296,7 +290,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
             if (attendance is null)
             {
-                return Error.NotFound("Attendance with given key not found or key expired.", ErrorCode.IdNotFound);
+                return Error.NotFound("Attendance with given key not found or key expired", ErrorCode.IdNotFound);
             }
             if (attendance.UserId == completion.SignerId)
             {
@@ -305,10 +299,12 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             if (attendance.CompletionId is not null)
             {
                 await transaction.CommitAsync();
-                return DataError.AlreadyExistsNoError(
-                    attendance.CompletionId.Value,
-                    nameof(AttendedCreated.CompletionId),
-                    $"Attendance is already completed, completion id in response body.");
+                return new AttendedCreated
+                {
+                    CompletionId = attendance.CompletionId.Value,
+                    LarpakeTaskId = attendance.LarpakeTaskId,
+                    UserId = attendance.UserId
+                };
             }
 
             // Validate signer is in same Larpake and is not competing
@@ -318,7 +314,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
             if (isSignerValid is false)
             {
-                return Error.BadRequest("Signer must be attending same larpake");
+                return Error.BadRequest("Signer must be attending same larpake", ErrorCode.InvalidOrganization);
             }
 
             var record = new Completion
@@ -367,7 +363,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             return new AttendedCreated
             {
                 CompletionId = record.Id,
-                LarpakeEventId = attendance.LarpakeTaskId,
+                LarpakeTaskId = attendance.LarpakeTaskId,
                 UserId = attendance.UserId
             };
         }
@@ -389,15 +385,15 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
         if (completion.UserId == Guid.Empty)
         {
-            return Error.BadRequest("UserId cannot be null.");
+            return Error.BadRequest("UserId cannot be null.", ErrorCode.NullId);
         }
         if (completion.EventId is Constants.NullId)
         {
-            return Error.BadRequest("EventId cannot be -1.");
+            return Error.BadRequest("EventId cannot be -1.", ErrorCode.NullId);
         }
         if (completion.SignerId == Guid.Empty)
         {
-            return Error.BadRequest("SignerId cannot be null.");
+            return Error.BadRequest("SignerId cannot be null.", ErrorCode.NullId);
         }
 
         try
@@ -424,9 +420,12 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             }
             if (oldId is not null)
             {
-                return DataError.AlreadyExistsNoError(
-                    oldId.Value, nameof(AttendedCreated.CompletionId),
-                    $"Attendance is already completed, completion id in response body.");
+                return new AttendedCreated
+                {
+                    CompletionId = oldId.Value,
+                    LarpakeTaskId = completion.EventId,
+                    UserId = completion.UserId
+                };
             }
 
 
@@ -468,7 +467,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             return new AttendedCreated
             {
                 CompletionId = completion.Id,
-                LarpakeEventId = completion.EventId,
+                LarpakeTaskId = completion.EventId,
                 UserId = completion.UserId
             };
         }
@@ -484,11 +483,11 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
     {
         if (userId == Guid.Empty)
         {
-            return Error.BadRequest("UserId cannot be empty.");
+            return Error.BadRequest("UserId cannot be empty.", ErrorCode.NullId);
         }
         if (eventId is Constants.NullId)
         {
-            return Error.BadRequest("EventId cannot be -1.");
+            return Error.BadRequest("EventId cannot be -1.", ErrorCode.NullId);
         }
 
         try

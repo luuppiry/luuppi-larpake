@@ -16,7 +16,6 @@ public enum ErrorCode
     ExternalServerError = 1500,
     IntegrationDbWriteFailed = 1501,
 
-
     // Auth
     AuthenticationError = 1600,     
     InvalidJWT = 1601,      // Json web token data is invalid
@@ -34,6 +33,7 @@ public enum ErrorCode
     SelfActionInvalid = 1803, // User cannot do specified action to themselves (self signing or own permissions change)
     InvalidUserId = 1804,   
     RequiresHigherRole = 1805,  // Action need higher permission (for example setting other people's permissions)
+    InvalidOrganization = 1806,
 
     // Database
     DatabaseError = 1900,
@@ -50,4 +50,6 @@ public enum ErrorCode
 
     // Data validation
     TooHighPointCount = 2201    // Point count too high, for example signature point count
+
+    // 
 }

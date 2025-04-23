@@ -4,8 +4,10 @@ using LarpakeServer.Models.IdQueryObject;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services.Options;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using System.Threading;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -70,15 +72,14 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
             OFFSET @{nameof(options.PageOffset)};
             """);
 
-        string sql = query.ToString();
-        
+        string parsed = query.ToString();
         using var connection = GetConnection();
         var records = await connection.QueryAsync<OrganizationEvent>(
-            query.ToString(), options);
+            parsed, options);
 
         OrganizationEvent[] result = records.ToArray();
 
-        
+
         long[] ids = records.Select(x => x.Id).ToArray();
         var rawLocalizations = await connection.QueryAsync<EventIdObject>($"""
             SELECT 
@@ -93,7 +94,11 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
                 WHERE organization_event_id = ANY(@ids);
             """, new { ids });
 
-        var localizations = rawLocalizations.GroupBy(x => x.OrganizationEventId).ToDictionary(x => x.Key, x => x.Select(x => (OrganizationEventLocalization)x).ToList());
+        var localizations = rawLocalizations
+            .GroupBy(x => x.OrganizationEventId)
+            .ToDictionary(
+                x => x.Key, x => x.Select(x => (OrganizationEventLocalization)x).ToList());
+
         foreach (var record in records)
         {
             if (localizations.TryGetValue(record.Id, out var textData))
@@ -169,10 +174,34 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
                 def.WebsiteUrl,
                 def.ImageUrl,
                 def.LanguageCode
-            });
+            }, transaction);
 
-            await InsertLocalizations(connection, id,
-                record.TextData.Where(x => x.LanguageCode != def.LanguageCode));
+
+
+            var localizations = record.TextData
+                .Where(x => x.LanguageCode != def.LanguageCode)
+                .Select(x => new { id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.LanguageCode, x.Location });
+
+            await connection.ExecuteAsync($"""
+            INSERT INTO organization_event_localizations (
+                organization_event_id,
+                title,
+                body,
+                image_url,
+                website_url,
+                location,
+                language_id
+            )
+            VALUES (
+                @{nameof(id)},
+                @{nameof(OrganizationEventLocalization.Title)},
+                @{nameof(OrganizationEventLocalization.Body)},
+                @{nameof(OrganizationEventLocalization.ImageUrl)},
+                @{nameof(OrganizationEventLocalization.WebsiteUrl)},
+                @{nameof(OrganizationEventLocalization.Location)},
+                (SELECT GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)}))
+            );
+            """, localizations, transaction);
 
             await transaction.CommitAsync();
             return id;
@@ -257,33 +286,6 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
             DELETE FROM organization_events 
             WHERE id = @{nameof(eventId)};
             """, new { eventId });
-    }
-
-
-
-
-    private static async Task InsertLocalizations(NpgsqlConnection connection, long eventId, IEnumerable<OrganizationEventLocalization> loc)
-    {
-        await connection.ExecuteAsync($"""
-            INSERT INTO organization_event_localizations (
-                organization_event_id,
-                title,
-                body,
-                image_url,
-                website_url,
-                location,
-                language_id
-            )
-            VALUES (
-                @{nameof(eventId)},
-                @{nameof(OrganizationEventLocalization.Title)},
-                @{nameof(OrganizationEventLocalization.Body)},
-                @{nameof(OrganizationEventLocalization.ImageUrl)},
-                @{nameof(OrganizationEventLocalization.WebsiteUrl)},
-                @{nameof(OrganizationEventLocalization.Location)},
-                (SELECT GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)}))
-            );
-            """, loc.Select(x => new { eventId, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.LanguageCode, x.Location }));
     }
 
     private void AppendImageUrlsToAbsolute(OrganizationEvent[] result)

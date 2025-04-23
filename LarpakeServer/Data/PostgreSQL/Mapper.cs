@@ -33,7 +33,7 @@ internal static class Mapper
     }
 
 
-    public static T MapSingleLocalized<T, U>(T value, U localization, ref T? result) where T : ILocalized<U>
+    private static T MapSingleLocalized<T, U>(T value, U localization, ref T? result) where T : ILocalized<U>
     {
         result ??= value;
         if (localization is not null)
@@ -44,7 +44,7 @@ internal static class Mapper
         return result;
     }
 
-    public static T MapLocalized<T, U>(T value, U localization, ref Dictionary<long, T> map) where T : ILocalized<U>
+    private static T MapLocalized<T, U>(T value, U localization, ref Dictionary<long, T> map) where T : ILocalized<U>
     {
         var result = map.GetOrAdd(value.Id, value)!;
         if (localization is not null)

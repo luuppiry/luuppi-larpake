@@ -1,8 +1,6 @@
 ﻿using LarpakeServer.Models;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
-using Microsoft.Extensions.Options;
-using System.Runtime.CompilerServices;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -111,6 +109,8 @@ public class StatisticsService(NpgsqlConnectionString connectionString, ILogger<
         return records.ToArray();
     }
 
+
+    /* New queries start here - If you don't know what it means, ask Henri */
     public async Task<SectionPoints[]> GetOwnLarpakePoints(Guid userId, long larpakeId)
     {
         using var connection = GetConnection();

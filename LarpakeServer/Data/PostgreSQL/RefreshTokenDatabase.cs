@@ -25,16 +25,17 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
     {
         if (token.UserId == Guid.Empty)
         {
-            return Error.BadRequest("User id cannot be empty.");
+            return Error.BadRequest("Id required.", ErrorCode.NullId);
         }
         if (token.Token is null)
         {
-            return Error.BadRequest("Refresh token cannot be null.");
+            Logger.LogError("Null refresh token was attempted to pass to database.");
+            throw new InvalidOperationException("Refresh token cannot be null");
         }
         if (token.InvalidAt < DateTime.UtcNow)
         {
             Logger.LogWarning("Cannot insert invalid token, (invalidated at {time}).", token.InvalidAt);
-            throw new InvalidOperationException("Cannot insert already invalid token.");
+            throw new InvalidOperationException("Cannot insert already invalidated token.");
         }
 
         // Hash the refresh token and create new family if needed

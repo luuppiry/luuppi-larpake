@@ -60,8 +60,9 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
             OFFSET @{nameof(options.PageOffset)}
             """);
 
+        string parsed = query.ToString();
         using var connection = GetConnection();
-        var users = await connection.QueryAsync<User>(query.Build(), options);
+        var users = await connection.QueryAsync<User>(parsed, options);
         return users.ToArray();
     }
 
@@ -131,7 +132,7 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
     {
         if (record.Id == Guid.Empty)
         {
-            return Error.BadRequest("Id is required.");
+            return Error.BadRequest("Id is required.", ErrorCode.NullId);
         }
 
         using var connection = GetConnection();
@@ -177,7 +178,7 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
     {
         if (id == Guid.Empty)
         {
-            return Error.BadRequest("Id is required.");
+            return Error.BadRequest("Id is required.", ErrorCode.NullId);
         }
 
         string idField = isAppUserId ? "id" : "entra_id";
@@ -193,7 +194,7 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
 
         string idType = isAppUserId ? "user" : "entra user";
         Logger.IfPositive(rowsAffected)
-            .LogInformation("Appended permissions {permissions} to {type} {id}.", permissions, idType, id);
+            .LogTrace("Appended permissions {permissions} to {type} {id}.", permissions, idType, id);
 
         Logger.IfZero(rowsAffected)
             .LogInformation("Cannot append permissions, {type} {id} not found.", idType, id);
@@ -204,7 +205,7 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
     {
         if (id == Guid.Empty)
         {
-            return Error.BadRequest("Id is required.");
+            return Error.BadRequest("Id is required.", ErrorCode.NullId);
         }
 
         string idField = isAppUserId ? "id" : "entra_id";
@@ -219,7 +220,7 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
         """, new { id, permissions });
 
         Logger.IfPositive(rowsAffected)
-            .LogInformation("Set permissions {permissions} to entra user {id}.", permissions, id);
+            .LogTrace("Set permissions {permissions} to entra user {id}.", permissions, id);
 
         Logger.IfZero(rowsAffected)
             .LogInformation("Cannot set permissions, entra user {id} not found.", id);
