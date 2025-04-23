@@ -80,7 +80,7 @@ public class OrganizationEventsController : ExtendedControllerBase
             .LogInformation("User {userId} created event {eventId}", 
                 GetRequestUserId(), (long)result);
         
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: CreatedId,
             error: FromError);
     }
@@ -100,7 +100,7 @@ public class OrganizationEventsController : ExtendedControllerBase
             .LogInformation("User {userId} updated event {eventId}", 
                 GetRequestUserId(), eventId);
 
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: OkRowsAffected, 
             error: FromError);
     }
@@ -146,7 +146,7 @@ public class OrganizationEventsController : ExtendedControllerBase
 
         Guid userId = GetRequestUserId();
         Result<int> result = await _externalDataDbService.SyncExternalEvents((ExternalEvent[])events, userId);
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: OkRowsAffected,
             error: FromError);
     }

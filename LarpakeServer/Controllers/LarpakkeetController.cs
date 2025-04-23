@@ -138,7 +138,7 @@ public class LarpakkeetController : ExtendedControllerBase
     {
         var larpake = Larpake.From(record);
         var result = await _db.InsertLarpake(larpake);
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: CreatedId,
             error: FromError);
     }
@@ -152,7 +152,7 @@ public class LarpakkeetController : ExtendedControllerBase
         var larpake = Larpake.From(record);
         larpake.Id = larpakeId;
         var result = await _db.UpdateLarpake(larpake);
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: OkRowsAffected,
             error: FromError);
     }
@@ -175,7 +175,7 @@ public class LarpakkeetController : ExtendedControllerBase
     {
         var record = LarpakeSection.From(dto, larpakeId);
         Result<long> result = await _db.InsertSection(record);
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: CreatedId,
             error: FromError);
     }
@@ -188,7 +188,7 @@ public class LarpakkeetController : ExtendedControllerBase
     {
         var record = LarpakeSection.From(dto, larpakeId);
         Result<int> result = await _db.UpdateSection(record);
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: OkRowsAffected,
             error: FromError);
     }

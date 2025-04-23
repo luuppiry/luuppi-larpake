@@ -73,7 +73,7 @@ public class Result<T>
     /// <param name="ok"></param>
     /// <param name="error"></param>
     /// <returns>Http response type <see cref="IActionResult"/>.</returns>
-    public IActionResult MatchToResponse(Func<T, IActionResult> ok, Func<Result<T>, IActionResult> error)
+    public IActionResult ToActionResult(Func<T, IActionResult> ok, Func<Result<T>, IActionResult> error)
     {
         if (this)
         {

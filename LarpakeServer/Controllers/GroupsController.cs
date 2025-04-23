@@ -218,7 +218,7 @@ public class GroupsController : ExtendedControllerBase
         var record = FreshmanGroup.MapFrom(dto);
         Result<long> result = await _db.Insert(record);
 
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: CreatedId,
             error: FromError);
     }
@@ -275,7 +275,7 @@ public class GroupsController : ExtendedControllerBase
         }
 
         Result<int> result = await _db.InsertMembers(groupId, members.MemberIds);
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: OkRowsAffected,
             error: FromError
         );
@@ -295,7 +295,7 @@ public class GroupsController : ExtendedControllerBase
         }
 
         Result<int> result = await _db.InsertNonCompeting(groupId, members.Members);
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: OkRowsAffected,
             error: FromError);
     }
@@ -318,7 +318,7 @@ public class GroupsController : ExtendedControllerBase
         var record = FreshmanGroup.MapFrom(dto);
         record.Id = groupId;
         Result<int> result = await _db.Update(record);
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: OkRowsAffected,
             error: FromError);
     }

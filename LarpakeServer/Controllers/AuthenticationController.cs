@@ -60,6 +60,7 @@ public class AuthenticationController : ExtendedControllerBase
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Login()
     {
+        _logger.LogTrace("Hello from trace");
         // Validate user id
         Guid entraId = ReadEntraId();
         if (entraId == Guid.Empty)

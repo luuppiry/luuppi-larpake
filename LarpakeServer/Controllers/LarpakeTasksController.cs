@@ -80,7 +80,7 @@ public class LarpakeTasksController : ExtendedControllerBase
     {
         LarpakeTask mapped = LarpakeTask.From(record);
         var id = await _db.Insert(mapped);
-        return id.MatchToResponse(
+        return id.ToActionResult(
             ok: CreatedId, 
             error: FromError);
     }
@@ -95,7 +95,7 @@ public class LarpakeTasksController : ExtendedControllerBase
         mapped.Id = taskId;
 
         var rowsAffected = await _db.Update(mapped);
-        return rowsAffected.MatchToResponse(
+        return rowsAffected.ToActionResult(
             ok: OkRowsAffected,
             error: FromError);
     }

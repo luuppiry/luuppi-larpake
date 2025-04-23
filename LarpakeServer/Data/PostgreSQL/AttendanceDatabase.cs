@@ -300,7 +300,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             }
             if (attendance.UserId == completion.SignerId)
             {
-                return Error.BadRequest("Cannot self-sign attendance", ErrorCode.CannotSignSelf);
+                return Error.BadRequest("Cannot self-sign attendance", ErrorCode.SelfActionInvalid);
             }
             if (attendance.CompletionId is not null)
             {

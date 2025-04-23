@@ -207,7 +207,7 @@ public class AttendancesController : ExtendedControllerBase
             .LogInformation("{admin} deleted attendance for user {user} and event {event}.",
                 GetRequestUserId(), dto.UserId, dto.EventId);
 
-        return result.MatchToResponse(
+        return result.ToActionResult(
             ok: OkRowsAffected,
             error: FromError);
     }

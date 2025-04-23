@@ -66,7 +66,7 @@ public class UsersController : ExtendedControllerBase
     public async Task<IActionResult> GetUser(Guid userId, CancellationToken token)
     {
         Result<UserGetDto>? record = await _service.GetFullUser(userId, token);
-        return record.MatchToResponse(
+        return record.ToActionResult(
             ok: Ok,
             error: FromError
         );
@@ -98,7 +98,7 @@ public class UsersController : ExtendedControllerBase
     {
         Guid authorId = GetRequestUserId();
         Result<UserGetDto> record = await _service.GetFullUser(authorId, token);
-        return record.MatchToResponse(
+        return record.ToActionResult(
             ok: Ok,
             error: FromError);
     }
@@ -139,6 +139,7 @@ public class UsersController : ExtendedControllerBase
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> UpdateUserPermissions(Guid targetId, [FromBody] UserPermissionsPutDto dto)
     {
+
         /* Validate roles (Author is always validated from database, not only from JWT)
          * - Request author must have matching permission to set target permission value.
          * - Request author must also have at least same permissions to be updated. 
@@ -147,7 +148,7 @@ public class UsersController : ExtendedControllerBase
 
         if (targetId == Guid.Empty)
         {
-            return BadRequest("UserId must be provided.");
+            return BadRequest("UserId must be provided.", error: ErrorCode.EmptyId);
         }
 
 
@@ -156,12 +157,12 @@ public class UsersController : ExtendedControllerBase
         if (targetId == authorId)
         {
             _logger.LogInformation("User {id} tried to change own permissions.", targetId);
-            return BadRequest("Cannot change own permissions.");
+            return BadRequest("Cannot change own permissions.", error: ErrorCode.SelfActionInvalid);
         }
         if (dto.Permissions.IsMoreThan(Permissions.Admin))
         {
             _logger.LogInformation("User {id} tried to set permissions higher than admin.", targetId);
-            return BadRequest("Setting permissions higher than admin are forbidden in runtime.");
+            return BadRequest("Setting permissions higher than admin are forbidden in runtime.", error: ErrorCode.ActionNotAllowedInRuntime);
         }
 
         // Validate author exists
@@ -173,17 +174,17 @@ public class UsersController : ExtendedControllerBase
                 "token might have leaked and needs immidiate actions, revoking!", authorId);
 
             await _refreshTokenDb.RevokeUserTokens(authorId);
-            return InternalServerError("Invalid token.");
+            return InternalServerError("Invalid token.", error: ErrorCode.MalformedJWT);
         }
         if (author.IsAllowedToSet(dto.Permissions) is false)
         {
             _logger.LogInformation("User {id} tried to set permissions for higher role user.", authorId);
-            return Unauthorized("Higher request role required.");
+            return Unauthorized("Higher request role required.", error: ErrorCode.RequiresHigherRole);
         }
         if (author.Has(dto.Permissions) is false)
         {
             _logger.LogInformation("User {id} tried to set permissions higher than own.", authorId);
-            return Unauthorized("Higher request role required.");
+            return Unauthorized("Higher request role required.", error: ErrorCode.RequiresHigherRole);
         }
 
         // Validate target exists
@@ -198,11 +199,10 @@ public class UsersController : ExtendedControllerBase
         // Do update
         Result<int> result = await _db.SetPermissions(targetId, dto.Permissions);
 
-
-        _logger.LogInformation("User {author} set permissions {value} for user {target}.",
+        _logger.LogTrace("User {author} set permissions {value} for user {target}.",
             author, dto.Permissions, targetId);
 
-        return result.MatchToResponse(
+        return result.ToActionResult(
                 ok: OkRowsAffected,
                 error: FromError
             );
@@ -220,10 +220,10 @@ public class UsersController : ExtendedControllerBase
         Guid userId = GetRequestUserId();
         Result<int> rowsAffected = await _db.SetPermissions(userId, Permissions.None);
 
-        _logger.IfTrue(rowsAffected).LogInformation("User {id} revoked own permissions.", userId);
+        _logger.IfTrue(rowsAffected).LogTrace("User {id} revoked own permissions.", userId);
         _logger.IfFalse(rowsAffected).LogError("Failed to revoke permissions for user {id}.", userId);
 
-        return rowsAffected.MatchToResponse(
+        return rowsAffected.ToActionResult(
             ok: OkRowsAffected,
             error: FromError
         );
@@ -242,15 +242,14 @@ public class UsersController : ExtendedControllerBase
         if (roleValidationResult.IsError)
         {
             _logger.LogInformation(
-                "User {authorId} tried to delete user {userId} without correct permission.",
+                "User {authorId} tried to delete user {userId} without correct permissions.",
                     GetRequestUserId(), userId);
             return FromError(roleValidationResult);
         }
 
         int rowsAffected = await _db.Delete(userId);
 
-        _logger.IfPositive(rowsAffected)
-            .LogInformation("Deleted user {id}.", userId);
+        _logger.IfPositive(rowsAffected).LogTrace("Deleted user {id}.", userId);
 
         return OkRowsAffected(rowsAffected);
     }
@@ -261,19 +260,19 @@ public class UsersController : ExtendedControllerBase
     {
         if (targetId == Guid.Empty)
         {
-            return Error.BadRequest("UserId must be provided.");
+            return Error.BadRequest("UserId must be provided.", ErrorCode.EmptyId);
         }
 
         DbUser? target = await _db.GetByUserId(targetId);
         if (target is null)
         {
-            return Error.NotFound("User not found.");
+            return Error.NotFound("User not found.", ErrorCode.IdNotFound);
         }
 
         Permissions authorizedPermissions = GetRequestPermissions();
         if (authorizedPermissions.HasHigherRoleOrSudo(target.Permissions) is false)
         {
-            return Error.Unauthorized("Higher role required.");
+            return Error.Unauthorized("Higher role required.", ErrorCode.RequiresHigherRole);
         }
         return Result.Ok;
     }
