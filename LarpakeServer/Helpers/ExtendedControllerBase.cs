@@ -67,9 +67,9 @@ public class ExtendedControllerBase : ControllerBase
         return NotFound(new ErrorMessageResponse("Id not found.", null, ErrorCode.IdNotFound));
     }
 
-    protected ObjectResult IdNotFound(string message)
+    protected ObjectResult IdNotFound(string message, ErrorCode error = ErrorCode.IdNotFound)
     {
-        return NotFound(new ErrorMessageResponse("Id not found.", message, ErrorCode.IdNotFound));
+        return NotFound(new ErrorMessageResponse("Id not found.", message, error));
     }
 
     protected ObjectResult InvalidJWT(string message)

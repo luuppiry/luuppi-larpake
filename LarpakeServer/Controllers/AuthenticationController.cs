@@ -149,7 +149,7 @@ public class AuthenticationController : ExtendedControllerBase
         // Read headers and cookies to get tokens
         if (Request.Cookies.TryGetValue(RefreshTokenCookieName, out string? refreshToken) is false)
         {
-            return Unauthorized();
+            return Unauthorized("No refresh token", ErrorCode.NoRefreshToken);
         }
 
         Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
@@ -158,27 +158,27 @@ public class AuthenticationController : ExtendedControllerBase
 
         if (string.IsNullOrEmpty(refreshToken))
         {
-            return Unauthorized();
+            return Unauthorized("Empty refresh token", ErrorCode.EmptyRefreshToken);
         }
 
         // Validate refresh token
         RefreshTokenValidationResult validation = await _refreshTokenDb.Validate(refreshToken);
         if (validation.IsValid is false)
         {
-            return Unauthorized();
+            return Unauthorized("Invalid authentication token", ErrorCode.InvalidJWT);
         }
 
         // Tokens are valid, generate new ones
         DbUser? user = await _userDb.GetByUserId(validation.UserId.Value);
         if (user is null)
         {
-            return IdNotFound("User does not exist.");
+            return IdNotFound("User does not exist", ErrorCode.UserNotFound);
         }
 
         // Generate new tokens
         TokenGetDto newTokens = _tokenService.GenerateTokens(user);
 
-        _logger.LogInformation("Refreshed tokens for user {id}.", user.Id);
+        _logger.LogTrace("Refreshed tokens for user {id}", user.Id);
 
         // Finish by saving refresh token
         return await SaveToken(user, newTokens, validation.TokenFamily.Value, LoginAction.Refresh);
@@ -188,7 +188,7 @@ public class AuthenticationController : ExtendedControllerBase
     [Authorize]
     [DisableRateLimiting]
     [HttpPost("token/invalidate")]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     public async Task<IActionResult> InvalidateTokens()
     {
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
@@ -203,7 +203,7 @@ public class AuthenticationController : ExtendedControllerBase
     [DisableRateLimiting]
     [HttpPost("token/invalidate/{tokenFamily}")]
     [RequiresPermissions(Permissions.Admin)]
-    [ProducesResponseType(typeof(RowsAffectedResponse), 200)]
+    [ProducesResponseType<RowsAffectedResponse>(200)]
     public async Task<IActionResult> InvalidateTokenFamily(Guid tokenFamily)
     {
         int rowsAffected = await _refreshTokenDb.RevokeFamily(tokenFamily);
@@ -318,7 +318,7 @@ public class AuthenticationController : ExtendedControllerBase
         DbUser? result = await _userDb.GetByUserId((Guid)userId);
         if (result is null)
         {
-            return Error.InternalServerError("Failed to create user.");
+            return Error.InternalServerError("Failed to create user.", ErrorCode.InvalidDatabaseState);
         }
         return result;
     }

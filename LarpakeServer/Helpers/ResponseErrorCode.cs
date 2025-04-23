@@ -6,10 +6,11 @@ public enum ErrorCode
 
     // Id errors
     IdError = 1100,
-    InvalidId = 1101,
-    IdNotFound = 1102,
+    InvalidId = 1101,       // 
+    IdNotFound = 1102,      // Id not found from database
     KeyInvalidated = 1103,  // Key is expired and cannot be used anymore
-    EmptyId = 1104, // Id is invalid (empty guid, or long -1)
+    NullId = 1104,          // Id is invalid or null (empty guid, or long -1)
+    UserNotFound = 1105,    // User matching the auth token not found
 
     // Integration
     ExternalServerError = 1500,
@@ -20,6 +21,8 @@ public enum ErrorCode
     AuthenticationError = 1600,
     InvalidJWT = 1601,
     MalformedJWT = 1602,
+    NoRefreshToken = 1603,  // Refresh token cookie not found 
+    EmptyRefreshToken = 1604, // Refresh token cookie found, but it was empty
 
     // Internal server error
     UnknownServerError = 1700,
@@ -39,6 +42,4 @@ public enum ErrorCode
     // Runtime action errors
     ActionNotAllowed = 2000, // Action is not allowed for some reason
     ActionNotAllowedInRuntime = 2001, // Action must be done in app configuration (e.g. setting sudo permissions)
-
-
 }

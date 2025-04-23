@@ -148,7 +148,7 @@ public class UsersController : ExtendedControllerBase
 
         if (targetId == Guid.Empty)
         {
-            return BadRequest("UserId must be provided.", error: ErrorCode.EmptyId);
+            return BadRequest("UserId must be provided.", error: ErrorCode.NullId);
         }
 
 
@@ -260,7 +260,7 @@ public class UsersController : ExtendedControllerBase
     {
         if (targetId == Guid.Empty)
         {
-            return Error.BadRequest("UserId must be provided.", ErrorCode.EmptyId);
+            return Error.BadRequest("UserId must be provided.", ErrorCode.NullId);
         }
 
         DbUser? target = await _db.GetByUserId(targetId);
