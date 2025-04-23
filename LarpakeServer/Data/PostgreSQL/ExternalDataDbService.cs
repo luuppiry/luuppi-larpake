@@ -90,8 +90,9 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
                                 website_url = @{nameof(loc.WebsiteUrl)},
                                 image_url = @{nameof(loc.ImageUrl)},
                                 location = @{nameof(loc.Location)};
-                        """, 
-                        new { id, loc.Title, loc.Body, loc.WebsiteUrl, loc.ImageUrl, loc.Location, loc.LanguageCode });
+                        """,
+                        new { id, loc.Title, loc.Body, loc.WebsiteUrl, loc.ImageUrl, loc.Location, loc.LanguageCode },
+                        transaction);
                 }
             }
 
@@ -106,7 +107,7 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
                 await _eventDb.Insert(record);
             }
 
-            Logger.LogInformation("Synced {count} external events. ({new} where new)",
+            Logger.LogTrace("Synced {count} external events. ({new} where new)",
                events.Length, newEvents.Count);
 
             return rowsAffected + newEvents.Count;

@@ -164,10 +164,10 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
         return await AppendPermissions(id, permissions, isAppUserId: false);
     }
 
-    public Task<int> Delete(Guid id)
+    public async Task<int> Delete(Guid id)
     {
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             DELETE FROM users WHERE id = @{nameof(id)};
             """, new { id });
     }

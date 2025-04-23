@@ -291,7 +291,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     user_id,
                     larpake_event_id,
                     completion_id;
-                """, completion);
+                """, completion, transaction);
 
 
             if (attendance is null)
@@ -304,7 +304,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             }
             if (attendance.CompletionId is not null)
             {
-                transaction.Commit();
+                await transaction.CommitAsync();
                 return DataError.AlreadyExistsNoError(
                     attendance.CompletionId.Value,
                     nameof(AttendedCreated.CompletionId),
@@ -318,7 +318,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
             if (isSignerValid is false)
             {
-                return Error.BadRequest("Signer must attend larpake event is part of.");
+                return Error.BadRequest("Signer must be attending same larpake");
             }
 
             var record = new Completion
@@ -346,7 +346,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     ),
                     NOW()
                 );
-                """, record);
+                """, record, transaction);
 
             // Update attendance to completed
             await connection.ExecuteAsync($"""
@@ -357,11 +357,11 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     key_invalid_at = NOW()
                 WHERE 
                     qr_code_key = @{nameof(completion.Key)};
-                """, new { record.Id, completion.Key });
+                """, new { record.Id, completion.Key }, transaction);
 
             await transaction.CommitAsync();
 
-            Logger.LogInformation("User {userId} completed event {eventId}.",
+            Logger.LogTrace("User {userId} completed event {eventId}.",
                 attendance.UserId, attendance.LarpakeTaskId);
 
             return new AttendedCreated
@@ -462,7 +462,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                     AND larpake_event_id = @{nameof(completion.EventId)};
                 """, completion);
 
-            Logger.LogInformation("User {userId} completed event {eventId}.",
+            Logger.LogTrace("User {userId} completed event {eventId}.",
                 completion.UserId, completion.EventId);
 
             return new AttendedCreated

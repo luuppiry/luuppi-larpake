@@ -108,10 +108,10 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
 
 
 
-    public Task<OrganizationEvent?> Get(long id)
+    public async Task<OrganizationEvent?> Get(long id)
     {
         using var connection = GetConnection();
-        return connection.QueryFirstOrDefaultLocalizedAsync<OrganizationEvent, OrganizationEventLocalization>($"""
+        return await connection.QueryFirstOrDefaultLocalizedAsync<OrganizationEvent, OrganizationEventLocalization>($"""
             SELECT 
                 e.id, 
                 e.starts_at,
@@ -232,12 +232,12 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
         }
     }
 
-    public Task<int> SoftDelete(long eventId, Guid modifyingUser)
+    public async Task<int> SoftDelete(long eventId, Guid modifyingUser)
     {
         Logger.LogInformation("Soft deleting event {id}", eventId);
 
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             UPDATE organization_events 
             SET 
                 cancelled_at = NOW(),
@@ -248,12 +248,12 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
             """, new { eventId, modifyingUser });
     }
 
-    public Task<int> HardDelete(long eventId)
+    public async Task<int> HardDelete(long eventId)
     {
         Logger.LogInformation("Hard deleting event {id}", eventId);
 
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             DELETE FROM organization_events 
             WHERE id = @{nameof(eventId)};
             """, new { eventId });

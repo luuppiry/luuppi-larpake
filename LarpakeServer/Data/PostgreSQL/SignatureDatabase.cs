@@ -45,10 +45,10 @@ public class SignatureDatabase(NpgsqlConnectionString connectionString, ILogger<
         return records.ToArray();
     }
 
-    public Task<Signature?> Get(Guid id)
+    public async Task<Signature?> Get(Guid id)
     {
         using var connection = GetConnection();
-        return connection.QueryFirstOrDefaultAsync<Signature>($"""
+        return await connection.QueryFirstOrDefaultAsync<Signature>($"""
             SELECT 
                 id,
                 user_id,

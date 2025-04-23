@@ -1,7 +1,9 @@
 ﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
+using LarpakeServer.Models.GetDtos;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -182,10 +184,33 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                 def.Title,
                 def.Body,
                 def.LanguageCode,
-            });
+            }, transaction);
 
-            await InsertLocalizations(connection, id,
-                record.TextData.Where(x => x.LanguageCode != def.LanguageCode));
+   
+            // Insert all localizations that weren't already inserted
+            var localizations = record.TextData.Where(x => x.LanguageCode != def.LanguageCode);
+
+            int rowsAffected = await connection.ExecuteAsync($"""
+            INSERT INTO larpake_event_localizations (
+                larpake_event_id,
+                title,
+                body,
+                language_id
+            )
+            VALUES (
+                @{nameof(id)},
+                @{nameof(LarpakeTaskLocalization.Title)},
+                @{nameof(LarpakeTaskLocalization.Body)},
+                (SELECT GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)}))
+            );
+            
+            """, localizations.Select(x => new
+            {
+                id,
+                x.Title,
+                x.Body,
+                x.LanguageCode
+            }), transaction);
 
             await transaction.CommitAsync();
             return id;
@@ -301,31 +326,6 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
     }
 
 
-    private static async Task<long> InsertLocalizations(
-        NpgsqlConnection connection, long eventId,
-        IEnumerable<LarpakeTaskLocalization> localizations)
-    {
-        int rowsAffected = await connection.ExecuteAsync($"""
-            INSERT INTO larpake_event_localizations (
-                larpake_event_id,
-                title,
-                body,
-                language_id
-            )
-            VALUES (
-                @{nameof(eventId)},
-                @{nameof(LarpakeTaskLocalization.Title)},
-                @{nameof(LarpakeTaskLocalization.Body)},
-                (SELECT GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)}))
-            );
-            """, localizations.Select(x => new
-        {
-            eventId,
-            x.Title,
-            x.Body,
-            x.LanguageCode
-        }));
-        return rowsAffected;
-    }
+   
 
 }

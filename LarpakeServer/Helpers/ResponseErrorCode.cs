@@ -18,15 +18,15 @@ public enum ErrorCode
 
 
     // Auth
-    AuthenticationError = 1600,
-    InvalidJWT = 1601,
-    MalformedJWT = 1602,
+    AuthenticationError = 1600,     
+    InvalidJWT = 1601,      // Json web token data is invalid
+    MalformedJWT = 1602,    // Json web token malformed
     NoRefreshToken = 1603,  // Refresh token cookie not found 
     EmptyRefreshToken = 1604, // Refresh token cookie found, but it was empty
 
     // Internal server error
-    UnknownServerError = 1700,
-    KeyGenFailed = 1701,
+    UnknownServerError = 1700,  // This error is cause by error that is not probably known by the error
+    KeyGenFailed = 1701,    // Key generation failed because generated key of a database key conflict
 
     // User action forbidden for user
     UserStatusTutor = 1801, // User is tutor (non-competing) and so cannot complete task
@@ -50,5 +50,4 @@ public enum ErrorCode
 
     // Data validation
     TooHighPointCount = 2201    // Point count too high, for example signature point count
-
 }

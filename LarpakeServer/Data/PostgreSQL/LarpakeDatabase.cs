@@ -134,7 +134,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     {
         using var connection = GetConnection();
         await connection.OpenAsync();
-        using var transaction = connection.BeginTransaction();
+        using var transaction = await connection.BeginTransactionAsync();
 
         // Insert the larpake and default localization
         LarpakeLocalization def = record.DefaultLocalization;
@@ -160,7 +160,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
     {
         using var connection = GetConnection();
         await connection.OpenAsync();
-        using var transaction = connection.BeginTransaction();
+        using var transaction = await connection.BeginTransactionAsync();
 
         // Update larpake
         int rowsAffected = await connection.ExecuteAsync($"""
@@ -169,7 +169,7 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 year = @{nameof(record.Year)},
                 updated_at = NOW()
             WHERE id = @{nameof(record.Id)};
-            """, record);
+            """, record, transaction);
 
         // Update localiazations
         rowsAffected += await connection.ExecuteAsync($"""
@@ -180,7 +180,8 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
                 image_url = @{nameof(LarpakeLocalization.ImageUrl)}
             WHERE larpake_id = @{nameof(record.Id)}
                 AND language_id = getlanguageid(@{nameof(LarpakeLocalization.LanguageCode)});
-            """, record.TextData.Select(x => new { x.Description, x.Title, x.LanguageCode, x.ImageUrl, record.Id }));
+            """, record.TextData.Select(x => new { x.Description, x.Title, x.LanguageCode, x.ImageUrl, record.Id }), 
+            transaction);
 
         await transaction.CommitAsync();
         return rowsAffected;
@@ -352,10 +353,10 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
         return rowsAffected;
     }
 
-    public Task<int> DeleteSection(long sectionId)
+    public async Task<int> DeleteSection(long sectionId)
     {
         using var connection = GetConnection();
-        return connection.ExecuteAsync($"""
+        return await connection.ExecuteAsync($"""
             DELETE FROM larpake_sections WHERE id = @{nameof(sectionId)};
             """, new { sectionId });
     }
