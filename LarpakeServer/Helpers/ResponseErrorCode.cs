@@ -48,4 +48,7 @@ public enum ErrorCode
     MaxUserConnections = 2101,  // Specific user has max amount of live connections, new connections rejected
     ConnectionPoolFull = 2102,  // SSE connection pool is already full, new connections rejected
 
+    // Data validation
+    TooHighPointCount = 2201    // Point count too high, for example signature point count
+
 }

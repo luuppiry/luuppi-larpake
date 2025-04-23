@@ -66,7 +66,7 @@ public class SignaturesController : ExtendedControllerBase
         Signature? record = await _db.Get(signatureId);
         if (record is null)
         {
-            return NotFound();
+            return IdNotFound();
         }
         SignatureGetDto result = SignatureGetDto.From(record);
         return Ok(result);
@@ -88,11 +88,7 @@ public class SignaturesController : ExtendedControllerBase
 
         Signature record = Signature.From(dto);
         Result<Guid> id = await _db.Insert(record);
-        if (id)
-        {
-            return CreatedId((Guid)id);
-        }
-        return FromError(id);
+        return id.IsOk ? CreatedId((Guid)id) : FromError(id);
     }
 
     [HttpPost("own")]
@@ -122,11 +118,7 @@ public class SignaturesController : ExtendedControllerBase
         }
 
         Result<int> result = await _db.Delete(signatureId);
-        if (result)
-        {
-            return OkRowsAffected((int)result);
-        }
-        return FromError(result);
+        return result.IsOk ? OkRowsAffected(result) : FromError(result);
     }
 
 
@@ -145,12 +137,12 @@ public class SignaturesController : ExtendedControllerBase
         if (signature is null)
         {
             // Signature does not even exist
-            return Error.NotFound("Id not found");
+            return Error.NotFound("Id not found", ErrorCode.IdNotFound);
         }
         if (userId != signature?.UserId)
         {
             // Not owner
-            return Error.Unauthorized("Must be admin or signature owner.");
+            return Error.Unauthorized("Must be admin or signature owner.", ErrorCode.RequiresHigherRole);
         }
         // Is owner
         return true;
