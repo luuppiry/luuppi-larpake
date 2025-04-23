@@ -12,7 +12,7 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
     readonly LarpakeIdOptions _options;
 
     public RefreshTokenDatabase(
-        NpgsqlConnectionString connectionString, 
+        NpgsqlConnectionString connectionString,
         ILogger<RefreshTokenDatabase> logger,
         IOptions<LarpakeIdOptions> options)
         : base(connectionString, logger)
@@ -185,7 +185,7 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
             DELETE FROM refresh_tokens WHERE invalid_at < NOW();
             """);
 
-        Logger.LogTrace ("Cleared {count} expired refresh token entries.", rowsAffected);
+        Logger.LogTrace("Cleared {count} expired refresh token entries.", rowsAffected);
         return rowsAffected;
     }
 
@@ -209,12 +209,12 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
         * All other tokens created from it should be invalidated as well.
         */
 
-        
-        DateTime invalidatedOffset = DateTime.UtcNow.AddSeconds(_options.RefreshTokenExpirationCooldownSeconds);
+        // Offsetted value comes some seconds after current time to handle multiple parallel requests with same cookie value
+        DateTime nowOffset = DateTime.UtcNow.AddSeconds(-_options.RefreshTokenExpirationCooldownSeconds);
 
-        bool isTimeInvalidated = token.InvalidAt < DateTime.UtcNow;
-        bool isUserInvalidated = token.InvalidatedAt is not null && DateTime.UtcNow > invalidatedOffset;
-        if (isTimeInvalidated || isUserInvalidated)
+        bool isTimevalid = DateTime.UtcNow < token.InvalidAt;
+        bool isUserValid = token.InvalidatedAt is null || nowOffset < token.InvalidatedAt;
+        if (!isTimevalid || !isUserValid)
         {
             Logger.LogWarning("Token with hash {hashStart}*** is invalidated for user {id}, revoking family, double use.",
                 SafeSlicer.Slice(token.Token, 10), token.UserId);
