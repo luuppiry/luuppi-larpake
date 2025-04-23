@@ -2,6 +2,7 @@
 using LarpakeServer.Identity;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.QueryOptions;
+using Npgsql;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -110,21 +111,27 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
         record.Id = Guid.CreateVersion7();
         using var connection = GetConnection();
 
-        await connection.ExecuteAsync($"""
-            INSERT INTO users (
-                id,
-                start_year,
-                entra_id,
-                entra_username
-            )
-            VALUES (
-                @{nameof(User.Id)},
-                @{nameof(User.StartYear)},
-                @{nameof(User.EntraId)},
-                @{nameof(User.EntraUsername)}
-            );
-            """, record);
-
+        try
+        {
+            await connection.ExecuteAsync($"""
+                INSERT INTO users (
+                    id,
+                    start_year,
+                    entra_id,
+                    entra_username
+                )
+                VALUES (
+                    @{nameof(User.Id)},
+                    @{nameof(User.StartYear)},
+                    @{nameof(User.EntraId)},
+                    @{nameof(User.EntraUsername)}
+                );
+                """, record);
+        }
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.UniqueViolation)
+        {
+            return Error.InternalServerError("Failed to generate unique id, retry request", ErrorCode.KeyGenFailed);
+        }
         return record.Id;
     }
 
@@ -212,12 +219,12 @@ public class UserDatabase(NpgsqlConnectionString connectionString)
 
         using var connection = GetConnection();
         int rowsAffected = await connection.ExecuteAsync($"""
-        UPDATE users
-        SET
-            permissions = @{nameof(permissions)},
-            updated_at = NOW()
-        WHERE {idField} = @{nameof(id)};
-        """, new { id, permissions });
+            UPDATE users
+            SET
+                permissions = @{nameof(permissions)},
+                updated_at = NOW()
+            WHERE {idField} = @{nameof(id)};
+            """, new { id, permissions });
 
         Logger.IfPositive(rowsAffected)
             .LogTrace("Set permissions {permissions} to entra user {id}.", permissions, id);

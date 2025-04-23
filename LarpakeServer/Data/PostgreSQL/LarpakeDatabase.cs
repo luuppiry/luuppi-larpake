@@ -325,7 +325,10 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             }, transaction);
 
 
-            var records = section.TextData.Where(x => x.LanguageCode != def.LanguageCode).Select(x => new { id, x.LanguageCode, x.Title });
+            var records = section.TextData
+                .Where(x => x.LanguageCode != def.LanguageCode)
+                .Select(x => new { id, x.LanguageCode, x.Title });
+
             await connection.ExecuteAsync($"""
             INSERT INTO larpake_section_localizations (
                 larpake_section_id,
@@ -343,10 +346,13 @@ public class LarpakeDatabase(NpgsqlConnectionString connectionString, ILogger<La
             return id;
 
         }
-        catch (PostgresException ex)
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.ForeignKeyViolation)
         {
-            // TODO: Handle exception
-            Logger.LogError("Failed to insert section {msg}.", ex.Message);
+            return Error.NotFound("Larpake id not found", ErrorCode.IdNotFound);
+        }
+        catch (NpgsqlException ex)
+        {
+            Logger.LogError(ex, "Failed to insert section");
             throw;
         }
     }

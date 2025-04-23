@@ -11,6 +11,7 @@ public enum ErrorCode
     KeyInvalidated = 1103,  // Key is expired and cannot be used anymore
     NullId = 1104,          // Id is invalid or null (empty guid, or long -1)
     UserNotFound = 1105,    // User matching the auth token not found
+    IdConflict = 1106,      // Id already exists in database
 
     // Integration
     ExternalServerError = 1500,
@@ -49,7 +50,7 @@ public enum ErrorCode
     ConnectionPoolFull = 2102,  // SSE connection pool is already full, new connections rejected
 
     // Data validation
-    TooHighPointCount = 2201    // Point count too high, for example signature point count
-
+    TooHighPointCount = 2201,    // Point count too high, for example signature point count
+    DataFieldNull = 2202, // Data field is null, but it should not be
     // 
 }

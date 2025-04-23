@@ -96,10 +96,17 @@ public class SignatureDatabase(NpgsqlConnectionString connectionString, ILogger<
 
             return record.Id;
         }
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.UniqueViolation)
+        {
+            return Error.InternalServerError("Failed to generate unique id, retry request", ErrorCode.KeyGenFailed);
+        }
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.ForeignKeyViolation)
+        {
+            return Error.InternalServerError("User not found", ErrorCode.IdNotFound);
+        }
         catch (NpgsqlException ex)
         {
-            // TODO: Handle exception
-            logger.LogError("Failed to insert signature, {msg}", ex.Message);
+            logger.LogError(ex, "Unhandled exception thrown during signature insertion");
             throw;
         }
     }

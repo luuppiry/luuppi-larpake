@@ -1,6 +1,4 @@
-﻿using Dapper;
-using LarpakeServer.Controllers;
-using LarpakeServer.Data.Helpers;
+﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Extensions;
 using LarpakeServer.Models.Collections;
 using LarpakeServer.Models.DatabaseModels;
@@ -9,7 +7,6 @@ using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Npgsql;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -238,10 +235,13 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 RETURNING id;
                 """, record);
         }
-        catch (PostgresException ex)
+        catch (NpgsqlException ex ) when (ex.SqlState is PostgresError.ForeignKeyViolation)
         {
-            // TODO: Handle exception
-            Logger.LogError(ex, "Error inserting freshman group.");
+            return Error.NotFound("Larpake not found.", ErrorCode.IdNotFound);
+        }
+        catch (NpgsqlException ex)
+        {
+            Logger.LogError(ex, "Unhandled exception thrown duirng freshman group insertion.");
             throw;
         }
     }
@@ -270,10 +270,13 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
                 """,
                 records);
         }
+        catch (NpgsqlException ex) when (ex.SqlState is PostgresError.UniqueViolation)
+        {
+            return Error.NotFound("User or group not found", ErrorCode.IdNotFound);
+        }
         catch (NpgsqlException ex)
         {
-            // TODO: Handle error "when (e.SqlState == "23505")"
-            Logger.LogError(ex, "Failed to insert members");
+            Logger.LogError(ex, "Unhandled exception during group member insertion");
             throw;
         }
     }
@@ -309,10 +312,13 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             """,
                 records);
         }
+        catch (NpgsqlException ex) when (ex.SqlState is PostgresError.UniqueViolation)
+        {
+            return Error.NotFound("User or group not found", ErrorCode.IdNotFound);
+        }
         catch (NpgsqlException ex)
         {
-            // TODO: Handle error "when (e.SqlState == "23505")"
-            Logger.LogError(ex, "Failed to insert non competing members");
+            Logger.LogError(ex, "Unhandled exception during non-competing group member insertion");
             throw;
         }
     }
@@ -433,11 +439,12 @@ public class GroupDatabase : PostgresDb, IGroupDatabase
             ON CONFLICT DO NOTHING;
             """, new { inviteKey, userId });
         }
+        catch (NpgsqlException ex) when (ex.SqlState is PostgresError.ForeignKeyViolation)
+        {
+            return Error.NotFound("User or invite key not found.", ErrorCode.IdNotFound);
+        }
         catch (NpgsqlException ex)
         {
-            // TODO: Handle error
-            // - User not found
-            // - Invite key not found
             Logger.LogError(ex, "Error inserting member by invite key.");
             throw;
         }

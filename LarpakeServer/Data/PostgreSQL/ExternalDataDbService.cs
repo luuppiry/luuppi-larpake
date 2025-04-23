@@ -3,6 +3,7 @@ using LarpakeServer.Models.External;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Services.Options;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -112,11 +113,10 @@ public class ExternalDataDbService : PostgresDb, IExternalDataDbService
 
             return rowsAffected + newEvents.Count;
         }
-        catch (Exception ex)
+        catch (NpgsqlException ex)
         {
-            Logger.LogError("Error syncing external events: {msg}.", ex.Message);
-            return Error.InternalServerError("Error syncing external events",
-                ErrorCode.IntegrationDbWriteFailed);
+            Logger.LogError(ex, "Unhandled exception thrown during org event insertion.");
+            return Error.InternalServerError("Error syncing external events", ErrorCode.IntegrationDbWriteFailed);
         }
     }
 }

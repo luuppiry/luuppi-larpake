@@ -173,48 +173,51 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
                     @{nameof(def.LanguageCode)}
                 );
                 """, new
-            {
-                record.LarpakeSectionId,
-                record.Points,
-                record.OrderingWeightNumber,
-                def.Title,
-                def.Body,
-                def.LanguageCode,
-            }, transaction);
+                {
+                    record.LarpakeSectionId,
+                    record.Points,
+                    record.OrderingWeightNumber,
+                    def.Title,
+                    def.Body,
+                    def.LanguageCode,
+                }, transaction);
 
    
             // Insert all localizations that weren't already inserted
             var localizations = record.TextData.Where(x => x.LanguageCode != def.LanguageCode);
 
             int rowsAffected = await connection.ExecuteAsync($"""
-            INSERT INTO larpake_event_localizations (
-                larpake_event_id,
-                title,
-                body,
-                language_id
-            )
-            VALUES (
-                @{nameof(id)},
-                @{nameof(LarpakeTaskLocalization.Title)},
-                @{nameof(LarpakeTaskLocalization.Body)},
-                (SELECT GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)}))
-            );
+                INSERT INTO larpake_event_localizations (
+                    larpake_event_id,
+                    title,
+                    body,
+                    language_id
+                )
+                VALUES (
+                    @{nameof(id)},
+                    @{nameof(LarpakeTaskLocalization.Title)},
+                    @{nameof(LarpakeTaskLocalization.Body)},
+                    (SELECT GetLanguageId(@{nameof(LarpakeTaskLocalization.LanguageCode)}))
+                );
             
-            """, localizations.Select(x => new
-            {
-                id,
-                x.Title,
-                x.Body,
-                x.LanguageCode
-            }), transaction);
+                """, localizations.Select(x => new
+                {
+                    id,
+                    x.Title,
+                    x.Body,
+                    x.LanguageCode
+                }), transaction);
 
             await transaction.CommitAsync();
             return id;
         }
+        catch (NpgsqlException ex ) when (ex.SqlState == PostgresError.ForeignKeyViolation)
+        {
+            return Error.NotFound("Larpake section not found", ErrorCode.IdNotFound);
+        }
         catch (PostgresException ex)
         {
-            // TODO: Handle exception
-            Logger.LogError("Failed to insert larpake event: {msg}", ex.Message);
+            Logger.LogError(ex, "Unhandled exception during larpake task insertion");
             throw;
         }
     }
@@ -280,10 +283,13 @@ public class LarpakeTaskDatabase(NpgsqlConnectionString connectionString, ILogge
 
             return Result.Ok;
         }
-        catch (PostgresException ex)
+        catch (NpgsqlException ex) when (ex.SqlState is PostgresError.ForeignKeyViolation)
         {
-            // TODO: Handle exception
-            Logger.LogError("Failed to events: {msg}", ex.Message);
+            return Error.NotFound("Larpake task or org event not found", ErrorCode.IdNotFound);
+        }
+        catch (NpgsqlException ex)
+        {
+            Logger.LogError(ex, "Unhandled error during org event to larpake task sync");
             throw;
         }
     }

@@ -4,10 +4,8 @@ using LarpakeServer.Models.IdQueryObject;
 using LarpakeServer.Models.Localizations;
 using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services.Options;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using System.Threading;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -206,10 +204,21 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
             await transaction.CommitAsync();
             return id;
         }
-        catch (Exception e)
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.NotNullConstraint)
         {
-            // TODO: Handle exception
-            Logger.LogError("Error inserting org event: {msg}", e.Message);
+            return Error.BadRequest("Starts_at or title was null", ErrorCode.DataFieldNull);
+        }
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.ForeignKeyViolation)
+        {
+            return Error.NotFound("Modifying user was not found", ErrorCode.IdNotFound);
+        }
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.CheckConstraint)
+        {
+            return Error.BadRequest("External id was not unique or null", ErrorCode.IdConflict);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Unhandled exception during org event insertion");
             throw;
         }
     }
@@ -218,52 +227,44 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
 
     public async Task<Result<int>> Update(OrganizationEvent record)
     {
-        try
-        {
-            using var connection = GetConnection();
-            using var transaction = await connection.BeginTransactionAsync();
+        using var connection = GetConnection();
+        using var transaction = await connection.BeginTransactionAsync();
 
-            int rowsAffected = await connection.ExecuteAsync($"""
-                UPDATE organization_events 
-                SET 
-                    starts_at = @{nameof(record.StartsAt)},
-                    ends_at = @{nameof(record.EndsAt)},
-                    updated_at = NOW(),
-                    updated_by = @{nameof(record.UpdatedBy)},
-                    external_id = @{nameof(record.ExternalId)}
-                WHERE 
-                    id = @{nameof(record.Id)};
-                """, record, transaction);
+        int rowsAffected = await connection.ExecuteAsync($"""
+            UPDATE organization_events 
+            SET 
+                starts_at = @{nameof(record.StartsAt)},
+                ends_at = @{nameof(record.EndsAt)},
+                updated_at = NOW(),
+                updated_by = @{nameof(record.UpdatedBy)},
+                external_id = @{nameof(record.ExternalId)}
+            WHERE 
+                id = @{nameof(record.Id)};
+            """, record, transaction);
 
-            rowsAffected += await connection.ExecuteAsync($"""
-                UPDATE organization_event_localizations
-                SET
-                    title = @{nameof(OrganizationEventLocalization.Title)},
-                    body = @{nameof(OrganizationEventLocalization.Body)},
-                    website_url = @{nameof(OrganizationEventLocalization.WebsiteUrl)},
-                    image_url = @{nameof(OrganizationEventLocalization.ImageUrl)},
-                    location = @{nameof(OrganizationEventLocalization.Location)}
-                WHERE 
-                    organization_event_id = @{nameof(record.Id)}
-                        AND language_id = GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)});
-                """, record.TextData.Select(
-                        x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.Location }),
-                    transaction);
+        rowsAffected += await connection.ExecuteAsync($"""
+            UPDATE organization_event_localizations
+            SET
+                title = @{nameof(OrganizationEventLocalization.Title)},
+                body = @{nameof(OrganizationEventLocalization.Body)},
+                website_url = @{nameof(OrganizationEventLocalization.WebsiteUrl)},
+                image_url = @{nameof(OrganizationEventLocalization.ImageUrl)},
+                location = @{nameof(OrganizationEventLocalization.Location)}
+            WHERE 
+                organization_event_id = @{nameof(record.Id)}
+                    AND language_id = GetLanguageId(@{nameof(OrganizationEventLocalization.LanguageCode)});
+            """, record.TextData.Select(
+                x => new { record.Id, x.Title, x.Body, x.WebsiteUrl, x.ImageUrl, x.Location }),
+            transaction);
 
-            await transaction.CommitAsync();
-            return rowsAffected;
-        }
-        catch (PostgresException ex)
-        {
-            // TODO: Handle exception
-            Logger.LogError("Error updating org event: {msg}", ex.Message);
-            throw;
-        }
+        await transaction.CommitAsync();
+        return rowsAffected;
+
     }
 
     public async Task<int> SoftDelete(long eventId, Guid modifyingUser)
     {
-        Logger.LogInformation("Soft deleting event {id}", eventId);
+        Logger.LogTrace("Soft deleting event {id}", eventId);
 
         using var connection = GetConnection();
         return await connection.ExecuteAsync($"""
@@ -279,7 +280,7 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
 
     public async Task<int> HardDelete(long eventId)
     {
-        Logger.LogInformation("Hard deleting event {id}", eventId);
+        Logger.LogTrace("Hard deleting event {id}", eventId);
 
         using var connection = GetConnection();
         return await connection.ExecuteAsync($"""

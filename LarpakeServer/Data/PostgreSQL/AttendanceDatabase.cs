@@ -1,5 +1,4 @@
-﻿using Dapper;
-using LarpakeServer.Data.Helpers;
+﻿using LarpakeServer.Data.Helpers;
 using LarpakeServer.Models.DatabaseModels;
 using LarpakeServer.Models.DatabaseModels.Metadata;
 using LarpakeServer.Models.EventModels;
@@ -7,7 +6,6 @@ using LarpakeServer.Models.QueryOptions;
 using LarpakeServer.Services;
 using Microsoft.Extensions.Options;
 using Npgsql;
-using System.Diagnostics;
 
 namespace LarpakeServer.Data.PostgreSQL;
 
@@ -234,10 +232,13 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         {
             return Error.InternalServerError("Attendance key gen failed, please retry", ErrorCode.KeyGenFailed);
         }
+        catch (PostgresException ex) when (ex.SqlState is PostgresError.ForeignKeyViolation)
+        {
+            return Error.NotFound("User or larpake task not found", ErrorCode.IdNotFound);
+        }
         catch (Exception ex)
         {
-            // TODO: Handle exception
-            Logger.LogError(ex, "Failed to insert uncompleted attendance");
+            Logger.LogError(ex, "Unhandled exception during attendance key retrieval");
             throw;
         }
     }
@@ -357,7 +358,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
 
             await transaction.CommitAsync();
 
-            Logger.LogTrace("User {userId} completed event {eventId}.",
+            Logger.LogTrace("User {userId} completed event {eventId}",
                 attendance.UserId, attendance.LarpakeTaskId);
 
             return new AttendedCreated
@@ -367,10 +368,17 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 UserId = attendance.UserId
             };
         }
+        catch (NpgsqlException ex) when (ex.SqlState is PostgresError.UniqueViolation)
+        {
+            return Error.InternalServerError("Failed to generate unique id, retry request", ErrorCode.KeyGenFailed);
+        }
+        catch (NpgsqlException ex) when (ex.SqlState is PostgresError.ForeignKeyViolation)
+        {
+            return Error.NotFound("Signer not found", ErrorCode.IdNotFound);
+        }
         catch (PostgresException ex)
         {
-            // TODO: Handle exception
-            Logger.LogError(ex, "Failed to complete attendance.");
+            Logger.LogError(ex, "Unhandled exception during attendance completion");
             throw;
         }
     }
@@ -471,10 +479,13 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
                 UserId = completion.UserId
             };
         }
+        catch (NpgsqlException ex) when (ex.SqlState is PostgresError.UniqueViolation)
+        {
+            return Error.NotFound("Signer not found", ErrorCode.IdNotFound);
+        }
         catch (PostgresException ex)
         {
-            // TODO: Handle exception
-            Logger.LogError(ex, "Failed to complete attendance.");
+            Logger.LogError(ex, "Unhandled exception during attendance completion.");
             throw;
         }
     }
@@ -490,26 +501,17 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             return Error.BadRequest("EventId cannot be -1.", ErrorCode.NullId);
         }
 
-        try
-        {
-            using var connection = GetConnection();
-            return await connection.ExecuteAsync($"""
-                UPDATE attendances
+        using var connection = GetConnection();
+        return await connection.ExecuteAsync($"""
+            UPDATE attendances
                 SET completion_id = NULL
-                WHERE completion_id IN (
-                    DELETE FROM completions
-                    WHERE user_id = @{nameof(userId)} 
-                        AND larpake_event_id = @{nameof(eventId)}
-                    RETURNING id
-                );
-                """, new { userId, eventId });
-        }
-        catch (PostgresException ex)
-        {
-            // TODO: Handle exception
-            Logger.LogError(ex, "Failed to uncomplete attendance.");
-            throw;
-        }
+            WHERE completion_id IN (
+                DELETE FROM completions
+                WHERE user_id = @{nameof(userId)} 
+                    AND larpake_event_id = @{nameof(eventId)}
+                RETURNING id
+            );
+            """, new { userId, eventId });
     }
 
     public async Task<int> Clean()

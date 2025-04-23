@@ -51,26 +51,35 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
         try
         {
             await connection.ExecuteAsync($"""
-            INSERT INTO refresh_tokens (
-                user_id,
-                token, 
-                token_family,
-                invalid_at
-            )
-            VALUES (
-                @{nameof(RefreshToken.UserId)}, 
-                @{nameof(RefreshToken.Token)}, 
-                @{nameof(RefreshToken.TokenFamily)}, 
-                @{nameof(RefreshToken.InvalidAt)}
-            );
-            """, hashed);
+                INSERT INTO refresh_tokens (
+                    user_id,
+                    token, 
+                    token_family,
+                    invalid_at
+                )
+                VALUES (
+                    @{nameof(RefreshToken.UserId)}, 
+                    @{nameof(RefreshToken.Token)}, 
+                    @{nameof(RefreshToken.TokenFamily)}, 
+                    @{nameof(RefreshToken.InvalidAt)}
+                );
+                """, hashed);
 
             return Result.Ok;
         }
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.UniqueViolation)
+        {
+            Logger.LogWarning("Refresh token hash conflict");
+            return Error.InternalServerError("Failed to generate unique refresh token", ErrorCode.KeyGenFailed);
+        }
+        catch (NpgsqlException ex) when (ex.SqlState == PostgresError.ForeignKeyViolation)
+        {
+            Logger.LogWarning("Refresh token user {id} not found", hashed.UserId);
+            return Error.InternalServerError("User not found", ErrorCode.UserNotFound);
+        }
         catch (Exception ex)
         {
-            // TODO: Handle exception
-            Logger.LogError("Failed to insert refresh token {msg}.", ex.Message);
+            Logger.LogError(ex, "Unhandled exception during refresh token insertion.");
             throw;
         }
     }
@@ -152,7 +161,7 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
         using var connection = GetConnection();
         return await connection.ExecuteAsync($"""
             UPDATE refresh_tokens
-            SET invalidated_at = NOW()
+                SET invalidated_at = NOW()
             WHERE user_id = @{nameof(userId)};
             """, new { userId });
     }
@@ -164,7 +173,7 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
         using var connection = GetConnection();
         return await connection.ExecuteAsync($"""
             UPDATE refresh_tokens
-            SET invalidated_at = NOW()
+                SET invalidated_at = NOW()
             WHERE token_family = @{nameof(tokenFamilyId)};
             """, new { tokenFamilyId });
     }
@@ -176,7 +185,7 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
             DELETE FROM refresh_tokens WHERE invalid_at < NOW();
             """);
 
-        Logger.LogInformation("Cleared {count} expired refresh token entries.", rowsAffected);
+        Logger.LogTrace ("Cleared {count} expired refresh token entries.", rowsAffected);
         return rowsAffected;
     }
 
@@ -227,7 +236,7 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
             throw new UnreachableException("Failed to invalidate token.");
         }
 
-        Logger.LogInformation("Token {token}**** is valid for user {id}.",
+        Logger.LogTrace("Token {token}**** is valid for user {id}.",
             SafeSlicer.Slice(token.Token, 10), token.UserId);
 
         return new RefreshTokenValidationResult(token.TokenFamily, token.UserId);
