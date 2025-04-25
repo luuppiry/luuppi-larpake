@@ -11,7 +11,6 @@ import { Attendance, Completion } from "../models/attendance.js";
 import { getSectionText, getTaskText, Section } from "../models/larpake.js";
 import { Signature } from "../models/user.js";
 import { SectionSortFunc, TaskSortFunc } from "../sortFunctions.js";
-import SignatureRenderer from "./signature_renderer.js";
 
 const PAGE_SIZE = 6;
 const TASK_LINE_LENGTH = 55;
@@ -284,7 +283,7 @@ export class LarpakeRenderer {
             return;
         }
 
-        const signatureContainer = element.querySelector<HTMLDivElement>("._signature")!;
+        const signatureContainer = element.querySelector<HTMLElement>("._link")!;
         /* Default task state is completed, so it should be only
          * Overwritten if task was completed with signature or
          * task was cancelled. */
@@ -295,19 +294,31 @@ export class LarpakeRenderer {
         }
     }
 
-    #taskStateCompleted(task: Task, container: HTMLDivElement) {
+    #taskStateCompleted(task: Task, container: HTMLElement) {
         const signature = task.signatureId ? this.signatures.get(task.signatureId) : null;
         if (signature) {
             removeChildren(container);
             const data = signature.signature;
-            const sign = new SignatureRenderer(data.data, {
-                stroke: data.strokeStyle,
-                fill: "black",
-                strokeWidth: data.lineWidth,
-                strokeLinecap: data.lineCap,
+            // Create the <svg> element
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 450 100");
+            svg.setAttribute("width", "100%");
+            svg.setAttribute("height", "100%");
+            //svg.classList.add("_svg", "_link", "_signature", "task-btn", "hover-scale-03");
+
+            // Loop through each stroke and create <path>
+            data.data.forEach(group => {
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const d = group.map(({ x, y }, i) => `${i === 0 ? 'M' : 'L'} ${x} ${y}`).join(' ');
+                path.setAttribute("d", d);
+                path.setAttribute("stroke", "black");
+                path.setAttribute("stroke-width", "2");
+                path.setAttribute("fill", "none");
+                svg.appendChild(path);
             });
-            sign.compile();
-            sign.renderTo(container);
+
+            // Append the SVG to the <a> element
+            container.appendChild(svg);
         }
     }
 

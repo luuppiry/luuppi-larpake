@@ -275,7 +275,7 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
             using var transaction = await connection.BeginTransactionAsync();
 
             // Get attendance, Note that signer cannot get attendance with same userId as signerId 
-            Attendance? attendance = await connection.QueryFirstOrDefaultAsync($"""
+            Attendance? attendance = await connection.QueryFirstOrDefaultAsync<Attendance>($"""
                 UPDATE attendances
                     SET 
                         key_invalid_at = NOW(),

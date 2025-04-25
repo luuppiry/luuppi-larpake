@@ -73,6 +73,10 @@ Or send email to
 
 henri.vainio(at)luuppi.fi or juliusz.kotelba(at)luuppi.fi
 
+## Bug reports
+
+Send email to webmaster(at)luuppi.fi or open Github issue. If bug is visual, please include screenshot that demonstrates the error. If error might be caused by data fetching (action requires some data which causes error), please add TraceId from console, if you are provided one. If you don't know where to aquire TraceId from, Lärpäke team is always here to help you! 
+
 <details>
 
 <summary>Aika on rahaa?</summary>
