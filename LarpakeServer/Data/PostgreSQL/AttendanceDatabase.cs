@@ -266,9 +266,10 @@ public class AttendanceDatabase : PostgresDb, IAttendanceDatabase
         {
             /* About key invalidation:
              * - Doing this in transaction to ensure that the key is only 
-             *      invalidated if successfully completed
-             * - Key is not deleted, because we don't want same key used immidiately.
-             * - Key should be deleted after cooldown period (like 5 days).
+             *   invalidated if successfully completed
+             * - Key is not deleted, because we don't want the same key used immidiately after.
+             * - Key should be deleted after cooldown period (like 5 days) And tracked to see if reuse 
+             *   happened, which might indicate that the key was leaked -> kill entire key family
              */
             using var connection = GetConnection();
             await connection.OpenAsync();
