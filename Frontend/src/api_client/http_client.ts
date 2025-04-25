@@ -39,14 +39,14 @@ export default class HttpClient {
     }
 
     async logout(): Promise<boolean> {
-        this.accessToken = null;
+        // await this.#revokeRefreshToken();
 
-        const response = await this.post("api/authentication/token/invalidate");
-        if (!response.ok) {
-            console.warn(
-                "Failed to invalidate refresh token on Lärpäke API:",
-                await response.json()
-            );
+        const res = await fetch(`${this.baseUrl}api/authentication/refresh-token/invalidate`, {
+            method: "POST",
+            credentials: "include",
+        });
+        if (!res.ok) {
+            throw new Error("Failed to fetch token invalidate on API");
         }
 
         const entra = new EntraId();

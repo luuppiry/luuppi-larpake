@@ -21,6 +21,21 @@ public class AuthenticationController : ExtendedControllerBase
     readonly IUserDatabase _userDb;
     readonly IRefreshTokenDatabase _refreshTokenDb;
 
+    /// <summary>
+    /// Default Cookie options for refresh token.
+    /// Arrow syntax to make sure options are not changed accidentally. 
+    /// </summary>
+    static CookieOptions GetDefaultCookieOptions() => new()
+    {
+        Secure = true,
+        HttpOnly = true,
+#if DEBUG
+        SameSite = SameSiteMode.None,
+#else
+        SameSite = SameSiteMode.Strict,  
+#endif
+    };
+
 
     const string RefreshTokenCookieName = "__Secure-refreshToken";
 
@@ -60,7 +75,6 @@ public class AuthenticationController : ExtendedControllerBase
     [ProducesErrorResponseType(typeof(ErrorMessageResponse))]
     public async Task<IActionResult> Login()
     {
-        _logger.LogTrace("Hello from trace");
         // Validate user id
         Guid entraId = ReadEntraId();
         if (entraId == Guid.Empty)
@@ -152,14 +166,13 @@ public class AuthenticationController : ExtendedControllerBase
             return Unauthorized("No refresh token", ErrorCode.NoRefreshToken);
         }
 
-        Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
-
-        // Get tokens and validate not empty
-
+        // Validate not empty
         if (string.IsNullOrEmpty(refreshToken))
         {
             return Unauthorized("Empty refresh token", ErrorCode.EmptyRefreshToken);
         }
+
+        DeleteOldRefreshToken();
 
         // Validate refresh token
         RefreshTokenValidationResult validation = await _refreshTokenDb.Validate(refreshToken);
@@ -167,6 +180,7 @@ public class AuthenticationController : ExtendedControllerBase
         {
             return Unauthorized("Invalid authentication token", ErrorCode.InvalidJWT);
         }
+
 
         // Tokens are valid, generate new ones
         DbUser? user = await _userDb.GetByUserId(validation.UserId.Value);
@@ -184,6 +198,35 @@ public class AuthenticationController : ExtendedControllerBase
         return await SaveToken(user, newTokens, validation.TokenFamily.Value, LoginAction.Refresh);
     }
 
+    private void DeleteOldRefreshToken()
+    {
+        /* Important things to know:
+         *      - Cookie delete method does nothing to the cookie at least immidiately 
+         *              Response.Cookies.Delete(RefreshTokenCookieName)
+         *      - Setting already expired cookie is not set on the client 
+         *              Negative MaxAge or Expires before current time does not work
+         *      - Remember to use credentials: "include" in the client side
+         */
+
+
+        // Using short lived cookie to delete the old one
+        // Token body is empty string to overwrite the old cookie
+        CookieOptions options = GetDefaultCookieOptions();
+        options.MaxAge = TimeSpan.FromSeconds(10);
+
+        // Write header
+        Response.Cookies.Append(RefreshTokenCookieName, string.Empty, options);
+    }
+
+
+    [DisableRateLimiting]
+    [HttpPost("refresh-token/invalidate")]
+    [ProducesResponseType(200)]
+    public IActionResult DeleteRefreshToken()
+    {
+        DeleteOldRefreshToken();
+        return Ok();
+    }
 
     [Authorize]
     [DisableRateLimiting]
@@ -194,7 +237,7 @@ public class AuthenticationController : ExtendedControllerBase
         Guid userId = _claimsReader.ReadAuthorizedUserId(Request);
         int rowsAffected = await _refreshTokenDb.RevokeUserTokens(userId);
 
-        Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
+        DeleteOldRefreshToken();
 
         return OkRowsAffected(rowsAffected);
     }
@@ -208,7 +251,7 @@ public class AuthenticationController : ExtendedControllerBase
     {
         int rowsAffected = await _refreshTokenDb.RevokeFamily(tokenFamily);
 
-        Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
+        DeleteOldRefreshToken();
 
         return OkRowsAffected(rowsAffected);
     }
@@ -271,15 +314,11 @@ public class AuthenticationController : ExtendedControllerBase
         Guard.ThrowIfNull(tokens);
         Guard.ThrowIfNull(context);
 
+        CookieOptions options = GetDefaultCookieOptions();
+        options.MaxAge = _tokenService.RefreshTokenLifetime;
+
         // Write header
-        context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken,
-            new CookieOptions
-            {
-                MaxAge = _tokenService.RefreshTokenLifetime,
-                Secure = true,
-                HttpOnly = true,
-                SameSite = SameSiteMode.None    // TODO: Change to Strict in production
-            });
+        context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken, options);
 
         return Task.FromResult(Result.Ok);
     }
