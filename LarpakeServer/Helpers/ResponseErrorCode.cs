@@ -32,9 +32,8 @@ public enum ErrorCode
     UserStatusTutor = 1801, // User is tutor (non-competing) and so cannot complete task
     UserNotAttending = 1802,    // User is not in Larpake the task is pointing to 
     SelfActionInvalid = 1803, // User cannot do specified action to themselves (self signing or own permissions change)
-    InvalidUserId = 1804,   
-    RequiresHigherRole = 1805,  // Action need higher permission (for example setting other people's permissions)
-    InvalidOrganization = 1806,
+    RequiresHigherRole = 1804,  // Action need higher permission (for example setting other people's permissions)
+    InvalidOrganization = 1805,
 
     // Database
     DatabaseError = 1900,
@@ -52,5 +51,4 @@ public enum ErrorCode
     // Data validation
     TooHighPointCount = 2201,    // Point count too high, for example signature point count
     DataFieldNull = 2202, // Data field is null, but it should not be
-    // 
 }
