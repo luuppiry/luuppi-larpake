@@ -206,12 +206,14 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
         }
 
         /* If token is already invalidated,
-        * All other tokens created from it should be invalidated as well.
+        *  All other tokens created from it should be invalidated as well.
         */
 
         // Offsetted value comes some seconds after current time to handle multiple parallel requests with same cookie value
+        // Note negative value
         DateTime nowOffset = DateTime.UtcNow.AddSeconds(-_options.RefreshTokenExpirationCooldownSeconds);
 
+        // Note that InvalidAt and InvalidatedAt are different things
         bool isTimevalid = DateTime.UtcNow < token.InvalidAt;
         bool isUserValid = token.InvalidatedAt is null || nowOffset < token.InvalidatedAt;
         if (!isTimevalid || !isUserValid)
@@ -233,6 +235,7 @@ public class RefreshTokenDatabase : PostgresDb, IRefreshTokenDatabase
 
         if (rowsAffected is 0)
         {
+            Logger.LogCritical("Refresh token was not invalidated. This should not be possible!");
             throw new UnreachableException("Failed to invalidate token.");
         }
 

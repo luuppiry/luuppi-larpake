@@ -21,6 +21,21 @@ public class AuthenticationController : ExtendedControllerBase
     readonly IUserDatabase _userDb;
     readonly IRefreshTokenDatabase _refreshTokenDb;
 
+    /// <summary>
+    /// Default Cookie options for refresh token.
+    /// Arrow syntax to make sure options are not changed accidentally. 
+    /// </summary>
+    static CookieOptions GetDefaultCookieOptions() => new()
+    {
+        Secure = true,
+        HttpOnly = true,
+#if DEBUG
+        SameSite = SameSiteMode.None,
+#else
+        SameSite = SameSiteMode.Strict,  
+#endif
+    };
+
 
     const string RefreshTokenCookieName = "__Secure-refreshToken";
 
@@ -157,6 +172,8 @@ public class AuthenticationController : ExtendedControllerBase
             return Unauthorized("Empty refresh token", ErrorCode.EmptyRefreshToken);
         }
 
+        DeleteOldRefreshToken();
+
         // Validate refresh token
         RefreshTokenValidationResult validation = await _refreshTokenDb.Validate(refreshToken);
         if (validation.IsValid is false)
@@ -164,7 +181,6 @@ public class AuthenticationController : ExtendedControllerBase
             return Unauthorized("Invalid authentication token", ErrorCode.InvalidJWT);
         }
 
-        DeleteOldRefreshToken();
 
         // Tokens are valid, generate new ones
         DbUser? user = await _userDb.GetByUserId(validation.UserId.Value);
@@ -184,55 +200,30 @@ public class AuthenticationController : ExtendedControllerBase
 
     private void DeleteOldRefreshToken()
     {
-        //Request.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
-        //Response.HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
-        //HttpContext.Response.Cookies.Append(RefreshTokenCookieName, "", new CookieOptions
-        //{
-        //    MaxAge = TimeSpan.Zero,
-        //    Expires = DateTime.UtcNow.AddDays(-1)
-        //});
+        /* Important things to know:
+         *      - Cookie delete method does nothing to the cookie at least immidiately 
+         *              Response.Cookies.Delete(RefreshTokenCookieName)
+         *      - Setting already expired cookie is not set on the client 
+         *              Negative MaxAge or Expires before current time does not work
+         *      - Remember to use credentials: "include" in the client side
+         */
 
 
-        HttpContext.Response.Cookies.Delete(RefreshTokenCookieName);
+        // Using short lived cookie to delete the old one
+        // Token body is empty string to overwrite the old cookie
+        CookieOptions options = GetDefaultCookieOptions();
+        options.MaxAge = TimeSpan.FromSeconds(10);
+
         // Write header
-        HttpContext.Response.Cookies.Append(RefreshTokenCookieName, string.Empty, //tokens.RefreshToken,
-            new CookieOptions
-            {
-                Expires = DateTime.UtcNow.AddSeconds(10),
-                Secure = true,
-                HttpOnly = true,
-                SameSite = SameSiteMode.None    // TODO: Change to Strict in production
-            });
-
-
-        //Response.Cookies.Append(RefreshTokenCookieName, "", new CookieOptions
-        //{
-        //    MaxAge = TimeSpan.FromMinutes(-10),
-        //    Secure = true,
-        //    HttpOnly = true,
-        //    SameSite = SameSiteMode.None    // TODO: Change to Strict in production
-        //});
-
-
-        //if (Request.Cookies[RefreshTokenCookieName] is not null)
-        //{
-        //    Response.Cookies.Append(RefreshTokenCookieName, "", new CookieOptions()
-        //    {
-        //        Expires = DateTimeOffset.Now.AddDays(-1)
-        //    });
-        //}
+        Response.Cookies.Append(RefreshTokenCookieName, string.Empty, options);
     }
 
 
     [DisableRateLimiting]
     [HttpPost("refresh-token/invalidate")]
+    [ProducesResponseType(200)]
     public IActionResult DeleteRefreshToken()
     {
-        //if (Request.Cookies.TryGetValue(RefreshTokenCookieName, out string? refreshToken) is false)
-        //{
-        //    return Unauthorized("No refresh token", ErrorCode.NoRefreshToken);
-        //}
-
         DeleteOldRefreshToken();
         return Ok();
     }
@@ -323,15 +314,11 @@ public class AuthenticationController : ExtendedControllerBase
         Guard.ThrowIfNull(tokens);
         Guard.ThrowIfNull(context);
 
+        CookieOptions options = GetDefaultCookieOptions();
+        options.MaxAge = _tokenService.RefreshTokenLifetime;
+
         // Write header
-        context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken, 
-            new CookieOptions
-            {
-                MaxAge = _tokenService.RefreshTokenLifetime,
-                Secure = true,
-                HttpOnly = true,
-                SameSite = SameSiteMode.None    // TODO: Change to Strict in production
-            });
+        context.Response.Cookies.Append(RefreshTokenCookieName, tokens.RefreshToken, options);
 
         return Task.FromResult(Result.Ok);
     }

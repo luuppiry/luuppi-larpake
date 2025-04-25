@@ -129,7 +129,7 @@ class Header extends HTMLElement {
             const token = await this.client.logout();
             if (token) {
                 console.log("Logout successfull");
-                //location.reload();
+                location.reload();
             } else {
                 console.log("Logout failed.");
             }
