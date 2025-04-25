@@ -20,10 +20,16 @@ public static class HelperExtensions
             ?? throw new InvalidOperationException("User not found in claims, is user authenticated correctly?");
     }
 
-    public static Permissions ReadAuthorizedUserPermissions(this IClaimsReader reader, HttpRequest request)
+    public static Permissions ReadAuthorizedUserPermissions(this IClaimsReader reader, HttpRequest request, bool nullThrows = true)
     {
-        return reader.GetUserPermissions(request.HttpContext.User)
-            ?? throw new InvalidOperationException("User not found in claims, is user authenticated correctly?");
+        Permissions? permissions = reader.GetUserPermissions(request.HttpContext.User);
+        if (permissions.HasValue)
+        {
+            return permissions.Value;
+        }
+        return nullThrows 
+            ? throw new InvalidOperationException("User not found in claims, is user authenticated correctly?")
+            : Permissions.None;
     }
 
     public static int? ReadAuthorizedUserStartYear(this IClaimsReader reader, HttpRequest request)

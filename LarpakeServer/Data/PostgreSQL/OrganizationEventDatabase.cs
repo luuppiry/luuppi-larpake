@@ -130,13 +130,13 @@ public class OrganizationEventDatabase : PostgresDb, IOrganizationEventDatabase
                 loc.location,
                 loc.image_url,
                 loc.website_url,
-                loc.language_code,
+                GetLanguageCode(loc.language_id) AS language_code,
                 loc.organization_event_id
             FROM organization_events e
                 LEFT JOIN organization_event_localizations loc
                     ON e.id = loc.organization_event_id
             WHERE id = @id;
-            """, new { id });
+            """, new { id }, splitOn: "title");
     }
 
     public async Task<Result<long>> Insert(OrganizationEvent record)

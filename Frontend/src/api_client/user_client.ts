@@ -6,8 +6,8 @@ import RequestEngine from "./request_engine.js";
 const FETCH_CHUNK_SIZE = 100;
 
 export class UserClient extends RequestEngine {
-    constructor(client: HttpClient | null = null) {
-        super(client );
+    constructor(client: HttpClient | null = null, authRequiredAction: null | (() => void) = null) {
+        super(client, authRequiredAction);
     }
 
     async getAllUnpaged(): Promise<User[] | null> {
@@ -145,7 +145,7 @@ export class UserClient extends RequestEngine {
             url: `api/users/${userId}`,
             params: null,
             failMessage: `Failed to fetch user ${userId}`,
-            isContainerType: false
+            isContainerType: false,
         });
     }
 }

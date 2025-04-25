@@ -1,6 +1,12 @@
 import { appendSearchArray } from "../helpers.js";
 import { Container, IdObject } from "../models/common.js";
-import { Group, GroupInfo, GroupInvite, GroupMember, GroupMemberCollection } from "../models/user.js";
+import {
+    Group,
+    GroupInfo,
+    GroupInvite,
+    GroupMember,
+    GroupMemberCollection,
+} from "../models/user.js";
 import HttpClient from "./http_client.js";
 import RequestEngine from "./request_engine.js";
 
@@ -17,12 +23,9 @@ type MemberIds = {
 };
 
 export default class GroupClient extends RequestEngine {
-    
-    constructor(client: HttpClient | null = null) {
-        super(client );
+    constructor(client: HttpClient | null = null, authRequiredAction: null | (() => void) = null) {
+        super(client, authRequiredAction);
     }
-
-
 
     async getGroupJoinInformation(key: string): Promise<GroupInfo | 404 | null> {
         const response = await this.client.get(`api/groups/${key}/join`);
@@ -167,17 +170,20 @@ export default class GroupClient extends RequestEngine {
         });
     }
 
-
     async getGroupMembersByGroupIds(groupIds: number[]) {
         const params = new URLSearchParams();
-        appendSearchArray(params, "GroupIds", groupIds.map(x => x.toString()))
-        
+        appendSearchArray(
+            params,
+            "GroupIds",
+            groupIds.map((x) => x.toString())
+        );
+
         return await this.get<GroupMemberCollection[]>({
             url: "api/groups/members",
             params: params,
             failMessage: "Failed to fetch group members from multiple groups",
-            isContainerType: true
-        })
+            isContainerType: true,
+        });
     }
 
     async #updateGroup(group: Group): Promise<Response> {

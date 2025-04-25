@@ -13,8 +13,10 @@ type AccessToken = {
 export default class HttpClient {
     baseUrl: string;
     accessToken: AccessToken | null;
+    authRequiredAction: null | (() => void);
 
-    constructor() {
+    constructor(authRequiredAction: null | (() => void) = null) {
+        this.authRequiredAction = authRequiredAction;
         this.baseUrl = import.meta.env.VITE_API_BASE_URL;
         if (!this.baseUrl) {
             throw new Error("Api base url is not provided, check server configuration.");
@@ -39,8 +41,7 @@ export default class HttpClient {
     }
 
     async logout(): Promise<boolean> {
-        // await this.#revokeRefreshToken();
-
+        // Explicitly revoke refresh token with API call
         const res = await fetch(`${this.baseUrl}api/authentication/refresh-token/invalidate`, {
             method: "POST",
             credentials: "include",
@@ -49,7 +50,7 @@ export default class HttpClient {
             throw new Error("Failed to fetch token invalidate on API");
         }
 
-        const entra = new EntraId();
+        const entra = new EntraId(this.authRequiredAction);
         const entraSuccess = await entra.fetchAzureLogout();
         if (!entraSuccess) {
             console.warn("Failed to logout from entra");
@@ -90,7 +91,7 @@ export default class HttpClient {
         }
 
         // Fetch silent
-        const entra = new EntraId();
+        const entra = new EntraId(this.authRequiredAction);
         const request = await entra.createRequest();
 
         const azureToken = await entra.fetchSilent(request);
@@ -188,12 +189,11 @@ export default class HttpClient {
             return true;
         }
 
-        console.log("Renew token");
         return await this.#renewAccessToken();
     }
 
     async #renewAccessToken(tryRefresh: boolean = true): Promise<boolean> {
-        console.log("getting token");
+        console.log("Use entra id login");
 
         if (tryRefresh) {
             this.accessToken = await this.#fetchRefresh();
@@ -210,7 +210,7 @@ export default class HttpClient {
     }
 
     async #fetchEntraLogin(): Promise<AccessToken | null> {
-        const entra = new EntraId();
+        const entra = new EntraId(this.authRequiredAction);
         const entraToken = await entra.fetchAzureLogin();
         if (entraToken == null) {
             console.log("Login failed, entra failed.");

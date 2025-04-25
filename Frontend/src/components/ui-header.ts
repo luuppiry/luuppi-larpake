@@ -36,7 +36,7 @@ class Header extends HTMLElement {
 
         this.innerHTML = `
          <header class="header">
-            <img class="header-logo"
+            <img class="header-logo _home-redirect"
                 src="/luuppi.logo.svg"
                 onclick="window.location.href='${indexPath}'"
                 alt="Luuppi Logo"

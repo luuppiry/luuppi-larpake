@@ -5,7 +5,6 @@ import {
     IPublicClientApplication,
     PopupRequest,
     PublicClientApplication,
-    RedirectRequest,
     SilentRequest,
 } from "@azure/msal-browser";
 
@@ -14,8 +13,10 @@ export default class EntraId {
     msalInstance: IPublicClientApplication | null = null;
     accounts: AccountInfo[] | null = null;
     isInitialized: boolean = false;
+    reauthRequired: null | (() => void);
 
-    constructor() {
+    constructor(reauthRequired: null | (() => void) = null) {
+        this.reauthRequired = reauthRequired;
         this.config = {
             auth: {
                 clientId: import.meta.env.VITE_ENTRA_CLIENT_ID,
@@ -44,8 +45,16 @@ export default class EntraId {
                 return token;
             }
         }
-        await this.fetchRedirect(request);
-        throw new Error("Redirect failed, failed to authenicate user")
+
+        // At this point user action is required.
+        // Check if action for that is provided.
+
+        if (this.reauthRequired) {
+            this.reauthRequired();
+        } else {
+            await this.msalInstance!.acquireTokenRedirect(request);
+        }
+        throw new Error("Redirect failed, failed to authenicate user");
     }
 
     async fetchSilent(request: SilentRequest): Promise<string | null> {
@@ -74,15 +83,6 @@ export default class EntraId {
         } catch (error) {
             console.log(error);
             return null;
-        }
-    }
-
-    async fetchRedirect(request: RedirectRequest): Promise<void> {
-        await this.#initialize();
-        try {
-            await this.msalInstance!.acquireTokenRedirect(request);
-        } catch (error) {
-            console.log(error);
         }
     }
 

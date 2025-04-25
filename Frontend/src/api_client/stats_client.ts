@@ -3,8 +3,8 @@ import HttpClient from "./http_client.js";
 import RequestEngine from "./request_engine.js";
 
 export default class StatsClient extends RequestEngine {
-    constructor(client: HttpClient | null = null) {
-        super(client);
+    constructor(client: HttpClient | null = null, authRequiredAction: null | (() => void) = null) {
+        super(client, authRequiredAction);
     }
 
     async getOwnLarpakeStatistics(larpakeId: number): Promise<LarpakeStatistics | null> {

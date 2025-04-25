@@ -271,15 +271,19 @@ export function hasPermissions(
 ) {
     /* Check that value has at least the same permissions
      * of the required permissions. Uses bitwise operations */
-    if (!value){
-        return false
+    if (!value) {
+        return false;
     }
-    if (!required){
-        console.warn("You are checking permissions against null, this might be error!")
-        return false
+    if (!required) {
+        console.warn("You are checking permissions against null, this might be error!");
+        return false;
     }
 
     return (value & required) == required;
+}
+
+export function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function getDefaultPermissionsTable(): PermissionCollection {

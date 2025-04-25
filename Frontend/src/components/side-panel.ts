@@ -147,7 +147,15 @@ class SidePanel extends HTMLElement {
                         ${submenuItems}
                     </li>`;
                 } else {
-                    return `<li><a href="${item.href}">${item.title[language]}</a></li>`;
+                    const listItem = document.createElement("li");
+                    const link = document.createElement("a");
+                    listItem.appendChild(link);
+                    link.href = item.href;
+                    link.textContent = item.title[language];
+                    if (item.href.includes("index.html")) {
+                        link.classList.add("._home-redirect");
+                    }
+                    return listItem.outerHTML;
                 }
             })
             .join("\n");

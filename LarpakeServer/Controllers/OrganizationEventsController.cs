@@ -34,10 +34,11 @@ public class OrganizationEventsController : ExtendedControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(OrgEventsGetDto), 200)]
     public async Task<IActionResult> GetEvents([FromQuery] EventQueryOptions options)
     {
-        if (GetRequestPermissions().Has(Permissions.Admin) is false)
+        if (GetRequestPermissions(unauthenticatedThrows: false).Has(Permissions.Admin) is false)
         {
             options.Title = null;
         }
@@ -53,6 +54,7 @@ public class OrganizationEventsController : ExtendedControllerBase
     }
 
     [HttpGet("{eventId}")]
+    [AllowAnonymous]
     [ProducesResponseType(typeof(OrganizationEventGetDto), 200)]
     [ProducesResponseType(404)]
     public async Task<IActionResult> GetEvent(long eventId)

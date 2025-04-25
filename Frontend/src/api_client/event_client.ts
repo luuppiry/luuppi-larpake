@@ -3,9 +3,8 @@ import HttpClient from "./http_client.js";
 import RequestEngine from "./request_engine.js";
 
 export class EventClient extends RequestEngine {
-    
-    constructor(client: HttpClient | null = null) {
-        super(client );
+    constructor(client: HttpClient | null = null, authRequiredAction: null | (() => void) = null) {
+        super(client, authRequiredAction);
     }
 
     async nextComing(): Promise<OrgEvent[] | null> {
@@ -15,16 +14,15 @@ export class EventClient extends RequestEngine {
         const query = new URLSearchParams();
         query.append("doMinimize", "false");
         // Take more than needed because of pageing issues
-        query.append("pageSize", "20");     
+        query.append("pageSize", "20");
         query.append("after", date.toISOString());
         query.append("OrderDateAscending", "true");
-
 
         const res = await this.get<OrgEvent[]>({
             url: "api/org-events",
             params: query,
             failMessage: "Failed to fetch coming organization events",
-            isContainerType: true
+            isContainerType: true,
         });
         return res?.slice(0, 5) ?? null;
     }
@@ -45,8 +43,8 @@ export class EventClient extends RequestEngine {
             url: "api/org-events",
             params: query,
             failMessage: "Failed to fetch all organization events",
-            isContainerType: true
-        })
+            isContainerType: true,
+        });
     }
 
     async getSpecific(id: number): Promise<OrgEvent | null> {
@@ -65,7 +63,7 @@ export class EventClient extends RequestEngine {
 
     async pullExternal(): Promise<void> {
         const response = await this.client.get("api/org-events/pull-external-server-events");
-        if (!response.ok){
+        if (!response.ok) {
             console.warn("Failed to pull external events:", await response.json());
             throw new Error("Method not implemented.");
         }

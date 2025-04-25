@@ -18,8 +18,12 @@ export type PostRequest = {
 
 export default class RequestEngine {
     client: HttpClient;
-    constructor(client: HttpClient | null) {
+
+    constructor(client: HttpClient | null, authRequiredAction: null | (() => void) = null) {
         this.client = client ?? tryGetHttpClientFromUIHeader() ?? new HttpClient();
+
+        // Action in case entra id requires user action
+        this.client.authRequiredAction = authRequiredAction;
     }
 
     async get<T>(req: GetRequest): Promise<T | null> {
@@ -60,12 +64,12 @@ function tryGetHttpClientFromUIHeader(): HttpClient | null {
     // Using any to solve any double import cycles
     const header = document.getElementById(UI_HEADER_ID) as any;
 
-    if (!header || !header.getHttpClient){
+    if (!header || !header.getHttpClient) {
         return null;
     }
 
-    const client = header.getHttpClient()
-    if (client instanceof HttpClient){
+    const client = header.getHttpClient();
+    if (client instanceof HttpClient) {
         return client;
     }
     return null;

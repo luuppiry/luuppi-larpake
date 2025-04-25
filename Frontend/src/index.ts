@@ -1,11 +1,24 @@
 import { EventClient } from "./api_client/event_client.js";
 import LarpakeClient from "./api_client/larpake_client.js";
 import EventPreviewer from "./components/event-previewer.js";
-import { Q_LARPAKE_ID } from "./constants.js";
-import { appendTemplateElement, getDocumentLangCode, removeChildren } from "./helpers.js";
+import { Q_LARPAKE_ID, Q_NO_TOKEN } from "./constants.js";
+import {
+    appendTemplateElement,
+    getDocumentLangCode,
+    getSearchParams,
+    removeChildren,
+} from "./helpers.js";
 
-const eventClient = new EventClient();
-const larpakeClient = new LarpakeClient(eventClient.client);
+const doAuthRedirect = getSearchParams().get(Q_NO_TOKEN) !== "false";
+
+const authRequired = doAuthRedirect
+    ? () => {
+          window.location.href = `home.html`;
+      }
+    : null;
+
+const eventClient = new EventClient(null, authRequired);
+const larpakeClient = new LarpakeClient(eventClient.client, authRequired);
 
 async function render() {
     await loadLarpakkeet();
@@ -29,12 +42,14 @@ async function loadLarpakkeet() {
             fi: {
                 emptyTitle: "Tyhjää täynnä!",
                 emptyDesc1: "Et ole osallistunut vielä yhteenkään Lärpäkkeeseen.",
-                emptyDesc2: "Jos kuitenkin tiedät olevasi merkattu osallistujana Lärpäkkeeseen, saattaa vika olla palvelimella tai nettiyhteydessä. Jos ongelma toistuu, ota yhteyttä ylläpitoon.",
+                emptyDesc2:
+                    "Jos kuitenkin tiedät olevasi merkattu osallistujana Lärpäkkeeseen, saattaa vika olla palvelimella tai nettiyhteydessä. Jos ongelma toistuu, ota yhteyttä ylläpitoon.",
             },
             en: {
                 emptyTitle: "Full of emptiness!",
                 emptyDesc1: "You have not yet attended any Lärpäke.",
-                emptyDesc2: "If you know you to be attending some Lärpäke, the problem might lie somewhere on our servers or internet connection. If this keeps happening, contact system administration.",
+                emptyDesc2:
+                    "If you know you to be attending some Lärpäke, the problem might lie somewhere on our servers or internet connection. If this keeps happening, contact system administration.",
             },
         };
 
@@ -47,7 +62,7 @@ async function loadLarpakkeet() {
             </section>
         `;
         return;
-    }    
+    }
 
     removeChildren(container);
     for (const larpake of larpakkeet) {

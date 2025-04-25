@@ -9,6 +9,7 @@ export const Q_OF_PAGES = "ofpages";
 
 export const Q_GROUP_ID = "groupid";
 
+export const Q_NO_TOKEN = "notoken";
 export const Q_NEW = "new";
 export const Q_STATUS = "status";
 
@@ -28,7 +29,7 @@ export const Q_KEY_EXPIRED = "keyexpired";
 
 export const Q_PARAM = "param";
 
-export const UI_HEADER_ID = "ui-header-component"
+export const UI_HEADER_ID = "ui-header-component";
 
 export const SIGNATURE_INFO = {
     WIDTH: 450,
@@ -62,12 +63,12 @@ export enum SERVER_STATUS {
 
 export const MAX_SIGNATURES = 10;
 
-/* Do not full trust these permission numbers, 
+/* Do not full trust these permission numbers,
  * Always check correct numbers from API
  * side if needed for things like auth */
 export enum Permissions {
     Freshman = 6,
     Tutor = 766,
     Admin = 4194302,
-    Sudo = 2147483647
+    Sudo = 2147483647,
 }
