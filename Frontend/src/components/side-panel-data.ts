@@ -1,3 +1,5 @@
+export const INDEX_LINK_ID = "_index-link";
+
 export interface ListItem {
     href: string;
     title: { fi: string; en: string };
@@ -6,11 +8,10 @@ export interface ListItem {
 }
 
 export const baseCollection: ListItem[] = [
-    { href: "index.html", title: { fi: "Koti", en: "Home" }, queryId: "_index-page" },
+    { href: "index.html", title: { fi: "Koti", en: "Home" }, queryId: INDEX_LINK_ID },
 ];
 
 export const userPages: ListItem[] = [
-    { href: "index.html", title: { fi: "Koti", en: "Home" } },
     {
         href: "larpake.html",
         title: { fi: "Lärpäke", en: "Lärpäke" },

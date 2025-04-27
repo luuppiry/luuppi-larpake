@@ -17,7 +17,7 @@
     align-items: center;
 }
 
-.header-logo{
+.header-logo {
     height: 60px;
     cursor: pointer;
 }
@@ -150,10 +150,14 @@ body {
     user-select: none;
 }
 
-.side-panel ul li.active {
+.side-panel .active {
     background-color: var(--dark-blue);
     padding-left: 10px;
     border-radius: 5px;
+}
+
+.side-panel .active > li {
+    margin: 0;
 }
 
 .close-btn {
@@ -347,12 +351,12 @@ body {
 }
 
 .loader {
-    background: 
-      linear-gradient(90deg,#0001 33%,#0005 50%,#0001 66%)
-      #f2f2f2;
-    background-size:300% 100%;
+    background: linear-gradient(90deg, #0001 33%, #0005 50%, #0001 66%) #f2f2f2;
+    background-size: 300% 100%;
     animation: l1 1s infinite linear;
-  }
-  @keyframes l1 {
-    0% {background-position: right}
+}
+@keyframes l1 {
+    0% {
+        background-position: right;
+    }
 }

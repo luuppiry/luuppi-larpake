@@ -1,6 +1,6 @@
 import HttpClient from "../api_client/http_client.js";
-import { Permissions } from "../constants.js";
-import { hasPermissions } from "../helpers.js";
+import { Permissions, SIDE_PANEL_ID } from "../constants.js";
+import { hasPermissions, removeChildren } from "../helpers.js";
 import { UserInfo } from "../models/common.js";
 import {
     adminPages,
@@ -11,68 +11,91 @@ import {
     userPages,
 } from "./side-panel-data.js";
 
-class SidePanel extends HTMLElement {
+export default class SidePanel extends HTMLElement {
     client: HttpClient;
     profilePath: string | null = null;
     adminPath: string | null = null;
     permissions: Permissions | null = null;
+    isLoaded: boolean = false;
+    loaded: (panel: SidePanel) => void;
 
     constructor() {
         super();
+        this.id = SIDE_PANEL_ID;
+        this.loaded = (_) => {};
         this.client = new HttpClient();
     }
 
     async connectedCallback() {
         this.#addClickListeners();
-        const user = await this.client.trySilentLogin();
-        const items = this.createMenuItems(user);
+        let user: UserInfo | null = null;
+        try {
+            user = await this.client.trySilentLogin();
+        } catch {}
+        const items = this.#createMenuItems(user);
         this.render(items);
+        this.loaded(this);
     }
 
     render(items: ListItem[]) {
-        const language = this.getAttribute("lang") !== "en" ? "fi" : "en";
+        const language: "fi" | "en" = this.getAttribute("lang") !== "en" ? "fi" : "en";
 
-        const menuItems = items
-            .map((item) => {
-                if (item.submenu) {
-                    const submenuItems = item.submenu
-                        .map((sub) => `<ul><a href="${sub.href}">${sub.title[language]}</a></ul>`)
-                        .join("\n");
-                    return `
-                    <li class="submenu-toggle">${item.title[language]}</li>
-                    <li class="active" id="larpakeSubMenu" style="display: none;">
-                        ${submenuItems}
-                    </li>`;
-                } else {
-                    const listItem = document.createElement("li");
-                    const link = document.createElement("a");
-                    listItem.appendChild(link);
-                    link.href = item.href;
-                    link.textContent = item.title[language];
-                    if (item.href.includes("index.html")) {
-                        link.classList.add("._home-redirect");
-                    }
-                    return listItem.outerHTML;
-                }
-            })
-            .join("\n");
+        const nav = document.createElement("nav");
+        nav.className = "_nav side-panel";
+        nav.id = SIDE_PANEL_ID;
 
-        this.innerHTML = `
-            <nav class="side-panel" id="side-panel-element">
-                <div class="_close close-btn">
-                    <img class="close-x" src="/icons/close-x.png" height="30px" width="auto">
-                </div>
-                <ul>${menuItems}</ul>
-            </nav>
-        `;
+        const closeBtn = document.createElement("div");
+        closeBtn.className = "_close close-btn";
+        nav.appendChild(closeBtn);
 
-        this.setupSubmenuToggle();
+        const closeIcon = document.createElement("img");
+        closeIcon.className = "close-x";
+        closeIcon.src = "/icons/close-x.png";
+        closeIcon.height = 30;
+        closeIcon.width = 30;
+        closeBtn.appendChild(closeIcon);
+
+        const itemContainer = document.createElement("ul");
+        itemContainer.className = "_container";
+        nav.appendChild(itemContainer);
+
+        const menuItems = items.map((x) => this.#createMenuItem(x, language));
+        menuItems.forEach((x) => itemContainer.appendChild(x));
+
+        removeChildren(this);
+        this.appendChild(nav);
+
+        this.#setupSubmenuToggle();
         this.querySelector<HTMLDivElement>("._close")?.addEventListener("click", (_) => {
             this.toggleSidePanel();
         });
     }
 
-    createMenuItems(user: UserInfo | null) {
+    setLoaded(loaded: (panel: SidePanel) => void) {
+        /* Run action to side panel after panel
+         * fully loaded. If already loaded, runs immidiately.
+         * Does not overwrite already set actions, but combines
+         * them.
+         * */
+
+        // Invoke if already loaded
+        if (this.isLoaded) {
+            loaded(this);
+        }
+
+        const oldLoaded = this.loaded;
+        // Combine multiple possible existing actions
+        this.loaded = (_) => {
+            oldLoaded(this);
+            loaded(this);
+        };
+    }
+
+    queryMenuItems(query: string) {
+        return this.querySelectorAll(query);
+    }
+
+    #createMenuItems(user: UserInfo | null) {
         let items: ListItem[] = baseCollection;
 
         if (hasPermissions(user?.permissions, Permissions.Freshman)) {
@@ -95,11 +118,58 @@ class SidePanel extends HTMLElement {
         return correctedItems;
     }
 
-    setupSubmenuToggle() {
-        this.querySelectorAll(".submenu-toggle").forEach((toggle) => {
+    #createMenuItem(item: ListItem, lang: "fi" | "en"): HTMLElement {
+        const listItem = document.createElement("li");
+        if (item.queryId) {
+            listItem.classList.add(item.queryId);
+        }
+
+        if (item.submenu) {
+            // Create menu item
+            listItem.classList.add("_toggleable");
+            listItem.classList.add("submenu-toggle");
+            listItem.innerText = item.title[lang];
+
+            // Create submenu container
+            const childContainer = document.createElement("ul");
+            childContainer.className = "_submenu active";
+            childContainer.style.display = "none";
+            listItem.appendChild(childContainer);
+
+            // Add submenu items
+            const children = this.#createSubmenu(item, lang);
+            children.forEach((child) => childContainer.appendChild(child));
+
+            return listItem;
+        }
+
+        // Create non-submenu item
+        const link = document.createElement("a");
+        listItem.appendChild(link);
+        link.href = item.href;
+        link.textContent = item.title[lang];
+        return listItem;
+    }
+
+    #createSubmenu(parentItem: ListItem, lang: "fi" | "en"): HTMLElement[] {
+        if (!parentItem.submenu) {
+            throw new Error("Invalid operation, submenu null");
+        }
+        return parentItem.submenu.map((item) => {
+            const li = document.createElement("li");
+            const link = document.createElement("a");
+            link.href = item.href;
+            link.innerText = item.title[lang] ?? "";
+            li.appendChild(link);
+            return li;
+        });
+    }
+
+    #setupSubmenuToggle() {
+        this.querySelectorAll("._toggleable").forEach((toggle) => {
             toggle.addEventListener("click", (event) => {
                 event.preventDefault();
-                const submenu = toggle.nextElementSibling as HTMLElement;
+                const submenu = toggle.querySelector("._submenu") as HTMLElement;
                 if (submenu.style.display === "none" || submenu.style.display === "") {
                     submenu.style.display = "block";
                 } else {
@@ -161,9 +231,11 @@ class SidePanel extends HTMLElement {
 }
 
 function toggleSidePanel(): void {
-    const panel: HTMLElement | null = document.getElementById("side-panel-element");
-    if (panel != null) {
-        panel.classList.toggle("open");
+    const panel = document.getElementById(SIDE_PANEL_ID);
+    const area = panel?.querySelector<HTMLElement>("._nav");
+
+    if (area != null) {
+        area.classList.toggle("open");
     }
 }
 

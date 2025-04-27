@@ -30,6 +30,7 @@ export const Q_KEY_EXPIRED = "keyexpired";
 export const Q_PARAM = "param";
 
 export const UI_HEADER_ID = "ui-header-component";
+export const SIDE_PANEL_ID = "ui-side-panel-component";
 
 export const SIGNATURE_INFO = {
     WIDTH: 450,

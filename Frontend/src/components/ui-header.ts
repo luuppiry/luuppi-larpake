@@ -1,5 +1,5 @@
 import HttpClient, { AUTHENTICATED_EVENT_NAME } from "../api_client/http_client.js";
-import { Permissions, UI_HEADER_ID } from "../constants.js";
+import { Permissions, SIDE_PANEL_ID, UI_HEADER_ID } from "../constants.js";
 import {
     getDocumentLangCode,
     hasPermissions,
@@ -8,6 +8,7 @@ import {
     removeChildren,
 } from "../helpers.js";
 import { UserAuthenticatedEvent } from "../models/common.js";
+import SidePanel from "./side-panel.js";
 
 export default class Header extends HTMLElement {
     client: HttpClient;
@@ -378,11 +379,9 @@ function addMissingLanguage(currentUrl: string): string {
 
 function toggleSidePanelOutsider(nameOverride: string | null = null): void {
     // If side panel is not found with default name and name is overridden
-    const searchName = nameOverride == null ? "side-panel-element" : nameOverride;
-
-    const panel: HTMLElement | null = document.getElementById(searchName);
-    if (panel != null) {
-        panel.classList.toggle("open");
+    const sidePanel = document.getElementById(nameOverride ?? SIDE_PANEL_ID) as SidePanel;
+    if (sidePanel) {
+        sidePanel.toggleSidePanel();
     }
 }
 
