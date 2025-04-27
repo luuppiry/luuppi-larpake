@@ -1,12 +1,15 @@
 import HttpClient from "../api_client/http_client.js";
 import { Permissions } from "../constants.js";
 import { hasPermissions } from "../helpers.js";
-
-type ListItem = {
-    href: string;
-    title: { fi: string; en: string };
-    submenu?: ListItem[];
-};
+import { UserInfo } from "../models/common.js";
+import {
+    adminPages,
+    baseCollection,
+    ListItem,
+    sudoPages,
+    tutorPages,
+    userPages,
+} from "./side-panel-data.js";
 
 class SidePanel extends HTMLElement {
     client: HttpClient;
@@ -22,114 +25,8 @@ class SidePanel extends HTMLElement {
     async connectedCallback() {
         this.#addClickListeners();
         const user = await this.client.trySilentLogin();
-        let items: ListItem[] = [{ href: "index.html", title: { fi: "Koti", en: "Home" } }];
-        if (hasPermissions(user?.permissions ?? null, Permissions.Freshman)) {
-            items = [
-                { href: "index.html", title: { fi: "Koti", en: "Home" } },
-                {
-                    href: "larpake.html",
-                    title: { fi: "Lärpäke", en: "Lärpäke" },
-                    submenu: [
-                        {
-                            href: "larpake.html?page=0",
-                            title: { fi: "Ensi askeleet", en: "Baby steps" },
-                        },
-                        {
-                            href: "larpake.html?page=2",
-                            title: { fi: "Pienen pieni luuppilainen", en: "Young Luuppian" },
-                        },
-                        {
-                            href: "larpake.html?page=4",
-                            title: { fi: "Pii-Klubilla tapahtuu", en: "Pii-Klubi happenings" },
-                        },
-                        {
-                            href: "larpake.html?page=5",
-                            title: { fi: "Normipäivä", en: "Averageday" },
-                        },
-                        {
-                            href: "larpake.html?page=6",
-                            title: { fi: "Normipäivä", en: "Normal day" },
-                        },
-                        {
-                            href: "larpake.html?page=7",
-                            title: { fi: "Yliopistoelämää", en: "University life" },
-                        },
-                        {
-                            href: "larpake.html?page=9",
-                            title: { fi: "Vaikutusvaltaa", en: "Influence" },
-                        },
-                        {
-                            href: "larpake.html?page=11",
-                            title: { fi: "Liikunnallista", en: "Exercise - Participate" },
-                        },
-                        {
-                            href: "larpake.html?page=12",
-                            title: { fi: "Kaikenlaista", en: "This and that" },
-                        },
-                        {
-                            href: "larpake.html?page=14",
-                            title: { fi: "Tanpereella", en: "In Tampere" },
-                        },
-                    ],
-                },
-                {
-                    href: "statistics.html",
-                    title: { fi: "Omat tilastot", en: "My Statistics" },
-                },
-                {
-                    href: "latest_completion.html",
-                    title: { fi: "Viimeisimmät suoritukset", en: "Latest Achievements" },
-                },
-                {
-                    href: "common_statistics.html",
-                    title: { fi: "Yhteiset tilastot", en: "Common Statistics" },
-                },
-                {
-                    href: "upcoming_events.html",
-                    title: { fi: "Tulevat tapahtumat", en: "Upcoming Events" },
-                },
-                {
-                    href: "own_groups.html",
-                    title: { fi: "Ryhmäni", en: "My Group" },
-                },
-                {
-                    href: "join.html",
-                    title: { fi: "Liity ryhmään", en: "Join group" },
-                },
-                {
-                    href: "faq.html",
-                    title: { fi: "UKK", en: "FAQ" },
-                },
-                {
-                    href: "contact_us.html",
-                    title: { fi: "Ota yhteyttä", en: "Contact us" },
-                },
-            ];
-        }
-
-        if (hasPermissions(user?.permissions ?? null, Permissions.Tutor)) {
-            items.push({
-                href: "read.html",
-                title: { fi: "Tuutori - Allekirjoita", en: "Tutor - Sign Task" },
-            });
-        }
-
-        if (hasPermissions(user?.permissions ?? null, Permissions.Admin)) {
-            items.push({
-                href: "admin/admin.html",
-                title: { fi: "Ylläpito", en: "Admin ONLY IN FI" },
-            });
-        }
-
-        if (hasPermissions(user?.permissions ?? null, Permissions.Sudo)) {
-            items.push({
-                href: "admin/admin.html",
-                title: { fi: "SUDO Ylläpito", en: "Sudo Admin ONLY IN FI" },
-            });
-        }
-
-        const correctedItems = this.#addPathCorrection(items);
-        this.render(correctedItems);
+        const items = this.createMenuItems(user);
+        this.render(items);
     }
 
     render(items: ListItem[]) {
@@ -173,6 +70,29 @@ class SidePanel extends HTMLElement {
         this.querySelector<HTMLDivElement>("._close")?.addEventListener("click", (_) => {
             this.toggleSidePanel();
         });
+    }
+
+    createMenuItems(user: UserInfo | null) {
+        let items: ListItem[] = baseCollection;
+
+        if (hasPermissions(user?.permissions, Permissions.Freshman)) {
+            items.push(...userPages);
+        }
+
+        if (hasPermissions(user?.permissions, Permissions.Tutor)) {
+            items.push(...tutorPages);
+        }
+
+        if (hasPermissions(user?.permissions, Permissions.Admin)) {
+            items.push(...adminPages);
+        }
+
+        if (hasPermissions(user?.permissions, Permissions.Sudo)) {
+            items.push(...sudoPages);
+        }
+
+        const correctedItems = this.#addPathCorrection(items);
+        return correctedItems;
     }
 
     setupSubmenuToggle() {

@@ -266,7 +266,7 @@ export function redirect404Page(missingParamName: string | null = null) {
 }
 
 export function hasPermissions(
-    value: number | Permissions | null,
+    value: number | Permissions | null | undefined,
     required: number | Permissions | null
 ) {
     /* Check that value has at least the same permissions
@@ -284,6 +284,10 @@ export function hasPermissions(
 
 export function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function navigateTo(url: string) {
+    window.location.href = url;
 }
 
 function getDefaultPermissionsTable(): PermissionCollection {

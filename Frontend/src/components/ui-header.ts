@@ -1,6 +1,12 @@
 import HttpClient, { AUTHENTICATED_EVENT_NAME } from "../api_client/http_client.js";
 import { Permissions, UI_HEADER_ID } from "../constants.js";
-import { getDocumentLangCode, hasPermissions, LANG_EN, removeChildren } from "../helpers.js";
+import {
+    getDocumentLangCode,
+    hasPermissions,
+    LANG_EN,
+    navigateTo,
+    removeChildren,
+} from "../helpers.js";
 import { UserAuthenticatedEvent } from "../models/common.js";
 
 export default class Header extends HTMLElement {
@@ -12,9 +18,7 @@ export default class Header extends HTMLElement {
 
     constructor() {
         super();
-        this.navigateHomeAction = () => {
-            window.location.href = "index.html";
-        };
+        this.navigateHomeAction = () => navigateTo("index.html");
         this.client = new HttpClient();
     }
 
@@ -31,9 +35,7 @@ export default class Header extends HTMLElement {
         this.appendChild(content);
 
         const indexPath = this.#add_path_correction("index.html");
-        this.navigateHomeAction = () => {
-            window.location.href = indexPath;
-        };
+        this.navigateHomeAction = () => navigateTo(indexPath);
 
         const user = await this.client.trySilentLogin();
         document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
