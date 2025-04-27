@@ -3,14 +3,18 @@ import { Permissions, UI_HEADER_ID } from "../constants.js";
 import { getDocumentLangCode, hasPermissions, LANG_EN, removeChildren } from "../helpers.js";
 import { UserAuthenticatedEvent } from "../models/common.js";
 
-class Header extends HTMLElement {
+export default class Header extends HTMLElement {
     client: HttpClient;
     profilePath: string | null = null;
     adminPath: string | null = null;
     permissions: Permissions | null = null;
+    navigateHomeAction: () => void;
 
     constructor() {
         super();
+        this.navigateHomeAction = () => {
+            window.location.href = "index.html";
+        };
         this.client = new HttpClient();
     }
 
@@ -22,33 +26,14 @@ class Header extends HTMLElement {
 
         this.id = UI_HEADER_ID;
 
-        const hasLanguageOptions: boolean =
-            this.getAttribute("lang-options") === "false" ? false : true;
+        removeChildren(this);
+        const content = this.#createHeader();
+        this.appendChild(content);
+
         const indexPath = this.#add_path_correction("index.html");
-
-        const langBtn = hasLanguageOptions
-            ? ` <div class="menu-icon header-lang-btn"
-                    id="ui-header-change-language-btn"
-                    >
-                 <img class="globle" src="/icons/globle.png" height="30px" width="auto" />
-                </div>`
-            : "<!-- no other languages available -->";
-
-        this.innerHTML = `
-         <header class="header">
-            <img class="header-logo _home-redirect"
-                src="/luuppi.logo.svg"
-                onclick="window.location.href='${indexPath}'"
-                alt="Luuppi Logo"
-            />
-            <h1>LÄRPÄKE</h1>
-            ${langBtn}
-            <div class="_profile-container">
-                <!-- Profile buttons -->
-            </div>
-            <div id="ui-header-open-menu-btn" class="menu-icon">☰</div>
-        </header>
-         `;
+        this.navigateHomeAction = () => {
+            window.location.href = indexPath;
+        };
 
         const user = await this.client.trySilentLogin();
         document.addEventListener(AUTHENTICATED_EVENT_NAME, (e) => {
@@ -64,22 +49,77 @@ class Header extends HTMLElement {
         });
 
         this.resetProfileBtn(user?.permissions ?? null);
+    }
 
-        const languageBtn = this.querySelector<HTMLDivElement>("#ui-header-change-language-btn");
-        if (languageBtn == null) {
-            throw new Error("Language button not found");
-        }
-        languageBtn.addEventListener("click", (_) => {
-            this.changeLanguage();
-        });
+    #createHeader(): HTMLElement {
+        // Base element
+        const header = document.createElement("header");
+        header.className = "header";
 
-        const menuBtn = this.querySelector<HTMLDivElement>("#ui-header-open-menu-btn");
-        if (menuBtn == null) {
-            throw new Error("Menu button not found");
-        }
+        // Home button (logo image, upper left corner)
+        const homeBtn = document.createElement("img");
+        homeBtn.className = "header-logo";
+        homeBtn.src = "/luuppi.logo.svg";
+        homeBtn.alt = "Luuppi logo";
+        homeBtn.addEventListener("click", (_) => this.#navigateHome());
+
+        // Middle Lärpäke title
+        const title = document.createElement("h1");
+        title.innerText = "LÄRPÄKE";
+
+        // Profile button container
+        const profileContainer = document.createElement("div");
+        profileContainer.className = "_profile-container";
+
+        // Open menu button
+        const menuBtn = document.createElement("div");
+        menuBtn.id = "ui-header-open-menu-btn";
+        menuBtn.className = "menu-icon";
+        menuBtn.innerText = "☰";
         menuBtn.addEventListener("click", (_) => {
             this.toggle();
         });
+
+        header.appendChild(homeBtn);
+        header.appendChild(title);
+        if (this.#hasLanguageOptions()) {
+            const languageSelector = this.#createLangButton();
+            header.appendChild(languageSelector);
+        }
+        header.appendChild(profileContainer);
+        header.appendChild(menuBtn);
+
+        return header;
+    }
+
+    #createLangButton(): HTMLElement {
+        const btn = document.createElement("div");
+        btn.className = "menu-icon header-lang-btn";
+        btn.id = "ui-header-change-language-btn";
+
+        const icon = document.createElement("img");
+        icon.src = "/icons/globle.png";
+        icon.className = "globle";
+        icon.height = 30;
+        icon.width = 30;
+
+        btn.appendChild(icon);
+        btn.addEventListener("click", (_) => {
+            this.changeLanguage();
+        });
+        return btn;
+    }
+
+    #hasLanguageOptions(): boolean {
+        return this.getAttribute("lang-options") === "false" ? false : true;
+    }
+
+    #navigateHome() {
+        this.navigateHomeAction();
+    }
+
+    setNavigateHome(action: () => void) {
+        this.navigateHomeAction = action;
     }
 
     // Runs when object is disconnected from DOM

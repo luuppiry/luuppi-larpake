@@ -1,12 +1,5 @@
-import { Q_NO_TOKEN } from "./constants.js";
+import { Q_NO_TOKEN, UI_HEADER_ID } from "./constants.js";
+import Header from "./components/ui-header.js";
 
-const index = document.querySelectorAll("._home-redirect");
-index.forEach((x) => {
-    const link = x as HTMLAnchorElement;
-    if (link && link.href.includes("index")) {
-        const url = new URL(link.href);
-        const params = new URLSearchParams(url.searchParams);
-        params.set(Q_NO_TOKEN, "false");
-        window.location.href = `${url.host}?${params}`;
-    }
-});
+const header = document.getElementById(UI_HEADER_ID) as Header;
+console.log(header);
