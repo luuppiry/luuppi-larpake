@@ -21,4 +21,4 @@ async function loadComingEvents() {
     }
 }
 
-await loadComingEvents();
+loadComingEvents();
