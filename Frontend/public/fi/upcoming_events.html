@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Luuppi - Lärpäke</title>
-        <link rel="stylesheet" href="/styles/larpake.css" />
+        <link rel="stylesheet" href="/styles/index.css" />
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
     </head>
@@ -20,8 +20,18 @@
         </ui-header>
         <side-panel lang="fi"></side-panel>
 
-        <div class="container">
-            <h2>Upcoming events: UNDER CONSTRUCTION</h2>
-        </div>
+        <section class="container">
+            <h2>TULEVAT LÄRPÄKETAPAHTUMAT</h2>
+            <ul id="event-container" class="event-container">
+                <!-- Go to upcoming events page button -->
+                <li class="hover-scale cursor-pointer flex-last">
+                    <a href="https://luuppi.fi/fi/events" class="upcoming-events-btn flex-row">
+                        <span class="events-button-text">Tutustu muihin tapahtumiin</span>
+                        <span class="bigger-icon"><img class="_img image" src="/icons/right-arrow.png" style="height: 40px; margin: 0px" alt="Nuoli oikealle"/></span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+        <script type="module" src="/src/upcoming_events.js"></script>
     </body>
 </html>
