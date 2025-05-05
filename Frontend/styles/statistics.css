@@ -55,3 +55,9 @@ body {
 .error > h3 {
     text-align: center;
 }
+
+@media screen and (max-width: 660px) {
+    .page {
+        margin: 20px 10px;
+    }
+}

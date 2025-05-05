@@ -22,8 +22,8 @@
 }
 
 .profile-picture {
-    height: 200px;
-    width: 200px;
+    max-height: 200px;
+    max-width: 200px;
     border: 2px solid black;
     border-radius: 50%;
 
@@ -34,8 +34,6 @@
     font-size: x-large;
 }
 
-
-
 #join-btn {
-    padding: 15px 120px;
+    padding: 15px 80px;
 }
