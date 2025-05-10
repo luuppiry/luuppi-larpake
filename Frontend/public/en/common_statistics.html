@@ -11,73 +11,84 @@
     <body>
         <ui-header>
             <header class="header placeholder">
-                <img
-                    class="header-logo"
-                    src="/luuppi.logo.svg"
-                    onclick="window.location.href='index.html'"
-                    alt="Luuppi Logo"
-                />
+                <img class="header-logo" src="/luuppi.logo.svg" onclick="window.location.href='index.html'" alt="Luuppi Logo"/>
                 <h1>LÄRPÄKE</h1>
-                <div class="menu-icon">
-                    <div
-                        class="loader"
-                        style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px"
-                    ></div>
-                    &nbsp;
-                </div>
-                <div class="menu-icon">
-                    <div
-                        class="loader"
-                        style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px"
-                    ></div>
-                    &nbsp;
-                </div>
-                <div class="menu-icon">
-                    <div
-                        class="loader"
-                        style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px"
-                    ></div>
-                    &nbsp;
-                </div>
+                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
+                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
+                <div class="menu-icon"><div class="loader" style="width: 34px; height: 34px; margin-top: 7px; margin-left: 7px;"></div>&nbsp;</div>
             </header>
         </ui-header>
-        <side-panel lang="en"></side-panel>
+        <side-panel lang="em"></side-panel>
+        <h2 class="page-title">Common statistics</h2>
+        <div class="container group-points">
+            <h3>Your group total points</h3>
+            <p>Your group <strong class="loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> has gathered in total <strong class="loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> points.</p>
+        </div>
+
         <div class="container">
-            <h2>Common Statisics: STILL CONSTRUCTING</h2>
-            <h2>Are you interested in how other people are doing? Here you can find it out!</h2>
-
-            <div class="card">
-                You have very hard-working fuksi group, you have <strong>4012 points!</strong>
-            </div>
-
-            <div class="card">
-                <h3>Average fuksi has gathered</h3>
-                <div class="progress-circle" data-progress="38"></div>
-                <p>Lärpäke points</p>
-            </div>
-
-            <div class="card">In total fuksis have gathered <strong>24791 points!</strong></div>
-
-            <div class="card">
-                <h3>Average progress</h3>
-                <div class="progress-bar">
-                    <span style="width: 32%">University life - 32%</span>
+            <h3>The average fuksi's point accumulation</h3>
+            <div class="progress-ring-wrapper">
+                <svg class="progress-ring" width="120" height="120">
+                    <circle class="progress-ring__background" r="54" cx="60" cy="60" />
+                    <circle class="progress-ring__circle" r="54" cx="60" cy="60" />
+                </svg>
+                <div class="progress-center-text">
+                    <div id="progressPercent" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                    <div id="progressValue" class="loader">&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;</div>
                 </div>
-                <div class="progress-bar"><span style="width: 12%">Influence - 12%</span></div>
-                <div class="progress-bar"><span style="width: 55%">In Tampere - 55%</span></div>
-                <div class="progress-bar">
-                    <span style="width: 38%">Exercise - Participate - 38%</span>
-                </div>
-                <div class="progress-bar">
-                    <span style="width: 68%">Pii-Klubi buzz - 68%</span>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Who is the magical star fuksi? Is it you?</h3>
-                <div class="progress-circle" data-progress="62"></div>
-                <p>Time to gather points: <span id="countdown"></span></p>
             </div>
         </div>
+
+        <div class="container">
+            <h3>The combined points of Luuppi's fuksies</h3>
+            In total Luuppi's fuksies had gathered <strong class="total-points-amount loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> points!</strong>
+        </div>
+
+        <div class="container">
+            <h3>Who is the mysterious star fuksi? Is it you?</h3>
+            <p>Best fuksi has gathered already <strong class="leading-user-points-amount loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> points!</p>
+        </div>
+
+        <div class="container">
+            <h3>And do you belong to the most active freshman group?</h3>
+            <p>Best group has gathered in total <strong class="leading-group-points-amount loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> points!</p>
+        </div>
+
+        <div class="container">
+            <h3>Time to earn points</h3>
+            <div id="countdown-timer">
+                <span id="days" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> days 
+                <span id="hours" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;</span> hours 
+                <span id="minutes" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;</span> minutes 
+                <span id="seconds" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;</span> seconds
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/src/common_statistics.js"></script>
+    <script type="module">
+        const targetDate = new Date("May 20, 2025 15:00:00").getTime();
+        const interval = setInterval(function() {
+        const now = new Date().getTime();        
+        const timeLeft = targetDate - now;
+        
+        // Calculate days, hours, minutes, and seconds
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        // Display the countdown
+        document.getElementById("days").textContent = days;
+        document.getElementById("hours").textContent = hours;
+        document.getElementById("minutes").textContent = minutes;
+        document.getElementById("seconds").textContent = seconds;
+        
+        // If the countdown is over, display a message
+        if (timeLeft < 0) {
+            clearInterval(interval);
+            document.getElementById("countdown-timer").innerHTML = "Aika on loppunut!!!";
+        }
+        }, 1000);
+    </script>
     </body>
 </html>

@@ -4,7 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="/styles/common_statistics.css" />
-        <title>Luuppi - Lärpäake</title>
+        <title>Luuppi - Lärpäke</title>
         <script type="module" src="/src/components/side-panel.js"></script>
         <script type="module" src="/src/components/ui-header.js"></script>
     </head>
@@ -20,42 +20,76 @@
         </ui-header>
 
         <side-panel lang="fi"></side-panel>
+        <h2 class="page-title">Yhteiset tilastot</h2>
+        <div class="container group-points">
+            <h3>Fuksiryhmäsi pisteet</h3>
+            <p>Fuksiryhmäsi <strong class="loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> on kerännyt yhteensä <strong class="loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> pistettä.</p>
+        </div>
+
         <div class="container">
-            <h2>Common Statisics: STILL CONSTRUCTING</h2>
-            <h2>Kiinnostaako miten muilla menee? Täältä se selviää!</h2>
-
-            <div class="card">
-                Fuksityhmäsi on ollut ahkera, teillä on jo <strong>4012 pistettä!</strong>
-            </div>
-
-            <div class="card">
-                <h3>Keskimääräinen fuksi on kerännyt</h3>
-                <div class="progress-circle" data-progress="38"></div>
-                <p>Lärpäkepisteistä</p>
-            </div>
-
-            <div class="card">
-                Yhteensä Luupin Fuksit ovat keränneet <strong>24791 pistettä!</strong>
-            </div>
-
-            <div class="card">
-                <h3>Keskimääräinen edistyminen</h3>
-                <div class="progress-bar">
-                    <span style="width: 32%">Yliopistoelämää - 32%</span>
+            <h3>Keskimääräisen fuksin pistekertymä</h3>
+            <div class="progress-ring-wrapper">
+                <svg class="progress-ring" width="120" height="120">
+                    <circle class="progress-ring__background" r="54" cx="60" cy="60" />
+                    <circle class="progress-ring__circle" r="54" cx="60" cy="60" />
+                </svg>
+                <div class="progress-center-text">
+                    <div id="progressPercent" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;</div>
+                    <div id="progressValue" class="loader">&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;</div>
                 </div>
-                <div class="progress-bar"><span style="width: 12%">Vaikuttavuutta - 12%</span></div>
-                <div class="progress-bar"><span style="width: 55%">Tampereella - 55%</span></div>
-                <div class="progress-bar"><span style="width: 38%">Liikunnallista - 38%</span></div>
-                <div class="progress-bar">
-                    <span style="width: 68%">Pil-kubilla tapahtuu - 68%</span>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Kuka on mystinen tähtifuksi? Oletko se sinä?</h3>
-                <div class="progress-circle" data-progress="62"></div>
-                <p>Aikaa kerätä pisteitä: <span id="countdown"></span></p>
             </div>
         </div>
+
+        <div class="container">
+            <h3>Luupin fuksien yhteiset pisteet</h3>
+            Yhteensä Luupin Fuksit ovat keränneet <strong class="total-points-amount loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> pistettä!</strong>
+        </div>
+
+        <div class="container">
+            <h3>Kuka on mystinen tähtifuksi? Oletko se sinä?</h3>
+            <p>Paras fuksi on kerännyt jo <strong class="leading-user-points-amount loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> pistettä!</p>
+        </div>
+
+        <div class="container">
+            <h3>Entä kuulutko aktiivisimpaan fuksiryhmään?</h3>
+            <p>Paras ryhmä on kerännyt yhteensä <strong class="leading-group-points-amount loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</strong> pistettä!</p>
+        </div>
+
+        <div class="container">
+            <h3>Aikaa kerätä pisteitä</h3>
+            <div id="countdown-timer">
+                <span id="days" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> päivää 
+                <span id="hours" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;</span> tuntia 
+                <span id="minutes" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;</span> minuuttia 
+                <span id="seconds" class="loader">&nbsp;&nbsp;&nbsp;&nbsp;</span> sekunttia
+            </div>
+        </div>
+    </div>
+    <script type="module" src="/src/common_statistics.js"></script>
+    <script type="module">
+        const targetDate = new Date("May 20, 2025 15:00:00").getTime();
+        const interval = setInterval(function() {
+        const now = new Date().getTime();        
+        const timeLeft = targetDate - now;
+        
+        // Calculate days, hours, minutes, and seconds
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+        
+        // Display the countdown
+        document.getElementById("days").textContent = days;
+        document.getElementById("hours").textContent = hours;
+        document.getElementById("minutes").textContent = minutes;
+        document.getElementById("seconds").textContent = seconds;
+        
+        // If the countdown is over, display a message
+        if (timeLeft < 0) {
+            clearInterval(interval);
+            document.getElementById("countdown-timer").innerHTML = "Aika on loppunut!!!";
+        }
+        }, 1000);
+    </script>
     </body>
 </html>

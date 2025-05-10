@@ -2,6 +2,13 @@
 
 /* OK these colors can be looked at later */
 
+.page-title {
+    text-align: center;
+    font-size: xx-large;
+    margin: 0;
+    padding: 20px 0 0 0;
+}
+
 .card {
     background: white;
     padding: 15px;
@@ -10,54 +17,56 @@
     box-shadow: 0 1px 5px var(--shadow-black);
     text-align: center;
 }
-
-.progress-bar {
-    background: #ddd;
-    border-radius: 20px;
-    overflow: hidden;
-    height: 20px;
-    margin: 5px 0;
+  
+.progress-ring-wrapper {
+    display: grid;
+    width: 120px;
+    height: 120px;
+    place-items: center;
+    margin-left: calc(50% - 60px);
 }
-
-.progress-bar span {
-    display: block;
-    height: 100%;
-    background-color: #3f51b5;
-    color: white;
-    text-align: center;
-    font-size: 14px;
-    line-height: 20px;
+  
+.progress-ring {
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
 }
-
-.progress-circle {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: conic-gradient(#3f51b5 0% 0%, #ddd 0% 100%);
+  
+.progress-center-text {
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: 10px auto;
-    font-size: 18px;
+    pointer-events: none;
+    font-family: sans-serif;
+    text-align: center;
+}
+  
+#progressPercent {
+    font-size: 20px;
     font-weight: bold;
-    color: #3f51b5;
-    position: relative;
+    margin-bottom: 4px;
 }
-
-.circle-progress-value {
-	stroke-width: 6px;
-	stroke: hsl(39, 100%, 50%);
+  
+#progressValue {
+    font-size: 16px;
+    color: var(--non-highlight);
 }
-.circle-progress-circle {
-	stroke-width: 6px;
-	stroke: hsl(39, 100%, 85%);
+  
+.progress-ring__background {
+    stroke: var(--disabled-gray);
+    stroke-width: 12;
 }
-.circle-progress-text {
-	fill: hsl(39, 100%, 50%);
-}
-
-.progress-circle::after {
-    content: attr(data-progress) '%';
-    position: absolute;
-}
-
+  
+.progress-ring__circle {
+    fill: white;
+    stroke: var(--luuppi-blue);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 339.292;
+    stroke-dashoffset: 339.292;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 0.5s ease;
+}  
