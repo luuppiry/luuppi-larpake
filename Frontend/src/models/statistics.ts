@@ -12,26 +12,26 @@ export type SectionStatistic = {
 };
 
 export type pointsAverageStatistic = {
-    data: {averagePoints: number};
+    data: number;
 };
 
 export type pointsTotalStatistic = {
-    data: {totalPoints: number};
+    data: number;
 };
 
 export type groupPointsTotalStatistic = {
-    data: { larpakeId: number, groupId: number, totalPoints: number};
+    data: number;
 };
 
 export type leadingUser = {
-    data: { userId: string, points: number};
+    data: [{userId: string, points: number}];
     nextPage: number;
     details: [string];
     actions: [{description: string, method: string, href: string}]
 };
 
 export type leadingGroup = {
-    data: { groupId: number, points: number};
+    data: [{groupId: number, points: number}];
     nextPage: number;
     details: [string];
     actions: [{description: string, method: string, href: string}]
